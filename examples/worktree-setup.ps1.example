@@ -1,0 +1,95 @@
+#Requires -Version 7.3
+<#
+    EXAMPLE ONLY -- this file is not wired to anything.
+
+    Copy it to the path named by "setupHook" in ccx.config.json (shipped as `.ccx/worktree-setup.ps1`),
+    drop the `.example` suffix, and delete every block that is not your project. The two blocks below
+    are one Python project and one Node project; they are here to show the CONTRACT, not because this
+    tooling knows or cares about either language.
+
+    WHY THIS FILE EXISTS AT ALL. `new.ps1` used to contain a hardcoded bootstrap -- create a virtualenv,
+    install the package with a constraints file, run a package manager in a subdirectory. Every line of
+    that was one project's, so the script could not be used by any other. Moving it here is what makes
+    the worktree tooling language-agnostic: `new.ps1` knows "run the hook and report whether it worked",
+    and nothing else.
+
+    THE CONTRACT new.ps1 GIVES YOU
+      * Your working directory is the NEW worktree. Relative paths are relative to it.
+      * These environment variables are set:
+            CCX_WORKTREE_PATH   absolute path of the new worktree
+            CCX_WORKTREE_NAME   the -Name it was created with
+            CCX_PRIMARY_ROOT    absolute path of the primary checkout
+            CCX_BASE_REF        the ref the branch was created from
+      * No arguments are passed, so you may declare whatever parameters you like.
+      * A .ps1 hook runs in a CHILD pwsh, so YOUR EXIT CODE IS THE CONTRACT: exit non-zero and the
+        creating script reports the failure loudly and tells the user the worktree still exists.
+      * Anything else executable also works (a .cmd, a compiled tool). A .ps1 is the portable choice on
+        the platform this tooling targets.
+
+    THE ONE RULE THAT IS NOT OBVIOUS. A per-checkout environment must resolve THIS checkout, not the one
+    it was first built from. A shared environment with an editable/linked install of the project points
+    at whichever checkout created it, so a worktree silently tests someone else's code -- green here,
+    red in CI, and no diff to explain it. Build the environment inside the worktree.
+
+    THE SECOND RULE THAT IS NOT OBVIOUS. Install from your lockfile, not from your version ranges. A
+    fresh worktree that re-resolves dependencies gets whatever the registry serves today, which is how a
+    checkout ends up with a different formatter or linter from CI. That is worse than merely misleading
+    when the tool has a `--fix` mode wired into a commit hook: it does not just report differently, it
+    REWRITES your source to match a version CI does not have.
+#>
+
+$ErrorActionPreference = 'Stop'
+
+$worktree = if ($env:CCX_WORKTREE_PATH) { $env:CCX_WORKTREE_PATH } else { $PWD.Path }
+Write-Host "Setting up $worktree ..."
+
+# ------------------------------------------------------------------------------------------------
+# EXAMPLE 1 -- a Python project: a virtualenv inside the worktree, installed from the lockfile.
+# ------------------------------------------------------------------------------------------------
+if (Test-Path -LiteralPath (Join-Path $worktree 'pyproject.toml')) {
+    $venv = Join-Path $worktree '.venv'
+    $py = if ($IsWindows) { Join-Path $venv 'Scripts/python.exe' } else { Join-Path $venv 'bin/python' }
+
+    Write-Host 'Creating the virtualenv (this can take a minute)...'
+    & python -m venv $venv
+    if ($LASTEXITCODE -ne 0) { throw "venv creation failed (is 'python' on PATH?)" }
+
+    & $py -m pip install --upgrade pip | Out-Null
+
+    # --constraint <lockfile>, exactly as CI installs. Without it pip re-resolves inside the version
+    # ranges in pyproject.toml and this checkout drifts away from CI on its first day.
+    $constraints = Join-Path $worktree 'constraints.txt'
+    if (Test-Path -LiteralPath $constraints) {
+        & $py -m pip install --constraint $constraints -e '.[dev]'
+    } else {
+        & $py -m pip install -e '.[dev]'
+    }
+    if ($LASTEXITCODE -ne 0) { throw "pip install failed (exit $LASTEXITCODE)" }
+
+    Write-Host "Python environment ready: $venv"
+}
+
+# ------------------------------------------------------------------------------------------------
+# EXAMPLE 2 -- a Node project: install into the worktree's own node_modules.
+# ------------------------------------------------------------------------------------------------
+if (Test-Path -LiteralPath (Join-Path $worktree 'package.json')) {
+    if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+        # Say what did not happen. A skipped step that prints nothing is indistinguishable from a step
+        # that succeeded, and the difference only shows up much later as a confusing failure.
+        throw 'package.json is present but npm is not on PATH; this worktree has no node_modules.'
+    }
+
+    # `npm ci` and not `npm install`: ci installs exactly the lockfile and fails if the lockfile and
+    # package.json disagree, which is the behaviour you want in a checkout meant to match CI.
+    Push-Location $worktree
+    try {
+        & npm ci
+        if ($LASTEXITCODE -ne 0) { throw "npm ci failed (exit $LASTEXITCODE)" }
+    } finally {
+        Pop-Location
+    }
+
+    Write-Host 'Node dependencies installed.'
+}
+
+Write-Host 'Setup hook finished.'

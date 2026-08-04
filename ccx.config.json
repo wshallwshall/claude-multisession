@@ -1,0 +1,19 @@
+{
+  "prefix": "ccx",
+  "trunk": "auto",
+  "worktreeLayout": "sibling",
+  "setupHook": ".ccx/worktree-setup.ps1",
+  "protectedRefs": [
+    "refs/heads/main",
+    "refs/heads/master"
+  ],
+  "sequences": {
+    "adr": {
+      "dir": "docs/adr",
+      "filePattern": "^docs/adr/(\\d{4})-[^/]+\\.md$",
+      "pad": 4,
+      "indexFile": "docs/adr/README.md",
+      "indexRowPattern": "^\\|\\s*\\[(\\d{4})\\]"
+    }
+  }
+}

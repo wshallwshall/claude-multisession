@@ -1,0 +1,43 @@
+# -------------------------------------------------------------------------------------------------
+# .claude/ IS DELIBERATELY NOT IGNORED.
+#
+# This repository tracks example harness settings on purpose, because "merging a hook does not
+# install one" is the single most expensive lesson in this whole toolkit: a settings file nobody can
+# read is indistinguishable from one that is wired correctly. Today that is
+# .claude/settings.example.json, which shows the hand-wiring for the blanket-stage guard -- one of
+# the controls no installer covers (see docs/HOOKS.md and INSTALL.md).
+#
+# THE RULE, not a census: anything tracked under .claude/ MUST carry `.example.` in its name. The
+# harness loads settings.json and settings.local.json only, so an `.example.` file is inert by
+# construction and cannot become a control that looks installed. The machine-local files are ignored
+# below.
+# -------------------------------------------------------------------------------------------------
+
+# Machine-local overrides. The convention throughout: anything with `.local.` in its name belongs to
+# one checkout on one machine and must never be committed.
+*.local.*
+.claude/settings.local.json
+
+# Coordination state lives in the git directory (<git-common-dir>/ccx-coord), so it is uncommittable
+# by construction and needs no rule here. These are the strays that escape it.
+*.log
+ccx-doctor-report.*
+
+# Language runtimes a project setup hook may create inside a worktree.
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors and desktops.
+.vs/
+.vscode/*.local.json
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db

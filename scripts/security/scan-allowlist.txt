@@ -1,0 +1,15 @@
+# Vetted false-positive allowlist for scan_forbidden.py -- one line-regex per line, '#' comments.
+#
+# An entry here is a per-line VETO applied BEFORE any detector runs, so a broad one switches the
+# whole gate off while every count in the log still reads healthy. Two rules, both enforced in code
+# (a pattern that matches ordinary prose or the empty string is refused and ignored):
+#
+#   1. NEVER allowlist a real path, host or name. Remove it from the file instead.
+#   2. Anchor the entry to the exact false positive, narrowly enough that a REAL disclosure on the
+#      same line still trips the gate.
+
+# docs/TIPS-AND-TRICKS.md documents the printf-mangles-backslash trap using a planted test fixture,
+# and the fixture is by definition a home path -- so the passage that teaches the lesson is itself a
+# hit for the detector it is about. Pinned to that one literal fixture path, so any other home path
+# in the same file (or the same line) is still caught.
+C:\\Users\\someone\\project\\file\.txt

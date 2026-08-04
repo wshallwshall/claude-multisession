@@ -1,0 +1,25 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# UTF-8 WITHOUT A BOM, everywhere, and LF even on Windows. Both are load-bearing rather than taste:
+# a BOM on a PowerShell file is invisible in an editor and makes the first line unparseable to some
+# readers, and a CRLF that reaches a file another tool reads byte-for-byte turns a content comparison
+# into a false mismatch. Several controls here compare an installed copy against the repository copy
+# by hash, so line endings are part of their correctness.
+
+[*.{json,yml,yaml,md}]
+indent_size = 2
+
+[*.md]
+# Two trailing spaces are a line break in Markdown.
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab

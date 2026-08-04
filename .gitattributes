@@ -1,0 +1,30 @@
+# LF in the repository AND in every working tree, on every platform.
+#
+# `text=auto` alone normalises what is STORED but lets the checkout follow core.autocrlf, so a
+# Windows clone gets CRLF working files while the blobs are LF. That splits this repo three ways:
+#
+#   1. `/bin/sh` will not run a script whose shebang line ends in CR. The installed git hooks are sh
+#      shims. The generator strips CR explicitly for this reason -- but a shim is not the only file
+#      that can end up executed, and a repo-wide guarantee is cheaper than remembering per file.
+#
+#   2. Hash comparison stops being portable. This repo's controls verify an installed copy against
+#      its source by SHA-256, and `git hash-object` is config-dependent: the same commit hashes
+#      differently under core.autocrlf=true and =false. A parity check that is RED only because two
+#      checkouts disagree about line endings is a false alarm that costs real time, and it is
+#      indistinguishable from the real drift it exists to catch.
+#
+#   3. The docs state "UTF-8 no BOM, LF" as a house rule. Without the `eol=lf` pin that claim is
+#      false for most Windows clones -- a claim about our own conventions that our own repo breaks.
+#
+# eol=lf is a checkout-time instruction. It does not rewrite files already in a working tree; run
+# `git add --renormalize .` once if an existing clone has CRLF in it.
+* text=auto eol=lf
+
+# Binary: never touch these, and never try to diff them as text.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary

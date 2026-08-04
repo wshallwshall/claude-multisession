@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File \"REPLACE_WITH_ABSOLUTE_PATH_TO_YOUR_CHECKOUT/scripts/hooks/block-blanket-git-stage.ps1\"",
+            "timeout": 15,
+            "statusMessage": "Checking for a blanket git stage"
+          }
+        ]
+      }
+    ]
+  }
+}
