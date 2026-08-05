@@ -5,12 +5,49 @@ layout: default
 
 # claude-multisession
 
-Coordination tooling for running several Claude Code sessions at once against one repository. Each
-session gets its own git worktree; this adds the coordination the worktree does not -- a shared state
-root that git already provides, guardrail hooks, a liveness fence, atomic claims, locks and
-sequence-number allocation, cross-session announce, and a worktree reaper that refuses to guess.
-Everything is a plain script: no daemon, no background service. Cloning this repository installs
-nothing.
+`claude-multisession` is a lightweight, decentralized coordination toolkit for safely running several
+Claude Code sessions at once against a single git repository. There is no daemon and no background
+service. It rests entirely on native git worktrees, PowerShell 7 scripts, and stdlib-only Python
+checkers invoked from ordinary git hooks. Cloning this repository installs nothing.
+
+## How it accelerates Claude Code projects
+
+**True concurrency via git worktrees.** Several agents working in one directory contend for the git
+index and overwrite each other's files. Every session instead gets its own isolated worktree on its
+own branch, while the repository history -- and the coordination state keyed to it -- stays shared.
+See [Worktrees](WORKTREES.md).
+
+**Collision prevention, with the enforcement named.** A `PreToolUse` collision gate refuses an edit
+to a file another live session is already changing; that one is a refusal, not a convention. Around
+it sit atomic claims, a cross-session lock, and atomic sequence-number allocation, so two sessions
+cannot mint the same number for a decision record or an item. Claims are deliberately **advisory**:
+they cannot stop a session that refuses to look, which is exactly why the commit-time gate exists
+behind them. A cross-session announce lets live sessions broadcast what they are working on -- on
+the desktop client only, per limit 1 below. See [Coordination](COORDINATION.md).
+
+**Guardrails that run whether the agent cooperates or not.** The installer writes exactly two git
+hooks: `commit-msg` runs the claim gate, and `pre-push` runs the push guard that refuses a direct
+push to a protected ref. A worktree gate stops sessions building in the shared primary checkout. The
+leak gate and the ASCII gate are scripts you run rather than hooks -- nothing here wires them, and
+the leak gate refuses to run structural-only when you ask it for an armed pass, so a green result
+cannot quietly mean "no detectors were loaded". See [Hooks](HOOKS.md) and
+[The leak gate](LEAK-GATE.md).
+
+**Assessments too large for one context.** Because a coordinated set of sessions can cover a
+codebase at once, the method extends to compliance work -- an OWASP ASVS 5.0 assessment runs to
+several hundred requirements, more than one session can hold. The write-up is candid that the
+obvious split is the wrong one: dispatching a session per chapter is a scheduling answer, while the
+collision that actually costs you is the shared index every session wants to edit. See
+[Running a large security-standard assessment](ASVS-ASSESSMENT.md).
+
+**Automated cleanup.** A liveness registry tracks which sessions are actually alive, and the reaper
+prunes sibling worktrees that are merged, clean and unoccupied -- and refuses to guess when it
+cannot tell which of those a worktree is. See [Pruning](PRUNING.md).
+
+Used this way, Claude Code stops being one sequential pair-programmer and becomes a set of sessions
+working the same repository at the same time -- on parallel automation work, deep security reviews,
+or a large migration. The limits that decide whether that is worth it to you are stated next, before
+any install instructions.
 
 ## Requirements
 
