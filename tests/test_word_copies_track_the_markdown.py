@@ -11,6 +11,9 @@ REGENERATE WITH (from docs/standards/, needs pandoc):
     for f in OVERVIEW CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do
       pandoc "$f.md" -f gfm -t docx --toc --toc-depth=2 -o "word/$f.docx"
     done
+    # CISO-SUMMARY is the exception: no --toc. It is a two-page document, and a table of contents
+    # on it costs a whole page to list six headings the reader can already see.
+    pandoc CISO-SUMMARY.md -f gfm -t docx -o word/CISO-SUMMARY.docx
 
 WHAT THIS PROVES, AND WHAT IT DOES NOT. It proves a Word copy EXISTS for every published standard,
 that each is real OOXML rather than a truncated or empty file, and that its text still carries the

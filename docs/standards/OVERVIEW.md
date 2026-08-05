@@ -2,7 +2,8 @@
 
 Four documents that set a bar for code an agent wrote and a small team has to stand behind: what
 counts as quality, what counts as secure, how to hold third-party code you will never read, and how
-to govern the assistant writing much of it.
+to govern the assistant writing much of it. Plus [a two-page summary](CISO-SUMMARY.md) for a
+security executive who has to decide whether any of it is being done, rather than adopt it.
 
 They are **starting points you adapt**, not a compliance package. Nothing here is a certificate, an
 audit, or a scored verdict about any codebase, and nothing here installs or enforces anything. Every
@@ -12,6 +13,7 @@ one of them is meant to be edited down to your setting before it is useful.
 
 | Document | Read online | Markdown | Word |
 |---|---|---|---|
+| **The CISO summary** -- two pages, start here if you are deciding rather than adopting | [page](CISO-SUMMARY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CISO-SUMMARY.docx) |
 | **AI-assisted development** | [page](AI-ASSISTED-DEVELOPMENT.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx) |
 | **Dependency integrity** | [page](DEPENDENCY-INTEGRITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx) |
 | **Code quality** | [page](CODE-QUALITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx) |
@@ -86,7 +88,7 @@ Individual links are in [Download every file](#download-every-file) at the top. 
 only for pulling all of them at once, into a `standards/` directory below wherever you run it:
 
 ```sh
-for f in OVERVIEW CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do
+for f in OVERVIEW CISO-SUMMARY CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do
   curl -fsSL --create-dirs -o "standards/$f.md" \
     "https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/$f.md"
 done
@@ -95,7 +97,7 @@ done
 ```powershell
 $base = 'https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards'
 New-Item -ItemType Directory -Force standards | Out-Null
-'OVERVIEW','CODE-QUALITY','SECURE-DEVELOPMENT','AI-ASSISTED-DEVELOPMENT','DEPENDENCY-INTEGRITY' |
+'OVERVIEW','CISO-SUMMARY','CODE-QUALITY','SECURE-DEVELOPMENT','AI-ASSISTED-DEVELOPMENT','DEPENDENCY-INTEGRITY' |
   ForEach-Object { Invoke-WebRequest "$base/$_.md" -OutFile "standards/$_.md" }
 ```
 

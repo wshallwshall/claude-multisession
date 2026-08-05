@@ -71,6 +71,9 @@
     - label: Standards index
       title: Standards you can start from
       path: /standards/OVERVIEW.html
+    - label: CISO summary
+      title: The CISO summary
+      path: /standards/CISO-SUMMARY.html
     - label: AI-assisted development
       title: "AI-assisted development: keeping the result trustworthy"
       path: /standards/AI-ASSISTED-DEVELOPMENT.html
