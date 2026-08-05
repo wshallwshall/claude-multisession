@@ -424,7 +424,7 @@ control of the same class that must still match something. If the positive contr
 absence claim is void regardless of what the negative pattern returned.
 
 **This repository has a worked example of the same principle applied to guardrails.**
-[`bin/ccx-doctor.ps1`](../bin/ccx-doctor.ps1) does not ask whether a control is installed; it fires
+[`bin/ccx-doctor.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/bin/ccx-doctor.ps1) does not ask whether a control is installed; it fires
 crafted input at the *installed* copy and **requires it to refuse**, and pairs every attack with a
 negative control -- an ordinary action the same control must **allow** -- because a script that refuses
 everything is not a working guard either. It also prints what it scanned on every run, and reports a
@@ -624,15 +624,15 @@ every session wants to edit does not survive parallel work, whatever the merge t
 
 **Disjoint cells, enforced.** Give each session a set of cells nobody else holds, and make the claim
 atomic rather than advisory-by-convention. This repository's
-[`scripts/coord/claim.ps1`](../scripts/coord/claim.ps1) is the working pattern: a claim is taken by
+[`scripts/coord/claim.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/claim.ps1) is the working pattern: a claim is taken by
 **exclusively creating** a file, which is an atomic filesystem operation, so two sessions cannot both
 believe they hold the same key. Its free-text key form exists for exactly the case an assessment
 generates -- work that has no ticket number and that nobody thought to coordinate. Claims do not
 expire, because an auto-expiring claim silently re-opens the race it exists to prevent, and `-List`
 reports each holder's **liveness** rather than the claim's age. (The numbered form is enforced at
-commit time by [`scripts/hooks/claim_check.py`](../scripts/hooks/claim_check.py); the
+commit time by [`scripts/hooks/claim_check.py`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/hooks/claim_check.py); the
 sequence-number analogue, for allocating identifiers atomically instead of by grepping for the next
-free one, is [`scripts/coord/alloc.ps1`](../scripts/coord/alloc.ps1).)
+free one, is [`scripts/coord/alloc.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/alloc.ps1).)
 
 **Identical inputs, written down.** Every session gets the same three things, and gets them as files
 rather than as instructions in a prompt:
@@ -898,7 +898,7 @@ Before anything is published:
 - [`docs/CASE-STUDY-drift-audit.md`](CASE-STUDY-drift-audit.md) -- the same reasoning applied to this
   repository's own controls: why an installed copy, not a source file, is the unit of audit, and why
   that document deliberately contains no status table either.
-- [`bin/ccx-doctor.ps1`](../bin/ccx-doctor.ps1) -- prove the control can refuse; never infer that it is
+- [`bin/ccx-doctor.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/bin/ccx-doctor.ps1) -- prove the control can refuse; never infer that it is
   live.
 - [`docs/COORDINATION.md`](COORDINATION.md) -- claims, locks, presence, and overlap for parallel
   sessions.

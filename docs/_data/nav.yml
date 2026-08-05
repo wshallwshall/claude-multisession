@@ -1,0 +1,77 @@
+# Sidebar navigation, rendered by _layouts/default.html.
+#
+# `path` is site-root-relative and does NOT carry the baseurl -- the layout prepends
+# {{ site.baseurl }}. It is also what page.url is compared against to mark the current page, so the
+# two have to stay in the same form: a docs/FOO.md page is built to /FOO.html, because no permalink
+# style is configured in _config.yml. If a permalink style is ever added, every path here changes.
+#
+# `label` is the short nav name and follows the filename. `title` is the document's own H1 verbatim,
+# which is not always the same thing -- ASVS-ASSESSMENT.md never says ASVS in its heading -- and is
+# used as the link's title attribute.
+#
+# An entry with `url` instead of `path` is an absolute link off the site. Those exist because
+# INSTALL.md and the scripts live at the repository root, outside the Jekyll source, so the site
+# cannot serve them at all.
+
+- group: Start here
+  items:
+    - label: Concepts
+      title: Concepts
+      path: /CONCEPTS.html
+    - label: Hooks
+      title: Hooks
+      path: /HOOKS.html
+
+- group: Running sessions
+  items:
+    - label: Worktrees
+      title: Worktrees
+      path: /WORKTREES.html
+    - label: Coordination
+      title: Coordination
+      path: /COORDINATION.html
+    - label: Steering
+      title: Steering a running session
+      path: /STEERING.html
+    - label: Sequence allocation
+      title: Sequence allocation
+      path: /SEQUENCE-ALLOC.html
+    - label: PRs and merges
+      title: "Landing work: PRs and merges"
+      path: /PR-AND-MERGE.html
+    - label: Pruning
+      title: Pruning worktrees
+      path: /PRUNING.html
+
+- group: Safety and standards
+  items:
+    - label: Leak gate
+      title: The leak gate
+      path: /LEAK-GATE.html
+    - label: CI and standards
+      title: CI and standards for agent-written code
+      path: /CI-AND-STANDARDS.html
+    - label: Usage awareness
+      title: "Usage awareness: knowing when to stop, without lying about it"
+      path: /USAGE-AWARENESS.html
+
+- group: In practice
+  items:
+    - label: Tips and tricks
+      title: Tips and tricks
+      path: /TIPS-AND-TRICKS.html
+    - label: Drift audit case study
+      title: "Case study: auditing a multi-session estate as one system"
+      path: /CASE-STUDY-drift-audit.html
+    - label: Security standard assessment
+      title: Running a large security-standard assessment with AI agents
+      path: /ASVS-ASSESSMENT.html
+
+- group: On GitHub
+  items:
+    - label: Installing
+      title: INSTALL.md, at the repository root
+      url: https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md
+    - label: Source repository
+      title: claude-multisession on GitHub
+      url: https://github.com/wshallwshall/claude-multisession

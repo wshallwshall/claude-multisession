@@ -202,6 +202,7 @@ them out means a real regression in them cannot block a merge.
 Add one roll-up job that depends on the conditional legs, runs unconditionally, and fails only on a
 failed or cancelled dependency -- **a skipped dependency passes**:
 
+{% raw %}
 ```yaml
   gate:
     needs: [heavy-leg, matrix-leg, path-gated-leg]
@@ -215,6 +216,7 @@ failed or cancelled dependency -- **a skipped dependency passes**:
             *failure*|*cancelled*) echo "a required dependency did not pass"; exit 1 ;;
           esac
 ```
+{% endraw %}
 
 Require the roll-up, not the legs. Note what this does: it makes its dependencies **transitively
 required** even though they appear nowhere in protection. Write that down next to the job, because

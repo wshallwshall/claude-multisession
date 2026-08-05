@@ -35,7 +35,7 @@ So the unit of isolation is the worktree, and the unit of work is a branch.
 
 The **primary** checkout is the main working tree of the clone, and it is the first entry
 `git worktree list --porcelain` reports. `Get-CcxPrimaryRoot` in
-[`scripts/coord/_common.ps1`](../scripts/coord/_common.ps1) resolves it that way, deliberately:
+[`scripts/coord/_common.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/_common.ps1) resolves it that way, deliberately:
 
 > **Trap.** Four earlier copies of this derived the repository root as `$PSScriptRoot/../..`, the
 > checkout the *script* happens to live in. Run from a linked worktree that resolves to the
@@ -99,12 +99,12 @@ separate build environment. Three things are not isolated, and each has bitten:
 And one thing is isolated that you may wish were not: a project-scoped `.claude/settings.json` is
 usually git-ignored, so it is a creation-time snapshot that nothing refreshes and that several
 worktrees may simply not have. That is why the coordination hooks install at **user** scope. See
-[`INSTALL.md`](../INSTALL.md).
+[`INSTALL.md`](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md).
 
 Per-checkout environment setup, a virtualenv, a package install, a build, is deliberately not in
 `new.ps1`. It is whatever `setupHook` names, invoked with `CCX_WORKTREE_PATH`, `CCX_WORKTREE_NAME`,
 `CCX_PRIMARY_ROOT` and `CCX_BASE_REF` in the environment. That is what keeps the repository
-language-agnostic; see [`examples/worktree-setup.ps1.example`](../examples/worktree-setup.ps1.example).
+language-agnostic; see [`examples/worktree-setup.ps1.example`](https://github.com/wshallwshall/claude-multisession/blob/main/examples/worktree-setup.ps1.example).
 
 ---
 
@@ -123,7 +123,7 @@ Every piece of cross-session coordination state lives in exactly one place:
 ```
 
 `Get-CcxStateRoot` (PowerShell) and `state_root()` in
-[`scripts/hooks/_ccxconfig.py`](../scripts/hooks/_ccxconfig.py) resolve it, and they must agree
+[`scripts/hooks/_ccxconfig.py`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/hooks/_ccxconfig.py) resolve it, and they must agree
 character for character, because each side compares against records the other side wrote.
 
 Three properties make `<git-common-dir>` the right anchor, and all three are load-bearing:
@@ -166,7 +166,7 @@ exists to prevent.
 
 Almost every safety decision reduces to one question: *is that session still there?* There is exactly
 one implementation, in
-[`scripts/coord/session-registry.ps1`](../scripts/coord/session-registry.ps1), and everything else
+[`scripts/coord/session-registry.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/session-registry.ps1), and everything else
 consumes it.
 
 ### It rests on a vendor contract

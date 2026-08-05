@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    {%- comment -%}
+      page.title comes from jekyll-titles-from-headings, which reads the leading H1 and leaves it in
+      the body. So the title is used here and in nothing else: printing it as a heading below would
+      give every page two of them.
+    {%- endcomment -%}
+    {%- if page.url == '/' or page.title == nil or page.title == site.title -%}
+    <title>{{ site.title }}</title>
+    {%- else -%}
+    <title>{{ page.title | strip_newlines }} - {{ site.title }}</title>
+    {%- endif %}
+    <meta name="description" content="{{ page.description | default: site.description | strip_newlines | strip }}">
+    <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  </head>
+
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="site-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+        <a class="site-repo-link" href="{{ site.repo_url }}">Source on GitHub</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="site-nav" aria-label="Documentation">
+        <ul class="nav-list">
+          <li>
+            {%- if page.url == '/' %}
+            <a class="nav-link is-current" href="{{ site.baseurl }}/" aria-current="page">Overview</a>
+            {%- else %}
+            <a class="nav-link" href="{{ site.baseurl }}/">Overview</a>
+            {%- endif %}
+          </li>
+        </ul>
+
+        {%- for group in site.data.nav %}
+        {%- assign group_id = 'nav-group-' | append: forloop.index %}
+        <p class="nav-heading" id="{{ group_id }}">{{ group.group }}</p>
+        <ul class="nav-list" aria-labelledby="{{ group_id }}">
+          {%- for item in group.items %}
+          <li>
+            {%- if item.url %}
+            <a class="nav-link is-external" href="{{ item.url }}"{% if item.title %} title="{{ item.title }}"{% endif %}>{{ item.label }}</a>
+            {%- elsif page.url == item.path %}
+            <a class="nav-link is-current" href="{{ site.baseurl }}{{ item.path }}" aria-current="page"{% if item.title %} title="{{ item.title }}"{% endif %}>{{ item.label }}</a>
+            {%- else %}
+            <a class="nav-link" href="{{ site.baseurl }}{{ item.path }}"{% if item.title %} title="{{ item.title }}"{% endif %}>{{ item.label }}</a>
+            {%- endif %}
+          </li>
+          {%- endfor %}
+        </ul>
+        {%- endfor %}
+      </nav>
+
+      <main class="page" id="content">
+        <div class="page-content">
+          {{ content }}
+        </div>
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p class="footer-line">
+          MIT licensed.
+          <a href="{{ site.repo_url }}">claude-multisession on GitHub</a>.
+        </p>
+        {%- if page.path %}
+        <p class="footer-line">
+          <a href="{{ site.repo_url }}/blob/main/docs/{{ page.path }}">View the source of this page</a>
+        </p>
+        {%- endif %}
+      </div>
+    </footer>
+  </body>
+</html>

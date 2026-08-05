@@ -1,0 +1,56 @@
+# GitHub Pages configuration for the claude-multisession documentation site.
+#
+# Publishing source is /docs on the default branch, which makes THIS directory the Jekyll source
+# root. Every file the site needs -- _config.yml, _data, _layouts, assets, index.md -- has to live
+# under docs/. A _config.yml at the repository root would be ignored, and the build would still go
+# green, so treat the location of this file as load-bearing.
+
+title: claude-multisession
+description: >-
+  Coordination tooling for running several Claude Code sessions at once against one repository.
+
+# baseurl is NOT derived from the repository name by the GitHub Pages build. It has to be set here,
+# and everything depends on it: jekyll-relative-links rewrites the intra-docs links through
+# relative_url, which prepends this value, and the layout builds every nav href and the stylesheet
+# href from it. Wrong or missing means the pages still render and every link and asset 404s.
+url: https://wshallwshall.github.io
+baseurl: /claude-multisession
+
+# Used by the layout instead of site.github.*, which is empty in a local build without a token and
+# populated in production -- an instrument that answers a different question depending on where it
+# runs.
+repo_url: https://github.com/wshallwshall/claude-multisession
+
+markdown: kramdown
+
+# No `plugins:` key on purpose.
+#
+# GitHub Pages runs in safe mode with a fixed plugin allowlist, and three of the defaults are what
+# make this site work without touching the 14 documents:
+#   jekyll-optional-front-matter  turns each front-matter-less .md into a rendered page
+#   jekyll-relative-links         rewrites ](CONCEPTS.md) to the built URL, with baseurl
+#   jekyll-titles-from-headings   sets page.title from the leading H1
+# Those cannot be disabled and need no configuration. A plugin that is not on the allowlist is not
+# an error either -- it simply never runs, which is the failure mode that looks like success.
+
+# No `exclude:` key on purpose. Setting it REPLACES Jekyll's defaults rather than adding to them,
+# and there is nothing under docs/ that should not be served.
+
+# One layout for every page, applied through front-matter defaults so that the 14 existing
+# documents keep zero front matter.
+#
+# TWO MECHANISMS ARE IN PLAY HERE, and the honest description is that they cannot be made to
+# disagree rather than that only one runs. jekyll-default-layout is a default plugin and cannot be
+# disabled; whether it also assigns a layout to these pages depends on whether its skip test
+# consults the lazy front-matter-defaults lookup that Jekyll installs on a page's data hash, which
+# is not observable from this repository. So the site is built so that BOTH paths land in the same
+# place: this defaults block resolves `layout: default` directly, and _layouts/page.html -- the
+# layout jekyll-default-layout would pick for a non-index page -- is a one-line wrapper that chains
+# into `default`. Shipping that wrapper is also what removes the dependency on the active theme
+# happening to supply an equivalent one.
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default
