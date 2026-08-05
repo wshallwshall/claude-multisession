@@ -8,7 +8,7 @@ worth almost nothing.
 > **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) is plain text: it drops straight
 > into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
 > when you want it applied to your own code. Prefer something to circulate or mark up?
-> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx). [All five files](OVERVIEW.md#the-four-files).
+> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx). [Every file, both formats](OVERVIEW.md#download-every-file).
 
 ## What you get
 

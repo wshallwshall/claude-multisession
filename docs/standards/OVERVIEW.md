@@ -8,7 +8,7 @@ They are **starting points you adapt**, not a compliance package. Nothing here i
 audit, or a scored verdict about any codebase, and nothing here installs or enforces anything. Every
 one of them is meant to be edited down to your setting before it is useful.
 
-## The four files
+## Download every file
 
 | Document | Read online | Markdown | Word |
 |---|---|---|---|
@@ -76,12 +76,10 @@ you are currently losing.
 | [Code quality](CODE-QUALITY.md) | Rows that may decide a verdict separated from rows that may only start a conversation, the published evidence behind refusing to gate on a single number, a map from each way machine-written code goes wrong to the control that neutralises it, and review depth as a per-file decision so a large diff stays finite. |
 | [Secure development](SECURE-DEVELOPMENT.md) | A written producer-versus-operator ownership split, a per-interface threat model that gives review something to check against, a finite secure-coding list, an honest read of what a green pipeline has and has not established, and a release gate that is a checklist rather than a debate. |
 
-## Take the files
+## Fetch the whole set in one command
 
-Per-document links are in [The four files](#the-four-files) at the top. This section is for taking
-the set: these are meant to be edited, so start from the markdown rather than from a rendered page.
-
-All five at once, into a `standards/` directory below wherever you run it:
+Individual links are in [Download every file](#download-every-file) at the top. This section is
+only for pulling all of them at once, into a `standards/` directory below wherever you run it:
 
 ```sh
 for f in OVERVIEW CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do

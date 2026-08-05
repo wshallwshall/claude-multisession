@@ -10,7 +10,7 @@ you know it contains only what you intended?
 > **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) is plain text: it drops straight
 > into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
 > when you want it applied to your own code. Prefer something to circulate or mark up?
-> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx). [All five files](OVERVIEW.md#the-four-files).
+> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx). [Every file, both formats](OVERVIEW.md#download-every-file).
 
 The two halves share a shape. In both, the honest answer is not "review it harder". It is a small
 number of machine-enforced controls, plus human attention spent at two or three specific moments
