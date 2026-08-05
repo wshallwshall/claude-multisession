@@ -8,6 +8,20 @@ They are **starting points you adapt**, not a compliance package. Nothing here i
 audit, or a scored verdict about any codebase, and nothing here installs or enforces anything. Every
 one of them is meant to be edited down to your setting before it is useful.
 
+## The four files
+
+| Document | Read | Download |
+|---|---|---|
+| **AI-assisted development** | [page](AI-ASSISTED-DEVELOPMENT.md) | [AI-ASSISTED-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) |
+| **Dependency integrity** | [page](DEPENDENCY-INTEGRITY.md) | [DEPENDENCY-INTEGRITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) |
+| **Code quality** | [page](CODE-QUALITY.md) | [CODE-QUALITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) |
+| **Secure development** | [page](SECURE-DEVELOPMENT.md) | [SECURE-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) |
+| This overview | -- | [OVERVIEW.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) |
+
+Rows are in [the order worth reading them in](#the-order-to-read-them-in). To pull all five at once,
+or take the whole repository, see [Take the files](#take-the-files). **MIT licensed** -- adapt them,
+publish the result, drop the attribution.
+
 ## What you get
 
 - **A rubric you can run against your own repository at each release**, split into controls that may
@@ -59,15 +73,8 @@ you are currently losing.
 
 ## Take the files
 
-These are meant to be edited, so start from the markdown rather than from this rendered page.
-
-| Document | Raw markdown |
-|---|---|
-| Code quality | [CODE-QUALITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) |
-| Secure development | [SECURE-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) |
-| AI-assisted development | [AI-ASSISTED-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) |
-| Dependency integrity | [DEPENDENCY-INTEGRITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) |
-| This overview | [OVERVIEW.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) |
+Per-document links are in [The four files](#the-four-files) at the top. This section is for taking
+the set: these are meant to be edited, so start from the markdown rather than from a rendered page.
 
 All five at once, into a `standards/` directory below wherever you run it:
 
