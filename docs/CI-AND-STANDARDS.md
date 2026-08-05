@@ -1236,3 +1236,8 @@ the remote. Coordinate writes to any shared state -- notes, memory, ledgers -- a
 - [`HOOKS.md`](HOOKS.md) -- harness hooks versus git hooks, and where each posture is declared
 - `bin/ccx-doctor.ps1` -- receipts, attack-with-a-negative-control, and printed blind spots, in one
   command
+- `.github/workflows/gates.yml` -- this repository's own gates, as a worked example of the rules
+  above: least privilege, an action pinned by commit SHA rather than a mutable tag, each step
+  printing what it examined, a leak-gate step that says out loud when it ran with the private-name
+  detectors off, and a test step that refuses a pass when the runner reports zero tests. It
+  deliberately does **not** run the doctor -- the reason is in the file's header

@@ -1,0 +1,117 @@
+# The repository's own gates, run on every push and pull request.
+#
+# WHY THIS FILE EXISTS. This repo publishes documents about CI discipline while running none of it:
+# every gate here was an honour-system local command until now, and a stale generated file shipped
+# once because nothing checked. A standard whose own repository does not run it is a claim, not a
+# control -- which is the failure its documents are about.
+#
+# WHAT IT DOES NOT DO. It does not run `ccx doctor`. The doctor fires each control on purpose,
+# including ones that need a live second session and a peer worktree, and the installers refuse to
+# run inside an agent session by design. A CI run that skipped those paths and reported green would
+# be a worse signal than not running it at all. The doctor stays a local, plain-terminal command.
+#
+# See docs/CI-AND-STANDARDS.md for the reasoning behind the shape of this file.
+
+name: gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: nothing here writes to the repository.
+permissions:
+  contents: read
+
+concurrency:
+  # One run per ref. A newer push makes an in-flight run irrelevant, and several sessions push here.
+  group: gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    # Windows-first tooling, but the gates themselves are portable and the README says so. Running
+    # both proves that claim instead of asserting it -- and Windows is where the paths are exercised.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Pinned by commit SHA, not by tag: a tag is mutable and this repo's dependency standard says
+      # to pin what you cannot audit. actions/checkout v4.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Versions actually used
+        shell: pwsh
+        run: |
+          "pwsh   : $($PSVersionTable.PSVersion)"
+          "python : $(python --version)"
+          "git    : $(git --version)"
+
+      # RECEIPTS, not assurances. Each gate below prints what it examined. A check that reports only
+      # pass/fail cannot be distinguished from one that examined nothing.
+      - name: ASCII gate
+        shell: pwsh
+        run: pwsh -NoProfile -File scripts/quality/check-ascii.ps1 -MaxReport 0
+
+      - name: Leak gate (structural-only unless a token source is supplied)
+        shell: bash
+        env:
+          # Optional. Set repository secret CCX_FORBIDDEN_TOKENS to arm the private-name detectors.
+          # Without it the gate runs STRUCTURAL-ONLY: shape detectors armed, name detectors empty.
+          # That is a legitimate posture and the gate says so on every line of its own output -- but
+          # a green run then proves much less, so this step states it rather than letting a tick imply
+          # more than it earned.
+          CCX_TOKENS: ${{ secrets.CCX_FORBIDDEN_TOKENS }}
+        run: |
+          set -euo pipefail
+          if [ -n "${CCX_TOKENS:-}" ]; then
+            printf '%s\n' "$CCX_TOKENS" > "$RUNNER_TEMP/tokens.txt"
+            echo "ARMED: a token source was supplied; private-name detectors are on."
+            CCX_FORBIDDEN_TOKENS="$RUNNER_TEMP/tokens.txt" python scripts/security/scan_forbidden.py --path . --require-tokens
+            rm -f "$RUNNER_TEMP/tokens.txt"
+          else
+            echo "NOTICE: no token source configured. This run is STRUCTURAL-ONLY --"
+            echo "        shape detectors are armed, private-name detectors are NOT."
+            echo "        A pass here says nothing about private names. Supply the"
+            echo "        CCX_FORBIDDEN_TOKENS secret to arm them."
+            python scripts/security/scan_forbidden.py --path .
+          fi
+
+      - name: PowerShell parses
+        shell: pwsh
+        run: |
+          # A syntax error in a hook is invisible until the hook is invoked, and a hook that fails to
+          # load fails OPEN -- the edit proceeds and nothing reports it. Parse every shipped script.
+          $files = Get-ChildItem -Recurse -Include *.ps1 -File |
+            Where-Object { $_.FullName -notmatch '[\\/](\.git)[\\/]' }
+          "parsing $($files.Count) PowerShell file(s)"
+          $bad = 0
+          foreach ($f in $files) {
+            $errs = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errs)
+            if ($errs.Count) {
+              $bad++
+              "PARSE ERRORS in $($f.FullName):"
+              $errs | ForEach-Object { "  $($_.Extent.StartLineNumber): $($_.Message)" }
+            }
+          }
+          if ($bad) { throw "$bad file(s) failed to parse" }
+          "all parsed"
+
+      - name: Tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd tests
+          # Count what ran. `discover` reporting "Ran 0 tests" is a pass, and a pass over nothing is
+          # the exact shape of gate failure these tests were written to catch elsewhere.
+          # Output goes to the runner temp dir, never into the working tree.
+          out="${RUNNER_TEMP}/test-output.txt"
+          python -m unittest discover -s . -p 'test_*.py' -v 2>&1 | tee "$out"
+          grep -qE '^Ran [1-9][0-9]* tests' "$out" || {
+            echo "REFUSING a pass: the runner reported no tests. A green run over an empty set is not evidence."
+            exit 1
+          }
