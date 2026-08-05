@@ -5,6 +5,8 @@ going wrong, which control neutralises each one, how much rigor a given change a
 when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
 
+> **Adapting this?** Take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) rather than copying from the rendered page. [All five files, and how to fetch them](OVERVIEW.md#take-the-files).
+
 ## What you get
 
 - **A rigor dial instead of an all-or-nothing process.** Two axes and a four-cell tier ladder

@@ -7,6 +7,8 @@ that changes underneath you -- how do you control that without reading it? **Out
 a build that other people install -- how do they know it is the thing you meant to send, and how do
 you know it contains only what you intended?
 
+> **Adapting this?** Take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) rather than copying from the rendered page. [All five files, and how to fetch them](OVERVIEW.md#take-the-files).
+
 The two halves share a shape. In both, the honest answer is not "review it harder". It is a small
 number of machine-enforced controls, plus human attention spent at two or three specific moments
 rather than spread thin across everything.

@@ -57,6 +57,42 @@ you are currently losing.
 | [Code quality](CODE-QUALITY.md) | Rows that may decide a verdict separated from rows that may only start a conversation, the published evidence behind refusing to gate on a single number, a map from each way machine-written code goes wrong to the control that neutralises it, and review depth as a per-file decision so a large diff stays finite. |
 | [Secure development](SECURE-DEVELOPMENT.md) | A written producer-versus-operator ownership split, a per-interface threat model that gives review something to check against, a finite secure-coding list, an honest read of what a green pipeline has and has not established, and a release gate that is a checklist rather than a debate. |
 
+## Take the files
+
+These are meant to be edited, so start from the markdown rather than from this rendered page.
+
+| Document | Raw markdown |
+|---|---|
+| Code quality | [CODE-QUALITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) |
+| Secure development | [SECURE-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) |
+| AI-assisted development | [AI-ASSISTED-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) |
+| Dependency integrity | [DEPENDENCY-INTEGRITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) |
+| This overview | [OVERVIEW.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) |
+
+All five at once, into a `standards/` directory below wherever you run it:
+
+```sh
+for f in OVERVIEW CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do
+  curl -fsSL --create-dirs -o "standards/$f.md" \
+    "https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/$f.md"
+done
+```
+
+```powershell
+$base = 'https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards'
+New-Item -ItemType Directory -Force standards | Out-Null
+'OVERVIEW','CODE-QUALITY','SECURE-DEVELOPMENT','AI-ASSISTED-DEVELOPMENT','DEPENDENCY-INTEGRITY' |
+  ForEach-Object { Invoke-WebRequest "$base/$_.md" -OutFile "standards/$_.md" }
+```
+
+Or take the whole repository as a
+[zip](https://github.com/wshallwshall/claude-multisession/archive/refs/heads/main.zip) and keep
+`docs/standards/`.
+
+**MIT licensed**, like everything else here: adapt them, publish the result, drop the attribution.
+The one thing not to carry over is a claim these documents decline to make -- see *What these are
+not* above, and keep your edits honest about which controls you have actually built.
+
 ## The order to read them in
 
 1. **[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md)** first, because it is the one that

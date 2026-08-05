@@ -5,6 +5,8 @@ has to satisfy before you can honestly say it was built securely: who owns what,
 modelled, what a review checks, which checks may never be waived, how a release is signed and
 verifiable, and what has to be true on the day you ship.
 
+> **Adapting this?** Take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) rather than copying from the rendered page. [All five files, and how to fetch them](OVERVIEW.md#take-the-files).
+
 It is deliberately framework-neutral. It names practices, never certifications. No standards body
 issues a certificate for any of this, and a self-assessment is not one either -- so every claim here
 is phrased as something you can evidence rather than something you can be awarded.

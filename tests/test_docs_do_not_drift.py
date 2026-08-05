@@ -40,9 +40,13 @@ import _ccxtest as t
 # procedure, and pinning those would fail on a wording change that harms nobody.
 INSTALL_COMMAND = re.compile(r'pwsh -NoProfile -File "\$tooling/[^\n]*')
 
-# Every outbound link into this repository's own tree. The capture is the repo-relative path.
+# Every outbound link into this repository's own tree, in both forms it is published in: the
+# human-readable blob view, and the raw view the standards hand out for download. Both pin `main`
+# and both rot into a 404 the same way, so both belong in one scan -- a pattern that saw only the
+# blob form would have gone quietly blind the day the raw links were added.
 BLOB_URL = re.compile(
-    r"https://github\.com/wshallwshall/claude-multisession/blob/main/([^)\"'\s>]+)"
+    r"https://(?:github\.com/wshallwshall/claude-multisession/blob"
+    r"|raw\.githubusercontent\.com/wshallwshall/claude-multisession)/main/([^)\"'\s>]+)"
 )
 
 # The looser phrasing. All four installers test the LITERAL string "1", so "is set" promises a
@@ -101,9 +105,18 @@ class OutboundLinksResolve(unittest.TestCase):
                 continue
             text = t.read(t.REPO_ROOT / relpath)
             for target in BLOB_URL.findall(text):
+                # A target carrying a shell or PowerShell variable is a TEMPLATE inside a fetch
+                # snippet, not a link anyone clicks. Resolving it would mean executing the snippet.
+                if "$" in target:
+                    continue
                 checked += 1
-                if target not in tracked:
-                    offenders.append(f"{relpath}: blob/main/{target}")
+                if target in tracked:
+                    continue
+                # A directory is a legitimate target: the download snippets point a base URL at
+                # docs/standards/ and append the filename per iteration.
+                if any(p.startswith(target + "/") for p in tracked):
+                    continue
+                offenders.append(f"{relpath}: main/{target}")
 
         self.assertNotEqual(
             0,
@@ -170,6 +183,14 @@ class TheScansCanSeeWhatTheyLookFor(unittest.TestCase):
             "scripts/hooks/worktree_gate.ps1) for the rule"
         )
         self.assertEqual(["scripts/hooks/worktree_gate.ps1"], BLOB_URL.findall(planted))
+
+    def test_the_pattern_also_sees_the_raw_download_form(self):
+        """The standards hand out raw links; a scan blind to them checks half the published URLs."""
+        planted = (
+            "take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/"
+            "claude-multisession/main/docs/standards/CODE-QUALITY.md) instead"
+        )
+        self.assertEqual(["docs/standards/CODE-QUALITY.md"], BLOB_URL.findall(planted))
 
     def test_the_loose_phrasing_pattern_matches_the_wording_it_exists_to_catch(self):
         self.assertTrue(
