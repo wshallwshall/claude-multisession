@@ -49,6 +49,70 @@ working the same repository at the same time -- on parallel automation work, dee
 or a large migration. The limits that decide whether that is worth it to you are stated next, before
 any install instructions.
 
+## Sessions that can talk to each other
+
+Most of what follows is about keeping sessions apart. These are the parts that let them coordinate
+on purpose, and they are the reason a set of parallel sessions behaves like a team rather than a
+crowd.
+
+**Announce: a session tells its peers what it is about to do.**
+`scripts/hooks/announce-session.ps1` is a `UserPromptSubmit` hook. When you hand a session a task,
+it resolves which peers are live in this repository and asks the model to send each one a short
+note -- worktree, branch, one line of intent, one line of what it expects to touch. That note lands
+as a user turn inside the peer's session, so a session about to edit the same file learns about you
+*before* it starts, not from a merge conflict afterwards. It asks nothing and expects no reply.
+Desktop-only, per limit 1 below.
+
+**Steering: change a running session's course without interrupting it.**
+`bin/ccx-steer.ps1` queues a note for whichever session is working in a repository, and
+`scripts/hooks/steer-inject.ps1` delivers it at that session's next tool call -- mid-task, in
+flight. The hook fails open by design: any error inside it exits 0 and never blocks a tool call,
+because a steering channel that can wedge a session is worse than no steering channel. See
+[Steering a running session](STEERING.md).
+
+**Presence, occupancy, overlap: three questions, answered separately.**
+`scripts/coord/presence.ps1` answers who is actually live, across every Claude Code surface.
+`occupancy.ps1` answers which worktree each live session is sitting in. `overlap.ps1` answers what
+every other session is changing right now -- both the files and the work each one has stated. These
+are the queries the announce hook and the collision gate are built on, and they are worth running by
+hand when you are deciding whether it is safe to start something. See [Coordination](COORDINATION.md).
+
+### What this defends against, and which part does the defending
+
+The failure is documented upstream in
+[anthropics/claude-code#76590](https://github.com/anthropics/claude-code/issues/76590), including a
+[field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
+roughly fourteen sessions being handed the same worktree directory as their working directory. An
+agent in one of them runs an ordinary `git checkout -B <branch> origin/main`, git allows it because
+that branch is not checked out anywhere, and the shared working tree force-switches -- swapping
+every file under whichever session was mid-task, and dragging its uncommitted work onto the wrong
+branch. It is invisible while it happens, because each session believes it owns its directory.
+
+Three mechanisms here touch that failure, and only one of them prevents it:
+
+- **Prevention -- the worktree gate.** `scripts/hooks/worktree_gate.ps1` is a `PreToolUse` hook. Its
+  branch-reuse rule refuses an agent's `git checkout`/`git switch` that would move a *linked*
+  worktree onto an existing branch another session is building on. The tool call does not run. This
+  is the only part that stops the hijack rather than reporting it.
+- **Repair -- the SessionStart backstop.** `scripts/worktree/worktree-selfheal.ps1` restores the
+  shared *primary* checkout when its HEAD has drifted off the home branch and the tree is clean --
+  the parent-HEAD flip that is #76590's headline symptom. When the tree is dirty it declines, says
+  so, and touches nothing, because it will not run a checkout over uncommitted work.
+- **Detection -- the home-branch record.** Each worktree's home branch is recorded in its private
+  git directory, where a checkout cannot move it and removing the worktree disposes of it. A later
+  session that finds the worktree on some other branch warns you and offers the restore command. It
+  is warn-only and never mutates anything.
+
+**A caveat on the detection half, because it misled us.** When no record exists yet, the backstop
+bootstraps one from whatever branch the worktree is on at that moment. If that happens before the
+harness has finished moving a newly created worktree onto its session branch, "home" is captured as
+the pre-setup branch and the warning then fires on every later session start, forever. Measured here
+on 2026-08-05: worktree created at 09:21:50, record written at 09:21:54, harness moved the worktree
+to its session branch at 09:23:10. The warning was stale by 76 seconds, not a hijack. Treat that
+warning as a prompt to read the worktree's reflog, not as proof that something happened -- a
+harness-driven switch during session setup and a genuine hijack look identical in the record until
+you check whether an agent's tool call caused it.
+
 ## Requirements
 
 - **PowerShell 7.3+** (`pwsh`). Most scripts carry a `#Requires -Version 7.3` line. Without it,
