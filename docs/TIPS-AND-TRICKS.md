@@ -516,6 +516,31 @@ policing the docs**. Confirm your gate's job actually ran, on the change class y
 sentence: *"Done, except Z, which is not started."* Overstated status is the mechanism by which a
 known gap becomes an unknown one.
 
+### A bare threshold is not a decision
+
+A number crossing a line does not tell you what to do, and treating it as though it does produces
+confident wrong calls in both directions.
+
+Worked example, from a usage-limit warning. **7% of a budget remaining, with 7 minutes until the
+window resets, is abundant. The same 7%, with four hours left, is scarce.** A peer session instructed
+everyone to pause on the percentage alone, then retracted it after checking the clock -- the reset
+was minutes away, which made the remaining budget effectively unlimited. Their own retraction is the
+better statement of it: *"I conflated a genuine loss risk with a threshold, and used the threshold to
+justify the priority. The priority was right for a different reason than the one I gave."*
+
+Two rules fall out, and the second is the one people skip:
+
+- **Pair the reading with whatever bounds it** -- a time-to-reset, a rate, a denominator. A figure
+  with no bound cannot answer a "should I act" question.
+- **Say which input drove the decision.** "We are at 93%" and "the window resets in 9 minutes" are
+  both true and lead to opposite actions. A recommendation that does not name its deciding input
+  cannot be checked, or corrected, by the next reader.
+
+The same shape appears wherever a scalar stands in for a judgment: a test-count delta with no cause,
+a coverage percentage with no scope, a queue depth with no drain rate. See
+[USAGE-AWARENESS.md](USAGE-AWARENESS.md) for the full version, including why a usage percentage is
+also meaningless without knowing *whose* budget it describes.
+
 ---
 
 ## 6. Platform and parser traps
@@ -702,6 +727,7 @@ they survive a failure), not through a manual reset.
 - `scripts/coord/presence.ps1`, `overlap.ps1`, `claim.ps1`, `lock.ps1`, `alloc.ps1` -- the
   coordination substrate
 - `scripts/hooks/` -- the gates the harness invokes, each with its posture stated at the top
+- [USAGE-AWARENESS.md](USAGE-AWARENESS.md) -- knowing when to stop without lying about it
 - `scripts/quality/check-ascii.ps1` -- the ASCII gate: names every non-ASCII character it finds and
   rewrites the safe ones under `-Fix`
 - `scripts/worktree/` -- create, rescue, restore, remove, and the reaper
