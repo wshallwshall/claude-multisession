@@ -26,8 +26,12 @@ Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 
 - **It is plain text.** It drops into a repository as-is, and it diffs cleanly once you start
   editing it -- which you will, because none of these are usable unedited.
-- **It is the right thing to hand to Claude Code**, or any coding agent, as context when you want a
-  standard applied to your own code rather than just read.
+- **The four main documents are a base for an agent, not prose to work through.** Most of their
+  content exists to be applied to a repository. Give Claude Code, or another agent, the markdown;
+  ask it to **summarise the document against your repository**; then ask it questions -- what
+  already holds, what would have to change, what each gap would cost. Those answers are about your
+  code, which is more use than a careful read of a document about nobody's code in particular.
+  [The CISO summary](CISO-SUMMARY.md) is the exception: it is written to be read.
 - **The Word files are the same content**, generated from the same markdown. Take those for
   circulating to people who will read or mark up rather than adopt.
 

@@ -7,10 +7,18 @@ that changes underneath you -- how do you control that without reading it? **Out
 a build that other people install -- how do they know it is the thing you meant to send, and how do
 you know it contains only what you intended?
 
-> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) is plain text: it drops straight
-> into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
-> when you want it applied to your own code. Prefer something to circulate or mark up?
-> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx). [Every file, both formats](OVERVIEW.md#download-every-file).
+> **Meant to be worked with, not read straight through.** Most of this standard is a base for an
+> agent to apply to your code, not prose to work through by hand.
+>
+> The fastest way in: give an agent -- Claude Code or another -- the
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md), ask it to
+> **summarise the document against your repository**, and then ask it questions. What here
+> already holds? What would have to change? What would each gap cost? That conversation is
+> worth more than reading top to bottom, because the answers are about your code rather than
+> about the document.
+>
+> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx).
+> [Every file, both formats](OVERVIEW.md#download-every-file).
 
 The two halves share a shape. In both, the honest answer is not "review it harder". It is a small
 number of machine-enforced controls, plus human attention spent at two or three specific moments

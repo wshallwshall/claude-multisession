@@ -3,9 +3,18 @@
 **Your engineers are building with AI assistants. Two pages on what to require, and how to tell
 whether you actually got it.**
 
-> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md)
-> is plain text and drops straight into a repository. Prefer something to circulate?
-> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CISO-SUMMARY.docx).
+> **Meant to be worked with, not read straight through.** This summary is written to be read. The
+> four documents behind it are different: most of their content is a base for an agent to apply to
+> a repository, which is how your teams should expect to use them.
+>
+> The fastest way in: give an agent -- Claude Code or another -- the
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md), ask it to
+> **summarise the document against your repository**, and then ask it questions. What here
+> already holds? What would have to change? What would each gap cost? That conversation is
+> worth more than reading top to bottom, because the answers are about your code rather than
+> about the document.
+>
+> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CISO-SUMMARY.docx).
 > [Every file, both formats](OVERVIEW.md#download-every-file).
 
 ---

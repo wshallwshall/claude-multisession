@@ -5,10 +5,18 @@ has to satisfy before you can honestly say it was built securely: who owns what,
 modelled, what a review checks, which checks may never be waived, how a release is signed and
 verifiable, and what has to be true on the day you ship.
 
-> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) is plain text: it drops straight
-> into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
-> when you want it applied to your own code. Prefer something to circulate or mark up?
-> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx). [Every file, both formats](OVERVIEW.md#download-every-file).
+> **Meant to be worked with, not read straight through.** Most of this standard is a base for an
+> agent to apply to your code, not prose to work through by hand.
+>
+> The fastest way in: give an agent -- Claude Code or another -- the
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md), ask it to
+> **summarise the document against your repository**, and then ask it questions. What here
+> already holds? What would have to change? What would each gap cost? That conversation is
+> worth more than reading top to bottom, because the answers are about your code rather than
+> about the document.
+>
+> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx).
+> [Every file, both formats](OVERVIEW.md#download-every-file).
 
 It is deliberately framework-neutral. It names practices, never certifications. No standards body
 issues a certificate for any of this, and a self-assessment is not one either -- so every claim here

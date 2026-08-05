@@ -5,10 +5,18 @@ looks finished?** It is written for a repository where much of the code was prod
 across parallel sessions, but nothing in it depends on who typed the lines. The rubric judges the
 artefact.
 
-> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) is plain text: it drops straight
-> into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
-> when you want it applied to your own code. Prefer something to circulate or mark up?
-> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx). [Every file, both formats](OVERVIEW.md#download-every-file).
+> **Meant to be worked with, not read straight through.** Most of this rubric is a base for an
+> agent to apply to your code, not prose to work through by hand.
+>
+> The fastest way in: give an agent -- Claude Code or another -- the
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md), ask it to
+> **summarise the document against your repository**, and then ask it questions. What here
+> already holds? What would have to change? What would each gap cost? That conversation is
+> worth more than reading top to bottom, because the answers are about your code rather than
+> about the document.
+>
+> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx).
+> [Every file, both formats](OVERVIEW.md#download-every-file).
 
 ---
 
