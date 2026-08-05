@@ -31,7 +31,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^[A-Za-z0-9._-]+$')]
+    [ValidatePattern('\A[A-Za-z0-9._-]+\z')]
     [string]$Name,
 
     # Remove even with uncommitted tracked changes.

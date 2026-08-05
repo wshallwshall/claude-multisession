@@ -28,12 +28,32 @@
     ./new.ps1 -Name alerts
     ./new.ps1 -Name sqltuning -Base feature/sql-tuning
     ./new.ps1 -Name quicklook -NoSetup
+    ./new.ps1 -Name my-task -Branch feature/my-task   # reuse a namespaced branch ('/' is not legal in -Name)
+
+.NOTES
+    -Name is the DIRECTORY component and cannot contain '/'; -Branch is the git ref and can. -Branch
+    defaults to -Name, which is the ordinary case.
 #>
 [CmdletBinding()]
 param(
+    # The worktree DIRECTORY component. This pattern is LOAD-BEARING and is NOT a branch-name rule:
+    # a '/' here would silently produce a nested directory instead of the intended sibling. The git
+    # ref is -Branch.
+    #
+    # \A..\z, not ^..$: in .NET, '$' also matches before a FINAL NEWLINE, so the anchored-looking
+    # '^...$' spelling accepts "abc<newline>" and lets it through into a directory name. The same
+    # literal appears in remove.ps1, rescue.ps1, spawn.ps1 and coord/_common.ps1 -- keep all five
+    # identical.
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^[A-Za-z0-9._-]+$')]
+    [ValidatePattern('\A[A-Za-z0-9._-]+\z')]
     [string]$Name,
+
+    # The git BRANCH to reuse or create. Defaults to -Name, so every existing invocation is
+    # unchanged. It exists because a real refname may contain '/' and -Name never can -- and the
+    # worktree gate's branch-reuse remediation has to hand one back. Validated as a refname by GIT
+    # in the body rather than by a second character class here: refname grammar is git's to define,
+    # and a hand-rolled pattern is the mistake this parameter exists to undo.
+    [string]$Branch,
 
     # Branch the new worktree off this ref. Default = the configured trunk, resolved to a
     # remote-tracking ref where one exists, so a stale local branch cannot seed it.
@@ -44,6 +64,20 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# -Branch defaults to -Name: these two roles were ONE parameter until the gate's branch-reuse
+# remediation needed to hand back a real slash-bearing ref. Defaulting keeps spawn.ps1, rescue.ps1
+# and every documented invocation byte-identical.
+if (-not $Branch) { $Branch = $Name }
+
+# Ask GIT whether this is a legal branch name instead of inventing a second grammar. check-ref-format
+# rejects a space, '..', a '.lock' suffix, '*', '\', a leading '.', and a leading or trailing '/' --
+# but it ACCEPTS a leading '-', which git's own argument parser would then read as a FLAG. Refuse that
+# case separately. (Forbidding '*' is also why the `git branch --list $Branch` probe below stays an
+# exact existence check rather than a glob.)
+if ($Branch.StartsWith('-')) { throw "-Branch may not start with '-': '$Branch'" }
+& git check-ref-format ('refs/heads/' + $Branch)
+if ($LASTEXITCODE -ne 0) { throw "-Branch is not a valid git branch name: '$Branch'" }
 
 . (Join-Path $PSScriptRoot '../coord/_common.ps1')
 
@@ -78,8 +112,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Reuse an existing branch if it is already there, else create it from -Base.
-$branchExists = & git -C $PrimaryRoot branch --list $Name
-Write-Host "Creating worktree '$WorktreePath' on branch '$Name'..."
+$branchExists = & git -C $PrimaryRoot branch --list $Branch
+Write-Host "Creating worktree '$WorktreePath' on branch '$Branch'..."
 
 # SERIALISED ACROSS SESSIONS. `git worktree add -b <name> <base>` writes the shared git config (the new
 # branch's upstream), and concurrent adds race the config lock. Reproduced on Windows against one
@@ -105,7 +139,7 @@ if (-not (Get-Command -Name 'Enter-CcxLock' -ErrorAction SilentlyContinue)) {
 $addLock = Enter-CcxLock -Name 'worktree-add' -TimeoutSeconds 90 -Repo $PrimaryRoot
 try {
     if ($branchExists) {
-        & git -C $PrimaryRoot worktree add $WorktreePath $Name
+        & git -C $PrimaryRoot worktree add $WorktreePath $Branch
     } else {
         # Guard the stale-base trap when -Base names a LOCAL branch that lags its upstream (say, an
         # explicit `-Base main` while the remote has moved on). A remote-tracking base has no
@@ -119,7 +153,7 @@ try {
                     "-Base $baseUpstream.")
             }
         }
-        & git -C $PrimaryRoot worktree add $WorktreePath -b $Name $Base
+        & git -C $PrimaryRoot worktree add $WorktreePath -b $Branch $Base
     }
 } finally {
     Exit-CcxLock $addLock
@@ -141,7 +175,7 @@ try {
     $gitDir = "$(& git -C $WorktreePath rev-parse --absolute-git-dir 2>$null)".Trim()
     if ($gitDir) {
         $marker = Join-Path $gitDir "$($cfg.prefix)-home-branch"
-        Set-Content -LiteralPath $marker -Value $Name -Encoding utf8NoBOM
+        Set-Content -LiteralPath $marker -Value $Branch -Encoding utf8NoBOM
     }
 } catch { }
 
@@ -172,13 +206,13 @@ function Get-CcxSetupHookPath {
 function Show-NextSteps {
     param([bool]$SetupRan)
     Write-Host ''
-    Write-Host "Worktree ready: $WorktreePath (branch '$Name')" -ForegroundColor Green
+    Write-Host "Worktree ready: $WorktreePath (branch '$Branch')" -ForegroundColor Green
     Write-Host 'Next steps:'
     Write-Host "  cd `"$WorktreePath`""
     if (-not $SetupRan -and $cfg.setupHook) {
         Write-Host "  # setup hook did NOT run -- this checkout has no per-checkout environment yet."
     }
-    Write-Host "  # ... build/commit/push on branch '$Name'; open a PR as usual."
+    Write-Host "  # ... build/commit/push on branch '$Branch'; open a PR as usual."
     Write-Host "  # When done, from any checkout:  scripts/worktree/remove.ps1 -Name $Name"
 }
 
@@ -229,7 +263,7 @@ if (-not $hookRel) {
                 # point -- a bare "setup failed" reads as "nothing happened" and the next session
                 # re-runs creation into a path that is now occupied.
                 throw ("Setup hook failed (exit $LASTEXITCODE). The worktree WAS created at " +
-                    "$WorktreePath on branch '$Name' -- it is not rolled back. Fix the hook and re-run " +
+                    "$WorktreePath on branch '$Branch' -- it is not rolled back. Fix the hook and re-run " +
                     "it there, or remove the worktree with scripts/worktree/remove.ps1 -Name $Name.")
             }
             $setupRan = $true

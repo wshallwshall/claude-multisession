@@ -331,6 +331,17 @@ function Test-WorktreeHijack([string]$Verb, [string]$Cmd, [string]$WtRaw) {
     if ($dest -eq $head) { return }
 
     $newScript = Get-RepoScript $gov.Display 'scripts/worktree/new.ps1'
+
+    # The remediation below has to be RUNNABLE, which is the whole reason -Branch exists on new.ps1:
+    # a refname may contain '/' and the worktree DIRECTORY name may not, so handing back
+    # `-Name $dest` printed a command that new.ps1 rejects -- for exactly the branch shape (a
+    # namespaced ref) that this rule fires on most. Derive a legal directory name from the ref and
+    # pass the ref itself separately. Anything outside the directory character class collapses to a
+    # single '-', and a leading or trailing '-' is trimmed so the result cannot start with what git
+    # would read as a flag.
+    $destSlug = ($dest -replace '[^A-Za-z0-9._-]+', '-').Trim('-')
+    if (-not $destSlug) { $destSlug = 'reuse' }
+
     Write-Deny -Rule "3b" -Detail "git $Verb -> $selfTopRaw" -Reason @"
 BLOCKED: 'git $Verb $dest' would switch a LINKED WORKTREE ($selfTopRaw) onto the existing branch '$dest'.
 
@@ -342,8 +353,9 @@ checked out anywhere.
 
 What to do instead:
   * To BUILD on '$dest', give it its OWN worktree -- git then refuses to check that branch out twice,
-    which is the protection you actually want. The branch already exists, so reuse it by name:
-        pwsh -NoProfile -File $newScript -Name $dest
+    which is the protection you actually want. The branch already EXISTS, so this REUSES it rather
+    than forking. -Branch is the git ref; -Name is only the DIRECTORY, which cannot contain '/':
+        pwsh -NoProfile -File "$newScript" -Branch '$dest' -Name $destSlug
   * To READ '$dest' without touching any working tree, use the plumbing:
         git -C "$selfTopRaw" show $dest`:<path>        git -C "$selfTopRaw" diff HEAD..$dest
   * If you genuinely OWN this worktree and must switch it, do it from a PLAIN terminal -- the gate

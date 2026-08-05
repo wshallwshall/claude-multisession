@@ -22,7 +22,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidatePattern('^[A-Za-z0-9._-]+$')]
+    [ValidatePattern('\A[A-Za-z0-9._-]+\z')]
     [string]$Name,
 
     # Forwarded to new.ps1: create the worktree without running the repository's setup hook.

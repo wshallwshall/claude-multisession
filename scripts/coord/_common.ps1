@@ -586,7 +586,7 @@ function Get-CcxWorktreePath {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidatePattern('^[A-Za-z0-9._-]+$')]
+        [ValidatePattern('\A[A-Za-z0-9._-]+\z')]
         [string]$Name,
         [string]$Repo,
         # Override the layout (tests, and `--layout` on the creating script).
