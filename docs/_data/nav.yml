@@ -12,6 +12,17 @@
 # An entry with `url` instead of `path` is an absolute link off the site. Those exist because
 # INSTALL.md and the scripts live at the repository root, outside the Jekyll source, so the site
 # cannot serve them at all.
+#
+# A page in a SUBDIRECTORY follows the same rule: docs/standards/FOO.md is built to
+# /standards/FOO.html. ONE FILENAME BREAKS THAT RULE, which is why the section index is called
+# OVERVIEW.md and not README.md. jekyll-optional-front-matter refuses to convert a front-matter-less
+# file whose basename is on its FILENAME_BLACKLIST (README, LICENSE, CONTRIBUTING and friends), so a
+# README stays a static file; jekyll-readme-index then republishes it as the DIRECTORY INDEX with
+# permalink File.dirname(url) + "/", i.e. /standards/, and the raw .md is served as well. There is no
+# /standards/README.html for a nav path to point at. Both plugins are in the GitHub Pages
+# always-enabled set and cannot be turned off; the two config keys that would change the behaviour,
+# readme_index.with_frontmatter and readme_index.remove_originals, are unset in _config.yml. Naming
+# the file OVERVIEW.md keeps it on the ordinary path, so its URL is predictable and page.url matches.
 
 - group: Start here
   items:
@@ -54,6 +65,24 @@
     - label: Usage awareness
       title: "Usage awareness: knowing when to stop, without lying about it"
       path: /USAGE-AWARENESS.html
+
+- group: Standards to adapt
+  items:
+    - label: Standards index
+      title: Standards you can start from
+      path: /standards/OVERVIEW.html
+    - label: AI-assisted development
+      title: "AI-assisted development: keeping the result trustworthy"
+      path: /standards/AI-ASSISTED-DEVELOPMENT.html
+    - label: Dependency integrity
+      title: Dependency and artifact integrity
+      path: /standards/DEPENDENCY-INTEGRITY.html
+    - label: Code quality
+      title: Judging code quality, whoever or whatever wrote it
+      path: /standards/CODE-QUALITY.html
+    - label: Secure development
+      title: "Secure development: the process a build must satisfy"
+      path: /standards/SECURE-DEVELOPMENT.html
 
 - group: In practice
   items:

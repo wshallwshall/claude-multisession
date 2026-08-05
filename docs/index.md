@@ -373,6 +373,23 @@ Safety and standards, in descending order of how much actually ships:
 - [Usage awareness](USAGE-AWARENESS.md) -- the design for warning a session before a hard cutoff, and
   the eight rules that stop it reporting confidently wrong numbers. Ships no hook.
 
+Standards to adapt, in [a section of their own](standards/OVERVIEW.md). Four documents setting a bar
+for code an agent wrote and a small team has to stand behind. They ship no code and confer no
+certification; they came out of one working codebase and carry its assumptions, which the section
+index states before anything else. Read that index first -- it says what each one buys you, the
+order to take them in, and which rules the pages above already own:
+
+- [AI-assisted development](standards/AI-ASSISTED-DEVELOPMENT.md) -- five process failure modes, a
+  risk tier you resolve in one question, and why a gate is a deterministic check rather than an
+  instruction to the model to be careful.
+- [Dependency integrity](standards/DEPENDENCY-INTEGRITY.md) -- holding third-party code as a black
+  box you deliberately do not read, and shipping a build whose contents an adopter can verify
+  themselves.
+- [Code quality](standards/CODE-QUALITY.md) -- controls that may decide a verdict, measurements that
+  may only start a conversation, and review depth as a per-file decision.
+- [Secure development](standards/SECURE-DEVELOPMENT.md) -- who owns which control when you build
+  software someone else runs, and the process layer a self-run pipeline cannot discharge.
+
 In practice:
 
 - [Tips and tricks](TIPS-AND-TRICKS.md) -- the "wish I'd known" collection, ordered by when each item
