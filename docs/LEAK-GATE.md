@@ -190,6 +190,51 @@ Two practical traps when you do:
 
 ---
 
+## What this gate never looks at: the ref store
+
+This gate scans **files**. A repository is more than its files, and private history can sit in a
+clone in a place no file scan reaches.
+
+`git fetch <url> <refspec>` -- a fetch against a **direct URL** rather than a named remote -- writes
+remote-tracking-style refs into the local ref store **without creating a remote**. Every routine
+check a person would run then reports a clean clone:
+
+- `git remote -v` lists nothing unexpected. There is no remote to list.
+- `git remote remove <name>` fails with `No such remote`, so the obvious cleanup does not apply --
+  and reads as "there was nothing to clean".
+- The refs, and every object they make reachable, stay in the clone indefinitely.
+
+So a private repository's history can be present in a public repository's local clone while the
+clone looks clean by every habit you have. **Audit `git for-each-ref`, not `git remote -v`.** They
+answer different questions, and only one of them is the ref store.
+
+### If you find refs that should not be there
+
+Two questions get conflated here, and a local delete answers neither:
+
+| Question | Scope | What answers it |
+|---|---|---|
+| **Recoverability** -- can the local refs be restored? | Local | The reflog, dangling objects, a backup of the clone |
+| **Exposure** -- did any of it ever reach a remote? | Remote | An audit against the remote, before or after any local cleanup |
+
+Only the second one bears on disclosure, and deleting the local refs does not change its answer
+either way.
+
+When you run the exposure audit, **checking remote ref tips is not sufficient**: a commit can sit as
+an **ancestor** of a remote ref rather than at its tip, so a tips-only comparison is a false
+all-clear by construction. Walk ancestry from every remote head, tag and pull-request ref, and look
+for the content as well as the commits -- a path that should never have been published is as good a
+marker as a SHA.
+
+Then report the shape of your coverage rather than a verdict: *at least N of M refs are clean, the
+remaining K are unaudited, not proven clean.* You will usually have some K, because auditing a ref
+whose objects you do not hold locally requires fetching them, and a fetch is itself a write to the
+object store you are in the middle of investigating. Saying so is the honest result. It is the same
+rule as the one above -- a green gate is evidence only if you proved it can see that class -- applied
+to coverage instead of to detectors.
+
+---
+
 ## The permanent blind spot
 
 **A scanner cannot see a policy judgement.**
