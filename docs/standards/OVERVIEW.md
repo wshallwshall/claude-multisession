@@ -22,7 +22,7 @@ one of them is meant to be edited down to your setting before it is useful.
 
 Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 
-**Take the markdown if you intend to use these.**
+**Putting these to work, or passing them around? That decides the format.**
 
 - **It is plain text.** It drops into a repository as-is, and it diffs cleanly once you start
   editing it -- which you will, because none of these are usable unedited.
