@@ -5,7 +5,10 @@ has to satisfy before you can honestly say it was built securely: who owns what,
 modelled, what a review checks, which checks may never be waived, how a release is signed and
 verifiable, and what has to be true on the day you ship.
 
-> **Adapting this?** Take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) rather than copying from the rendered page. [All five files, and how to fetch them](OVERVIEW.md#take-the-files).
+> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) is plain text: it drops straight
+> into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
+> when you want it applied to your own code. Prefer something to circulate or mark up?
+> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx). [All five files](OVERVIEW.md#the-four-files).
 
 It is deliberately framework-neutral. It names practices, never certifications. No standards body
 issues a certificate for any of this, and a self-assessment is not one either -- so every claim here

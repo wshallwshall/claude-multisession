@@ -5,7 +5,10 @@ looks finished?** It is written for a repository where much of the code was prod
 across parallel sessions, but nothing in it depends on who typed the lines. The rubric judges the
 artefact.
 
-> **Adapting this?** Take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) rather than copying from the rendered page. [All five files, and how to fetch them](OVERVIEW.md#take-the-files).
+> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) is plain text: it drops straight
+> into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
+> when you want it applied to your own code. Prefer something to circulate or mark up?
+> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx). [All five files](OVERVIEW.md#the-four-files).
 
 ---
 

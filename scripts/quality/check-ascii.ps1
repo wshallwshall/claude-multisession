@@ -332,6 +332,7 @@ $script:SkipDirs = @(
 $script:BinaryExt = @(
     '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.webp', '.tif', '.tiff',
     '.pdf', '.zip', '.gz', '.tgz', '.bz2', '.xz', '.7z', '.rar', '.jar',
+    '.docx', '.xlsx', '.pptx',   # OOXML: a zip container, so already caught by the NUL test below
     '.exe', '.dll', '.so', '.dylib', '.pyc', '.pyd', '.class', '.o', '.obj', '.bin',
     '.woff', '.woff2', '.ttf', '.otf', '.eot',
     '.mp3', '.mp4', '.wav', '.avi', '.mov', '.webm',

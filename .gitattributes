@@ -26,5 +26,9 @@
 *.gif binary
 *.ico binary
 *.pdf binary
+# .docx is a zip. Without this, `* text=auto` decides per file: a Word document whose bytes happen
+# to look text-ish gets eol=lf applied to its COMPRESSED stream and arrives corrupt in a Windows
+# clone, with nothing reporting an error.
+*.docx binary
 *.zip binary
 *.gz binary

@@ -10,17 +10,22 @@ one of them is meant to be edited down to your setting before it is useful.
 
 ## The four files
 
-| Document | Read | Download |
-|---|---|---|
-| **AI-assisted development** | [page](AI-ASSISTED-DEVELOPMENT.md) | [AI-ASSISTED-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) |
-| **Dependency integrity** | [page](DEPENDENCY-INTEGRITY.md) | [DEPENDENCY-INTEGRITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) |
-| **Code quality** | [page](CODE-QUALITY.md) | [CODE-QUALITY.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) |
-| **Secure development** | [page](SECURE-DEVELOPMENT.md) | [SECURE-DEVELOPMENT.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) |
-| This overview | -- | [OVERVIEW.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) |
+| Document | Read online | Markdown | Word |
+|---|---|---|---|
+| **AI-assisted development** | [page](AI-ASSISTED-DEVELOPMENT.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx) |
+| **Dependency integrity** | [page](DEPENDENCY-INTEGRITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx) |
+| **Code quality** | [page](CODE-QUALITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx) |
+| **Secure development** | [page](SECURE-DEVELOPMENT.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx) |
+| This overview | -- | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/OVERVIEW.docx) |
 
-Rows are in [the order worth reading them in](#the-order-to-read-them-in). To pull all five at once,
-or take the whole repository, see [Take the files](#take-the-files). **MIT licensed** -- adapt them,
-publish the result, drop the attribution.
+Rows are in [the order worth reading them in](#the-order-to-read-them-in).
+
+**Take the markdown if you intend to use these.** It is plain text: it drops into a repository,
+diffs cleanly when you edit it, and is the right thing to hand to Claude Code as context when you
+want a standard applied to your own code. The Word files are the same content, generated from the
+same markdown, for circulating to people who will read or mark up rather than adopt.
+
+**MIT licensed** -- adapt them, publish the result, drop the attribution.
 
 ## What you get
 
@@ -92,11 +97,6 @@ New-Item -ItemType Directory -Force standards | Out-Null
   ForEach-Object { Invoke-WebRequest "$base/$_.md" -OutFile "standards/$_.md" }
 ```
 
-Or take the whole repository as a
-[zip](https://github.com/wshallwshall/claude-multisession/archive/refs/heads/main.zip) and keep
-`docs/standards/`.
-
-**MIT licensed**, like everything else here: adapt them, publish the result, drop the attribution.
 The one thing not to carry over is a claim these documents decline to make -- see *What these are
 not* above, and keep your edits honest about which controls you have actually built.
 

@@ -5,7 +5,10 @@ going wrong, which control neutralises each one, how much rigor a given change a
 when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
 
-> **Adapting this?** Take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) rather than copying from the rendered page. [All five files, and how to fetch them](OVERVIEW.md#take-the-files).
+> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) is plain text: it drops straight
+> into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
+> when you want it applied to your own code. Prefer something to circulate or mark up?
+> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx). [All five files](OVERVIEW.md#the-four-files).
 
 ## What you get
 

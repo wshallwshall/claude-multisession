@@ -7,7 +7,10 @@ that changes underneath you -- how do you control that without reading it? **Out
 a build that other people install -- how do they know it is the thing you meant to send, and how do
 you know it contains only what you intended?
 
-> **Adapting this?** Take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) rather than copying from the rendered page. [All five files, and how to fetch them](OVERVIEW.md#take-the-files).
+> **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) is plain text: it drops straight
+> into a repository, diffs cleanly, and is the right thing to hand to Claude Code as context
+> when you want it applied to your own code. Prefer something to circulate or mark up?
+> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx). [All five files](OVERVIEW.md#the-four-files).
 
 The two halves share a shape. In both, the honest answer is not "review it harder". It is a small
 number of machine-enforced controls, plus human attention spent at two or three specific moments
