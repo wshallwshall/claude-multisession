@@ -20,10 +20,14 @@ one of them is meant to be edited down to your setting before it is useful.
 
 Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 
-**Take the markdown if you intend to use these.** It is plain text: it drops into a repository,
-diffs cleanly when you edit it, and is the right thing to hand to Claude Code as context when you
-want a standard applied to your own code. The Word files are the same content, generated from the
-same markdown, for circulating to people who will read or mark up rather than adopt.
+**Take the markdown if you intend to use these.**
+
+- **It is plain text.** It drops into a repository as-is, and it diffs cleanly once you start
+  editing it -- which you will, because none of these are usable unedited.
+- **It is the right thing to hand to Claude Code**, or any coding agent, as context when you want a
+  standard applied to your own code rather than just read.
+- **The Word files are the same content**, generated from the same markdown. Take those for
+  circulating to people who will read or mark up rather than adopt.
 
 **MIT licensed** -- adapt them, publish the result, drop the attribution.
 
