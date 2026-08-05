@@ -126,7 +126,7 @@ doctor reports each as `RED -- WIRED BUT RESOLVES NOTHING`, which is the correct
 exit 1. Vendor the scripts into the target, or run the coordination installer with `-Uninstall` and
 accept that coordination is off there; there is no flag that points those shims at another checkout.
 
-Run these from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is set,
+Run these from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is `1`,
 because a session that can install these controls can remove them. (`-Status` is exempt everywhere it
 exists: auditing is not installing.)
 
