@@ -1,7 +1,7 @@
 # The CISO summary
 
-**Two pages on one question: your engineers are building with AI assistants, so what do you
-require, and how do you tell whether you got it?**
+**Your engineers are building with AI assistants. Two pages on what to require, and how to tell
+whether you actually got it.**
 
 > **Take this file.** [Markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md)
 > is plain text and drops straight into a repository. Prefer something to circulate?
