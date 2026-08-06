@@ -192,13 +192,13 @@ groups:
     label: "Addressed to a software producer -- a ranking, not a requirement set"
     ref: "#rankings-and-awareness-lists"
   - id: org-instruments
-    label: "Addressed to an organization that operates systems"
+    label: "Addressed to an organization, not a product"
     ref: "#certification-and-program-regimes"
   - id: sector-regimes
-    label: "Addressed to an organization that operates systems"
+    label: "Addressed to an organization, not a product"
     ref: "#sector-and-jurisdiction-regimes"
   - id: control-catalogs
-    label: "Addressed to an organization that operates systems"
+    label: "Addressed to an organization, not a product"
     ref: "#control-catalogs-and-operational-inputs"
   - id: assessor
     label: "Addressed to an assessor"

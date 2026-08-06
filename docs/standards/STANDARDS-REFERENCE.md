@@ -94,7 +94,7 @@ argue or to over-deliver. That conversation is the cheapest thing on this page.
 
 ---
 
-## Addressed to an organization that operates systems
+## Addressed to an organization, not a product
 
 None of these certifies a product, and all of them are routinely offered as product evidence. Where
 one reaches a software producer, it reaches them through a contract rather than through the regime.
@@ -154,7 +154,7 @@ side, covering personal data. Most questions arrive attached to the wrong link.
 | **CISA Known Exploited Vulnerabilities catalog, and BOD 26-04** | Nothing to a private organization. A directive binds only the agencies it names. | Being an agency a directive names, a contract flowing it down, or your own policy adopting the catalog. | BOD 26-04, issued 2026-06-10, supersedes and revokes the 2021 and 2019 directives. The catalog itself is unchanged. | "Catalog inclusion means a fixed federal patch deadline." The directive setting flat due dates was revoked on 2026-06-10 and replaced by a risk model. The catalog is unchanged, and the revoked directive's own page is titled as revoked. |
 | **EPSS** | A daily probability and percentile per published CVE, for exploitation in the wild within thirty days. | A remediation policy that consumes it, or a risk model using exploitation likelihood as an input. | Version 4 deployed 2025-03-17; a version 5 was announced 2026-05-13. Which model generates the published scores was not confirmed. | Read as a verdict rather than as data. Which model version is actually generating the published scores is not confirmed here -- read the comment line in the published data file, not a blog post. |
 | **OWASP SAMM v2.0** | Nothing. A self-assessed score from 0 to 3 per practice, plus a community Benchmark for comparison. | Internal program work, board reporting, or a customer asking how mature your program is. | Released February 2020 and still current on the check date. The Benchmark was first published June 2024. | A self-assessed score is offered as though it were an independent finding. |
-| **NIST SP 800-122** | Nothing. Guidance. | No independent trigger. It sits beside the federal control chain, covering personal data. | Still Final. Its withdrawal exists only as intent inside an unfinished working draft. | "SP 800-122 was withdrawn." It is still Final, and the publication's own record page shows status and date. |
+| **NIST SP 800-122** | Nothing. Guidance. | No independent trigger. It sits beside the federal control chain, covering personally identifiable information (PII). | Still Final. Its withdrawal exists only as intent inside an unfinished working draft. | "SP 800-122 was withdrawn." It is still Final, and the publication's own record page shows status and date. |
 | **NIST control overlays for securing AI systems** | Nothing today. | Nothing today. | In development, with no draft overlay published as of the check date, so nothing can be aligned with them today. | Cited in roadmaps as though alignment were possible now. No draft exists to align with. |
 
 **A defense-style obligation begins with a clause number, not a publication.** Ask which
