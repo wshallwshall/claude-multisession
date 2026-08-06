@@ -1,8 +1,8 @@
 # Secure development: the process a build must satisfy
 
 This is a starting point you adapt, not a compliance attestation. It describes the process a build
-has to satisfy before you can honestly say it was built securely: who owns what, what gets threat
-modelled, what a review checks, which checks may never be waived, how a release is signed and
+has to satisfy before you can honestly say it was built securely. Who owns what, what gets threat
+modelled, and what a review checks. Which checks may never be waived, how a release is signed and
 verifiable, and what has to be true on the day you ship.
 
 > **Meant to be worked with, not read straight through.** Most of this standard is a base for an
@@ -10,7 +10,7 @@ verifiable, and what has to be true on the day you ship.
 >
 > The fastest way in: give an agent -- Claude Code or another -- the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md), ask it to
-> **summarise the document against your repository**, and then ask it questions. What here
+> **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is
 > worth more than reading top to bottom, because the answers are about your code rather than
 > about the document.
@@ -168,14 +168,20 @@ against each one the specific thing that bounds it. When a new ingress is added 
 its mitigation, that is the finding.
 
 **Trust boundaries where content becomes executable** deserve a longer look than the rest. The
-questions that generalise: is there any path that reaches execution without the vet running -- check
-every caller, not the documented one; does it fail closed, with no silent downgrade when the intended
-backend is absent; is the load target validated against a fixed known set, so input cannot trigger an
-arbitrary import; does the vet cover the whole executable surface or only the obvious top level; does
-it follow links, so a vetted-looking entry can point somewhere writable; is the check skipped under a
-privileged account; and is there a platform on which the runtime check returns early and does
-nothing, making the real boundary an install-time filesystem permission somebody has to confirm was
-applied. That last one is the one most often missed.
+questions that generalise:
+
+- Is there any path that reaches execution without the vet running? Check every caller, not the
+  documented one.
+- Does it fail closed, with no silent downgrade when the intended backend is absent?
+- Is the load target validated against a fixed known set, so input cannot trigger an arbitrary
+  import?
+- Does the vet cover the whole executable surface or only the obvious top level?
+- Does it follow links, so a vetted-looking entry can point somewhere writable?
+- Is the check skipped under a privileged account?
+- Is there a platform on which the runtime check returns early and does nothing, making the real
+  boundary an install-time filesystem permission somebody has to confirm was applied?
+
+That last one is the one most often missed.
 
 ---
 
@@ -194,9 +200,9 @@ reviewer can answer and these are.
   document-type processing, size-limit payloads against a schema, apply rate limits and timeouts, and
   never return internal detail in a fault response.
 - **For file handling:** confine reads and writes to configured directories and canonicalise paths so
-  traversal and symlink escapes are rejected; validate type and size by content rather than
-  extension; write atomically then rename so a partial file is never processed; never place files on
-  an executable or served path; never execute file contents.
+  traversal and symlink escapes are rejected. Validate type and size by content rather than
+  extension. Write atomically then rename so a partial file is never processed. Never place files on
+  an executable or served path, and never execute file contents.
 - **Use vetted cryptographic libraries.** Never roll your own.
 - **Fail closed on error.** Never log secrets or sensitive data.
 
@@ -237,10 +243,12 @@ assertions, not their presence or their coverage* in
 
 The comprehension bar that goes with review -- reject code you cannot explain, with assistance in
 reaching the explanation being acceptable -- is settled on this site under that name in the same
-document. Two small additions worth carrying: an assistant's explanation can be confidently wrong in
-the same way its code can, so the human verifies the explanation rather than accepting it; and a
-periodic cold spot-check of an already-merged assisted change is a cheap way to detect that
-explaining has drifted into rubber-stamping.
+document. Two small additions are worth carrying:
+
+- An assistant's explanation can be confidently wrong in the same way its code can, so the human
+  verifies the explanation rather than accepting it.
+- A periodic cold spot-check of an already-merged assisted change is a cheap way to detect that
+  explaining has drifted into rubber-stamping.
 
 ---
 
@@ -257,11 +265,11 @@ What must block, and may not be waived by an author:
 - Dependency vulnerability analysis, red on any new advisory.
 - Secret scanning, over the full history, not only the diff.
 
-Mechanics for all three are already published: grandfathering to a clean baseline and then
-ratcheting, running supply-chain audits on a schedule as well as on changes, and the two-layer shape
-where a local hook gives fast feedback and the pipeline is the authoritative gate, are in
-[CI and standards](../CI-AND-STANDARDS.md). Fail-closed forbidden-content scanning and the three ways
-a scanner lies are in [the leak gate](../LEAK-GATE.md).
+Mechanics for all three are already published. [CI and standards](../CI-AND-STANDARDS.md) covers
+grandfathering to a clean baseline and then ratcheting, and running supply-chain audits on a schedule
+as well as on changes. It also covers the two-layer shape where a local hook gives fast feedback and
+the pipeline is the authoritative gate. Fail-closed forbidden-content scanning and the three ways a
+scanner lies are in [the leak gate](../LEAK-GATE.md).
 
 Three additions specific to a security posture:
 
@@ -341,8 +349,8 @@ with the reason -- see *Fail-open or fail-closed is a choice you must state* in
 ## 8. Interface and service authentication
 
 Machine interfaces authenticate **systems, not people**. Use the strongest mechanism the peer system
-supports and record, per connection, the mechanism, its scope, and a reference to where the
-credential lives -- alongside that connection's configuration, so the posture is reviewable one
+supports. Record, per connection, the mechanism, its scope, and a reference to where the credential
+lives. Keep that record alongside that connection's configuration, so the posture is reviewable one
 connection at a time rather than as a paragraph of prose.
 
 A workable hierarchy, strongest first:
@@ -443,7 +451,7 @@ holding only the artefact answers neither.
 published artefact contains, gate on it before the upload step, and verify the published artefact once
 after release, because checking what you built is not checking what shipped. The rule and its failure
 mode are stated in full under *Package manifests are allowlists, not sweeps* in
-[CI and standards](../CI-AND-STANDARDS.md); the case worth naming here is that material a project
+[CI and standards](../CI-AND-STANDARDS.md). The case worth naming here is that material a project
 treats as withheld can travel inside a published distribution without anyone reviewing the packaging
 list.
 
@@ -489,13 +497,17 @@ runtime patched, behaviour hooked at load time. Say so explicitly rather than le
 imply prevention. What is achievable is to make tampering noisy, costly and detectable, to produce
 audit evidence, and to push the trust root as low as the operator is willing to go.
 
-**Operator-owned hardening: document and recommend, never claim.** File-integrity monitoring against a
-baseline, immutable or read-only deployment with writable state confined to the data store,
-least-privilege file ownership so the running account cannot rewrite its own code, confinement under a
-mandatory access control system, and signed-artefact admission control that rejects anything unsigned are all
-stronger than anything in the paragraph above. None of them are yours. Ship a hardening guide with a
-concrete list of paths to monitor and example rules, so the operator has something to apply on day one
-rather than a category name.
+**Operator-owned hardening: document and recommend, never claim.** These are all stronger than
+anything in the paragraph above:
+
+- file-integrity monitoring against a baseline
+- immutable or read-only deployment with writable state confined to the data store
+- least-privilege file ownership so the running account cannot rewrite its own code
+- confinement under a mandatory access control system
+- signed-artefact admission control that rejects anything unsigned
+
+None of them are yours. Ship a hardening guide with a concrete list of paths to monitor and example
+rules, so the operator has something to apply on day one rather than a category name.
 
 **Roll out a blocking verification control in audit mode first.** A control that rejects artefacts
 failing verification will also reject valid artefacts whenever its own preconditions are unmet -- for
@@ -561,9 +573,9 @@ internally-run pipeline cannot substitute for. Their absence caps what you can h
 matter how good the automated layer is.
 
 Where the engagement has not happened, say so plainly and hold the gap under a dated signed
-acceptance. Do not let a self-assessment read as verification, and do not omit the cost context --
-"not yet performed" with no explanation reads as negligence, while "not yet performed, and here is the
-order of magnitude it would cost" reads as a funding constraint a reader can evaluate.
+acceptance. Do not let a self-assessment read as verification, and do not omit the cost context. A
+bare "not yet performed" with no explanation reads as negligence. But "not yet performed, and here is
+the order of magnitude it would cost" reads as a funding constraint a reader can evaluate.
 
 **Do not gate somebody else's deployment on your engagement.** For software an adopter self-hosts, the
 decision to deploy and the assessment supporting it belong to the adopting organisation. Record what
@@ -572,11 +584,17 @@ control. This is a correction to an earlier version of this material, which stat
 review as a precondition for production exposure -- an over-reach for software the producer does not
 operate.
 
-If you are running a formal assessment against a published verification standard, the method for it --
-verdict vocabulary, why `unverified` must never read as a pass, evidence anchors a machine can
-re-check, pinning the standard's corpus, and how to read a movement in a score -- is covered in
-[running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md). Do not build a
-second procedure beside it.
+If you are running a formal assessment against a published verification standard, the method for it
+is covered in [running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md).
+That covers:
+
+- verdict vocabulary
+- why `unverified` must never read as a pass
+- evidence anchors a machine can re-check
+- pinning the standard's corpus
+- how to read a movement in a score
+
+Do not build a second procedure beside it.
 
 ---
 
@@ -702,10 +720,10 @@ citation.
   permanent; dropping the signature makes it an open gap. All three fields or none of it counts.
 - **The claim register.** "Certified" is not a stronger synonym for "self-assessed against". It is a
   different and false statement, and it is the one a reader will check.
-- **The honest limit next to each control.** An in-process integrity check that is described without
-  the bootstrap-trust limit, a component inventory described as tamper detection, or a self-assessment
-  described as verification -- each of these is a compensating control resting on a false premise, and
-  the next person to touch it reasons from your description rather than from the code.
+- **The honest limit next to each control.** Each of these is a compensating control resting on a
+  false premise: an in-process integrity check that is described without the bootstrap-trust limit, a
+  component inventory described as tamper detection, or a self-assessment described as verification.
+  The next person to touch it reasons from your description rather than from the code.
 
 ---
 

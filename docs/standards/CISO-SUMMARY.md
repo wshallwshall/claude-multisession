@@ -9,7 +9,7 @@ whether you actually got it.**
 >
 > The fastest way in: give an agent -- Claude Code or another -- the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md), ask it to
-> **summarise the document against your repository**, and then ask it questions. What here
+> **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is
 > worth more than reading top to bottom, because the answers are about your code rather than
 > about the document.

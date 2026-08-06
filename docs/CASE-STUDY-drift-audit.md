@@ -3,8 +3,8 @@
 **Audit date: 2026-08-04.** This is a *method* document. It describes how the controls in this
 repository were audited as a single system, what the audit was able to prove, and what it could not.
 It deliberately contains no status table, no finding list, and no inventory of what is or is not
-enforced on any particular machine -- that information is a stale snapshot of one host on one day, and
-published it becomes a map for the next reader who wants to route around the guardrails rather than
+enforced on any particular machine. That information is a stale snapshot of one host on one day.
+Published, it becomes a map for the next reader who wants to route around the guardrails rather than
 use them.
 
 If you want the current status of *your* estate, do not read a document. Run the audit:
@@ -23,19 +23,19 @@ Each control in this repository is small and readable. Read `scripts/hooks/workt
 can state what it denies. Read `scripts/hooks/collision_gate.ps1` and you can state its posture. That
 reading is worth almost nothing, because none of these files is what runs.
 
-What runs is a *copy*, placed outside every working tree by an installer, invoked by a matcher in a
-client config root, resolving helper files it expects to find beside itself, executing on a host that
-may or may not have an interpreter for it. Every one of those joins can be wrong while every file
+What runs is a *copy*. An installer places it outside every working tree. A matcher in a client config
+root invokes it. It resolves helper files it expects to find beside itself, and it executes on a host
+that may or may not have an interpreter for it. Every one of those joins can be wrong while every file
 involved is individually correct. And here is the property that makes this class of system unusually
 dangerous:
 
 > **Every failure mode in this system is byte-identical to success.**
 
-A hook that is not installed, a hook installed but not wired, a hook wired but pointing at a script
-that no longer exists, a hook that loads and fails open -- all of them produce the same thing a healthy
-hook with nothing to say produces: exit 0, no output, work proceeds. There is no error, no warning, no
-degraded mode. The session sees green. A stranger who has just cloned this repository and run one
-installer, or none, sits in exactly that state and will conclude the guardrails are working.
+A hook can be missing entirely, installed but not wired, wired but pointing at a script that no
+longer exists, or loaded but failing open. All of those produce the same thing a healthy hook with
+nothing to say produces: exit 0, no output, work proceeds. There is no error, no warning, no degraded
+mode. The session sees green. A stranger who has just cloned this repository and run one installer,
+or none, sits in exactly that state and will conclude the guardrails are working.
 
 So the audit's unit is the whole path from checkout to decision, and its currency is receipts.
 
@@ -108,8 +108,8 @@ defeats a command-string gate** -- a script invocation carries no `git` token. T
 adversarial scenario; a sanctioned repair script is exactly that shape. Treat string-scanning gates as
 guardrails against accidents, never as boundaries, and say so in the file. This repository shares one
 command-splitting helper (`scripts/hooks/_command.ps1`) and one git-target resolver
-(`scripts/hooks/_gittarget.ps1`) between the hooks that parse commands, for a reason that is itself an
-audit finding: two hooks that each split commands their own way will disagree about what a command *is*,
+(`scripts/hooks/_gittarget.ps1`) between the hooks that parse commands. The reason is itself an audit
+finding: two hooks that each split commands their own way will disagree about what a command *is*,
 and the one that drifts is the one nobody is testing. Keep exactly one copy of a safety check.
 
 ### On D3's opposite failure
@@ -233,9 +233,9 @@ the repository's copy of the script. Nothing anywhere read the installed copy or
 Enforcement was running from an installed copy that was days behind source, and the entire suite was
 green about it.
 
-The fix is a test that skips unless the installed artefact exists, then asserts SHA-256 equality with
-the source *and* that the live hook matchers superset the handled-tool list -- **and prints what it
-scanned, so a skip never reads as a pass.** This repository carries that as a tripwire
+The fix is a test that skips unless the installed artefact exists. It then asserts SHA-256 equality
+with the source, *and* that the live hook matchers superset the handled-tool list -- **and prints what
+it scanned, so a skip never reads as a pass.** This repository carries that as a tripwire
 (`Get-HandledTools` in `bin/ccx-doctor.ps1` reads the rule set out of the *installed* copy and diffs it
 against every config root's matchers), reporting three distinct states rather than one:
 
@@ -320,9 +320,9 @@ The structurally strongest answers to "sessions keep building in the shared chec
 every single time the gate leaks: an OS-level sandbox, filesystem ACLs, a bare-repository layout, a
 repository-level worktree lock, a native path-deny rule in the client's own permission system. Each is
 blocked by a concrete, statable fact -- platform availability, what the lock primitive actually prevents,
-the fact that a nested worktree layout lives *inside* the checkout a path-deny would have to cover, or
-the loss of the deny *text*, which on this design carries most of the rule's value because it is the
-remediation channel.
+or the fact that a nested worktree layout lives *inside* the checkout a path-deny would have to cover.
+Another is the loss of the deny *text*, which on this design carries most of the rule's value because
+it is the remediation channel.
 
 Write the blocking fact next to each rejected option, not just the rejection. Otherwise the next
 session spends the cycle again and reaches the same place. And when a mechanism is genuinely unproven,
@@ -330,7 +330,7 @@ session spends the cycle again and reaches the same place. And when a mechanism 
 
 The corollary is that deny text is a control surface and must be tested like one. In this corpus, a
 deny message refused a write to the shared checkout and then listed that same checkout *first* among
-the worktrees you could reuse instead, displacing a real one off a display cap -- because a filter
+the worktrees you could reuse instead, displacing a real one off a display cap. The cause: a filter
 compared a string against an object and was therefore always true. No test asserted on message content.
 Assert that the forbidden path never appears in the suggested-alternatives list.
 
@@ -343,10 +343,10 @@ The next session acts on the status. If a change is mostly done, the status must
 is worse than no status, because no status prompts a check and a false status ends one.
 
 The same discipline applies to the audit's own verdict. `bin/ccx-doctor.ps1` exits `0` only when every
-required control is installed *and* wired *and* refused every attack; `1` on any red; and **`2` when at
-least one check could not be determined** -- because a control that was not tested is not a control that
-passed. `-SkipAttacks` therefore forces exit 2 by construction. The four-character status tags are
-`OK`, `RED`, `OFF`, `??` and `--`, and `??` is not a rounding error toward `OK`.
+required control is installed *and* wired *and* refused every attack, `1` on any red, and **`2` when at
+least one check could not be determined**. That last one is because a control that was not tested is
+not a control that passed. `-SkipAttacks` therefore forces exit 2 by construction. The four-character
+status tags are `OK`, `RED`, `OFF`, `??` and `--`, and `??` is not a rounding error toward `OK`.
 
 ### Print what you scanned, and name your blind spots, on every run
 

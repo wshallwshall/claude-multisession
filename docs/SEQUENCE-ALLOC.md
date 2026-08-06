@@ -112,8 +112,8 @@ feeds it one line at a time, where it matched and looked correct. The working-tr
 whole file as one string, where `^` could never match past the first line. Measured on the repo this
 tooling was developed in: without `Multiline` the working-tree term found **none** of the index's
 rows. So the term that exists to catch a number written but committed *nowhere* had been finding
-nothing since the day it was written -- and the all-refs term hid it by covering every number that
-had been committed somewhere, which is every case except the one that term is for.
+nothing since the day it was written. The all-refs term hid it, by covering every number that had
+been committed somewhere -- which is every case except the one that term is for.
 
 > **Rule.** When two terms of the same computation feed one matcher different shapes of input, the
 > stricter shape is the one to test. A term that is subsumed by a broader term in the common case
@@ -160,8 +160,8 @@ The floor is the maximum over four terms, then ratcheted against a persisted hig
 | 4. Registry | `<state-root>/alloc/<kind>/*.json` | A number claimed but not yet written anywhere |
 
 **Every ref, not just the trunk.** Reading only the published branch is precisely what re-issues
-numbers that already exist on refs the published branch does not carry: they are invisible to the
-sweep, so the allocator hands them out as free, and the collision surfaces later as two
+numbers that already exist on refs the published branch does not carry. They are invisible to the
+sweep, so the allocator hands them out as free. The collision surfaces later as two
 differently-named files that merged clean. A number that exists on *any* ref is taken.
 
 Term 2 is batched for a reason. A `git show` per ref spawns one process each; measured on the repo
@@ -295,9 +295,9 @@ byte-identical to a clean run.
 ## Wiring the pre-commit hook
 
 **Nothing in this repository installs it for you.** `scripts/coord/install-git-hooks.ps1` installs
-the claim gate (`commit-msg`) and the push guard (`pre-push`) and *never writes `pre-commit`, at
-all* -- two tools cannot both own that one file, and a hook framework that finds a foreign hook there
-may rename it and invoke it from its own shim; that chain has failed on Windows and blocked every
+the claim gate (`commit-msg`) and the push guard (`pre-push`), and *never writes `pre-commit`, at
+all*. Two tools cannot both own that one file. A hook framework that finds a foreign hook there may
+rename it and invoke it from its own shim, and that chain has failed on Windows and blocked every
 commit in a repository until the shim was removed.
 
 So the installer does the next best thing: whenever `sequences` is configured, it prints in yellow
@@ -363,8 +363,8 @@ Two things to get right, neither of which is obvious:
   newly required check wedges every pull request opened before it existed.
 
 Use a **two-dot** diff (`base HEAD`), not three-dot. On a pull request the checkout is typically the
-merge commit, so HEAD already contains base and three-dot buys nothing -- while costing everything:
-it resolves a merge base, the checkout is shallow, and two truncated histories routinely fail to
+merge commit, so HEAD already contains base and three-dot buys nothing -- while costing everything.
+It resolves a merge base, the checkout is shallow, and two truncated histories routinely fail to
 reach their common ancestor. Deepening to fix that is itself a race. A two-dot diff compares two
 trees: no ancestry, no depth, nothing to race. And the three-dot failure was **silent** -- see the
 raise-on-non-zero rule above.
@@ -377,9 +377,9 @@ Rule 2 keys ownership on the **worktree** that holds the claim: `owns()` compare
 `worktree` field, folded through `fold_path()`, against the current repo root.
 
 That only discriminates because each session gets its own worktree. Measured on the repo this
-tooling was developed in, the ownership rule was a **no-op** before worktree isolation was enforced:
-every co-tenant session authored in the same shared primary checkout, so every one of them mapped to
-the same key, and the check could not separate exactly the sessions it was written to separate.
+tooling was developed in, the ownership rule was a **no-op** before worktree isolation was enforced.
+Every co-tenant session authored in the same shared primary checkout, so every one of them mapped to
+the same key. The check could not separate exactly the sessions it was written to separate.
 
 > **Rule.** Check that your ownership key actually distinguishes the actors in practice, not merely
 > in principle. Number allocation and worktree isolation are a pair -- the first is meaningless

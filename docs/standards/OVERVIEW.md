@@ -1,9 +1,14 @@
 # Standards you can start from
 
-Four documents that set a bar for code an agent wrote and a small team has to stand behind: what
-counts as quality, what counts as secure, how to hold third-party code you will never read, and how
-to govern the assistant writing much of it. Plus [a two-page summary](CISO-SUMMARY.md) for a
-security executive who has to decide whether any of it is being done, rather than adopt it.
+Four documents that set a bar for code an agent wrote and a small team has to stand behind:
+
+- what counts as quality
+- what counts as secure
+- how to hold third-party code you will never read
+- how to govern the assistant writing much of it
+
+Plus [a two-page summary](CISO-SUMMARY.md) for a security executive who has to decide whether any of
+it is being done, rather than adopt it.
 
 They are **starting points you adapt**, not a compliance package. Nothing here is a certificate, an
 audit, or a scored verdict about any codebase, and nothing here installs or enforces anything. Every
@@ -27,11 +32,13 @@ Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 - **It is plain text.** It drops into a repository as-is, and it diffs cleanly once you start
   editing it -- which you will, because none of these are usable unedited.
 - **The four main documents are a base for an agent, not prose to work through.** Most of their
-  content exists to be applied to a repository. Give Claude Code, or another agent, the markdown;
-  ask it to **summarise the document against your repository**; then ask it questions -- what
-  already holds, what would have to change, what each gap would cost. Those answers are about your
-  code, which is more use than a careful read of a document about nobody's code in particular.
-  [The CISO summary](CISO-SUMMARY.md) is the exception: it is written to be read.
+  content exists to be applied to a repository. So:
+  1. Give Claude Code, or another agent, the markdown.
+  2. Ask it to **summarize the document against your repository**.
+  3. Then ask questions. What already holds? What would have to change? What would each gap cost?
+
+  Those answers are about your code. A careful read of a document about nobody's code in particular
+  is worth less. [The CISO summary](CISO-SUMMARY.md) is the exception: it is written to be read.
 - **The Word files are the same content**, generated from the same markdown. Take those for
   circulating to people who will read or mark up rather than adopt.
 
@@ -40,7 +47,7 @@ Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 ## What you get
 
 - **A rubric you can run against your own repository at each release**, split into controls that may
-  decide a verdict and measurements that may only start a conversation -- so an argument about "is
+  decide a verdict and measurements that may only start a conversation. So an argument about "is
   this good enough" resolves against structure rather than against whoever quotes the largest
   number.
 - **A discipline for third-party code that never asks you to read it.** The human effort lands at

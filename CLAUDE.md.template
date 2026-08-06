@@ -58,8 +58,8 @@ pwsh -NoProfile -File scripts/worktree/new.ps1 -Name <short-name>
 ```
 
 That creates a worktree on its own branch, branched off the **fetched remote tip** of the trunk --
-not local trunk, which usually lags in a multi-worktree clone -- and then runs the repository's
-setup hook so the new checkout has whatever per-checkout environment it needs.
+not local trunk, which usually lags in a multi-worktree clone. It then runs the repository's setup
+hook, so the new checkout has whatever per-checkout environment it needs.
 
 If you are already half-way through a change in the shared primary checkout, do not redo it:
 
@@ -80,12 +80,12 @@ Rules that are not negotiable:
 | A wrong-directory run must refuse loudly, not report a clean no-op. | Two worktree layouts coexist: siblings created by these scripts, and nested ones the harness creates under `.claude/worktrees/`. A sweep run from the wrong one prints "nothing to do" and exits 0. |
 | AI project memory is shared across every worktree on the machine. | It lives outside the repo. Reads are fine; coordinate **writes** explicitly, or let exactly one session own them. Last write wins, silently. |
 
-Asking sessions to use a worktree does not work on its own -- measured on the repo this tooling was
-developed in, 44% of the file writes made by sessions launched in the shared primary landed in the
-primary's own tree despite a banner asking otherwise. That is why the `PreToolUse` worktree gate exists, and why it keys on the write's
-**target path** rather than the session's working directory: 29% of writes came from a session
-sitting in the primary and writing into a sibling worktree by absolute path -- already correct
-behaviour that a cwd-keyed rule would have denied.
+Asking sessions to use a worktree does not work on its own. Measured on the repo this tooling was
+developed in: 44% of the file writes made by sessions launched in the shared primary landed in the
+primary's own tree, despite a banner asking otherwise. That is why the `PreToolUse` worktree gate
+exists, and why it keys on the write's **target path** rather than the session's working directory.
+29% of writes came from a session sitting in the primary and writing into a sibling worktree by
+absolute path -- already correct behaviour that a cwd-keyed rule would have denied.
 
 ---
 

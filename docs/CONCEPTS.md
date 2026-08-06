@@ -64,9 +64,9 @@ which is how a rule and its enforcement can disagree without either being wrong 
 >
 > **Rule.** Any path containing a `.claude/worktrees/` segment is excluded from destructive
 > operations *unconditionally*, whatever the layout setting says. That is
-> `Test-CcxHarnessWorktreePath`, and it exists as one named test rather than two inline regexes
-> because two rules depend on it and they pull in opposite directions: a gate protecting the primary
-> must **not** govern a nested worktree (a git verb there swaps only its own tree), and a reaper must
+> `Test-CcxHarnessWorktreePath`. It exists as one named test rather than two inline regexes because
+> two rules depend on it and they pull in opposite directions. A gate protecting the primary must
+> **not** govern a nested worktree (a git verb there swaps only its own tree). And a reaper must
 > **never** remove one (a live session is standing in it).
 
 ### "Sibling" is a structure, not a string prefix
@@ -190,7 +190,7 @@ login that owns it.
 **This can break under you.** If a future client renames a field, moves the directory, or changes
 `startedAt`'s unit, every fence here degrades to "cannot tell" rather than to a confident wrong
 answer. That is the entire reason the states below distinguish *not alive* from *could not be
-evaluated*, and `bin/ccx-doctor.ps1` prints how many records it read and placed, so a schema change
+evaluated*. And `bin/ccx-doctor.ps1` prints how many records it read and placed, so a schema change
 shows up as a count going to zero instead of as a silent all-clear.
 
 ### It is not a pid check
@@ -371,7 +371,7 @@ instant in which the name does not exist is an instant another worktree can clai
 
 One PowerShell subtlety that cost a debugging session: an exception thrown by a .NET **method** is
 wrapped in a `MethodInvocationException`, so `catch [System.IO.IOException]` around that `Move` never
-matches, the failure escapes to `$ErrorActionPreference = "Stop"`, the cleanup never runs, and the
+matches. The failure escapes to `$ErrorActionPreference = "Stop"`, the cleanup never runs, and the
 temp file is orphaned. The catch there is untyped on purpose.
 
 ---
@@ -504,10 +504,10 @@ disables the gate for that key. A cosmetic byte turns an enforced control into a
 
 The mirror-image rule on the Python side: `encoding="utf-8"` on `subprocess.run` is **required, not
 cosmetic**. `text=True` alone decodes with the locale default, which is `cp1252` on a stock Windows
-box, so a UTF-8 index file (em dashes, arrows, emoji) raised inside subprocess's reader thread,
-`proc.stdout` came back `None`, and the caller died on the next call, blocking every commit that
-touched the files the gate guards. The gate's failure mode was the one it exists to prevent: silent,
-and worst on exactly the files it looks at.
+box. So a UTF-8 index file (em dashes, arrows, emoji) raised inside subprocess's reader thread, and
+`proc.stdout` came back `None`. The caller died on the next call, blocking every commit that touched
+the files the gate guards. The gate's failure mode was the one it exists to prevent: silent, and
+worst on exactly the files it looks at.
 
 All hook output is **ASCII only**, in both languages, because a console that is not UTF-8 renders
 anything else as mojibake, and one convention across the set beats two.
@@ -582,7 +582,7 @@ Three names are **not** derived from `prefix`, and knowing which is which matter
 anything: the gate's allowlist file is the fixed `~/.claude/hooks/ccx-gate.repos.txt`, and the two
 installer markers written into the user settings file are the fixed strings `ccx-coord` and
 `ccx-announce`. Those markers are on-disk identity, which is why they are literals rather than
-computed, and why **neither may ever be a substring of the other**: ownership is tested by substring
+computed, and why **neither may ever be a substring of the other**. Ownership is tested by substring
 match, so a marker like `ccx-coord-announce` would make one installer claim the other's hook entries.
 Rename any of the three once, in one commit, touching every reader.
 
@@ -645,8 +645,8 @@ deny. A control that was merged but never installed is a source artefact with gr
 
 That is why so much of this repository is receipts rather than logic: print what you scanned, count
 what you examined, distinguish "found nothing" from "could not look", and name your blind spots on
-every run. And it is why `bin/ccx-doctor.ps1` exists and is the first command to run: it does not read
-settings to decide whether a control is live, it **fires each control on purpose and requires it to
+every run. And it is why `bin/ccx-doctor.ps1` exists and is the first command to run. It does not read
+settings to decide whether a control is live. It **fires each control on purpose and requires it to
 refuse**, with a paired negative control so a refusal for the wrong reason is not counted as success.
 
 Run it before you trust any of this.

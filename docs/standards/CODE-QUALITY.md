@@ -10,7 +10,7 @@ artefact.
 >
 > The fastest way in: give an agent -- Claude Code or another -- the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md), ask it to
-> **summarise the document against your repository**, and then ask it questions. What here
+> **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is
 > worth more than reading top to bottom, because the answers are about your code rather than
 > about the document.
@@ -337,11 +337,14 @@ defects were found across two of five measurement gates, all green throughout: t
 nothing, and one measuring correctly while publishing a wrong derived number. One of them had been
 scored built across two published versions of the rubric while producing zero units of work.
 
-The liveness rules that came out of that -- count units examined and never units found; "nothing to
-measure" passes only when stated and reasoned; a reconciliation containing a derived term is blind
-to that term; attack the control with the failure class it was built to catch; and the advisory
-layer needs exactly one job permitted to go red -- are published in full under
-[A check that cannot fail is not a control](../CI-AND-STANDARDS.md#a-check-that-cannot-fail-is-not-a-control).
+The liveness rules that came out of that are published in full under
+[A check that cannot fail is not a control](../CI-AND-STANDARDS.md#a-check-that-cannot-fail-is-not-a-control):
+
+- count units examined and never units found
+- "nothing to measure" passes only when stated and reasoned
+- a reconciliation containing a derived term is blind to that term
+- attack the control with the failure class it was built to catch
+- the advisory layer needs exactly one job permitted to go red
 
 **Rule for this rubric specifically: a scorecard row cites the receipt, not the workflow file.**
 

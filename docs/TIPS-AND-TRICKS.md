@@ -45,10 +45,10 @@ So the first command to run in a fresh clone is not an installer, it is the audi
 pwsh -NoProfile -File bin/ccx-doctor.ps1
 ```
 
-It hashes every installed copy against this checkout's source, reads the live matchers out of
-every config root, **fires each control on purpose and requires it to deny**, pairs every attack
-with a negative control the same guard must *allow*, and prints what it scanned whether or not
-anything failed. Its status vocabulary is the whole philosophy in four tokens:
+It hashes every installed copy against this checkout's source and reads the live matchers out of
+every config root. Then it **fires each control on purpose and requires it to deny**, pairs every
+attack with a negative control the same guard must *allow*, and prints what it scanned whether or
+not anything failed. Its status vocabulary is the whole philosophy in four tokens:
 
 | Tag | Meaning | Exit |
 |---|---|---|
@@ -183,9 +183,9 @@ pwsh -NoProfile -File bin/ccx-steer.ps1 "stop after the current file; the API sh
 ```
 
 `scripts/hooks/steer-inject.ps1` is the `PreToolUse` half, and it is **opt-in per worktree**
-on purpose: a `PreToolUse` hook matching `*` spawns a `pwsh` process before every single tool
-call (measured ~366 ms on the machine this was developed on, of which ~267 ms is bare `pwsh`
-startup and unavoidable). That is a standing tax on every session in every worktree -- a bad
+on purpose. A `PreToolUse` hook matching `*` spawns a `pwsh` process before every single tool
+call: measured ~366 ms on the machine this was developed on, of which ~267 ms is bare `pwsh`
+startup and unavoidable. That is a standing tax on every session in every worktree -- a bad
 trade for an occasional-use feature. Enable it in the worktree that needs it.
 
 ### Kill switches must be files
@@ -293,9 +293,9 @@ repo this tooling was developed in: a read-modify-write on one shared list silen
 concurrent writes.
 
 **No TTLs, anywhere.** A lock that expires on a timer hands the critical section to a second
-process while the first is still inside it -- silently, at the exact moment the operation is
-slowest, which is when a timeout is most likely to be the wrong inference. The failure a TTL
-prevents (a wedged lock) is visible and one command from fixed. The failure it causes is a
+process while the first is still inside it, silently. It does that at the exact moment the
+operation is slowest, which is when a timeout is most likely to be the wrong inference. The failure
+a TTL prevents (a wedged lock) is visible and one command from fixed. The failure it causes is a
 concurrent double-write nobody observes. `lock.ps1` retries and **never steals**; on timeout it
 fails loudly with the holder's identity.
 
@@ -607,7 +607,7 @@ Three properties of the checker that are instances of rules stated elsewhere in 
 - **It always prints what it scanned** -- file count and byte count -- and a run that scanned
   nothing exits **2**, never 0. A mistyped path in CI produces precisely the shape of a clean run.
 - **`ccx-doctor.ps1` attacks it on every run.** It plants an em dash in a temp file and requires a
-  non-zero exit *and* the string `U+2014` in the output -- a non-zero exit on its own is also what
+  non-zero exit *and* the string `U+2014` in the output. A non-zero exit on its own is also what
   "the file could not be read" looks like, and a gate refusing for the wrong reason refuses
   everything. That is paired with a clean file the checker must pass, and with an empty directory
   it must answer 2. Swapping in a checker that exits 0 turns two of the three RED; swapping in one

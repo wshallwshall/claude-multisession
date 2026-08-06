@@ -81,15 +81,15 @@ Every check that cannot reach a confident answer SKIPs. Nothing is ever traded f
 
 **Clean** is stricter here than you may expect, and `Test-WorktreeClean` fails closed:
 
-- uncommitted tracked changes block, and so do **untracked files** -- they are the one loss class with no
-  recovery through git at all: not in the index, not in a stash, not in the reflog;
-- `--force` suppresses git's own refusal on untracked and modified files -- the exact refusal that would
-  have prevented the incident -- so the reaper only ever reaches it after establishing cleanliness
+- Uncommitted tracked changes block, and so do **untracked files**. They are the one loss class with no
+  recovery through git at all: not in the index, not in a stash, not in the reflog.
+- `--force` suppresses git's own refusal on untracked and modified files. That is the exact refusal that
+  would have prevented the incident, so the reaper only ever reaches it after establishing cleanliness
   itself. It also deletes **ignored** files (a dependency tree, a local database, a generated fixture
   set), which `git status --porcelain` never shows here: unrecoverable too, merely regenerable. It does
-  *not* override a git lock -- that needs `-f -f`, which neither script passes;
-- a `git status` that exits non-zero, or a directory that has vanished, is **not clean** -- those used to
-  be indistinguishable from "no changes" and pointed straight at destruction.
+  *not* override a git lock -- that needs `-f -f`, which neither script passes.
+- A `git status` that exits non-zero, or a directory that has vanished, is **not clean**. Those states
+  used to be indistinguishable from "no changes" and pointed straight at destruction.
 
 The same routine is used by the decision pass and by the pre-removal re-check, and it returns *reasons*,
 not a boolean. Collapsing "the directory vanished", "status exited 128", "an untracked file appeared"
@@ -202,9 +202,14 @@ It *does* see editor-hosted sessions as well as terminal ones: the file registry
 and the match is purely path-based.
 
 Separately, anything that **narrows** a signal is declared in red as REDUCED ASSURANCE, on the run and
-in the JSON receipt: `-IdleHours 0`, an `-IdleHours` below the floor, an explicit `-ConfigRoot` (which
-*replaces* the machine's real registry), a **failed fetch** (merge decisions then rest on stale refs), a
-merged-PR probe that errored, and every `-Name`-confirmed worktree.
+in the JSON receipt:
+
+- `-IdleHours 0`;
+- an `-IdleHours` below the floor;
+- an explicit `-ConfigRoot`, which *replaces* the machine's real registry;
+- a **failed fetch**, after which merge decisions rest on stale refs;
+- a merged-PR probe that errored;
+- every `-Name`-confirmed worktree.
 
 ### A plausible threshold can disarm a signal completely
 
@@ -232,10 +237,10 @@ Sibling worktrees are named after the **primary**, so run from a linked worktree
 empty for the wrong reason -- and the old script printed a green "nothing to consider", which reads
 exactly like "everything is tidy". Three refusals exist for this class:
 
-- not the primary checkout -> exit 2, printing both paths;
+- not the primary checkout -> exit 2, printing both paths.
 - the trunk cannot be resolved -> exit 2. Guessing `origin/main` in a repo whose trunk is something else
   answers "not merged" for every candidate, which looks like a safe, tidy, green run and is really a
-  blind one;
+  blind one.
 - `-Name` matched no prunable sibling -> exit 2 (or 1 if something was already removed), because what
   the operator asked for did not happen.
 
@@ -266,13 +271,13 @@ A destructive tool that over-reports what it destroyed is actively misleading. T
 **happened**, not what was planned:
 
 - a removal counts as `removed` only once the directory is **verified gone** and **deregistered**. Exit
-  0 is git's claim; the directory being gone is the fact;
+  0 is git's claim; the directory being gone is the fact.
 - `orphaned` is a **subset** of `failed`, and `failedNonOrphan` is spelled out so a consumer cannot
-  reach a wrong total by adding all four numbers;
+  reach a wrong total by adding all four numbers.
 - `BranchOutcome` starts at `not attempted`, never `kept` -- otherwise every skipped candidate claims a
-  decision nobody made (the JSON once said 7 branches were kept on a run whose summary said 0);
+  decision nobody made (the JSON once said 7 branches were kept on a run whose summary said 0).
 - `Merged` is `$null`, not `$false`, when the test never ran: a machine consumer reads `false` as
-  "checked, and it is not merged", which is a different claim from "never asked";
+  "checked, and it is not merged", which is a different claim from "never asked".
 - the final line is coloured by the **exit code**, not by the failure count -- a run where the fence died
   and every removal was refused has `failed 0` and used to print that in green next to exit 2.
 
@@ -328,7 +333,7 @@ Deregister specific worktrees deliberately, never by sweep.
 ### An orphan outlives the run that made it
 
 Once git has deregistered a worktree it is no longer in `git worktree list`, so it drops out of the
-candidate set -- and the **next** run printed a green all-clear over a directory this script had broken,
+candidate set. The **next** run then printed a green all-clear over a directory this script had broken,
 with the recovery recipe surviving only in the first run's scrollback.
 
 Orphans are therefore remembered in the shared state root
@@ -385,15 +390,15 @@ The reaper clears them, under rules worth copying:
 - **on evidence, never on a timer.** The release runs only from the branch that has already proven the
   directory is gone **and** deregistered, so there is no session left in there to collide with. A claim
   whose holder is merely quiet is never touched, and an auto-expiring claim would silently re-open the
-  race it exists to prevent;
+  race it exists to prevent.
 - **full normalised path equality only** -- no leaf name, no prefix, no `StartsWith`. Releasing a
   *living* worktree's claim hands its key to another session and invites the duplicate build the
   registry exists to stop. One normaliser on both sides, or the match silently misses and the claim is
-  quietly left stranded;
-- a dry run releases nothing;
+  quietly left stranded.
+- a dry run releases nothing.
 - an **unreadable** claim file belongs to the registry, not to any worktree -- by definition we could not
   read whose it is. It is surveyed **once, at run level** (so it is visible to a dry run and cannot be
-  counted once per removal), left in place, listed by filename, and it moves the exit code;
+  counted once per removal), left in place, listed by filename, and it moves the exit code.
 - `claims.scanned: false` is emitted when there was no claims directory to read. **Never looked is not
   clean**: an empty `unreadable` list means something only when you can prove you looked.
 

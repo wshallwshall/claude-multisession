@@ -12,7 +12,7 @@ you know it contains only what you intended?
 >
 > The fastest way in: give an agent -- Claude Code or another -- the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md), ask it to
-> **summarise the document against your repository**, and then ask it questions. What here
+> **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is
 > worth more than reading top to bottom, because the answers are about your code rather than
 > about the document.
@@ -133,7 +133,7 @@ seam, prefer the widely reviewed option to the clever one, and record why in the
 
 An assistant generates a plausible import the same way it generates plausible prose. A package name
 that reads correctly, sits in the right namespace, and matches the shape of real names in that
-ecosystem is exactly the output the model is good at producing -- and it is indistinguishable, at the
+ecosystem is exactly the output the model is good at producing. And it is indistinguishable, at the
 point of use, from a name that exists. That regularity is the attack surface: a name suggested often
 enough can be registered by somebody else.
 
@@ -192,11 +192,15 @@ This is the sibling-path failure in its most common form
 ([CI and standards](../CI-AND-STANDARDS.md#enumerate-sibling-paths-for-every-control)).
 
 **Rule.** If you vendor, hold the copy to the same gates as first-party code, in the same change that
-introduces it: behaviour tests over the vendored surface; a header in each file recording what it
-mirrors and why, so drift is reviewable; and analysis scope extended to include the path, with any
-suppression carrying a per-line justification that names the rule. Record the trade-off that
-justified vendoring and the concrete trigger that would reverse it, so the decision is revisitable
-instead of permanent by default.
+introduces it:
+
+- behaviour tests over the vendored surface
+- a header in each file recording what it mirrors and why, so drift is reviewable
+- analysis scope extended to include the path, with any suppression carrying a per-line justification
+  that names the rule
+
+Record the trade-off that justified vendoring and the concrete trigger that would reverse it, so the
+decision is revisitable instead of permanent by default.
 
 ### Every manifest in the repository needs its own audit net
 
@@ -262,9 +266,13 @@ project ends up doing an emergency bump across several major versions under advi
 ### Contain what you cannot vouch for
 
 **Rule.** Bound the blast radius of code you have not reviewed with a least-privilege runtime rather
-than with more review: a restricted network posture, authentication required, no outbound path for
-sensitive data, and every inbound payload treated as untrusted -- validated for structure and content
-before it reaches a query, a file path, a subprocess, or a downstream request.
+than with more review:
+
+- a restricted network posture
+- authentication required
+- no outbound path for sensitive data
+- every inbound payload treated as untrusted, validated for structure and content before it reaches
+  a query, a file path, a subprocess, or a downstream request
 
 This is architectural and set once, and it is the only inbound control whose value does not depend on
 having correctly identified the component.
@@ -279,8 +287,8 @@ Covered in full at [Package manifests are allowlists, not
 sweeps](../CI-AND-STANDARDS.md#package-manifests-are-allowlists-not-sweeps), and not restated. One
 instance worth naming here, because it is the case people assume cannot happen: **material a project
 treats as withheld can travel inside a published distribution** without anyone reviewing the
-packaging list, because the packaging list was written as an exclusion and the material was added
-later. Checking the thing you built is not checking the thing that shipped.
+packaging list. That is because the packaging list was written as an exclusion and the material was
+added later. Checking the thing you built is not checking the thing that shipped.
 
 ### Publishing credentials should be minted per run, not stored
 
@@ -310,9 +318,9 @@ modified before or after it was built. The registries that offer identity-based 
 their own documentation, which is the sort of caveat worth reading before crediting a control.
 
 **Rule.** Pair the publishing identity with a **signed attestation** binding the distributed
-filename and its digest to the source repository, workflow and commit that produced it, recorded in a
-public transparency log and served by the registry -- so a consumer can check it without contacting
-you. Neither half is sufficient alone.
+filename and its digest to the source repository, workflow and commit that produced it. Record that
+attestation in a public transparency log and have the registry serve it, so a consumer can check it
+without contacting you. Neither the identity nor the attestation is sufficient alone.
 
 ### A signing scheme nobody can verify is not a control
 
@@ -381,12 +389,15 @@ short on purpose, because most of what works here is not yours to own.
 
 If your source is published, obfuscating or compiling the shipped artefact protects nothing that
 matters. There is no confidentiality to preserve, and the tamper resistance gained is marginal:
-bytecode-only distribution is decompiled and patched by public tooling; native compilation raises the
-bar but leaks identifier and symbol information by default and the binary remains patchable with
-standard tools; self-extracting single-file bundles leave their contents on disk for inspection --
-which the tools' own documentation concedes. The protection schemes that run *inside* the process
-they protect assume an uncompromised runtime, and that is precisely the assumption a privileged
-attacker breaks.
+
+- Bytecode-only distribution is decompiled and patched by public tooling.
+- Native compilation raises the bar but leaks identifier and symbol information by default, and the
+  binary remains patchable with standard tools.
+- Self-extracting single-file bundles leave their contents on disk for inspection, which the tools'
+  own documentation concedes.
+
+The protection schemes that run *inside* the process they protect assume an uncompromised runtime,
+and that is precisely the assumption a privileged attacker breaks.
 
 Where a licence obliges you to provide corresponding source, an obfuscated build also creates
 friction with that obligation.
@@ -419,20 +430,23 @@ case.
 
 ### Operator-owned hardening: document and recommend, never claim
 
-The strongest tamper controls are outside the software: file-integrity monitoring against a baseline;
-immutable or read-only deployment with writable state confined to the data store; least-privilege
-file ownership, so the running account cannot rewrite its own code; mandatory-access-control
-confinement; and admission control that rejects an unsigned artefact.
+The strongest tamper controls are outside the software:
+
+- file-integrity monitoring against a baseline
+- immutable or read-only deployment with writable state confined to the data store
+- least-privilege file ownership, so the running account cannot rewrite its own code
+- mandatory-access-control confinement
+- admission control that rejects an unsigned artefact
 
 You cannot own any of them. What you can do is ship a hardening guide with a concrete list of paths
 to monitor and example rules, so an operator has something to apply on day one rather than a category
 name.
 
-**Rule.** Publish a two-column responsibility split before claiming any control: what the producing
-project owns (secure development practice, secure-by-default configuration, testing and attestation
-of the software, vulnerability response, evidence) and what the operating organisation owns (host and
+**Rule.** Publish a two-column responsibility split before claiming any control. The producing
+project owns secure development practice, secure-by-default configuration, testing and attestation
+of the software, vulnerability response, and evidence. The operating organisation owns host and
 network, identity and key management in their environment, backups and availability, their own
-compliance programme, monitoring and patching). State plainly that shipping the software confers no
+compliance programme, and monitoring and patching. State plainly that shipping the software confers no
 certification on the operator: your attestation is an input to their assessment, never a substitute
 for it. The register to use for that wording is on the site already -- built to, aligned with,
 self-assessed against, never certified

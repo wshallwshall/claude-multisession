@@ -1,8 +1,8 @@
 # AI-assisted development: keeping the result trustworthy
 
-A standard for building software with an AI assistant -- what can go wrong that looks like nothing
-going wrong, which control neutralises each one, how much rigor a given change actually needs, and
-when to spend real money on an adversarial verification pass instead of a second opinion that is
+A standard for building software with an AI assistant. What can go wrong that looks like nothing
+going wrong, and which control neutralises each one. How much rigor a given change actually needs.
+And when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
 
 > **Meant to be worked with, not read straight through.** Most of this standard is a base for an
@@ -10,7 +10,7 @@ worth almost nothing.
 >
 > The fastest way in: give an agent -- Claude Code or another -- the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md), ask it to
-> **summarise the document against your repository**, and then ask it questions. What here
+> **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is
 > worth more than reading top to bottom, because the answers are about your code rather than
 > about the document.
@@ -39,8 +39,8 @@ worth almost nothing.
   correct near-neighbour, so you can publish what your process buys without accidentally making a
   compliance claim.
 - **An adversarial verification pass that is actually independent**, written as a technique rather
-  than a product feature: verifiers that did not produce the artefact, told to refute rather than
-  review, given distinct lenses, reporting a counterexample and a command log -- plus the honest
+  than a product feature. Verifiers that did not produce the artefact, told to refute rather than
+  review, given distinct lenses, reporting a counterexample and a command log. Plus the honest
   cases where the pass is pure waste.
 - **Five habits that raise assistant output quality in the codebase you already have**, and the
   reason each one works.
@@ -273,7 +273,7 @@ scrutiny as a dependency bump.
 
 **Two distinct risks get conflated here, and only one of them is scannable.** A third-party tool
 server is an arbitrary process that can read repository content and receives whatever the agent sends
-it: default-deny it above the lowest tiers, and where one is used, vet it, pin it, record it, send it
+it. Default-deny it above the lowest tiers. Where one is used, vet it, pin it, record it, send it
 nothing restricted, and treat everything it returns as untrusted data. Separately, a live search or
 fetch is **outbound egress in its own right** -- no restricted value, credential or identifying
 string belongs in a query or a tool argument.
@@ -307,11 +307,15 @@ the standard; the sections after it are the footnotes.
 > maintainability by prompting alone**, an assistant-run review is advisory input a human arbitrates,
 > and no change merges on the assistant's own assurance that it is safe.
 
-Where to place each gate, how to keep a local run and the pipeline agreeing, and how to prove a green
-gate can actually fail, are all owned by [CI and standards](../CI-AND-STANDARDS.md) -- in particular
-*"A green local run is not a green pipeline"*, *"Scoped-green is not the gate"*, *"A check that cannot
-fail is not a control"*, and *"Ship the guard the same day as the rule"*. Do not build a second copy
-of those rules beside this table.
+[CI and standards](../CI-AND-STANDARDS.md) owns where to place each gate, how to keep a local run
+and the pipeline agreeing, and how to prove a green gate can actually fail. In particular:
+
+- *"A green local run is not a green pipeline"*
+- *"Scoped-green is not the gate"*
+- *"A check that cannot fail is not a control"*
+- *"Ship the guard the same day as the rule"*
+
+Do not build a second copy of those rules beside this table.
 
 ---
 
@@ -462,10 +466,10 @@ triaged, and every change explained-or-discarded -- where you engage with and st
 explanation rather than rubber-stamping it. The obligation that is not achievable alone is
 independent review, and it stays in the register as a deviation until it is.
 
-The single highest-leverage control to build first given that posture is an adversarial check on
-whether the tests assert anything, because it is the only one that is independent of the author's own
-confidence -- and the fifth failure mode says confidence is exactly what is unreliable in the
-self-review case.
+Given that posture, the single highest-leverage control to build first is an adversarial check on
+whether the tests assert anything. It earns that place because it is the only one that is independent
+of the author's own confidence -- and the fifth failure mode says confidence is exactly what is
+unreliable in the self-review case.
 
 *Revised.* An earlier form of this made independent review a **precondition for production
 exposure**. For software that others self-host, the producing project does not control the deployment
@@ -567,10 +571,12 @@ Independence degrades unless it is designed in. Four rules.
 
 ### Propose, judge, synthesise, critique
 
-For a design decision rather than a patch, the two-lane pattern generalises to a panel: several
-independent proposals, each written from a declared lens; each proposal scored by several adversarial
-judges, each with its own lens; a synthesis pass; then a **fresh** adversarial critique of the
-synthesis.
+For a design decision rather than a patch, the two-lane pattern generalises to a panel:
+
+- several independent proposals, each written from a declared lens
+- each proposal scored by several adversarial judges, each with its own lens
+- a synthesis pass
+- then a **fresh** adversarial critique of the synthesis
 
 Two rules make the cost worth paying.
 

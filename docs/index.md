@@ -28,10 +28,9 @@ the desktop client only, per limit 1 below. See [Coordination](COORDINATION.md).
 **Guardrails that run whether the agent cooperates or not.** The installer writes exactly two git
 hooks: `commit-msg` runs the claim gate, and `pre-push` runs the push guard that refuses a direct
 push to a protected ref. A worktree gate stops sessions building in the shared primary checkout. The
-leak gate and the ASCII gate are scripts you run rather than hooks -- nothing here wires them, and
-the leak gate refuses to run structural-only when you ask it for an armed pass, so a green result
-cannot quietly mean "no detectors were loaded". See [Hooks](HOOKS.md) and
-[The leak gate](LEAK-GATE.md).
+leak gate and the ASCII gate are scripts you run rather than hooks, and nothing here wires them. The
+leak gate refuses to run structural-only when you ask it for an armed pass, so a green result cannot
+quietly mean "no detectors were loaded". See [Hooks](HOOKS.md) and [The leak gate](LEAK-GATE.md).
 
 **Assessments too large for one context.** Because a coordinated set of sessions can cover a
 codebase at once, the method extends to compliance work -- an OWASP ASVS 5.0 assessment runs to
@@ -83,10 +82,10 @@ The failure is documented upstream in
 [anthropics/claude-code#76590](https://github.com/anthropics/claude-code/issues/76590), including a
 [field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
 roughly fourteen sessions being handed the same worktree directory as their working directory. An
-agent in one of them runs an ordinary `git checkout -B <branch> origin/main`, git allows it because
-that branch is not checked out anywhere, and the shared working tree force-switches -- swapping
-every file under whichever session was mid-task, and dragging its uncommitted work onto the wrong
-branch. It is invisible while it happens, because each session believes it owns its directory.
+agent in one of them runs an ordinary `git checkout -B <branch> origin/main`. Git allows it, because
+that branch is not checked out anywhere. The shared working tree force-switches -- swapping every
+file under whichever session was mid-task, and dragging its uncommitted work onto the wrong branch.
+It is invisible while it happens, because each session believes it owns its directory.
 
 Three mechanisms here touch that failure, and only one of them prevents it:
 
@@ -158,8 +157,8 @@ depends on it.
 where" reads `<config-root>/sessions/<pid>.json` -- a record the *client* writes, with `pid`,
 `startedAt`, `sessionId`, `cwd`, `entrypoint`, `kind`. This project does not own its shape, its
 location, or its lifetime. If a future client renames a field or changes `startedAt`'s unit, every
-fence here degrades to "cannot tell" rather than to a confident wrong answer -- that is designed for,
-in `scripts/coord/session-registry.ps1`, and the doctor reports how many records it read and placed
+fence here degrades to "cannot tell" rather than to a confident wrong answer. That is designed for,
+in `scripts/coord/session-registry.ps1`. And the doctor reports how many records it read and placed,
 so a schema change shows up as a count going to zero instead of as a silent all-clear.
 
 **3. The desktop app's own session list cannot see every session.** Its `list_sessions` tool
@@ -180,8 +179,8 @@ And the meta-limit that motivates the rest:
 
 One more thing to be clear about before you weigh any of it: **these are guardrails against the
 accidental action, not security boundaries.** The `PreToolUse` gates inspect tool arguments, so a
-file written by a shell command is invisible to them; any agent-authored script defeats a
-command-string rule outright; and `git commit --no-verify` and `git push --no-verify` bypass the git
+file written by a shell command is invisible to them. Any agent-authored script defeats a
+command-string rule outright. And `git commit --no-verify` and `git push --no-verify` bypass the git
 hooks. No CI-side enforcement is shipped.
 
 ---
@@ -199,8 +198,8 @@ Decide first whether the two are one directory, because it decides how much of t
 **vendored** layout, `scripts/`, `bin/` and `ccx.config.json` are copied into the repository they
 govern and committed there -- tooling *is* target. That is the only layout in which the doctor can
 reach exit 0. In the **separate checkouts** layout the worktree gate, both git hooks and the
-SessionStart backstop still govern the target, but the three coordination hooks are shims that locate
-their script inside whatever repository the session is running in, so a target that does not carry
+SessionStart backstop still govern the target. But the three coordination hooks are shims that locate
+their script inside whatever repository the session is running in. So a target that does not carry
 those files gets three hooks that are wired and resolve nothing.
 
 Run all of this from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is `1`,

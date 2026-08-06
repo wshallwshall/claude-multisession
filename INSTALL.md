@@ -110,7 +110,7 @@ runs it. Nothing falls stale, because a pull updates the hook everywhere at once
 shim resolving nothing exits silently and writes nothing, which is byte-identical to a healthy hook
 with no peers.
 
-The gate and git-hook installers write a **copy**, because their scripts must survive a checkout: the
+The gate and git-hook installers write a **copy**, because their scripts must survive a checkout. The
 primary is routinely on a detached HEAD or an old commit, and a hook whose script path lives inside a
 working tree simply vanishes on a branch switch -- after which the tool call runs anyway, silently.
 The price is drift: installing from a stale checkout downgrades the live gate for every worktree at
@@ -128,7 +128,7 @@ creation-time snapshot that nothing refreshes. And a project hook lives on **one
 protects nothing until every other worktree merges it.
 
 Measured on the repository this tooling was developed in: more than half the worktrees had no project
-settings whatsoever, and a live editor session was working in one of them with zero coordination
+settings whatsoever. A live editor session was working in one of them with zero coordination
 context -- it could not see its peers and they could not see it. That is the failure mode that
 matters. It is not obviously broken; it is invisible.
 
@@ -169,8 +169,8 @@ protocol is exactly the drift the shared liveness fence exists to prevent. The c
 kept only as a fallback.
 
 Both candidates are inside the session's **own** repository, which is what makes the vendored layout
-the one where these three rows can be `OK` -- see *Five minutes* in `README.md` for the layout choice
-and what a target that does not carry these scripts gets instead.
+the one where these three rows can be `OK`. See *Five minutes* in `README.md` for the layout choice,
+and for what a target that does not carry these scripts gets instead.
 
 ### Prove it
 
@@ -227,11 +227,11 @@ want governed is not required to carry `scripts/hooks/`.
 
 Installs into the **shared** hooks directory, which lives in the common git directory that every
 linked worktree of the clone shares. One file there reaches all of them the instant it is written --
-no branch, no merge, no propagation lag -- survives a branch switch in any of them, and sees every
-write route (an edit tool, a shell redirect, a script, an editor, a subagent) because it inspects the
-**tree** at commit time rather than a tool call. That last property is why it exists alongside the
-`PreToolUse` gate, which inspects tool arguments and therefore cannot see a file written by a shell
-command.
+no branch, no merge, no propagation lag. It survives a branch switch in any of them. And it sees
+every write route (an edit tool, a shell redirect, a script, an editor, a subagent), because it
+inspects the **tree** at commit time rather than a tool call. That last property is why it exists
+alongside the `PreToolUse` gate, which inspects tool arguments and therefore cannot see a file
+written by a shell command.
 
 | Hook | Checker | Refuses |
 |---|---|---|
@@ -256,11 +256,11 @@ somewhere git never looks -- which is the exact shape of failure this script exi
 
 **Fail-open, declared.** The installed hooks are `/bin/sh` shims that locate a python and exec the
 checker. With no interpreter they write to stderr and exit 0 -- the gate is OFF for that commit, and
-it says so out loud. This is the single failure that turns both gates off everywhere at once while
-every file involved is still present and still looks installed, which is why `-Status` reports which
-interpreter it found, and asks the interpreter for its version rather than trusting the lookup (on
+it says so out loud. This is the single failure that turns both gates off everywhere at once, while
+every file involved is still present and still looks installed. That is why `-Status` reports which
+interpreter it found, and asks the interpreter for its version rather than trusting the lookup. On
 Windows a `python` on `PATH` is often an execution-alias stub that resolves cleanly and then runs
-nothing).
+nothing.
 
 `git commit --no-verify` and `git push --no-verify` bypass both. That is a guardrail against accident,
 not a security boundary; back it with a server-side check if you need one.
@@ -327,8 +327,8 @@ whatever `-Repo` resolved to, above. That file **is** the kill switch.
 The allowlist filename is deliberately *not* derived from `ccx.config.json`'s `prefix`: it lives
 outside any repository, is read by an installed copy that cannot see a repo's config, and is shared
 with the SessionStart backstop. Two components deriving one filename from a per-repo setting is how
-they end up reading different files and agreeing only by luck -- which is a bug this pair has already
-shipped, in a version where uninstalling the gate left the backstop armed and still willing to run
+they end up reading different files and agreeing only by luck. This pair has already shipped that
+bug: in one version, uninstalling the gate left the backstop armed and still willing to run
 `git checkout` on the shared primary.
 
 ### The flag that drops a rule
@@ -436,8 +436,8 @@ which is the only evidence that survives a dependency landing but failing to loa
 cannot load its helpers allows what it should deny, and an attack is what catches that.
 
 The gate still writes its stderr receipt on a load failure, and that is not redundant with the
-above -- an installed copy can lose its helpers later (a cleanup, a partial uninstall, a hand-edited
-hooks directory), and without the receipt "the gate had nothing to say" and "the gate could not load"
+above. An installed copy can lose its helpers later -- a cleanup, a partial uninstall, a hand-edited
+hooks directory. Without the receipt, "the gate had nothing to say" and "the gate could not load"
 are byte-identical.
 
 ---
@@ -479,8 +479,8 @@ makes itself invisible to everyone else while still looking coordinated to itsel
 sessions building in a shared checkout. The git hooks constrain what a session may commit and push.
 The selfheal backstop is the most privileged of the set: it runs `git checkout` on the shared primary
 unattended, from a script the calling session can freely edit. Its only safety property is that it
-refuses a **dirty** tree, so that is the one thing worth verifying rather than assuming --
-`bin/ccx-doctor.ps1` fires it on every run against a drifted, dirty throwaway repository and requires
+refuses a **dirty** tree, so that is the one thing worth verifying rather than assuming.
+`bin/ccx-doctor.ps1` fires it on every run against a drifted, dirty throwaway repository, and requires
 it to decline and to say why (`selfheal negative: dirty primary refused`). A repair there is `RED`.
 
 Run them from a plain `pwsh` terminal.
@@ -507,10 +507,10 @@ installing them there. Installer 3's does not: it removes one shared allowlist a
 every config root, neither of which is repository-keyed.
 
 Each removes only entries carrying its own marker. Installer 2 leaves a foreign hook alone even on
-the uninstall path, and leaves the checker copy with it -- a foreign hook may have been edited to call
-it, and deleting a file something else execs turns somebody else's control off without saying so.
-Installer 3's uninstall removes the shared allowlist, which renders the SessionStart backstop inert
-too, and says so.
+the uninstall path, and leaves the checker copy with it. A foreign hook may have been edited to call
+that copy, and deleting a file something else execs turns somebody else's control off without
+saying so. Installer 3's uninstall removes the shared allowlist, which renders the SessionStart
+backstop inert too, and says so.
 
 **A kill switch has to reach sessions that are already running, so the switches here are files and
 environment variables, not settings edits.**
@@ -560,19 +560,19 @@ write to it: `worktree gate: allowlist ... governed, including this primary`, an
 and a gate that works somewhere else.
 
 The doctor never infers. It enumerates every control by receipt, hashes each installed copy against
-this checkout's source, diffs wired matchers against the rules the installed script implements, and
-then **fires each control on purpose and requires it to refuse**: crafted `PreToolUse` JSON at the
-installed gate, a blanket stage, a commit claiming an unclaimed item, a push to a protected ref, a
-drifted throwaway primary in front of the `SessionStart` backstop. Every attack is paired with a
-negative control -- an ordinary action the same control must allow -- because a script that refuses
-everything is an outage, not a guard, and a probe with no positive control proves nothing. For the
-backstop the negative control is the load-bearing half: repairing a drifted **clean** primary passes
-whether or not the dirty-tree refusal is still in the code, so the pair is a drifted **dirty** one,
-which it must decline to touch and say why. The allocator is the one check with no allow/deny axis --
-it refuses nothing, so there is no ordinary action for it to allow; it is paired instead with the
-property that can be violated, that its read-only floor inspection spends no number and moves no
-ratchet. The attacks run against throwaway git repositories in the temp directory, which are deleted
-on the way out; nothing in your repository is modified.
+this checkout's source, and diffs wired matchers against the rules the installed script implements.
+Then it **fires each control on purpose and requires it to refuse**. The attacks are crafted
+`PreToolUse` JSON at the installed gate, a blanket stage, a commit claiming an unclaimed item, a push
+to a protected ref, and a drifted throwaway primary in front of the `SessionStart` backstop. Every
+attack is paired with a negative control -- an ordinary action the same control must allow -- because
+a script that refuses everything is an outage, not a guard, and a probe with no positive
+control proves nothing. For the backstop the negative control is the load-bearing half: repairing a
+drifted **clean** primary passes whether or not the dirty-tree refusal is still in the code, so the
+pair is a drifted **dirty** one, which it must decline to touch and say why. The allocator is the one
+check with no allow/deny axis: it refuses nothing, so there is no ordinary action for it to allow. It
+is paired instead with the property that can be violated -- that its read-only floor inspection
+spends no number and moves no ratchet. The attacks run against throwaway git repositories in the temp
+directory, which are deleted on the way out; nothing in your repository is modified.
 
 | Exit | Meaning |
 |---|---|

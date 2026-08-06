@@ -371,26 +371,29 @@ settings matcher never invokes the hook at all.
 * Prefer deny-by-default where you can.
 * Where you cannot, assert against an **expectation**, never a count. A count of "3" is not
   information unless the reader knows whether 3 is right. `install-gate.ps1 -Status` reads the tools
-  the **installed** script branches on and diffs them against the wired matchers, reporting `UNWIRED`
-  (implemented but never fires) and `stray` (matched but ignored) separately -- and reporting
-  deliberately-optional rules as `opt-in`, not as `UNWIRED`, because a status line that cries wolf
-  about a known state is one a reader learns to skip.
+  the **installed** script branches on and diffs them against the wired matchers. It reports
+  `UNWIRED` (implemented but never fires) and `stray` (matched but ignored) separately. And it
+  reports deliberately-optional rules as `opt-in`, not as `UNWIRED`, because a status line that cries
+  wolf about a known state is one a reader learns to skip.
 * Express a rule so the tripwire can see it. Rule 4 is written as `$tool -in @("EnterWorktree")`
   rather than a string comparison, specifically so the wiring test parses it as handled. A rule has
   shipped implemented-with-no-matcher before.
 
 ### One splitter, one target resolver
 
-Two gates once shipped two different command splitters, and they were not merely different -- one was
-strictly weaker in four ways: it cut a quoted `;` in half, it did not blank quoted spans, it did not
-look inside interpreter arguments, and it required a segment to start with a bare `git` token so
-`/usr/bin/git add -A` walked past.
+Two gates once shipped two different command splitters, and they were not merely different. One was
+strictly weaker in four ways:
+
+- it cut a quoted `;` in half;
+- it did not blank quoted spans;
+- it did not look inside interpreter arguments;
+- it required a segment to start with a bare `git` token, so `/usr/bin/git add -A` walked past.
 
 Both now dot-source `scripts/hooks/_command.ps1` (split, plus `Test-CcxGitInvocation`) and
 `scripts/hooks/_gittarget.ps1` (which repository does this command act on). Two copies of a safety
 check drift, and the one that drifts is the one nobody is testing. When you harden one rule, sweep
-every sibling that parses the same syntax -- a case-sensitivity fix landed in one rule and was never
-back-ported to the rule protecting the shared tree, where PowerShell's case-insensitive `-match`
+every sibling that parses the same syntax. A case-sensitivity fix landed in one rule and was never
+back-ported to the rule protecting the shared tree -- where PowerShell's case-insensitive `-match`
 happily read git's lowercase `-c name=value` as the `-C <path>` flag.
 
 Parse git's flags **case-sensitively**, and treat `--git-dir`, `--work-tree` and their environment
@@ -497,10 +500,10 @@ Four rules for that probe, each learned by getting it wrong:
    proves the rule can refuse, not that anything is refusing. The doctor downgrades those results
    rather than reporting them green.
 
-`bin/ccx-doctor.ps1` does all of the above in one command: it takes receipts (installed-copy SHA
-versus source, markers present in live settings, wired matchers diffed against implemented rules),
-fires each control on purpose and requires a refusal, prints what it scanned, and names its own blind
-spots on every run. Run it before believing any of this is on.
+`bin/ccx-doctor.ps1` does all of the above in one command. It takes receipts (installed-copy SHA
+versus source, markers present in live settings, wired matchers diffed against implemented rules).
+It fires each control on purpose and requires a refusal, prints what it scanned, and names its own
+blind spots on every run. Run it before believing any of this is on.
 
 ---
 

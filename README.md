@@ -7,16 +7,16 @@ guess.
 
 **PowerShell 7 + Windows-first.** Nearly every shipped script is PowerShell; a handful are Python,
 and those are stdlib-only and portable. The PowerShell house rule is a `#Requires -Version 7.3` line
-at the top, and all but a few carry it: the two selfheal scripts ask only for `7`, and a few carry no
-`#Requires` at all -- deliberately, in the announce hook's case, because its event has to degrade to
-"stand down and say so" rather than throw at load. An exact file census is not printed here on
-purpose: a count in prose is stale on the next file added. Count it against the tree you actually
-have instead, and note that the scope is the question -- `git ls-files 'bin/*.ps1' 'bin/*.py'
-'scripts/*.ps1' 'scripts/*.py'` is the *shipped* set, which is not what a bare `git ls-files '*.ps1'
-'*.py'` returns: that one also sweeps in `examples/` and `tests/`. It runs on PowerShell 7 for Linux
-and macOS, but the Windows
-paths are the ones that were exercised, and two behaviours degrade elsewhere (self-marking in the
-roster, and path case-folding). A bash port is a different project.
+at the top, and all but a few carry it. The two selfheal scripts ask only for `7`, and a few carry no
+`#Requires` at all. That omission is deliberate in the announce hook's case, because its event has to
+degrade to "stand down and say so" rather than throw at load. An exact file census is not printed
+here on purpose: a count in prose is stale on the next file added. Count it against the tree you
+actually have instead, and note that the scope is the question. `git ls-files 'bin/*.ps1' 'bin/*.py'
+'scripts/*.ps1' 'scripts/*.py'` is the *shipped* set. A bare `git ls-files '*.ps1'
+'*.py'` returns something else: it also sweeps in `examples/` and `tests/`. It runs on PowerShell 7
+for Linux and macOS, but the Windows paths are the ones that were exercised, and two behaviours
+degrade elsewhere (self-marking in the roster, and path case-folding). A bash port is a different
+project.
 
 MIT licensed. No dependencies beyond `pwsh`, `git`, and -- for the three git-hook checkers and the
 leak gate -- any `python3` on `PATH`.
@@ -45,8 +45,8 @@ else here depends on it.
 where" reads `<config-root>/sessions/<pid>.json` -- a record the *client* writes, with `pid`,
 `startedAt`, `sessionId`, `cwd`, `entrypoint`, `kind`. We do not own its shape, its location, or its
 lifetime. If a future client renames a field or changes `startedAt`'s unit, every fence here
-degrades to "cannot tell" rather than to a confident wrong answer -- that is designed for, in
-`scripts/coord/session-registry.ps1`, and `ccx doctor` reports how many records it read and placed
+degrades to "cannot tell" rather than to a confident wrong answer. That is designed for, in
+`scripts/coord/session-registry.ps1`. And `ccx doctor` reports how many records it read and placed,
 so a schema change shows up as a count going to zero instead of as a silent all-clear.
 
 **3. The desktop app's own session list cannot see every session.** Its `list_sessions` tool
@@ -227,21 +227,21 @@ pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name alerts
 
 ### What the doctor tells you
 
-It never infers. It enumerates every control by receipt (SHA of the *installed* copy against this
+It never infers. It enumerates every control by receipt: SHA of the *installed* copy against this
 checkout's source, live matchers read out of every config root, wired matchers diffed against the
-rules the installed script actually implements), then **fires each control on purpose and requires
-it to refuse** -- crafted `PreToolUse` JSON at the installed gate, a blanket stage, a commit claiming
-an unclaimed item, a push to a protected ref, a drifted throwaway primary in front of the
-`SessionStart` backstop. Every attack is paired with a negative control, an ordinary action the same
-control must *allow*, because a script that refuses everything is not a working guard either and a
-probe with no positive control proves nothing. For the backstop -- which runs `git checkout` on a
-shared checkout unattended, and is the most privileged control in the set -- that pair is the drifted
-**but dirty** primary it must decline to touch and say why: repairing a clean tree passes whether or
-not the dirty-tree refusal is still in the code, so only the negative control tests it. The allocator
-is the one check with no allow/deny axis at all; it decides nothing, so what it is paired with
-instead is the property that can be violated -- that its read-only floor inspection spends no number
-and moves no ratchet. All of it runs against throwaway git repositories in the temp directory,
-deleted on the way out; your repository is not touched.
+rules the installed script actually implements. Then it **fires each control on purpose and requires
+it to refuse**. The attacks are crafted `PreToolUse` JSON at the installed gate, a blanket stage, a
+commit claiming an unclaimed item, a push to a protected ref, and a drifted throwaway primary in
+front of the `SessionStart` backstop. Every attack is paired with a negative control, an ordinary
+action the same control must *allow*, because a script that refuses everything is not a working
+guard either and a probe with no positive control proves nothing. The backstop runs `git checkout`
+on a shared checkout unattended, and is the most privileged control in the set. Its pair is the
+drifted **but dirty** primary it must decline to touch and say why. Repairing a clean tree passes
+whether or not the dirty-tree refusal is still in the code, so only the negative control tests it.
+The allocator is the one check with no allow/deny axis at all; it decides nothing, so what it is
+paired with instead is the property that can be violated -- that its read-only floor inspection
+spends no number and moves no ratchet. All of it runs against throwaway git repositories in the
+temp directory, deleted on the way out; your repository is not touched.
 
 Its status vocabulary is the whole point:
 
@@ -311,9 +311,9 @@ copies and their allowlist, under your client config root; the wiring entries in
 | `scripts/coord/install-git-hooks.ps1` | `commit-msg` + `pre-push` into the shared `.git/hooks` | One clone, reaching all of its worktrees at once | `-RepoRoot` (which clone), `-HooksDir` (only for a layout `core.hooksPath` does not cover) |
 | `scripts/worktree/install-selfheal.ps1` | The SessionStart backstop, sharing the gate's one allowlist | One config root per run | `-ConfigDir`, which is mandatory. It has no repository of its own: the gate's allowlist is what it governs |
 
-The two that take a repository **refuse to guess** which one. Unset, `-Repo` and `-RepoRoot` mean the
-clone you are standing in, and both installers stop rather than proceed when that is not the clone
-they ship from -- because the wrong answer there installs, wires, hashes and receipts perfectly while
+The two that take a repository **refuse to guess** which one. Unset, `-Repo` and `-RepoRoot` mean
+the clone you are standing in. Both installers stop rather than proceed when that is not the clone
+they ship from, because the wrong answer there installs, wires, hashes and receipts perfectly while
 governing a repository you are not working in.
 
 Three properties, each learned the expensive way:
@@ -350,10 +350,10 @@ all "create this file exclusively; the failure to create *is* the mutual exclusi
 4-of-8-lost-writes measurement above for why the obvious alternative is not an option.
 
 **There are no TTLs anywhere, and the omission is the design.** A lock that expires on a timer hands
-the critical section to a second process while the first is still inside it -- silently, at the exact
-moment the operation is slowest, which is when a timeout is most likely to be the wrong inference.
-Locks retry and never steal: on timeout they fail loudly and name the holder. A wedged lock you can
-see beats a silent double-write you cannot.
+the critical section to a second process while the first is still inside it -- silently, and at the
+exact moment the operation is slowest. That is when a timeout is most likely to be the wrong
+inference. Locks retry and never steal: on timeout they fail loudly and name the holder. A wedged
+lock you can see beats a silent double-write you cannot.
 
 **Liveness may only VETO, never PERMIT.** There is no heartbeat anywhere, so nothing can prove a
 session is gone. `DEAD`/`STALE`/absent is the *absence of a veto*, not a permission. The fence is
@@ -368,17 +368,16 @@ destroy something gates on `Available`, prints the receipt, and refuses when it 
 you examined, not what you found.
 
 **One copy of each safety check.** The liveness fence lives once
-(`scripts/coord/session-registry.ps1`), the cwd->worktree matcher lives once
-(`scripts/coord/occupancy.ps1`), the path-comparison rule and the worktree-path formula live once
-(`scripts/coord/_common.ps1`), the command splitter both shell gates need lives once
+(`scripts/coord/session-registry.ps1`). So does the cwd->worktree matcher
+(`scripts/coord/occupancy.ps1`), and so do the path-comparison rule and the worktree-path formula
+(`scripts/coord/_common.ps1`). The command splitter both shell gates need lives once
 (`scripts/hooks/_command.ps1`), and the "which tree would this git command actually touch" resolver
 lives once beside it (`scripts/hooks/_gittarget.ps1`). The Python gates cannot dot-source PowerShell,
 so they get the one counterpart they need -- config discovery, the git runner, path folding -- in
 `scripts/hooks/_ccxconfig.py`, which states the three things the two sides must agree on. Two copies
-of a safety check drift, and the copy that drifts is the one nobody is testing -- the shared
-substrate files exist precisely because five copies of "resolve the git common dir" had already
-drifted into five behaviours, two of which produced a state root at the filesystem root when git
-failed.
+of a safety check drift, and the copy that drifts is the one nobody is testing. The shared substrate
+files exist precisely because five copies of "resolve the git common dir" had already drifted into
+five behaviours, two of which produced a state root at the filesystem root when git failed.
 
 ---
 

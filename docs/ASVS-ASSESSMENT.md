@@ -424,10 +424,10 @@ control of the same class that must still match something. If the positive contr
 absence claim is void regardless of what the negative pattern returned.
 
 **This repository has a worked example of the same principle applied to guardrails.**
-[`bin/ccx-doctor.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/bin/ccx-doctor.ps1) does not ask whether a control is installed; it fires
-crafted input at the *installed* copy and **requires it to refuse**, and pairs every attack with a
+[`bin/ccx-doctor.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/bin/ccx-doctor.ps1) does not ask whether a control is installed. It fires
+crafted input at the *installed* copy and **requires it to refuse**. It also pairs every attack with a
 negative control -- an ordinary action the same control must **allow** -- because a script that refuses
-everything is not a working guard either. It also prints what it scanned on every run, and reports a
+everything is not a working guard either. It prints what it scanned on every run, and reports a
 check that could not run as `??` rather than letting a skip read as a pass. That is the exact posture
 an assessment needs: *before you trust a gate, make it fail on purpose, and prove it can see the class
 of thing it claims to have ruled out.*
@@ -452,13 +452,18 @@ This is the same shape as several classic tooling traps: a diff on a staged file
 under squash-merge, an exit code read after a pipe. The tool answers a real question. It is not your
 question.
 
-**Assume the instrument is lying and make it prove otherwise.** Four that surfaced inside a single
-day of this work: a preview command that skipped the very guard it was previewing and reported success
-where the real operation refused; a case-sensitive search that "proved" an amendment had not landed
-when it had; an exit code swallowed by a pipe; and a scanner that printed detector counts but no
-scanned-file count, so a run that scanned **nothing** was byte-identical to a clean one. Hence the two
-standing habits: **make every check print what it scanned**, and **make it fail on purpose before you
-believe a pass**.
+**Assume the instrument is lying and make it prove otherwise.** Four surfaced inside a single day of
+this work:
+
+- a preview command that skipped the very guard it was previewing, and reported success where the real
+  operation refused;
+- a case-sensitive search that "proved" an amendment had not landed when it had;
+- an exit code swallowed by a pipe;
+- a scanner that printed detector counts but no scanned-file count, so a run that scanned **nothing**
+  was byte-identical to a clean one.
+
+Hence the two standing habits: **make every check print what it scanned**, and **make it fail on
+purpose before you believe a pass**.
 
 ---
 
@@ -717,11 +722,11 @@ untouched no matter how many of them you add.
 Per-cell verification at this rigour is expensive enough that naive extrapolation across a full
 standard will shock whoever is paying for it. Say the number early.
 
-Savings come from **batching by shared precondition** -- one applicability investigation can serve an
-entire section, one posture question can settle a dozen cells -- and **never** from cutting rigour on
-a cell, because an unearned verdict is the entire defect the exercise exists to prevent. A cheaper
-assessment that produces unearned passes has not saved anything; it has bought a document that reads
-like an assessment.
+Savings come from **batching by shared precondition**: one applicability investigation can serve an
+entire section, and one posture question can settle a dozen cells. They **never** come from cutting
+rigour on a cell, because an unearned verdict is the entire defect the exercise exists to prevent.
+A cheaper assessment that produces unearned passes has not saved anything; it has bought a document
+that reads like an assessment.
 
 ### The recurring agent failure modes, in one table
 

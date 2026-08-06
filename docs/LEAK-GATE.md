@@ -6,8 +6,8 @@ Publishing a repo that grew up in private is not a licence question, it is a *st
 code is fine. What follows it out the door is the absolute path some traceback printed, the address
 of a box someone pasted out of a terminal, a token prefix in a config example, and the name of the
 client the work was actually for. None of that is a syntax error, a test failure, or a *secret* in
-the sense a secret scanner means -- so nothing else in a normal toolchain is looking for it, and it
-is found by a reader, after publication, or not at all.
+the sense a secret scanner means. So nothing else in a normal toolchain is looking for it, and it is
+found by a reader, after publication, or not at all.
 
 Stdlib Python, no project import, exit codes only. Runs in a bare clone, in a git hook with no
 virtualenv, or on a CI runner.
@@ -60,8 +60,8 @@ tell them apart.
 **2. Every named argument is accounted for by name.** `--path` takes a directory (a file is accepted
 and scanned too). If any argument you named contributes zero scanned files, the run prints that
 argument and why, and exits `2` -- *even when other arguments scanned fine*. This one is a fix, not a
-feature: the version this was ported from silently dropped a file argument, and its zero-files
-refusal only fired when **everything** was dropped, so one surviving directory was enough to make a
+feature. The version this was ported from silently dropped a file argument, and its zero-files
+refusal only fired when **everything** was dropped. So one surviving directory was enough to make a
 run that scanned the wrong half of its input exit `0` without a word.
 
 **3. It prints what it scanned and what it loaded.** Two lines on stderr, on every run, pass or fail:
@@ -80,10 +80,10 @@ whichever one scrolled past last.
 ## Wiring it as a pre-commit hook
 
 The installers in this repo **never write `.git/hooks/pre-commit`** -- deliberately, and
-`tests/test_installers_never_write_pre_commit.py` pins it. Two tools cannot both own that one file, and a hook framework that finds a foreign
-hook there may rename it and invoke it through its own shim; that chain has failed on Windows and
-blocked every commit in a repository until the shim was removed. So wiring this one is yours to do,
-whichever way your repo already handles `pre-commit`.
+`tests/test_installers_never_write_pre_commit.py` pins it. Two tools cannot both own that one file.
+A hook framework that finds a foreign hook there may rename it and invoke it through its own shim.
+That chain has failed on Windows and blocked every commit in a repository until the shim was
+removed. So wiring this one is yours to do, whichever way your repo already handles `pre-commit`.
 
 If you use the `pre-commit` framework, it passes staged filenames as arguments:
 
@@ -141,17 +141,20 @@ a sum, so growth in a cheap section masks collapse in an expensive one.
 
 The expected count is supplied from **outside** the token file on purpose. A count carried inside it
 would be destroyed by the same mangling it exists to detect. The parser is built around that same
-assumption -- it refuses an entry containing an invisible codepoint (a zero-width space pasted
-through a rendering surface parses fine, counts toward the floor, and never matches), strips a BOM
-ahead of the first section header, names an unknown header instead of dropping its entries in
-silence, and never echoes a token in a warning, because the warning lands in a public log.
+assumption, so it:
+
+- refuses an entry containing an invisible codepoint (a zero-width space pasted through a rendering
+  surface parses fine, counts toward the floor, and never matches);
+- strips a BOM ahead of the first section header;
+- names an unknown header instead of dropping its entries in silence;
+- never echoes a token in a warning, because the warning lands in a public log.
 
 ### The allowlist
 
 `scripts/security/scan-allowlist.txt` holds one line-regex per vetted false positive. An entry is a
 per-line **veto applied before any detector runs**, so one over-broad entry disables the entire gate
-while every count in the log still reads healthy -- and this file is committed and public, so the
-entry that does it need not be malicious; a hastily written `.*` for one false positive is enough.
+while every count in the log still reads healthy. And this file is committed and public, so the
+entry that does it need not be malicious: a hastily written `.*` for one false positive is enough.
 The loader refuses any pattern that matches ordinary prose or the empty string. Never allowlist a
 real path, host or name: remove it from the file instead.
 
@@ -240,11 +243,13 @@ to coverage instead of to detectors.
 **A scanner cannot see a policy judgement.**
 
 "This content does not belong in a public repository" is not a token class, and no pattern will ever
-catch it. A design note that describes an internal system in enough detail to attack it, a case
-study whose specifics identify the organisation it happened at, a benchmark number that fingerprints
-a host, a lesson that cannot be told without shipping the recipe for bypassing a control -- every one
-of those can pass this gate cleanly, because every one of them is *ordinary prose containing no
-forbidden string*.
+catch it. Every one of these can pass this gate cleanly, because every one of them is *ordinary
+prose containing no forbidden string*:
+
+- a design note that describes an internal system in enough detail to attack it;
+- a case study whose specifics identify the organisation it happened at;
+- a benchmark number that fingerprints a host;
+- a lesson that cannot be told without shipping the recipe for bypassing a control.
 
 That check is a human read, of the whole diff, by someone who knows what must not be said. This gate
 exists to make that read cheaper by taking the mechanical classes off their plate. It does not

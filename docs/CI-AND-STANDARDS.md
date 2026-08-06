@@ -23,8 +23,8 @@ Scope and honest limits, first:
 - **Numbers here come from one of two places, and the difference is marked at the point of use.**
   Unmarked figures were measured on the repo this tooling was developed in; they are stated to
   justify a rule, never as constants you should expect to reproduce. Figures taken from published
-  research carry an explicit **[external]** tag and are not this repository's measurements at all --
-  they carry their own sources' limitations, and the rule in *Do not claim a speed or quality gain
+  research carry an explicit **[external]** tag, and are not this repository's measurements at all.
+  They carry their own sources' limitations, and the rule in *Do not claim a speed or quality gain
   you have not measured here* applies to them first.
 
 Related, and deliberately not repeated here: [`PR-AND-MERGE.md`](PR-AND-MERGE.md) for merge-base,
@@ -340,7 +340,7 @@ blindness rather than deleting it silently.
 ### Attack the control with the failure class it was built to catch
 
 The liveness gate written to catch gates-that-never-ran was found, in adversarial review before
-merge, carrying **all three** of its own failure modes: a dead measurement could pass by declaring
+merge, carrying **all three** of its own failure modes. A dead measurement could pass by declaring
 itself not-applicable, an empty results file reported a flawless score, and its reconciliation was
 algebraically blind.
 
@@ -457,9 +457,9 @@ half.
 ### Push everything before arming auto-merge, then assert the head revision
 
 Auto-merge squashes whatever revision went green. A follow-up commit pushed about a minute after
-arming lost the race: the squash landed the **earlier** revision -- keeping even the pre-push title --
-while the monitor truthfully reported zero failing checks and a merged state for work that was not on
-the trunk. The merge looks completely successful and nothing warns you.
+arming lost the race. The squash landed the **earlier** revision, keeping even the pre-push title.
+Meanwhile the monitor truthfully reported zero failing checks and a merged state for work that was
+not on the trunk. The merge looks completely successful and nothing warns you.
 
 **Rule.** Push every commit **first**, then arm auto-merge, then assert the PR's head revision equals
 your local `HEAD`. That one comparison is the whole defence. After any auto-merge, verify the
@@ -532,10 +532,9 @@ would be built on a change that might be reverted, or the push has not been veri
 ### "Tooling unavailable" is a fallback, not a diagnosis
 
 A CI-status panel's message advising that the CLI may not be installed or authenticated was in fact
-its **unclassified-error branch**, reached by at least four distinct upstream causes -- including one
-where the tool resolved a PR number against the **wrong repository**, because the working directory
-belonged to a sibling checkout. That last cause is not hypothetical for anyone running several
-worktrees.
+its **unclassified-error branch**. At least four distinct upstream causes reach it. One of them: the
+tool resolved a PR number against the **wrong repository**, because the working directory belonged to
+a sibling checkout. That last cause is not hypothetical for anyone running several worktrees.
 
 **Rule.** Treat a generic *"unavailable -- check your setup"* string as **undiagnosed**. Verify auth
 independently, then run the same query with the target repository named explicitly and compare. If a
@@ -572,9 +571,9 @@ reading an advisory mailing list.
 ### Constrain every install site from a checked-in lock
 
 Install steps that resolved from lower-bound version floors made CI a fresh dependency resolution on
-every run. Upstream releases then landed silently: a linter's stricter defaults produced hundreds of
-new errors, and a transitive package dropping an export broke an unrelated dependency -- each
-reddening **every open PR** on the same day, and every contributor read it as their own change
+every run. Upstream releases then landed silently. A linter's stricter defaults produced hundreds of
+new errors, and a transitive package dropping an export broke an unrelated dependency. Each of those
+reddened **every open PR** on the same day, and every contributor read it as their own change
 breaking something.
 
 **Rule.** Constrain every install site from a checked-in lock, and have a gate re-export the lock and
@@ -594,17 +593,20 @@ file stale, and the PR was red with **no bot-reachable path to green** -- meanin
 dependency bump needed a hand fix.
 
 **Rule.** When you add a file to a gate's regenerate-and-diff set, grep for every **other** place that
-regenerates that set -- including automation you do not run yourself -- and update them in lockstep,
-ideally pinned by a test asserting the two lists match. Any gate a bot must satisfy needs the bot's
-fixer changed in the same commit.
+regenerates that set -- including automation you do not run yourself -- and update them in lockstep.
+Ideally, pin that with a test asserting the two lists match. Any gate a bot must satisfy needs the
+bot's fixer changed in the same commit.
 
 ### A skip is not a pass -- sweep for the old path after moving anything
 
-Relocating one scanner script broke three checks the same way, all of which looked green from
-outside: a **required** CI job logged *"script absent -- skipping"* and exited zero; a test passed
-locally only because the developer tree happened to hold a git-ignored input; and two parity tests
-skipped at module level because a loader still pointed at the deleted path. A relocation sweep
-estimated at "a couple of references" was **32 references across 19 files**.
+Relocating one scanner script broke three checks the same way, and all of them looked green from
+outside:
+
+- a **required** CI job logged *"script absent -- skipping"* and exited zero;
+- a test passed locally only because the developer tree happened to hold a git-ignored input;
+- two parity tests skipped at module level because a loader still pointed at the deleted path.
+
+A relocation sweep estimated at "a couple of references" was **32 references across 19 files**.
 
 **Rule.** After moving any file a gate depends on, grep the whole tree for the **old** path and treat
 every hit as a potential silent skip. Run the suite with skip reasons displayed on anything that
@@ -661,10 +663,10 @@ a certificate.
 
 Routing a **required** check to a self-hosted runner with no hosted fallback means that if the box is
 offline the check queues for up to about a day and then fails, freezing merges repository-wide -- not
-just for the PR that noticed. Provisioning differences bite first: the first runs failed at **setup**,
-not in tests, because the runner account could not self-install a language toolchain and because the
-shell the workflow steps declared was not on the machine `PATH`, which hosted images provide by
-default.
+just for the PR that noticed. Provisioning differences bite first. The first runs failed at
+**setup**, not in tests, because the runner account could not self-install a language toolchain, and
+because the shell the workflow steps declared was not on the machine `PATH`, which hosted images
+provide by default.
 
 **Rule.** Never make a required context depend on hardware only you can restart, without a fallback.
 Pilot a runner change on a draft PR and confirm the runner is idle and reporting before making it
@@ -743,11 +745,14 @@ The four subsections that follow are the specific shapes this audit kept finding
 
 A repo that states a fact twice will eventually state it two ways, and **the stale copy is the one
 that gets cited** -- a reader who finds *a* statement stops looking for the other. Three instances
-landed in a single day: a capability described identically across five live documents when the
-underlying API did not provide it at all; a superseded claim left in one document after the code
-closed it, from where it propagated into a public page *and* an internal review; and one section
-asserting a class of data never appears in a URL while a later section of the same file documented
-the parameters that carry it.
+landed in a single day:
+
+- a capability described identically across five live documents when the underlying API did not
+  provide it at all;
+- a superseded claim left in one document after the code closed it, from where it propagated into a
+  public page *and* an internal review;
+- one section asserting a class of data never appears in a URL, while a later section of the same
+  file documented the parameters that carry it.
 
 In every case the repo held both the right and the wrong version.
 
@@ -936,9 +941,9 @@ auto-merge enabled, opening a pull request effectively **is** merging.
 | How to structure the change | Anything outward-facing or public |
 
 **Never work around a gate** with a bypass flag or a rename. If a gate fires, fix the cause. The
-split itself is a one-line imperative and appears at the point of use in
-[`TIPS-AND-TRICKS.md`](TIPS-AND-TRICKS.md) section 3 (*"commit at logical stops; ask before push, PR and
-merge"*) -- that repetition is exactly the exception described above, and nothing else about the
+split itself is a one-line imperative, and appears at the point of use in
+[`TIPS-AND-TRICKS.md`](TIPS-AND-TRICKS.md) section 3 (*"commit at logical stops; ask before push, PR
+and merge"*). That repetition is exactly the exception described above, and nothing else about the
 split is restated there.
 
 ### One coherent layer per commit
@@ -1011,10 +1016,11 @@ it or silently ignoring it. The same rule governs a peer session's messages --
 
 ### A path deny-list is not a content control
 
-A path-based deny-list stops the agent reading a file, and gives false confidence, because it cannot
-stop a string a human pastes into the prompt, a value that a command the agent ran echoes into
-captured output, or something written into persistent memory. Commands whose output legitimately
-contains sensitive payloads are a live leak path into transcripts and committed files.
+A path-based deny-list stops the agent reading a file, and gives false confidence. The confidence is
+false because it cannot stop a string a human pastes into the prompt, a value that a command the
+agent ran echoes into captured output, or something written into persistent memory. Commands whose
+output legitimately contains sensitive payloads are a live leak path into transcripts and committed
+files.
 
 **Rule.** Pair the path deny-list with a **commit-time content scan that fails closed**, so anything
 reaching a commit is caught by a second, different mechanism. Keep the human rule first: do not paste
@@ -1037,10 +1043,9 @@ forbidden-content scanning in CI **over the full history**.
 of the distinct modules referenced in real LLM output did not exist, which is what makes
 plausible-but-fake package names an attack surface. The magnitude is model-era-specific and should be
 re-derived rather than quoted; the attack surface is what the rule rests on. And an existence check
-has a blind spot
-that is easy to mistake for coverage: a package that genuinely exists, publishes files, is years old,
-and is served under its own canonical name still passes every automated check **while being a
-different project than the one you intended**.
+has a blind spot that is easy to mistake for coverage. A package that genuinely exists, publishes
+files, is years old, and is served under its own canonical name still passes every automated check
+**while being a different project than the one you intended**.
 
 **Rule.** Gate on existence, publishing history, an age floor, and canonical-name identity -- failing
 closed when the index is unreachable or when zero distributions were examined (a receipt, exactly as
@@ -1121,7 +1126,7 @@ the gap as a finding. Where the parity can be encoded as **one deterministic che
 instances**, prefer that to a recurring manual sweep.
 
 This is why `scripts/coord/install-git-hooks.ps1` installs into the shared git hooks directory: one
-file governs every worktree of the clone at once, and it sees **every write route** -- an edit tool, a
+file governs every worktree of the clone at once. It also sees **every write route** -- an edit tool, a
 shell redirect, an editor, a subagent -- because it inspects the tree rather than a tool call. There
 are no siblings to miss.
 
@@ -1174,7 +1179,7 @@ the same commit, reconcile against the integration branch before merge, and back
 rejects a number the session did not allocate. Never grep for the next free number. Mechanism and
 worked example: [`SEQUENCE-ALLOC.md`](SEQUENCE-ALLOC.md), `scripts/coord/alloc.ps1`,
 `scripts/hooks/seq_check.py`, and the annotated original in
-`examples/ledger_check.annotated.py` -- whose comments are the transferable part, including why the
+`examples/ledger_check.annotated.py`. Its comments are the transferable part, including why the
 CI mode must use a two-dot diff and how the three-dot version failed **silently**, reporting PASS on
 every run where it could not see.
 
@@ -1237,7 +1242,7 @@ the remote. Coordinate writes to any shared state -- notes, memory, ledgers -- a
 - `bin/ccx-doctor.ps1` -- receipts, attack-with-a-negative-control, and printed blind spots, in one
   command
 - `.github/workflows/gates.yml` -- this repository's own gates, as a worked example of the rules
-  above: least privilege, an action pinned by commit SHA rather than a mutable tag, each step
-  printing what it examined, a leak-gate step that says out loud when it ran with the private-name
-  detectors off, and a test step that refuses a pass when the runner reports zero tests. It
+  above. It uses least privilege, and pins an action by commit SHA rather than a mutable tag. Each
+  step prints what it examined. A leak-gate step says out loud when it ran with the private-name
+  detectors off, and a test step refuses a pass when the runner reports zero tests. It
   deliberately does **not** run the doctor -- the reason is in the file's header
