@@ -26,7 +26,7 @@ one of them is meant to be edited down to your setting before it is useful.
 | **Code quality** | [page](CODE-QUALITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx) |
 | **Secure development** | [page](SECURE-DEVELOPMENT.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx) |
 | This overview | -- | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/OVERVIEW.docx) |
-| A working agreement that adopts them | -- | [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) | -- |
+| **A `CLAUDE.md` template** -- `CLAUDE.md` is the file Claude Code reads at the start of every session, so it is where a project's standing rules live. This one is a starting point. | -- | [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) | -- |
 
 Rows are in the [recommended reading order](#the-order-to-read-them-in).
 
@@ -48,10 +48,11 @@ files hold the same content, generated from the same markdown.
 You learn more from those three answers than from reading the document end to end, because they are
 about your code. [The CISO summary](CISO-SUMMARY.md) is the exception. It is written to be read.
 
-**Then write down what you actually built.** The
-[working agreement template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template)
-carries a table for exactly that: which of these controls exist here, and when each was last proven
-able to fail. A standard that no working agreement references is a document, not a practice.
+**Then write down what you actually built.** Claude Code reads a file called `CLAUDE.md` at the
+start of every session, which makes it the place a project keeps its standing rules. The
+[template above](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) carries a table for
+exactly that: which of these controls exist here, and when each was last proven able to fail. A
+standard that no such file references is a document, not a practice.
 
 **MIT licensed** -- adapt them, publish the result, drop the attribution.
 
