@@ -1,0 +1,1180 @@
+# ---------------------------------------------------------------------------------------------
+# THE DATA BEHIND THE INTERACTIVE SELECTOR ON THE STANDARDS LANDSCAPE PAGE.
+#
+# ONE PLACE. Everything the selector says -- every question, every option, every item, every
+# status, every boundary panel -- is declared here. _includes/standards-selector.html renders it
+# and contains no facts of its own. Someone updating a status six months from now edits this file
+# and nothing else. That separation is the point: a status buried in rendering code is a status
+# nobody finds, and this whole page exists to argue that a stale status is the expensive failure.
+#
+# THE OTHER COPY, AND WHY IT IS ALLOWED TO EXIST. docs/standards/STANDARDS-REFERENCE.md carries the
+# same items as a lookup table, because the markdown and the Word conversion have to stand alone --
+# a reader who downloaded the .docx cannot run a web app. Two copies of one fact diverge silently,
+# so tests/test_the_selector_matches_the_routing_table.py asserts every `name` and every `status`
+# below appears verbatim in that file. If you edit a status here, edit it there in the same commit
+# or the test says so.
+#
+# ASCII ONLY. scripts/quality/check-ascii.ps1 walks the whole tree and fails the build on any
+# non-ASCII byte. No curly quotes, no en or em dashes, no arrows. Write `--`.
+#
+# NO GLYPHS, NO EMOJI, and no numbered claim without "at least" in front of it. A bare count is a
+# completeness claim with a handle on it, and this page is not allowed to make one.
+# ---------------------------------------------------------------------------------------------
+
+# Every status below was checked on this date, and the selector refuses to print a status without
+# it. One date, declared once: a per-item date would drift into a set of dates nobody re-checked.
+checked: "2026-08-06"
+
+# The page the item cards link into. Relative on purpose -- it resolves both on the served site and
+# in a saved file:// copy sitting beside its sibling, and it needs no baseurl to be correct.
+reference_page: "STANDARDS-REFERENCE.html"
+
+# ---------------------------------------------------------------------------------------------
+# THE BOUNDARY PANELS
+#
+# These render inside the result region itself, above the first item, in every state including the
+# unfiltered resting state. Not a footer, not a collapsed element, not smaller than body text. A
+# disclaimer that is read once and then scrolled past is a disclaimer that does no work; the ones
+# below are load-bearing, so they sit where the answer is.
+# ---------------------------------------------------------------------------------------------
+boundary:
+  no_legal_advice: >-
+    This names documents that MAY reach a situation like yours, and what to check next. It is a
+    starting point, not a determination, and it is not legal advice. Whether any of it reaches
+    your organization is decided by a clause number, not by a web page.
+  not_complete: >-
+    At least these. This is not a complete list, and matching no situation here is not evidence
+    that nothing reaches you.
+  status_dates: >-
+    Every status shown here was checked on the date printed beside it. This is a snapshot, not a
+    maintained register: several of these facts changed within the twelve months before that date
+    and some will have changed since. Re-check anything you intend to rely on at the publisher's
+    own listing, the program's own definitions page, the clause and its deviations, or the data
+    file's own header.
+  privacy: >-
+    Your selections stay in this page. Nothing is stored, and nothing is sent anywhere.
+
+# Rendered at the top of the "what can actually be produced" block whenever an organization-layer
+# instrument is in the result, and always when the reader ships software. This is the highest-value
+# sentence the selector can show, which is why it is not reachable only by scrolling.
+org_vs_software_layer:
+  heading: "The organization layer is not the software layer"
+  body: >-
+    A buyer asks a software vendor for a certificate or an audit report and reads the answer as
+    evidence about the SOFTWARE. These are evidence about the ORGANIZATION. A vendor can hold every
+    one of them and still ship insecure code, because none of them looked at the code. That does
+    not make them worthless -- they establish that a company has a functioning security program,
+    which is a real thing to know. They just do not answer "is this product secure", and the
+    failure is reading them as though they did.
+
+# The permanent last card. Present in every state, carrying the same weight as an item card, and
+# never collapsed. Naming what the instrument structurally cannot see is the strongest available
+# defeat of the completeness reading, because copy alone loses to the shape of a returned list.
+not_on_this_map:
+  heading: "Not on this map"
+  body: >-
+    Jurisdictions outside the US and the EU. US state privacy laws. The rest of the ISO/IEC 27000
+    series and the AI management-system standards. The NIST Cybersecurity Framework and the NIST AI
+    Risk Management Framework. Common Criteria and product evaluation schemes. Proprietary
+    assurance schemes and regional cloud programs. Safety-oriented standards for industrial and
+    vehicle software. Sector regimes beyond the several named here as a set. Also absent: the
+    enforcement and liability exposure that attaches to a signature or a representation, which is a
+    question for counsel and not for this page.
+  # Phrased around what reaches the reader rather than around the possessive form of "obligation",
+  # on purpose, and the pin in tests/ is deliberately strict enough to catch a relapse even in a
+  # comment. The result panel never names anything as the reader's own duty, not even inside a
+  # conditional: that possessive is exactly the shape that survives review and still reads as a
+  # verdict.
+  closer: >-
+    If what reaches you sits in one of these, this page will tell you nothing about it, and you
+    should not read its silence as coverage.
+
+# The instrument check, and the routes table. Both are explanation rather than result, so both sit
+# behind a disclosure -- level 2 of exactly two levels. Level 3 is the reference page, not a third
+# nested control.
+instrument_check:
+  heading: "Why every identifier here carries a version"
+  body: >-
+    What binds you is a clause, and a clause pins a dated version. "Use the current publication" is
+    frequently the wrong instruction: a regulation citing a publication by date keeps citing it
+    after the publisher supersedes it, which is how a rule stays stable rather than an error in it.
+    That is why no identifier here appears without its version, revision, edition or release.
+
+routes:
+  heading: "How these actually reach you"
+  intro: >-
+    At least five routes. The route decides the owner far more reliably than the subject does,
+    which is why this is the part that decides where budget lands.
+  rows:
+    - route: "A direct binding on a producer"
+      day: "A market-access rule you satisfy before you ship, with no customer asking"
+      governs: "The regulation and the conformity route it sets"
+      owner: "Engineering and release, not the compliance function"
+    - route: "A clause in one specific contract, or a flow-down from a prime"
+      day: "A clause number in a solicitation or an award"
+      governs: "The clause text, plus any deviation that modifies it. Not the publication it cites"
+      owner: "Contracts, with security supplying the evidence"
+    - route: "A supplier-risk clause inside somebody else's regime -- the questionnaire"
+      day: "A spreadsheet quoting identifiers drawn from several unrelated documents"
+      governs: "Their obligation, not yours. It never binds you; it obliges them to ask"
+      owner: "Security with sales, and it is the largest recurring cost in this table"
+    - route: "A procurement or payment-chain agreement"
+      day: "A program status or a validation requirement as a condition of the deal"
+      governs: "The program's or the counterparty's own rules, which may not be the standard author's"
+      owner: "The program owner, usually outside security"
+    - route: "Your own risk decision"
+      day: "Nobody asked. You adopted it"
+      governs: "Your own written scope, and nothing else"
+      owner: "Whoever proposed it, and that should be written down"
+
+# ---------------------------------------------------------------------------------------------
+# THE RESULT BLOCKS
+#
+# The result is not one list. It is four labeled blocks in a fixed order, and a reader who stops
+# after the first has still been told something true. `empty` is the sentence the block prints when
+# nothing lands in it -- an empty block is a finding, not a gap to hide.
+# ---------------------------------------------------------------------------------------------
+#
+# `starts_hidden` marks a block with NO resting occupants -- nothing rests in it in the served HTML,
+# so without it the block would ship as a heading and an introduction standing over nothing. The
+# script clears it on first render and owns the block's visibility from then on.
+blocks:
+  - id: a
+    heading: "Arrives without anyone asking"
+    # Conditional, and deliberately so. This is the only block whose introduction could be read as a
+    # statement about the reader rather than about a document, and the reader's own answer to a
+    # market question is not enough to establish that a product was placed on that market.
+    intro: >-
+      Binds a producer directly, if the trigger below describes what you ship. No customer has to
+      ask, and no contract has to name it.
+    empty: "Nothing mapped here binds you directly on what you have told it so far."
+  - id: b
+    starts_hidden: "yes"
+    heading: "What can actually be produced"
+    intro: >-
+      Driven by what somebody asked you for. Each row leads with what the document issues, because
+      most of them issue nothing and being asked for a certificate that does not exist is the
+      routine case.
+    empty: "Nobody has asked you for anything you have recorded here yet."
+  - id: ai
+    starts_hidden: "yes"
+    heading: "Offered as though it governs this, and does not"
+    intro: >-
+      Nothing mapped here currently governs a developer using an AI coding assistant. That is a
+      finding about the landscape, stated as an absence rather than as a gap somebody has filled.
+      These three are routinely misfiled as doing so.
+    empty: ""
+  - id: c
+    heading: "May reach you, and how"
+    intro: "Each row carries the route it arrives by, what it issues, and when its status was checked."
+    empty: "Nothing else surfaced on what you have told it so far."
+  - id: d
+    heading: "Governs the examiner, not you"
+    intro: >-
+      These change what an audit looks like and impose nothing on you. Reading them as
+      requirements on yourself manufactures controls nothing ever asked for, which is why the label
+      comes before the names.
+    empty: ""
+
+# ---------------------------------------------------------------------------------------------
+# THE GROUPS
+#
+# `ref` is the anchor on the reference page an item's single outbound link points at. Kramdown
+# generates those ids from the headings, so a heading reworded on that page without changing the
+# anchor here produces a link that lands at the top of the page instead of the row -- degraded, not
+# broken, and the pinning test names the file to check.
+# ---------------------------------------------------------------------------------------------
+groups:
+  - id: producer-binding
+    label: "Addressed to a software producer"
+    ref: "#requirement-shaped-items"
+  - id: rankings
+    label: "Addressed to a software producer -- a ranking, not a requirement set"
+    ref: "#rankings-and-awareness-lists"
+  - id: org-instruments
+    label: "Addressed to an organization that operates systems"
+    ref: "#certification-and-program-regimes"
+  - id: sector-regimes
+    label: "Addressed to an organization that operates systems"
+    ref: "#sector-and-jurisdiction-regimes"
+  - id: control-catalogs
+    label: "Addressed to an organization that operates systems"
+    ref: "#control-catalogs-and-operational-inputs"
+  - id: assessor
+    label: "Addressed to an assessor"
+    ref: "#addressed-to-an-assessor"
+  - id: infrastructure
+    label: "Addressed to nobody: infrastructure and vocabulary"
+    ref: "#addressed-to-nobody-infrastructure-and-vocabulary"
+
+# ---------------------------------------------------------------------------------------------
+# THE QUESTIONS
+#
+# FIVE, and every one of them is answerable from memory about your own business. No option may
+# require knowing a standard's name, an addressee taxonomy, or the difference between an
+# attestation and a certification to answer -- the moment one does, the selector has re-created the
+# problem it exists to fix.
+#
+# Checkboxes throughout, because the combination semantics are UNION: selecting more makes the
+# answer BIGGER. A radio group or a wizard renders a union as a narrowing interrogation ending in a
+# single outcome screen, and an outcome screen reads as a computed verdict. This page is not
+# allowed to issue one, so it does not use the control whose shape asserts one.
+#
+# `widens: true`   -- "Not sure". Contributes the union of every substantive option on the question
+#                     and names itself in the widening notice. Unknown resolves toward MORE.
+# `selects_nothing: true` -- a definite answer that surfaces no item. It still prints `note`,
+#                     because "no item routes on what you named" and "nothing reaches you" are
+#                     different sentences and a reader will otherwise read the first as the second.
+# `opener`         -- rendered at the top of the "what can actually be produced" block when the
+#                     option is selected. This is the sentence that pays for the whole app.
+# ---------------------------------------------------------------------------------------------
+questions:
+  - id: role
+    legend: "What do you actually deliver?"
+    help: >-
+      This decides whether an instrument that examined an operating environment can say anything at
+      all about your build. Check every one that fits.
+    options:
+      - id: software
+        label: "Software that other people install and run"
+      - id: service
+        label: "A service we host and operate for our customers"
+      - id: internal
+        label: "Systems we operate for ourselves, not sold to anyone"
+      - id: unknown
+        label: "Not sure"
+        widens: true
+
+  - id: market
+    legend: "Where does what you build end up?"
+    help: >-
+      Buyer identity and market placement produce the only two routes that need nobody to ask you:
+      a market-access rule, and a procurement condition.
+    options:
+      - id: us_federal
+        label: "With a US federal agency"
+      - id: us_sled
+        label: "With a US state, local, tribal or education buyer"
+      - id: us_commercial
+        label: "With US commercial businesses"
+      # Worded as PLACEMENT of a product, not as selling to EU customers, because that is the
+      # market-access regulation's own trigger and this is the one option whose answer moves an
+      # item into the direct-binding block. A broader label collected hosted-service vendors who
+      # place no product anywhere and told them something binds them.
+      - id: eu_market
+        label: "A product with digital elements, placed on the EU market"
+      - id: other_intl
+        label: "Outside the US and the EU"
+        note: >-
+          Jurisdictions outside the US and the EU were not assessed here. That is a coverage
+          statement, not a routing answer -- read the silence as absence, not as clearance.
+      - id: none_yet
+        label: "Nowhere yet: no external customers"
+        selects_nothing: true
+        note: "Nothing here binds you yet. What follows is what will arrive, and by which route."
+      - id: unknown
+        label: "Not sure"
+        widens: true
+
+  - id: data
+    legend: "What kinds of information does what you build touch?"
+    help: >-
+      Answer for what the software or service handles, stores or transmits -- not for what your HR
+      department holds. Asked as data rather than as industry on purpose: at least one rule's
+      statutory definition of a covered institution reaches wider than self-image, so an
+      organization that does not think of itself as one would answer the industry question with
+      confidence and be routed away from a rule that reaches it.
+    options:
+      - id: health
+        label: "Health or treatment information about identifiable people"
+      - id: cardholder
+        label: "Payment card numbers, or the systems that process them"
+      - id: consumer_financial
+        label: "Consumer financial account information, or lending and financial-service records"
+      - id: education
+        label: "Student education records held for a school, college or district"
+      - id: law_enforcement
+        label: "Criminal justice or law enforcement records"
+      - id: gov_controlled
+        label: "Information a government contract tells you to protect"
+      - id: none
+        label: "None of these"
+        selects_nothing: true
+        note: >-
+          No sector regime mapped here routes on the data you named. That is not the same as
+          nothing reaching you, and the sector regimes this page never mapped are listed under
+          "Not on this map" below.
+      - id: unknown
+        label: "Not sure"
+        widens: true
+
+  - id: ask
+    legend: "Has anyone asked you for anything yet?"
+    help: >-
+      The shape of the ask decides which answer is even possible. A certificate that does not exist
+      cannot be produced, and naming what does exist is the whole move.
+    options:
+      - id: certificate_or_report
+        label: "A customer wants a certificate or an audit report before signing"
+        opener: >-
+          An instrument that does exist, unlike most of this page. What it is worth turns on scope,
+          on accreditation, and on which criteria were elected. Read the scope statement first --
+          the cover page tells you nothing.
+      - id: questionnaire
+        label: "A security questionnaire or spreadsheet arrived"
+        opener: >-
+          A questionnaire is not a regulator, and it never binds you -- it obliges them to ask.
+          Most items here issue no certificate, so name what does exist: a scoped certificate for
+          something else, a report, a self-attestation, provenance, or named control
+          correspondences.
+      - id: clause_named_list
+        label: "A contract clause names a published list or a ranking"
+        opener: >-
+          A ranking has no completion condition and cannot be discharged as written. A clause
+          requiring software to be free of the issues in an ordered list of categories never says
+          when verification is finished, so a program scoped that way finishes when the scanner
+          stops printing. Convert it into a requirement-set clause WHILE THE CLAUSE IS BEING
+          AGREED. By assessment time the only remaining options are to argue or to over-deliver.
+      - id: attestation_form
+        label: "We were asked to sign an attestation form"
+        opener: >-
+          Told as one event when it was two, seven months apart. A signed self-attestation is a
+          different instrument from a certificate, and rescinding the instruction that prompted a
+          signature is prospective -- it unsigns nothing.
+      - id: flowed_down
+        label: "A prime contractor or a larger customer flowed a security requirement down to us"
+        opener: >-
+          This is a clause, not a publication. Ask which solicitation, which contract and which
+          clause number, and whether a deviation modifies it -- the clause text alone can name the
+          wrong revision. Owner is contracts, with security supplying the evidence.
+      - id: nothing_yet
+        label: "Nothing yet: we are getting ahead of it"
+        opener: >-
+          Nothing narrows here. The useful answer is a different shape: what will arrive, and by
+          which route. Open "How these actually reach you" below.
+      - id: unknown
+        label: "Not sure"
+        widens: true
+
+  - id: ai_assist
+    legend: "Do your developers build with AI coding assistants?"
+    help: >-
+      Leave both boxes unticked if they do not -- that is the "no" answer, and it shows none of the
+      three. This is the only question here whose answer is a correction rather than a list, and a
+      correction aimed at someone who never raised the subject is noise rather than widening.
+    options:
+      - id: yes
+        label: "Yes"
+      - id: unknown
+        label: "Not sure"
+        widens: true
+
+# ---------------------------------------------------------------------------------------------
+# THE ITEMS
+#
+# `tier` sorts inside a block, ascending, then alphabetically by name:
+#   0  binds a producer directly, with no customer asking
+#   1  triggered by the specific ask, or by what you deliver
+#   2  triggered by buyer or market
+#   3  triggered by data class
+#   4  control catalogs and operational inputs
+#   5  vocabulary and infrastructure
+#   6  addressed to an assessor -- always last, always labeled
+#
+# `triggers` are "<question>=<option>" tokens, or the literal ALWAYS. An item surfaces when ANY
+# token matches. Union, never intersection: two matching triggers do not rank an item higher, they
+# only make it surface once.
+#
+# `ai_misfiled: true` moves the item into the AI block when the reader says they use an assistant,
+# ahead of every other block assignment. That block's whole content is a correction.
+#
+# `never_alone` names a group the item may not be the only visible member of. It exists for one
+# reason and it is not cosmetic: a sector instrument standing alone in a result identifies the
+# author's sector, and this repository is deidentified. The renderer forces companions in rather
+# than dropping the item, because a reader who answered health plus certificate needs all three.
+# ---------------------------------------------------------------------------------------------
+items:
+  - id: eu-cra
+    name: "EU Cyber Resilience Act, Regulation (EU) 2024/2847"
+    group: producer-binding
+    tier: 0
+    summary: >-
+      The only item mapped here that binds a producer directly, with no customer asking.
+    issues: >-
+      A declaration of conformity and a mark you affix yourself after your own assessment. Some
+      product classes require a notified body.
+    trigger: >-
+      Placing a product with digital elements on the EU market. The trigger is where the product
+      goes, not who buys it.
+    status: >-
+      In force 2024-12-10. Reporting obligations apply from 2026-09-11, ahead of the rest of it;
+      the main body of obligations from 2027-12-11.
+    check: >-
+      Routinely treated as something a customer asks for. It is a market-access rule you satisfy
+      before you ship, and the owner is engineering and release, not the compliance function.
+    triggers: ["market=eu_market", "market=unknown"]
+    # Widening may add a candidate. It may never upgrade a candidate into a binding, so reaching
+    # this item through "Not sure" demotes it out of the direct-binding block and says why.
+    direct_only_when: "market=eu_market"
+    qualifier: "Only if you place a product on the EU market."
+
+  - id: ssdf-800-218
+    name: "NIST SP 800-218 v1.1 (SSDF)"
+    group: producer-binding
+    tier: 1
+    summary: "A secure software development framework with no conformance machinery attached to it."
+    issues: "Nothing. No conformance criteria, no levels, no assessment procedure."
+    trigger: >-
+      A contract clause, an agency assurance policy, or a questionnaire quoting practice
+      identifiers.
+    status: >-
+      Final since 2022-02-03 and not withdrawn. A draft successor, SP 800-218r1 (v1.2), has been
+      open since 2025-12-17 and is not final.
+    check: >-
+      "Map controls to the current SSDF, or to SSDF 1.2." v1.1 of 2022 is the only final version.
+      The publisher's own publications listing shows Final against one and Draft against the other.
+    triggers: ["role=software", "ask=questionnaire", "ask=flowed_down", "market=us_federal"]
+
+  - id: ssdf-800-218a
+    name: "NIST SP 800-218A (SSDF community profile for AI models)"
+    group: producer-binding
+    tier: 1
+    ai_misfiled: true
+    summary: >-
+      A profile about producing AI models, routinely misfiled as guidance for developers using AI
+      coding assistants.
+    issues: "Nothing."
+    trigger: >-
+      Building or fine-tuning generative AI or dual-use foundation models, when a contract names
+      it.
+    status: >-
+      Final 2024-07-26. The executive order that commissioned it was revoked 2025-01-20; the
+      publication itself stands.
+    check: >-
+      Its declared scope is producing AI models. Its single sentence on assisted code says the
+      practices do not distinguish it from human-written code, which is a scoping exclusion rather
+      than guidance. Search the publication for that sentence -- it is the whole of the coverage.
+    triggers: ["ai_assist=yes", "ai_assist=unknown"]
+
+  - id: cisa-attestation-form
+    name: "CISA Secure Software Development Attestation Form"
+    group: producer-binding
+    tier: 1
+    summary: >-
+      A signed self-attestation whose government-wide collection mandate was rescinded while the
+      form itself survived.
+    issues: >-
+      A self-attestation signed by an executive, or, on an alternative route the form itself
+      permits, a third-party assessment attached in place of the signature. Not a certificate and
+      not an audit.
+    trigger: "An individual agency's contract term or request."
+    status: >-
+      Still published, with clearance to 2027-03-31. Optional for agencies since the memoranda
+      requiring it were rescinded on 2026-01-23.
+    check: >-
+      "Sign the federal attestation form to sell software to the US government." The memoranda
+      requiring agencies to collect it were rescinded on 2026-01-23. Agencies may still ask; none
+      must. Read the rescinding memorandum at the publisher, then read your own contract's clauses.
+    detail: >-
+      EO 14028 (2021) directed the guidance. OMB M-22-18 and M-23-16 turned it into a collection
+      requirement. EO 14144 in January 2025 would have added submission to a repository, central
+      verification and referral of failures, and EO 14306 struck that apparatus on 2025-06-06. OMB
+      M-26-05 then rescinded the collection mandate itself on 2026-01-23. Anyone describing a
+      single January 2026 event has lost the fact that the verification model was already gone in
+      mid-2025. The status of the federal repository that received submissions is unknown as of the
+      check date: not reported running, not reported gone.
+    triggers: ["market=us_federal", "ask=attestation_form", "market=unknown"]
+
+  - id: owasp-asvs-5
+    name: "OWASP ASVS 5.0.0"
+    group: producer-binding
+    tier: 1
+    summary: "A verification requirement set that certifies nobody, by its own statement."
+    issues: "Nothing. Its own assessment chapter states that OWASP certifies no vendor or software."
+    trigger: "A customer contract or questionnaire naming a verification level."
+    status: >-
+      Released 2025-05-30, superseding 4.0.3 of 2021-10-28. Identifiers were reorganized rather
+      than carried across.
+    check: >-
+      Cited as though a level could be certified. Identifiers from the prior edition do not carry
+      across either, so a policy quoting an old identifier resolves to something different or to
+      nothing.
+    triggers: ["role=software", "ask=questionnaire", "ask=clause_named_list"]
+
+  - id: slsa-v1-2
+    name: "SLSA v1.2"
+    group: producer-binding
+    tier: 1
+    summary: "Build and source provenance levels that a consumer verifies, with no register and no issuer."
+    issues: >-
+      Nothing. Machine-readable provenance the consumer verifies. There is no register of levels.
+    trigger: "A customer or a package ecosystem asking for build provenance."
+    status: >-
+      Approved 2025-11-12, released 2025-11-24. It restored a Source track with four levels; there
+      is still no Build L4.
+    check: >-
+      "Require SLSA Level 4." There is no Build L4. Since v1.2 there is a Source L4, so a bare
+      level number no longer identifies a requirement. Read the specification's own track pages and
+      write the track beside the level.
+    triggers: ["role=software", "ask=questionnaire", "ask=clause_named_list"]
+
+  - id: cisa-sbom-2026
+    name: "CISA 2026 Minimum Elements for an SBOM"
+    group: producer-binding
+    tier: 1
+    summary: "A field definition that states in its own text that it creates no new requirements."
+    issues: >-
+      Nothing. It defines fields, states that it creates no new requirements, and places accuracy,
+      coverage and completeness out of its own scope.
+    trigger: >-
+      A contract term requiring an SBOM. In US federal contracting that is now each agency's own
+      choice.
+    status: "Published 2026-07-29, replacing the minimum elements of 2021-07-12."
+    check: >-
+      "Generate SBOMs to the NTIA 2021 minimum elements." Those were replaced on 2026-07-29.
+      Separately, a conforming SBOM can still be inaccurate and incomplete -- the 2026 elements say
+      so themselves and point at a signature, at binary analysis, and at exploitability advisories
+      as separate mechanisms.
+    triggers: ["role=software", "ask=questionnaire", "ask=flowed_down", "market=us_federal"]
+
+  - id: iso-5055-ascqm
+    name: "ISO/IEC 5055:2021 and OMG ASCQM 1.1"
+    group: producer-binding
+    tier: 1
+    summary: >-
+      One family of automated source code measures published in two venues, not two separate
+      obligations.
+    issues: "Nothing. Defined counts of severe structural weaknesses, once a tool implements them."
+    trigger: "An enterprise or supplier contract specifying automated source code measures."
+    status: >-
+      ISO adoption announced 2021-04-07; ASCQM 1.1 formal since July 2022. One measure family in
+      two venues, not two obligations.
+    check: "Read as two separate requirements because it appears under two publisher names."
+    triggers: ["role=software", "ask=clause_named_list"]
+
+  - id: intoto-sigstore
+    name: "in-toto attestations and Sigstore signing"
+    group: producer-binding
+    tier: 5
+    summary: >-
+      The attestation format and the signing service that provenance requirements are usually
+      written on top of.
+    issues: >-
+      Sigstore issues identity-bound short-lived certificates plus a public transparency log entry.
+      These evidence who signed and when, and nothing about what was signed. Its public instances
+      are community-operated with no service level.
+    trigger: "A provenance or signing requirement from a customer or a package ecosystem."
+    status: "No separate status is recorded here beyond the facts in this row."
+    check: >-
+      Offered as a choice against build provenance. Provenance is written as an in-toto
+      attestation, so the two are layered rather than rival options; a requirements document
+      offering a choice between them was written by someone who had not read either.
+    triggers: ["role=software", "ask=clause_named_list"]
+
+  - id: owasp-top10-2025
+    name: "OWASP Top 10:2025"
+    group: rankings
+    tier: 1
+    summary: "An awareness ranking, by its publisher's own description."
+    issues: "Nothing. OWASP calls it an awareness document."
+    trigger: >-
+      A contract clause or questionnaire saying a product was tested against it, and scanner report
+      headings.
+    status: >-
+      The 2025 edition is current on the project's own page, which stamps no final publication
+      date. A release candidate in November 2025 and finalization in January 2026, per secondary
+      coverage. Two categories are new, and an older category was absorbed into another.
+    check: >-
+      A ranking has no completion condition and cannot be discharged as written. Convert it into a
+      requirement-set clause while the clause is being agreed; by assessment time the only
+      remaining options are to argue or to over-deliver.
+    triggers: ["ask=clause_named_list", "ask=questionnaire"]
+
+  - id: owasp-llm-top10-2026
+    name: "OWASP Top 10 for LLM Applications, 2026 edition"
+    group: rankings
+    tier: 1
+    ai_misfiled: true
+    summary: "A ranking about securing an application that calls a language model at run time."
+    issues: "Nothing."
+    trigger: "An AI feature review, a customer AI questionnaire, or an internal policy naming it."
+    status: >-
+      Dated 2026-08-03 on the project's own resource page, with press coverage on 2026-08-04. The
+      prior edition dates from 2024-11-18.
+    check: >-
+      Offered as governance for what an AI coding assistant writes for you. It addresses securing
+      an application that calls a language model at run time, which is a different subject, and the
+      two are conflated constantly.
+    triggers: ["ai_assist=yes", "ai_assist=unknown", "ask=clause_named_list", "ask=questionnaire"]
+
+  - id: cwe-top25-2025
+    name: "CWE Top 25, 2025 edition"
+    group: rankings
+    tier: 1
+    summary: "A ranking of weakness classes, occasionally named in procurement language."
+    issues: "Nothing."
+    trigger: >-
+      A policy or questionnaire naming it, and occasionally procurement language asking for
+      coverage.
+    status: >-
+      2025 edition announced 2025-12-11, project page updated 2026-01-29. Any reference to a 2026
+      edition is unconfirmed.
+    check: >-
+      Same completion-condition problem as any ranking: it cannot be discharged as written.
+    triggers: ["ask=clause_named_list", "ask=questionnaire"]
+
+  - id: iso-27001
+    name: "ISO/IEC 27001:2022 (plus Amendment 1:2024)"
+    group: org-instruments
+    tier: 1
+    summary: >-
+      A certification of an information security management system, not of a product and not of a
+      codebase.
+    issues: >-
+      A third-party certificate from a certification body, for a stated scope. ISO itself issues
+      nothing.
+    trigger: "A customer or procurement requirement, most often in vendor onboarding."
+    status: >-
+      Published 2022-10; Amendment 1 published 2024-02-23. The 2013-edition transition ended
+      2025-10-31, per secondary reporting.
+    check: >-
+      Read the scope statement on the certificate. A certificate whose scope covers one office or
+      one business unit is common, and is not what the reader assumes. Called "the international
+      SOC 2" universally, and it is a different instrument with a different failure mode: SOC 2
+      gives you an opinion plus exceptions, this gives you a certificate plus a scope statement.
+    triggers: ["ask=certificate_or_report", "ask=questionnaire", "role=service", "market=us_commercial", "market=other_intl"]
+
+  - id: iso-27002
+    name: "ISO/IEC 27002:2022"
+    group: org-instruments
+    tier: 1
+    summary: >-
+      Implementation guidance for the controls the certifiable standard lists. Not itself
+      certifiable.
+    issues: "Nothing. It explains how to implement the controls the certifiable standard lists."
+    trigger: >-
+      No independent trigger. It arrives beside a certification program, or in error on a
+      questionnaire.
+    status: >-
+      Published 2022-02. It received a climate-related amendment in the same 2024 cycle; the
+      designation was not confirmed.
+    check: >-
+      Named on a questionnaire as though a supplier could be certified or attest to it.
+      Conformance to a guide is not a thing that exists.
+    triggers: ["ask=questionnaire", "ask=certificate_or_report"]
+
+  - id: soc2
+    name: "SOC 2 (Type 1 and Type 2)"
+    group: org-instruments
+    tier: 1
+    summary: >-
+      An examination report on a service organization, carrying an opinion and no pass mark.
+    issues: >-
+      An examination report carrying a licensed firm's opinion. Restricted use, no pass mark, no
+      certificate.
+    trigger: >-
+      A customer questionnaire or contract clause, overwhelmingly in US business-to-business sales.
+    status: >-
+      Criteria are the 2017 Trust Services Criteria with 2022 revised points of focus, posted
+      2023-09-30. The governing attestation standard applies to reports dated on or after
+      2022-06-15.
+    check: >-
+      Read the scope statement and the listed exceptions. A report with no exceptions over twelve
+      months is unusual enough to be worth asking about, and the cover page tells you nothing. Type
+      2 covers operating effectiveness over a period, typically six to twelve months; Type 1 is a
+      point-in-time design opinion only. If what you sell is distributed software rather than a
+      hosted service, the product can sit entirely outside the report's scope boundary.
+    triggers: ["ask=certificate_or_report", "ask=questionnaire", "role=service", "market=us_commercial"]
+
+  - id: hitrust
+    name: "HITRUST CSF (e1, i1, r2)"
+    group: org-instruments
+    tier: 1
+    # Never the sole named instrument in a result. See the header note on `never_alone`.
+    never_alone: org-instruments
+    never_alone_companions: ["soc2", "iso-27001"]
+    summary: >-
+      A third-party validated assessment that an organization's controls and environment meet the
+      framework. Explicitly not a software product certification.
+    issues: >-
+      A validated assessment result for an organization. There is no path by which distributable
+      software is certified; the environment operating it can be.
+    trigger: >-
+      A customer or procurement requirement naming it. The sources behind this page state no
+      independent trigger, so confirm it in the contract.
+    status: >-
+      Three tiers, and they are not interchangeable: e1 (essentials, one year, foundational
+      controls), i1 (one year, established programs, middle assurance), r2 (highest, tailored and
+      risk-based, for complex environments). The tier detail rests on secondary sources; verify
+      anything more specific than the tier names and the scope-variance point at the publisher.
+    check: >-
+      Which tier, and what was in scope. "We are certified" stated without both tells a reader very
+      little: scope drives control count enormously, and the same highest-tier result can be a few
+      hundred controls for one organization and a few thousand for another.
+    triggers: ["ask=certificate_or_report", "data=health", "data=unknown"]
+
+  - id: fedramp
+    name: "FedRAMP"
+    group: org-instruments
+    tier: 2
+    summary: >-
+      A government program status for a cloud service offering, as a condition of a federal sale.
+    issues: >-
+      A program certification for a service offering, listed publicly. An agency's own
+      authorization stays a separate decision.
+    trigger: "Selling a cloud service to a US federal agency."
+    status: >-
+      Founding 2011 memorandum rescinded 2024-07-25. Phase 3 of the replacement model active since
+      2026-04. Rev5 intake closes 2027-06-11.
+    check: >-
+      "It is an authorization not a certification, at low, moderate or high, via the JAB or an
+      agency." The program uses certification vocabulary and lettered classes, and the board that
+      granted provisional authorizations no longer does so. Delivering the old correction now makes
+      you the out-of-date party. Read the program's own definitions page.
+    detail: >-
+      Assesses a service offering you operate, which is why it sits with the operating organization
+      even though a software company usually pays for it. One cloud program has begun leveraging an
+      external framework for its lightest class only, and calls that class transitory: narrow, and
+      not a shortcut. A discrepancy between one cloud program's claim of recognition by another and
+      that other program's own published outcome is left open here rather than resolved.
+    triggers: ["market=us_federal", "market=unknown"]
+
+  - id: govramp
+    name: "GovRAMP (formerly StateRAMP)"
+    group: org-instruments
+    tier: 2
+    summary: >-
+      A verification status for a service offering, required by some US state, local, tribal and
+      education buyers.
+    issues: >-
+      A verification status granted by the program office and published on a participants list.
+    trigger: >-
+      A US state, local, tribal or education procurement requirement, varying by jurisdiction.
+    status: >-
+      Rebranded 2025-02-14. StateRAMP remains the legal entity name, operating as GovRAMP, so both
+      names are legitimately live.
+    check: >-
+      "Ask the supplier for their StateRAMP status." The program has operated under the new name
+      since 2025-02-14 while the old one remains the legal entity name. A search on one name alone
+      stops working.
+    triggers: ["market=us_sled", "market=unknown"]
+
+  - id: pci-dss
+    name: "PCI DSS v4.0.1"
+    group: org-instruments
+    tier: 3
+    summary: >-
+      A payment-chain standard whose validation requirement is set by your acquirer, not by its
+      author.
+    issues: >-
+      A report or a self-assessment questionnaire, plus a signed attestation. No certificate
+      exists.
+    trigger: >-
+      An agreement with an acquirer or a brand, arriving through the payment chain rather than a
+      regulator.
+    status: >-
+      v4.0.1 published 2024-06; v4.0 retired 2024-12-31; the future-dated requirements became
+      mandatory 2025-03-31.
+    check: >-
+      "We are working toward 4.0, and the future-dated requirements are still future." v4.0 retired
+      2024-12-31, leaving v4.0.1, and the future-dated requirements became mandatory 2025-03-31.
+      The body that writes the standard is not the body that sets your validation requirement.
+    triggers: ["data=cardholder", "data=unknown"]
+
+  - id: hipaa-security-rule
+    name: "HIPAA Security Rule (45 CFR Part 164 Subpart C)"
+    group: sector-regimes
+    tier: 3
+    summary: "A regulator's rule on a covered organization, which recognizes no certification."
+    issues: >-
+      Nothing. The enforcing agency has stated since 2003 that it recognizes no certification.
+    trigger: >-
+      Being a covered organization, or an agreement flowing the obligation down a contract chain.
+    status: >-
+      In force, operative text unchanged. A proposed overhaul published 2025-01-06 is not final;
+      the projected final action has moved to July 2027, per secondary reporting.
+    check: >-
+      Suppliers are asked to produce a certificate against it. None exists, and the enforcing
+      agency has said so for over twenty years. It also binds an organization, not a product.
+    triggers: ["data=health", "data=unknown"]
+
+  - id: ftc-safeguards-glba
+    name: "FTC Safeguards Rule under GLBA (16 CFR Part 314)"
+    group: sector-regimes
+    tier: 3
+    summary: >-
+      A written-program requirement whose definition of a covered institution reaches wider than
+      self-image.
+    issues: "Nothing. A written program, a named accountable individual, and a reporting duty."
+    trigger: >-
+      Meeting the rule's statutory definition of a covered institution, which reaches wider than
+      self-image.
+    status: >-
+      Substantive requirements fully effective 2023-06-09. The breach-reporting amendment became
+      effective 2024-05-13.
+    check: >-
+      Organizations that do not think of themselves as financial institutions assume it does not
+      reach them. The definition is statutory, not a matter of self-description.
+    triggers: ["data=consumer_financial", "data=unknown"]
+
+  - id: ferpa
+    name: "FERPA (20 U.S.C. 1232g; 34 CFR Part 99)"
+    group: sector-regimes
+    tier: 3
+    summary: >-
+      An education-records statute enforced through federal funding, with no assessor and no
+      registry.
+    issues: >-
+      Nothing. No certificate, no assessor, no registry. Enforcement runs through federal funding.
+    trigger: "Receiving the covered federal funds, or a contract with an institution that does."
+    status: >-
+      Statute in force since 1974; the regulations were substantially amended in 2008. No status
+      change in the last 24 months.
+    check: >-
+      Sought as a compliance artifact. There is no assessor and no registry to be listed in.
+    triggers: ["data=education", "market=us_sled", "data=unknown"]
+
+  - id: cjis
+    name: "CJIS Security Policy"
+    group: sector-regimes
+    tier: 3
+    summary: >-
+      A policy naming contractors within its own scope, audited by the relevant authority rather
+      than certified centrally.
+    issues: >-
+      No central certificate. An audit by the relevant authority, with the finding landing on the
+      agency.
+    trigger: >-
+      An agreement giving access to the covered data. The policy names contractors within its own
+      scope.
+    status: >-
+      v6.0 issued 2024-12-27, v6.1 dated 2026-06-25. Secondary reporting says audits continue
+      against an earlier version; confirm with the auditing authority.
+    check: >-
+      A central certificate is assumed to exist, and the version being audited is assumed to be the
+      newest published one. Confirm the audit baseline with the authority that will actually audit,
+      on the date it will happen.
+    triggers: ["data=law_enforcement", "data=unknown"]
+
+  - id: nis2
+    name: "NIS2 Directive ((EU) 2022/2555)"
+    group: sector-regimes
+    tier: 3
+    summary: >-
+      An EU directive that binds nobody directly; the obligations come from each member state's
+      transposing law.
+    issues: >-
+      Nothing at EU level. Obligations, deadlines and penalties come from a member state's
+      transposing law.
+    trigger: >-
+      Sector plus size thresholds under national law, which has to be tested per member state.
+    status: >-
+      Transposition was due 2024-10-17 and remains incomplete. The Commission referred four member
+      states to the Court of Justice in 2026.
+    check: >-
+      Read as a single EU-wide obligation with one set of thresholds. It is national law that
+      binds, and transposition is incomplete, so the answer differs by member state and in some
+      cases does not exist yet.
+    triggers: ["market=eu_market", "market=unknown"]
+
+  - id: sec-cyber-disclosure
+    name: "SEC cybersecurity disclosure rules (17 CFR Parts 229, 232, 239, 240, 249)"
+    group: sector-regimes
+    tier: 3
+    # The "never an inference" clause is repeated up here on purpose. This is the only item on the
+    # map whose trigger no question asks about, so the sentence that keeps it honest cannot sit
+    # inside a collapsed disclosure where a reader may never open it.
+    summary: >-
+      A disclosure obligation on registrants, whose output is a filing rather than an assessment.
+      Nothing asked here establishes registrant status -- this is a fact to go and check, never an
+      inference drawn from your answers.
+    issues: "Nothing. The output is a filing. No assessor and no examination."
+    trigger: >-
+      Being a registrant of the relevant class. Nothing about your stack changes the answer.
+    status: >-
+      Adopted 2023-07-26, effective 2023-09-05. A rescission petition was filed 2025-05-22; no
+      adopting release was found as of the check date.
+    check: >-
+      Treated as a security control requirement that engineering choices can satisfy or avoid. It
+      is a disclosure duty attached to registrant status. Nothing asked here establishes that
+      status, so this is a fact about your organization to go and check, never an inference drawn
+      from your answers.
+    triggers: ["role=software", "role=service", "role=internal"]
+
+  - id: nist-800-53-family
+    name: "NIST SP 800-53 Rev. 5 (Release 5.2.0), with SP 800-53B and FIPS 199"
+    group: control-catalogs
+    tier: 4
+    summary: >-
+      The federal control catalog, its baselines, and the categorization that selects them.
+    issues: >-
+      Nothing. A baseline is selected and an authorizing official decides. NIST certifies nobody.
+    trigger: >-
+      A federal contract, a program requirement, or a customer questionnaire mapping its control
+      set onto you.
+    status: >-
+      Release 5.2.0 issued 2025-08-27 and added three controls; the baselines were not changed.
+      FIPS 199 unchanged since February 2004.
+    check: >-
+      Questions arrive attached to the wrong link in the chain. The chain worth carrying: FIPS 199
+      categorizes, SP 800-60 Rev. 1 guides the categorizing, FIPS 200 sets a floor, SP 800-53B
+      selects a baseline, SP 800-53 supplies the control text, and SP 800-53A assesses it. A
+      release is also not a revision.
+    triggers: ["market=us_federal", "ask=questionnaire", "ask=flowed_down", "data=gov_controlled"]
+
+  - id: nist-800-161
+    name: "NIST SP 800-161 Rev. 1 (upd 1)"
+    group: control-catalogs
+    tier: 4
+    summary: "Supply chain risk guidance structured as an overlay on the control catalog."
+    issues: "Nothing. Guidance, structured as an overlay on the control catalog."
+    trigger: "A federal contract flow-down, or a prime pushing supply chain terms down."
+    status: >-
+      Revision 1 published May 2022; update 1 issued 2024-11-01. No Revision 2 exists in any form,
+      draft or final.
+    check: >-
+      "Revision 2 is out." There is no Revision 2. The 2024-11-01 date people cite is an update to
+      Revision 1, and the publication's own record page shows status and date.
+    triggers: ["ask=flowed_down", "market=us_federal", "data=gov_controlled"]
+
+  - id: defense-cui-chain
+    name: "The US defense CUI chain: SP 800-171 as pinned by contract, the CMMC program, the DFARS clauses"
+    group: control-catalogs
+    tier: 3
+    summary: >-
+      A chain that reaches you only through a clause number, and that issues something different at
+      every rung.
+    issues: >-
+      Depends on the rung: a self-scored assessment, an annual affirmation, a third-party
+      certificate, or a government assessment result.
+    trigger: >-
+      A contracting officer inserting a clause, or a prime flowing it down. Nothing here reaches
+      you on its own.
+    status: >-
+      Program rule effective 2024-12-16; acquisition rule effective 2025-11-10; phases beyond the
+      first suspended by policy on 2026-07-13, per secondary reporting.
+    check: >-
+      Two of them. "Defense work has to move to Revision 3": a class deviation issued 2024-05-02
+      pins the safeguarding clause to Revision 2 and stands until rescinded, per secondary
+      reporting, so the clause text alone gives the wrong revision. And "third-party certification
+      becomes a condition of award in November 2026": Phase 2 and later milestones were suspended
+      by policy on 2026-07-13, per secondary reporting, and neither rule was amended or repealed.
+      Ask the contracting officer which level the solicitation requires, and check the rulemaking
+      index.
+    triggers: ["data=gov_controlled", "market=us_federal", "ask=flowed_down"]
+
+  - id: cisa-kev-bod-26-04
+    name: "CISA Known Exploited Vulnerabilities catalog, and BOD 26-04"
+    group: control-catalogs
+    tier: 4
+    summary: >-
+      A catalog that binds nobody privately, plus a directive that binds only the agencies it
+      names.
+    issues: "Nothing to a private organization. A directive binds only the agencies it names."
+    trigger: >-
+      Being an agency a directive names, a contract flowing it down, or your own policy adopting
+      the catalog.
+    status: >-
+      BOD 26-04, issued 2026-06-10, supersedes and revokes the 2021 and 2019 directives. The
+      catalog itself is unchanged.
+    check: >-
+      "Catalog inclusion means a fixed federal patch deadline." The directive setting flat due
+      dates was revoked on 2026-06-10 and replaced by a risk model. The catalog is unchanged, and
+      the revoked directive's own page is titled as revoked.
+    triggers: ["market=us_federal", "ask=flowed_down", "ask=nothing_yet"]
+
+  - id: epss
+    name: "EPSS"
+    group: control-catalogs
+    tier: 4
+    summary: "A published probability per CVE, consumed by a policy rather than imposed by one."
+    issues: >-
+      A daily probability and percentile per published CVE, for exploitation in the wild within
+      thirty days.
+    trigger: >-
+      A remediation policy that consumes it, or a risk model using exploitation likelihood as an
+      input.
+    status: >-
+      Version 4 deployed 2025-03-17; a version 5 was announced 2026-05-13. Which model generates
+      the published scores was not confirmed.
+    check: >-
+      Read as a verdict rather than as data. Which model version is actually generating the
+      published scores is not confirmed here -- read the comment line in the published data file,
+      not a blog post.
+    triggers: ["ask=nothing_yet", "role=software", "role=service"]
+
+  - id: owasp-samm
+    name: "OWASP SAMM v2.0"
+    group: control-catalogs
+    tier: 4
+    summary: "A self-assessed maturity model with a community comparison benchmark."
+    issues: >-
+      Nothing. A self-assessed score from 0 to 3 per practice, plus a community Benchmark for
+      comparison.
+    trigger: >-
+      Internal program work, board reporting, or a customer asking how mature your program is.
+    status: >-
+      Released February 2020 and still current on the check date. The Benchmark was first published
+      June 2024.
+    check: "A self-assessed score is offered as though it were an independent finding."
+    triggers: ["ask=nothing_yet", "ask=questionnaire"]
+
+  - id: nist-800-122
+    name: "NIST SP 800-122"
+    group: control-catalogs
+    tier: 4
+    summary: >-
+      Guidance on protecting personal data, sitting to the side of the federal control chain.
+    issues: "Nothing. Guidance."
+    trigger: >-
+      No independent trigger. It sits beside the federal control chain, covering personal data.
+    status: >-
+      Still Final. Its withdrawal exists only as intent inside an unfinished working draft.
+    check: >-
+      "SP 800-122 was withdrawn." It is still Final, and the publication's own record page shows
+      status and date.
+    triggers: ["market=us_federal", "data=gov_controlled"]
+
+  - id: nist-ai-overlays
+    name: "NIST control overlays for securing AI systems"
+    group: control-catalogs
+    tier: 1
+    ai_misfiled: true
+    summary: >-
+      In development. Named here because it is the item people expect to exist, and it does not
+      yet.
+    issues: "Nothing today."
+    trigger: "Nothing today."
+    status: >-
+      In development, with no draft overlay published as of the check date, so nothing can be
+      aligned with them today.
+    check: >-
+      Cited in roadmaps as though alignment were possible now. No draft exists to align with.
+    triggers: ["ai_assist=yes", "ai_assist=unknown"]
+
+  - id: iso-27006-1
+    name: "ISO/IEC 27006-1:2024"
+    group: assessor
+    tier: 6
+    summary: >-
+      Governs the certification bodies that audit management systems, and the terms of their
+      accreditation.
+    issues: "Nothing to the audited organization. It governs the auditor."
+    trigger: >-
+      It reaches you through changed audit conduct: refined remote-audit rules and a revised
+      audit-time calculation.
+    status: >-
+      Published 2024, replacing the 2015 edition. One accreditation body required use for all
+      clients by 2026-03-31; other bodies may differ. Ask your own certification body which date
+      applies to it.
+    check: >-
+      Read as a requirement on yourself, which manufactures controls the standard never asked for.
+      An unexplained change in audit shape or duration usually starts here rather than in your
+      auditor's temperament.
+    triggers: ["ask=certificate_or_report"]
+
+  - id: nist-800-53a
+    name: "NIST SP 800-53A Rev. 5 (Release 5.2.0)"
+    group: assessor
+    tier: 6
+    summary: >-
+      The assessment procedures for the federal control catalog. A method manual for the examiner.
+    issues: "Nothing to the audited organization."
+    trigger: >-
+      It reaches you as the source of the questions an assessor asks about a deployed instance.
+    status: >-
+      Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls.
+    check: >-
+      "Addressed to an assessor" does not mean "what an auditor will ask you for". It tells someone
+      how to conduct an examination. Building to it produces controls nothing ever required.
+    triggers: ["market=us_federal", "ask=certificate_or_report"]
+
+  - id: nist-800-171a-172a
+    name: "NIST SP 800-171A Rev. 3 and SP 800-172A Rev. 3"
+    group: assessor
+    tier: 6
+    summary: >-
+      The procedures for a CUI assessment, whether run by a third party or by the government.
+    issues: >-
+      Nothing to the audited organization. A CUI assessment run to these procedures carries
+      findings only, and there is no pass mark.
+    trigger: "An assessment somebody else scopes and runs."
+    status: >-
+      800-171A Rev. 3 final 2024-05-14; 800-172A Rev. 3 final 2026-05-13. The defense program rule
+      still names the June 2018 and March 2022 versions.
+    check: >-
+      The newest published procedure is assumed to be the one being assessed against. The program
+      rule still names earlier versions.
+    triggers: ["data=gov_controlled", "ask=flowed_down", "market=us_federal"]
+
+  - id: cwe
+    name: "CWE 4.20"
+    group: infrastructure
+    tier: 5
+    summary: "An identifier space for classes of mistake. You cannot conform to it."
+    issues: "An identifier for a class of mistake. Not a severity and not a priority."
+    trigger: >-
+      Tool output, vulnerability records that map to it, and contracts asking for findings with
+      mappings.
+    status: "Version 4.20 released 2026-04-30, on a continuing versioned release cadence."
+    check: >-
+      A weakness identifier is not a severity: it says what kind of mistake a finding is, not
+      whether it matters where you run.
+    triggers: ["ALWAYS"]
+
+  - id: cve
+    name: "CVE Program"
+    group: infrastructure
+    tier: 5
+    summary: >-
+      Identifiers and records that every dependency policy and every scanner is written in.
+    issues: "Identifiers and records. Not severity, not exploitability, not priority."
+    trigger: "Every dependency policy and every scanner."
+    status: >-
+      Operating. The 2025 contract lapse was averted by an extension, and the program board was
+      told on 2026-01-21 there is no funding cliff in March. Replacement terms are not public.
+    check: >-
+      No published vulnerability identifiers is not a security property: it can equally mean nobody
+      is looking, or that there is no route to publish one.
+    triggers: ["ALWAYS"]
+
+  - id: sbom-formats
+    name: "SBOM formats: SPDX (ISO/IEC 5962:2021) and CycloneDX (ECMA-424, 2nd edition)"
+    group: infrastructure
+    tier: 5
+    summary: >-
+      Two machine-readable document formats. No conformance mark exists for either.
+    issues: >-
+      A machine-readable document a parser accepts. No conformance mark exists for either.
+    trigger: >-
+      A customer or a regime asking for an SBOM in a commonly used machine-readable format.
+    status: >-
+      ISO/IEC 5962:2021 describes SPDX 2.2.1, which current tooling has moved past; SPDX 3.0 sat at
+      draft stage on the check date. ECMA-424 2nd edition was adopted December 2025 and defines
+      CycloneDX v1.7.
+    check: >-
+      "Prefer SPDX because it is the ISO standard." A format's standards-body lineage is not a
+      compliance grade, and the widely quoted ISO number attaches to a 2021-era version rather than
+      to what current tooling emits. Choosing on lineage answers a question nobody in the
+      transaction asked.
+    triggers: ["ask=questionnaire", "ask=flowed_down", "role=software"]
+
+  - id: iso-25010
+    name: "ISO/IEC 25010:2023"
+    group: infrastructure
+    tier: 5
+    summary: >-
+      A vocabulary of quality characteristics, stating no requirement a product could meet or fail.
+    issues: >-
+      A vocabulary of quality characteristics. It states no requirement a product could meet or
+      fail.
+    trigger: >-
+      Requirements documents and procurement specifications that need both parties to mean the same
+      thing.
+    status: >-
+      Second edition published November 2023, cancelling and replacing the 2011 edition. Usability
+      and portability no longer exist as top-level names.
+    check: >-
+      "Usability is a characteristic." It was replaced in the 2023 edition, so a requirements
+      document written against the 2011 names no longer resolves.
+    triggers: ["ask=clause_named_list"]

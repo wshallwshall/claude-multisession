@@ -1,0 +1,1150 @@
+{%- comment -%}
+  THE INTERACTIVE STANDARDS SELECTOR.
+
+  Injected by _layouts/default.html at the `<!-- STANDARDS-SELECTOR -->` sentinel in
+  docs/standards/STANDARDS-LANDSCAPE.md. Every fact it renders comes from
+  docs/_data/standards_selector.yml; there are no facts in this file.
+
+  WHY THERE IS SCRIPT ON A SITE THAT SAID IT HAD NONE. docs/assets/style.css refused a
+  JavaScript-dependent nav menu in as many words -- "a collapsed menu that needs JavaScript is one
+  more thing that can be wired and inert". That refusal still stands, and this is not an exception
+  to it. The nav was refused because script would have been THE ONLY WAY TO REACH THE LINKS. Here
+  the answer is complete before any script runs: the item cards below are all present, unfiltered,
+  in the served HTML, and the guide's own routing table sits immediately underneath in the
+  markdown, which is also what the Word copy carries. Script only HIDES cards. Nothing is reachable
+  only through it.
+
+  THAT DISTINCTION DECIDES THE PROGRESSIVE-ENHANCEMENT CONTRACT, so it is worth stating plainly:
+
+    no CSS          every card in document order -- a long but complete and readable document
+    CSS, no JS      same, plus the controls stay hidden, because a control that does not respond is
+                    a bug report rather than a graceful degradation
+    CSS and JS      the controls appear and the cards filter
+
+  The form below therefore ships carrying `hidden`, and the first thing the script does is remove
+  it. No inert checkboxes, ever.
+
+  WHY A FILTER PANEL AND NOT A WIZARD. The evidence favors "one thing per page" for TRANSACTIONS --
+  errors, branches, loops, saved progress. This page has none of the four: the questions are
+  mutually independent and the combination semantics are UNION, so answering more makes the answer
+  BIGGER. A wizard renders a union as a linear interrogation ending in one outcome screen, and an
+  outcome screen reads as a computed verdict. This page is forbidden from issuing a verdict, so it
+  does not use the control whose shape asserts one. Keeping every question on screen, including the
+  boxes NOT ticked, is also the cheapest available correction for over-trust: the reader can see
+  what produced each card and un-tick it.
+
+  EVERYTHING IS INLINE -- markup, style and script -- and nothing is fetched. A saved file:// copy
+  of the built page still runs, which a linked stylesheet would not. The colors read the site's own
+  custom properties with literal fallbacks for exactly that case; there is no second theme system
+  and no toggle, only the site's `prefers-color-scheme` mechanism.
+
+  ASCII ONLY. scripts/quality/check-ascii.ps1 walks this file byte by byte.
+{%- endcomment -%}
+{%- assign d = site.data.standards_selector -%}
+{%- assign sorted = d.items | sort: 'name' -%}
+
+<section class="ssel" id="standards-selector" aria-labelledby="ssel-title">
+  <h2 id="ssel-title">Work out which of these may reach you</h2>
+
+  {%- comment -%}
+    THE LEDE SAYS NOTHING ABOUT TICKING. It is visible whether or not the controls are, and a
+    reader without JavaScript is not shown a control to tick -- so an instruction to tick one here
+    would be an instruction they cannot follow. The instruction lives inside the form, which is the
+    element that carries `hidden`. "The full unfiltered list" rather than "the whole answer" for
+    the other half of the same rule: the answer is never claimed to be whole.
+  {%- endcomment -%}
+  <p class="ssel-lede">
+    The list below starts unfiltered, which is its resting position -- you do not have to touch a
+    control to get the full unfiltered list. Nothing here needs you to know a standard's name.
+  </p>
+
+  <noscript>
+    <p class="ssel-noscript">
+      <strong>The controls need JavaScript, so they are not shown.</strong> Everything they would
+      filter is below, unfiltered and complete, and the routing table further down this page answers
+      the same question without any of this. Nothing is reachable only through the controls.
+    </p>
+  </noscript>
+
+  {%- comment -%}
+    `hidden` here is the contract described in the header: the script removes it. Do not style this
+    form visible from CSS -- that would ship the controls to a reader who cannot operate them.
+  {%- endcomment -%}
+  <form class="ssel-panel" id="ssel-form" hidden>
+    <p class="ssel-skip"><a href="#ssel-results-title">Skip to the results</a></p>
+
+    <h3 class="ssel-panel-title">Tell it what describes you</h3>
+    <p class="ssel-panel-lede">
+      Tick what is true of your own business. Ticking more shows MORE, not less.
+    </p>
+    <p class="ssel-scope">
+      These questions cover at least five facts about your business. They are not a model of it,
+      and matching none of them is not evidence that nothing reaches you.
+    </p>
+
+    <div class="ssel-grid">
+      {%- for q in d.questions %}
+      <fieldset class="ssel-q">
+        <legend>{{ q.legend }}</legend>
+        <p class="ssel-help">{{ q.help }}</p>
+        {%- for o in q.options %}
+        <div class="ssel-opt">
+          <input
+            type="checkbox"
+            id="ssel-{{ q.id }}-{{ o.id }}"
+            class="ssel-box"
+            data-token="{{ q.id }}={{ o.id }}"
+            data-question="{{ q.id }}"
+            data-legend="{{ q.legend }}"
+            {%- if o.widens %} data-widens="1"{% endif %}
+            {%- if o.selects_nothing %} data-selects-nothing="1"{% endif %}
+            {%- if o.note %} data-note="ssel-note-{{ q.id }}-{{ o.id }}"{% endif %}
+            {%- if o.opener %} data-opener="ssel-opener-{{ q.id }}-{{ o.id }}"{% endif %}>
+          <label for="ssel-{{ q.id }}-{{ o.id }}">{{ o.label }}</label>
+        </div>
+        {%- endfor %}
+      </fieldset>
+      {%- endfor %}
+    </div>
+
+    <div class="ssel-actions">
+      {%- comment -%}
+        A native reset, so it would still work if the script were only half alive. "Copy a link"
+        cannot work without script, so the script is what un-hides it.
+      {%- endcomment -%}
+      <button type="reset" class="ssel-btn">Clear all selections</button>
+      <button type="button" class="ssel-btn" id="ssel-copy" hidden>Copy a link to this selection</button>
+      <span class="ssel-said" id="ssel-copy-said" role="status"></span>
+    </div>
+  </form>
+
+  <div class="ssel-results" id="ssel-results">
+    <h3 id="ssel-results-title" tabindex="-1">What may reach you</h3>
+
+    {%- comment -%}
+      THE live region for results, and the only one attached to them. Registered on first paint with
+      its zero-state sentence already in it: a region inserted already populated is frequently missed
+      by a screen reader. role="status" carries polite plus atomic implicitly, so do not add aria-live
+      here as well, and never assertive -- a filter change is not urgent enough to interrupt. The
+      script only ever replaces its textContent, and only after a debounce, so four ticks in a row
+      are announced once. Nothing aria-live is put on the results container itself: announcing whole
+      cards on every tick is a torrent, and it is the commonest way these tools become unusable.
+      (The copy-link button has its own one-shot status span in the panel. It reports an action the
+      reader just took, so it cannot share the region that reports the result.)
+    {%- endcomment -%}
+    {%- comment -%}
+      The served sentence and the script's own zero-state sentence are deliberately IDENTICAL. It
+      has to be true for a reader who has no controls to tick, and making the script's first paint
+      say something different would announce a change to a screen-reader user before anybody had
+      done anything.
+    {%- endcomment -%}
+    <p class="ssel-count" id="ssel-count" role="status">
+      Showing all of the at least {{ d.items | size }} items mapped here, unfiltered. This is not a
+      list of what reaches you.
+    </p>
+
+    <p class="ssel-boundary">{{ d.boundary.no_legal_advice }}</p>
+    <p class="ssel-boundary">{{ d.boundary.not_complete }}</p>
+
+    {%- comment -%}
+      The hidden count is the strongest completeness defeater available, because it converts "the
+      list is everything" into "the list is what YOU narrowed to" and puts undoing it one click
+      away. It is a control, not a sentence.
+    {%- endcomment -%}
+    <p class="ssel-hidden-count" id="ssel-hidden-count" hidden>
+      <span id="ssel-hidden-count-text"></span>
+      <button type="button" class="ssel-btn ssel-btn-inline" id="ssel-show-all">Show every item</button>
+    </p>
+
+    <p class="ssel-widened" id="ssel-widened" hidden></p>
+
+    {%- comment -%}
+      Notes for the definite-but-empty answers ("None of these", "Nowhere yet") and for the
+      not-assessed jurisdictions. They print because "no item routes on what you named" and "nothing
+      reaches you" are different sentences, and a short result is exactly where a reader misreads
+      the first as the second.
+    {%- endcomment -%}
+    {%- for q in d.questions %}{% for o in q.options %}{% if o.note %}
+    <p class="ssel-note" id="ssel-note-{{ q.id }}-{{ o.id }}" hidden>{{ o.note }}</p>
+    {%- endif %}{% endfor %}{% endfor %}
+
+    <p class="ssel-privacy">{{ d.boundary.privacy }}</p>
+
+    {%- comment -%}
+      THE FOUR BLOCKS, in a fixed order. A reader who stops after the first has still been told
+      something true. Each block prints its own "empty" sentence rather than vanishing, because an
+      empty block is a finding: "nothing here binds you directly" is worth reading.
+
+      In the served HTML each card sits in its resting home -- tier 0 in block A, tier 6 in block D,
+      everything else in block C. The script moves cards between blocks as selections change. That
+      is why the AI block carries `starts_hidden` in the data: nothing rests in it, so without that
+      it would ship as a heading standing over nothing. Block B has no resting cards either, but it
+      carries the organization-layer panel, which is content in its own right.
+
+      EVERY "EMPTY" SENTENCE SHIPS HIDDEN, and the script is the only thing that reveals one. This
+      is not a detail. Those sentences say "nothing mapped here binds you directly" and "nothing
+      else surfaced", and in the served HTML they sit directly above the cards that contradict
+      them -- so a reader with JavaScript off, which is the baseline this whole feature rests on,
+      was being handed a clearance notice on top of the answer. An absence sentence is only ever
+      true relative to something the reader told the page, so it may only appear once they have.
+    {%- endcomment -%}
+    {%- for block in d.blocks %}
+    <section class="ssel-block" id="ssel-block-{{ block.id }}" data-block="{{ block.id }}"{% if block.starts_hidden %} hidden{% endif %}>
+      <h4>{{ block.heading }}</h4>
+      <p class="ssel-block-intro">{{ block.intro }}</p>
+
+      <p class="ssel-empty" id="ssel-empty-{{ block.id }}" hidden>
+        {{ block.empty }}
+      </p>
+
+      {%- if block.id == 'b' %}
+      {%- comment -%}
+        The openers. Each is the sentence that pays for the whole app for one shape of ask, so they
+        render above the items rather than below them. Hidden until their option is ticked.
+
+        These sit BELOW the empty sentence rather than above it. An empty block still has this
+        panel in it, and a substantial panel introduced by "nobody has asked you for anything" read
+        as though the panel were the nothing.
+      {%- endcomment -%}
+      {%- for q in d.questions %}{% for o in q.options %}{% if o.opener %}
+      <p class="ssel-opener" id="ssel-opener-{{ q.id }}-{{ o.id }}" hidden>{{ o.opener }}</p>
+      {%- endif %}{% endfor %}{% endfor %}
+
+      <div class="ssel-layer" id="ssel-layer-note">
+        <h5>{{ d.org_vs_software_layer.heading }}</h5>
+        <p>{{ d.org_vs_software_layer.body }}</p>
+      </div>
+      {%- endif %}
+
+      <div class="ssel-items" id="ssel-items-{{ block.id }}">
+        {%- comment -%}
+          Sorted by tier, then alphabetically inside a tier, which is the order the script re-sorts
+          into. Liquid's `sort` takes one key, so the tier pass is the outer loop rather than a
+          compound sort key.
+
+          Written as nested conditionals rather than with `continue` on purpose. The tag exists and
+          would read better here, but the whole template is deliberately kept to the plainest Liquid
+          that does the job -- this file is rendered by a build nobody can run locally on this
+          machine, so every construct it leans on is one more thing that can only be tested in
+          production.
+        {%- endcomment -%}
+        {%- for tier in (0..6) %}
+        {%- for item in sorted %}
+        {%- if item.tier == tier %}
+        {%- comment -%}
+          Home block. Tier 0 rests in A, tier 6 in D, everything else in C.
+        {%- endcomment -%}
+        {%- assign home = 'c' -%}
+        {%- if item.tier == 0 %}{% assign home = 'a' %}{% endif -%}
+        {%- if item.tier == 6 %}{% assign home = 'd' %}{% endif -%}
+        {%- if home == block.id %}
+        {%- assign group = d.groups | where: 'id', item.group | first -%}
+        <article
+          class="ssel-item"
+          data-id="{{ item.id }}"
+          data-tier="{{ item.tier }}"
+          data-group="{{ item.group }}"
+          data-name="{{ item.name }}"
+          data-triggers="{{ item.triggers | join: ' ' }}"
+          {%- if item.ai_misfiled %} data-ai="1"{% endif %}
+          {%- if item.direct_only_when %} data-direct-when="{{ item.direct_only_when }}"{% endif %}
+          {%- if item.never_alone %} data-never-alone="{{ item.never_alone }}"{% endif %}
+          {%- if item.never_alone_companions %} data-companions="{{ item.never_alone_companions | join: ' ' }}"{% endif %}>
+          <h5 class="ssel-item-name">{{ item.name }}</h5>
+          <p class="ssel-addressed">{{ group.label }}</p>
+          <p class="ssel-summary">{{ item.summary }}</p>
+          {%- comment -%}
+            NOT hidden, and not conditional. The qualifier used to appear only when the item was
+            reached by widening, on the reasoning that a reader who answered the real question did
+            not need it. That put the one item on the map which binds a producer directly into the
+            one block written in the indicative mood with its scope removed -- the single strongest
+            claim the app can make, made where it is least examined. It costs one line to always
+            state the trigger, and the line is true in both cases.
+          {%- endcomment -%}
+          {%- if item.qualifier %}
+          <p class="ssel-qualifier">{{ item.qualifier }}</p>
+          {%- endif %}
+          <dl class="ssel-facts">
+            <dt>What it issues</dt>
+            <dd>{{ item.issues }}</dd>
+            <dt>What triggers it</dt>
+            <dd>{{ item.trigger }}</dd>
+            {%- comment -%}
+              R5: an item never appears as a bare name. If it renders, its status renders, and the
+              status never renders without the date it was checked.
+            {%- endcomment -%}
+            <dt>Status, checked {{ d.checked }}</dt>
+            <dd>{{ item.status }}</dd>
+          </dl>
+          <details class="ssel-detail">
+            <summary>The check you can run without trusting this page</summary>
+            <p>{{ item.check }}</p>
+            {%- if item.detail %}
+            <p>{{ item.detail }}</p>
+            {%- endif %}
+          </details>
+          {%- comment -%}
+            The anchor is a GROUP heading on the reference page, not a per-item one, so the label
+            says section rather than row. It promised a row and delivered a dozen of them.
+          {%- endcomment -%}
+          <p class="ssel-more">
+            <a href="{{ d.reference_page }}{{ group.ref }}">This document's section in the reference table</a>
+          </p>
+        </article>
+        {%- endif %}
+        {%- endif %}
+        {%- endfor %}
+        {%- endfor %}
+      </div>
+    </section>
+    {%- endfor %}
+
+    {%- comment -%}
+      The permanent last card. Same weight as an item, never collapsed, present in every state
+      including no-match. Naming what the instrument structurally cannot see is the only completeness
+      defeater that survives a reader who has stopped reading disclaimers.
+    {%- endcomment -%}
+    <section class="ssel-block ssel-notmap">
+      <h4>{{ d.not_on_this_map.heading }}</h4>
+      <p>{{ d.not_on_this_map.body }}</p>
+      <p><strong>{{ d.not_on_this_map.closer }}</strong></p>
+      {%- comment -%}
+        The link belongs INSIDE the result panel rather than only in the page footer: this card is
+        the compressed version, and the fuller one also names what is covered but not
+        primary-verified and what the page structurally does not answer.
+      {%- endcomment -%}
+      <p class="ssel-more"><a href="#what-this-page-did-not-assess">The longer version, further down this page</a></p>
+    </section>
+
+    <details class="ssel-panel-detail">
+      <summary>{{ d.routes.heading }}</summary>
+      <p>{{ d.routes.intro }}</p>
+      <table class="ssel-routes">
+        <thead>
+          <tr>
+            <th scope="col">Route in</th>
+            <th scope="col">What it looks like on the day</th>
+            <th scope="col">What actually governs</th>
+            <th scope="col">Who owns the response internally</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for row in d.routes.rows %}
+          <tr>
+            <th scope="row">{{ row.route }}</th>
+            <td>{{ row.day }}</td>
+            <td>{{ row.governs }}</td>
+            <td>{{ row.owner }}</td>
+          </tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </details>
+
+    <details class="ssel-panel-detail">
+      <summary>{{ d.instrument_check.heading }}</summary>
+      <p>{{ d.instrument_check.body }}</p>
+      <p>{{ d.boundary.status_dates }}</p>
+    </details>
+  </div>
+</section>
+
+<style>
+/* -------------------------------------------------------------------------------------------
+   Scoped to .ssel so nothing here can reach the rest of the site.
+
+   COLOR: every value reads the site's own custom property with a literal fallback. Under file://
+   the site stylesheet is absent and a bare var(--accent) would resolve to nothing, so the
+   fallbacks are what keep a saved copy legible. The dark block below repeats the pattern with the
+   dark literals; the site's variables win in both blocks whenever style.css is present, which is
+   why this adds no second theme system.
+
+   NO MEANING IN COLOR anywhere. A matched card is not tinted, a status is a word and a date, and
+   the current-selection marker follows the site's own rule: weight, color AND a rule, so it
+   survives a greyscale screen and a color-blind reader. No glyph is used as a marker.
+   ------------------------------------------------------------------------------------------- */
+.ssel {
+  --ssel-bg: var(--bg, #ffffff);
+  --ssel-soft: var(--bg-soft, #f6f7f9);
+  --ssel-fg: var(--fg, #1f2328);
+  --ssel-muted: var(--fg-muted, #596069);
+  --ssel-border: var(--border, #d7dce1);
+  --ssel-strong: var(--border-strong, #b9c0c8);
+  --ssel-accent: var(--accent, #0b5fa5);
+  --ssel-accent-soft: var(--accent-soft, #eaf1f8);
+  --ssel-focus: var(--focus, #0b5fa5);
+  --ssel-radius: var(--radius, 4px);
+
+  margin: 2rem 0 2.5rem;
+  color: var(--ssel-fg);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ssel {
+    --ssel-bg: var(--bg, #16191d);
+    --ssel-soft: var(--bg-soft, #1b1f25);
+    --ssel-fg: var(--fg, #d6dbe1);
+    --ssel-muted: var(--fg-muted, #98a1ab);
+    --ssel-border: var(--border, #2b313a);
+    --ssel-strong: var(--border-strong, #3b434e);
+    --ssel-accent: var(--accent, #82b6e8);
+    --ssel-accent-soft: var(--accent-soft, #1d2733);
+    --ssel-focus: var(--focus, #82b6e8);
+  }
+}
+
+/* Belt and braces. Several rules below set display, and a `hidden` element must stay hidden
+   whichever of them wins -- otherwise the app leaks its own scaffolding into the page. */
+.ssel [hidden] { display: none !important; }
+
+.ssel-lede,
+.ssel-scope,
+.ssel-help,
+.ssel-block-intro,
+.ssel-boundary,
+.ssel-count,
+.ssel-note,
+.ssel-widened,
+.ssel-privacy,
+.ssel-noscript { max-width: 74ch; }
+
+.ssel-noscript {
+  margin: 1rem 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--ssel-strong);
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-soft);
+}
+
+/* ---------- the panel ---------- */
+
+.ssel-panel {
+  margin: 1.25rem 0 1.75rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid var(--ssel-strong);
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-soft);
+}
+
+.ssel-panel-title { margin: 0 0 0.4rem; font-size: 1.05rem; font-weight: 650; }
+.ssel-panel-lede { margin: 0 0 0.4rem; max-width: 74ch; }
+.ssel-skip { margin: 0 0 0.5rem; font-size: 0.85rem; }
+.ssel-scope { margin: 0 0 1rem; color: var(--ssel-muted); font-size: 0.92rem; }
+
+/* Two or three columns of questions, one under about 40rem. A left rail was not an option: the
+   site already spends 15rem on the nav inside a 62rem content column. */
+.ssel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  gap: 1rem;
+}
+
+.ssel-q {
+  margin: 0;
+  padding: 0.7rem 0.85rem 0.85rem;
+  border: 1px solid var(--ssel-border);
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-bg);
+  min-width: 0;
+}
+
+.ssel-q legend {
+  padding: 0 0.3rem;
+  font-weight: 650;
+  font-size: 0.98rem;
+}
+
+.ssel-help {
+  margin: 0.2rem 0 0.7rem;
+  color: var(--ssel-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* The whole row is the hit target, and it is at least 44px tall. */
+.ssel-opt { display: block; margin: 0 0 0.15rem; }
+
+.ssel-opt label {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  min-height: 44px;
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  line-height: 1.45;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.ssel-box {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0.28rem 0 0 0.35rem;
+  accent-color: var(--ssel-accent);
+}
+
+/* Order matters: the input precedes the label in the DOM, so the adjacent-sibling selector is what
+   marks a ticked row. Weight AND a left rule AND color, never color alone. */
+.ssel-box:checked + label {
+  font-weight: 650;
+  color: var(--ssel-accent);
+  border-left: 3px solid var(--ssel-accent);
+  padding-left: 0.45rem;
+  margin-left: -0.48rem;
+  background: var(--ssel-accent-soft);
+  border-radius: 0 var(--ssel-radius) var(--ssel-radius) 0;
+}
+
+/* The site removes no focus ring and neither does this. A hand-styled control is exactly where the
+   ring usually gets lost. */
+.ssel-box:focus-visible,
+.ssel-btn:focus-visible,
+.ssel summary:focus-visible,
+.ssel [tabindex]:focus-visible {
+  outline: 2px solid var(--ssel-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.ssel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.ssel-btn {
+  padding: 0.45rem 0.8rem;
+  min-height: 40px;
+  border: 1px solid var(--ssel-strong);
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-bg);
+  color: var(--ssel-fg);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.ssel-btn:hover { background: var(--ssel-accent-soft); }
+.ssel-btn-inline { margin-left: 0.4rem; min-height: 32px; padding: 0.2rem 0.55rem; font-size: 0.85rem; }
+.ssel-said { font-size: 0.85rem; color: var(--ssel-muted); }
+
+/* ---------- the results ---------- */
+
+.ssel-results { margin-top: 1.5rem; }
+.ssel-results > h3 { margin: 0 0 0.5rem; }
+
+.ssel-count {
+  margin: 0 0 0.6rem;
+  font-weight: 650;
+}
+
+/* The boundary lines are body text, in the result, above the first card. Not a footnote, not
+   smaller, not collapsed. A boundary a reader has to go looking for is decoration. */
+.ssel-boundary {
+  margin: 0 0 0.5rem;
+  padding-left: 0.8rem;
+  border-left: 3px solid var(--ssel-strong);
+}
+
+.ssel-hidden-count,
+.ssel-widened,
+.ssel-note {
+  margin: 0.6rem 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--ssel-border);
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-soft);
+  font-size: 0.94rem;
+}
+
+.ssel-privacy { margin: 0.75rem 0 1.25rem; color: var(--ssel-muted); font-size: 0.88rem; }
+
+.ssel-block { margin: 1.75rem 0; }
+.ssel-block > h4 { margin: 0 0 0.35rem; font-size: 1.02rem; font-weight: 700; }
+.ssel-block-intro { margin: 0 0 0.8rem; color: var(--ssel-muted); font-size: 0.92rem; }
+.ssel-empty { margin: 0 0 0.8rem; font-style: normal; color: var(--ssel-muted); }
+
+.ssel-opener,
+.ssel-layer {
+  margin: 0 0 0.9rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--ssel-strong);
+  border-left-width: 4px;
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-bg);
+  max-width: 74ch;
+}
+
+.ssel-layer h5 { margin: 0 0 0.35rem; font-size: 0.98rem; font-weight: 700; color: var(--ssel-fg); }
+.ssel-layer p { margin: 0; }
+
+.ssel-items { display: grid; gap: 0.9rem; }
+
+.ssel-item {
+  padding: 0.8rem 0.95rem 0.9rem;
+  border: 1px solid var(--ssel-border);
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-bg);
+  min-width: 0;
+}
+
+/* style.css sets h5 small and muted, which is right for prose and wrong for a card title. */
+.ssel-item-name {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ssel-fg);
+  line-height: 1.35;
+}
+
+.ssel-addressed {
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ssel-muted);
+}
+
+.ssel-summary { margin: 0 0 0.6rem; }
+
+.ssel-qualifier {
+  margin: 0 0 0.6rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--ssel-strong);
+  border-radius: var(--ssel-radius);
+  font-weight: 650;
+}
+
+.ssel-facts { margin: 0 0 0.6rem; }
+.ssel-facts dt { font-weight: 650; font-size: 0.85rem; color: var(--ssel-muted); }
+.ssel-facts dd { margin: 0.1rem 0 0.5rem; }
+
+.ssel-detail { margin: 0 0 0.5rem; }
+.ssel-detail summary { cursor: pointer; font-size: 0.92rem; }
+.ssel-detail p { margin: 0.5rem 0 0; }
+.ssel-more { margin: 0; font-size: 0.9rem; }
+
+.ssel-notmap {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--ssel-strong);
+  border-radius: var(--ssel-radius);
+  background: var(--ssel-soft);
+}
+
+.ssel-notmap > h4 { margin-top: 0; }
+.ssel-notmap p { max-width: 74ch; }
+
+.ssel-panel-detail { margin: 1rem 0; }
+.ssel-panel-detail summary { cursor: pointer; font-weight: 650; }
+
+/* Wide content scrolls inside its own container rather than widening the page -- the site's own
+   rule, and the reason no card here may set a min-width. */
+.ssel-routes {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.ssel-routes th,
+.ssel-routes td {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--ssel-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.ssel-routes thead th { background: var(--ssel-soft); }
+
+/* A hidden card leaves the accessibility tree and the tab order together. display:none is the only
+   thing that does both; visibility, opacity, height:0 and off-screen positioning each leave a card
+   that is invisible but reachable, or reachable but unannounced. */
+.ssel-item.is-hidden,
+.ssel-block.is-hidden { display: none; }
+
+@media (max-width: 600px) {
+  .ssel-panel { padding: 0.85rem; }
+  .ssel-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Decided deliberately rather than by default: a printed copy is the result as the reader left it,
+   with the controls gone.
+
+   THE HIDDEN COUNT STAYS IN PRINT, and only its button goes. It is the strongest thing on the page
+   for defeating the reading that the list is everything -- it says how many items the selections
+   removed -- and a printout is exactly the artifact that gets forwarded to somebody who never saw
+   the controls. This rule used to hide it, under a comment claiming a print-only line said so
+   instead. There was no such line. */
+@media print {
+  .ssel-panel, .ssel-skip, .ssel-noscript, #ssel-show-all { display: none !important; }
+  .ssel-item, .ssel-notmap { break-inside: avoid; }
+  .ssel-panel-detail[open] summary { font-weight: 700; }
+}
+
+/* Nothing here animates, which is the simplest way to honor the site's reduced-motion block. */
+</style>
+
+<script>
+/* -------------------------------------------------------------------------------------------
+   The only client-side script on this site.
+
+   IT ONLY EVER HIDES AND REORDERS. Every card, every status and every boundary line is already in
+   the served HTML. If this script throws on line one, the page is a complete, readable, unfiltered
+   document -- which is the whole reason a script was allowed here at all.
+
+   No storage, no cookies, no fetch, no telemetry. State lives in the query string and nowhere else,
+   so the privacy sentence in the results is literally true and a reader can check it in devtools.
+   ------------------------------------------------------------------------------------------- */
+(function () {
+  "use strict";
+
+  var root = document.getElementById("standards-selector");
+  if (!root) { return; }
+
+  var form = document.getElementById("ssel-form");
+  var countEl = document.getElementById("ssel-count");
+  var widenedEl = document.getElementById("ssel-widened");
+  var hiddenWrap = document.getElementById("ssel-hidden-count");
+  var hiddenText = document.getElementById("ssel-hidden-count-text");
+  var showAllBtn = document.getElementById("ssel-show-all");
+  var copyBtn = document.getElementById("ssel-copy");
+  var copySaid = document.getElementById("ssel-copy-said");
+  var boxes = Array.prototype.slice.call(root.querySelectorAll(".ssel-box"));
+  var cards = Array.prototype.slice.call(root.querySelectorAll(".ssel-item"));
+  var openers = Array.prototype.slice.call(root.querySelectorAll(".ssel-opener"));
+  var notes = Array.prototype.slice.call(root.querySelectorAll(".ssel-note"));
+  var layerNote = document.getElementById("ssel-layer-note");
+  var TOTAL = cards.length;
+
+  /* "Show every item" is a DISCLOSURE, not a clear. It used to call form.reset(), which threw away
+     a selection the reader had spent five questions building, under a label that promised only to
+     reveal what was hidden -- and the panel already has a control that clears. So this flag reveals
+     the hidden cards while every tick stays where it is, and the same button puts them back. Any
+     change to a checkbox drops it: the reader has moved on. */
+  var showAll = false;
+
+  /* The blocks, in render order. `b` and `ai` have no resting occupants; cards are moved in. */
+  var BLOCKS = ["a", "b", "ai", "c", "d"];
+  var lists = {};
+  var blockEls = {};
+  var emptyEls = {};
+  BLOCKS.forEach(function (id) {
+    lists[id] = document.getElementById("ssel-items-" + id);
+    blockEls[id] = document.getElementById("ssel-block-" + id);
+    emptyEls[id] = document.getElementById("ssel-empty-" + id);
+  });
+
+  /* Substantive options per question, so a "Not sure" tick can expand to the union of them. A
+     `selects_nothing` option is a definite answer and is NOT part of that union -- widening it
+     would turn "none of these" into "all of these". */
+  var substantive = {};
+  boxes.forEach(function (b) {
+    if (b.dataset.widens || b.dataset.selectsNothing) { return; }
+    var q = b.dataset.question;
+    (substantive[q] = substantive[q] || []).push(b.dataset.token);
+  });
+
+  /* ---------------------------------------------------------------------------------------
+     SELECTION
+     --------------------------------------------------------------------------------------- */
+
+  function readSelection() {
+    /* `selected` is what was literally ticked. `effective` adds the widening expansions. The two
+       are kept apart for one reason, and it is a correctness rule rather than a nicety: widening
+       may add a CANDIDATE, but it may never upgrade a candidate into a BINDING. The market-access
+       regulation is the only item that binds a producer directly, so reaching it through "Not sure"
+       has to leave it out of the direct-binding block. See `directWhen` below. */
+    var selected = {};
+    var effective = {};
+    var widened = [];
+    var anyTicked = false;
+
+    boxes.forEach(function (b) {
+      if (!b.checked) { return; }
+      anyTicked = true;
+      selected[b.dataset.token] = true;
+      if (b.dataset.widens) {
+        widened.push(b.dataset.legend);
+        (substantive[b.dataset.question] || []).forEach(function (tok) { effective[tok] = true; });
+      } else if (!b.dataset.selectsNothing) {
+        effective[b.dataset.token] = true;
+      }
+    });
+
+    return { selected: selected, effective: effective, widened: widened, any: anyTicked };
+  }
+
+  function matches(card, effective) {
+    var toks = (card.dataset.triggers || "").split(" ");
+    var hit = { any: false, byAsk: false };
+    for (var i = 0; i < toks.length; i++) {
+      var t = toks[i];
+      if (!t) { continue; }
+      if (t === "ALWAYS") { hit.any = true; continue; }
+      if (effective[t]) {
+        hit.any = true;
+        if (t.indexOf("ask=") === 0) { hit.byAsk = true; }
+      }
+    }
+    return hit;
+  }
+
+  function homeFor(card) {
+    /* Where the card sits in the served HTML, before any script runs. The zero state uses this so
+       that a reader with JavaScript and a reader without see the SAME arrangement -- otherwise the
+       two versions of the page disagree before anybody has said anything, which is a difference
+       nobody can explain and everybody notices. */
+    if (card.dataset.tier === "0") { return "a"; }
+    if (card.dataset.tier === "6") { return "d"; }
+    return "c";
+  }
+
+  function blockFor(card, hit, sel, aiActive) {
+    if (!sel.any) { return homeFor(card); }
+    if (card.dataset.ai && aiActive) { return "ai"; }
+    if (card.dataset.tier === "6") { return "d"; }
+    var directWhen = card.dataset.directWhen;
+    if (directWhen) {
+      /* Reached through the real answer, so it is a direct binding. Reached through "Not sure", so
+         it is a candidate and says so. */
+      return sel.selected[directWhen] ? "a" : "c";
+    }
+    if (card.dataset.tier === "0") { return "a"; }
+    if (hit.byAsk) { return "b"; }
+    return "c";
+  }
+
+  /* ---------------------------------------------------------------------------------------
+     RENDER
+     --------------------------------------------------------------------------------------- */
+
+  function render() {
+    var sel = readSelection();
+    var aiActive = !!(sel.effective["ai_assist=yes"]);
+    var visible = [];
+    var placement = {};
+
+    cards.forEach(function (card) {
+      var hit = sel.any ? matches(card, sel.effective) : { any: true, byAsk: false };
+      if (hit.any) {
+        visible.push(card);
+        placement[card.dataset.id] = blockFor(card, hit, sel, aiActive);
+      } else if (showAll) {
+        /* Revealed but NOT claimed: a card the selection did not match goes to its resting home,
+           never into a block the reader's answers would have put it in. */
+        visible.push(card);
+        placement[card.dataset.id] = homeFor(card);
+      }
+    });
+
+    /* R1, and it is a deidentification rule rather than a presentation one: a sector instrument may
+       never be the only named member of its group in a result, because a lone sector instrument
+       identifies the author's sector. Force the companions IN rather than dropping the item -- a
+       reader who answered health plus certificate needs all three of them. */
+    var byId = {};
+    cards.forEach(function (c) { byId[c.dataset.id] = c; });
+    visible.slice().forEach(function (card) {
+      var group = card.dataset.neverAlone;
+      if (!group) { return; }
+
+      /* COUNT PER BLOCK, NOT ACROSS THE RESULT. A result-wide count satisfied the rule on paper
+         and defeated it on screen: answering health plus questionnaire put the peers in "what can
+         actually be produced" and left the instrument by itself in "may reach you", four peers
+         deep in a total nobody sees. A reader sees blocks, not totals.
+
+         So: find whichever block already holds the most peers of that group, move the instrument
+         there, and only then force the companions in -- moving the instrument up preserves a peer
+         that legitimately belongs in the ask-driven block, where dragging it down would not. */
+      var perBlock = {};
+      visible.forEach(function (c) {
+        if (c.dataset.group !== group) { return; }
+        var b = placement[c.dataset.id];
+        perBlock[b] = (perBlock[b] || 0) + 1;
+      });
+      var here = placement[card.dataset.id];
+      var target = here;
+      Object.keys(perBlock).forEach(function (b) {
+        if (perBlock[b] > perBlock[target]) { target = b; }
+      });
+      placement[card.dataset.id] = target;
+      /* perBlock was counted BEFORE the move, so the card itself is in the count only if it did
+         not move. Three named members of the group in one block is what the rule asks for. */
+      if (perBlock[target] + (target === here ? 0 : 1) >= 3) { return; }
+
+      (card.dataset.companions || "").split(" ").forEach(function (id) {
+        var mate = byId[id];
+        if (!mate) { return; }
+        if (visible.indexOf(mate) === -1) { visible.push(mate); }
+        placement[id] = target;
+      });
+    });
+
+    var visibleSet = {};
+    visible.forEach(function (c) { visibleSet[c.dataset.id] = true; });
+
+    /* Sort once, then append in order. Appending an existing node moves it, so this both places and
+       orders every card in one pass. Tier ascending, then alphabetically inside a tier. */
+    visible.sort(function (a, b) {
+      var t = Number(a.dataset.tier) - Number(b.dataset.tier);
+      if (t !== 0) { return t; }
+      return a.dataset.name < b.dataset.name ? -1 : (a.dataset.name > b.dataset.name ? 1 : 0);
+    });
+
+    /* Moving a node with appendChild drops focus to the body if focus was anywhere inside it, and
+       the reader is given no clue where they now are. It does not happen on the ordinary path --
+       focus is on the checkbox being toggled, and checkboxes are never moved -- but it does happen
+       to anyone who tabbed into the results and then reached back up to the panel with the mouse.
+       Measured, not assumed: the sequence lands on <body> without this. */
+    var held = document.activeElement;
+    var heldInside = held && held !== document.body && root.contains(held);
+
+    /* The other half of the same problem, and the half the rescue below cannot reach: if focus is
+       inside a card that is about to be hidden, it is not dropped to the body at all -- it stays on
+       an element with display:none, out of the accessibility tree and out of the tab order, with
+       nothing to return it to. Move it somewhere real first. The results heading is the nearest
+       thing that is certainly still on the page. */
+    if (heldInside) {
+      var heldCard = held.closest(".ssel-item");
+      if (heldCard && !visibleSet[heldCard.dataset.id]) {
+        var title = document.getElementById("ssel-results-title");
+        if (title) { title.focus(); }
+        heldInside = false;
+      }
+    }
+
+    var counts = { a: 0, b: 0, ai: 0, c: 0, d: 0 };
+    visible.forEach(function (card) {
+      var b = placement[card.dataset.id] || "c";
+      lists[b].appendChild(card);
+      counts[b] += 1;
+      card.classList.remove("is-hidden");
+    });
+
+    cards.forEach(function (card) {
+      if (!visibleSet[card.dataset.id]) { card.classList.add("is-hidden"); }
+    });
+
+    /* Put focus back only if it was already inside the app and its element is still reachable.
+       Never move focus otherwise: the reader is in the panel, and yanking them to the results
+       defeats the rapid comparison the panel exists for. */
+    if (heldInside && document.activeElement === document.body && root.contains(held)) {
+      var stillShown = held.closest(".ssel-item");
+      if (!stillShown || !stillShown.classList.contains("is-hidden")) { held.focus(); }
+    }
+
+    /* Openers, notes and the organization-layer panel. Computed BEFORE the block pass below, which
+       needs to know whether the layer panel is showing: a block holding it is not empty. */
+    openers.forEach(function (p) { p.hidden = true; });
+    notes.forEach(function (p) { p.hidden = true; });
+
+    /* How many boxes are ticked in each question, because one note depends on it. */
+    var tickedPerQuestion = {};
+    boxes.forEach(function (b) {
+      if (!b.checked) { return; }
+      var q = b.dataset.question;
+      tickedPerQuestion[q] = (tickedPerQuestion[q] || 0) + 1;
+    });
+
+    boxes.forEach(function (b) {
+      if (!b.checked) { return; }
+      if (b.dataset.opener) {
+        var o = document.getElementById(b.dataset.opener);
+        if (o) { o.hidden = false; }
+      }
+      if (b.dataset.note) {
+        /* A definite-empty note says "no sector regime mapped here routes on the data you named"
+           or "nothing here binds you yet". Both are false the moment the reader also ticks a
+           substantive option in the SAME question -- and two ticks is all it took to print a
+           clearance sentence directly above the regimes it denied. Checkboxes make that reachable
+           and a shared link round-trips it, so the note is suppressed rather than the combination
+           being forbidden. A note that is not a definite-empty note (the not-assessed
+           jurisdictions) is a coverage statement and stays true regardless. */
+        var contradicted = b.dataset.selectsNothing && tickedPerQuestion[b.dataset.question] > 1;
+        var n = document.getElementById(b.dataset.note);
+        if (n && !contradicted) { n.hidden = false; }
+      }
+    });
+
+    var orgVisible = visible.some(function (c) { return c.dataset.group === "org-instruments"; });
+    layerNote.hidden = !(orgVisible || sel.selected["role=software"]);
+
+    /* THE BLOCK PASS. Three rules, and the middle one is the fix for a page that contradicted
+       itself:
+         -- an empty sentence appears only once the reader has told the page something, because
+            "nothing mapped here binds you directly" is a finding relative to an answer and a
+            falsehood without one;
+         -- a block disappears when it has no cards, nothing to say, and nothing else in it;
+         -- `hidden` set in the served markup is cleared here, so from the first render the script
+            owns every block's visibility and the markup owns only the no-JavaScript baseline. */
+    BLOCKS.forEach(function (id) {
+      var empty = emptyEls[id];
+      var speaks = !!(empty && empty.textContent.trim());
+      var carries = (id === "b" && !layerNote.hidden);
+      if (empty) { empty.hidden = counts[id] > 0 || !speaks || !sel.any; }
+      /* A block carrying only the organization-layer panel keeps its heading and drops its
+         introduction, which promises rows ("each row leads with what the document issues") that
+         are not there. The panel is itself an answer to the heading. */
+      var intro = blockEls[id] ? blockEls[id].querySelector(".ssel-block-intro") : null;
+      if (intro) { intro.hidden = (counts[id] === 0 && carries); }
+      if (blockEls[id]) {
+        blockEls[id].hidden = false;
+        blockEls[id].classList.toggle(
+          "is-hidden",
+          counts[id] === 0 && !carries && !(speaks && sel.any)
+        );
+      }
+    });
+
+    updateWidened(sel);
+    schedule(visible.length, counts);
+  }
+
+  function updateWidened(sel) {
+    if (!sel.widened.length) { widenedEl.hidden = true; return; }
+    widenedEl.hidden = false;
+    widenedEl.textContent =
+      "You answered 'Not sure' to: " + sel.widened.join(" ") +
+      " This result was WIDENED, not narrowed -- it shows everything those questions could have " +
+      "surfaced. Answer them to shorten it. A shorter result is not a smaller obligation.";
+  }
+
+  /* ---------------------------------------------------------------------------------------
+     ANNOUNCEMENT, HIDDEN COUNT AND URL
+     --------------------------------------------------------------------------------------- */
+
+  var timer = null;
+
+  function schedule(shown, counts) {
+    /* One debounce for the announcement AND the URL write. A reader ticking four boxes hears one
+       sentence, not four, and the back button is never polluted with four filter states. */
+    if (timer) { window.clearTimeout(timer); }
+    timer = window.setTimeout(function () { settle(shown, counts); }, 350);
+  }
+
+  function settle(shown, counts) {
+    var hidden = TOTAL - shown;
+    var anyTicked = boxes.some(function (b) { return b.checked; });
+
+    if (!anyTicked) {
+      /* Word for word what the served HTML already says, on purpose. See the comment beside that
+         paragraph: a first paint that rewrote its own live region would announce a change to a
+         screen-reader user before anybody had done anything. */
+      countEl.textContent =
+        "Showing all of the at least " + TOTAL + " items mapped here, unfiltered. This is not a " +
+        "list of what reaches you.";
+    } else if (shown === 0) {
+      /* Structurally close to unreachable, because at least two items carry ALWAYS. Written anyway,
+         and written as a route rather than a dead end. */
+      countEl.textContent =
+        "Nothing matched that combination. That is not evidence that nothing reaches you -- this " +
+        "map covers at least " + TOTAL + " items and names what it does not cover below. This is " +
+        "not a list of what reaches you.";
+    } else {
+      /* The "can actually be produced" clause is dropped when that block is empty rather than
+         printed as a zero. "At least 0" is a vacuous claim, and a vacuous claim beside a real one
+         teaches a reader to skim both. */
+      countEl.textContent =
+        "Showing " + shown + " of the at least " + TOTAL + " items mapped here." +
+        (counts.b === 1
+          ? " At least one of them names something that can actually be produced."
+          : counts.b > 1
+            ? " At least " + counts.b + " of them name something that can actually be produced."
+            : " None of them names an artifact you could hand over.") +
+        " This is not a list of what reaches you.";
+    }
+
+    /* The disclosure, and the strongest thing on the page for defeating the reading that the list
+       is everything: it turns "the list is all there is" into "the list is what YOU narrowed to".
+       It stays on screen while the reveal is active, because that is how the reader gets back. */
+    hiddenWrap.hidden = !(anyTicked && (hidden > 0 || showAll));
+    if (!hiddenWrap.hidden) {
+      if (showAll) {
+        hiddenText.textContent =
+          "Showing every item, including the ones your selections would hide. Your ticks are " +
+          "unchanged.";
+        showAllBtn.textContent = "Back to your selections";
+      } else {
+        hiddenText.textContent =
+          hidden + (hidden === 1 ? " item is" : " items are") + " hidden by your selections.";
+        showAllBtn.textContent = "Show every item";
+      }
+    }
+
+    writeUrl();
+  }
+
+  function writeUrl() {
+    /* Query string, never the fragment. The fragment is already spoken for here: the skip link
+       targets #content, the guide's tables link to in-page anchors, and the stylesheet turns on
+       smooth scrolling. State in the fragment would break all three and be broken BY all three.
+
+       replaceState rather than pushState, and wrapped, because it throws a SecurityError on file://
+       in some browsers -- and the file:// copy has to keep working with the URL simply not syncing. */
+    try {
+      var slugs = boxes
+        .filter(function (b) { return b.checked; })
+        .map(function (b) { return b.dataset.token.replace("=", "-"); });
+      var url = window.location.pathname + (slugs.length ? "?s=" + slugs.join(",") : "");
+      window.history.replaceState(null, "", url + window.location.hash);
+    } catch (err) {
+      /* Nothing to do and nothing to tell the reader: the page is fully usable without URL sync. */
+    }
+  }
+
+  function readUrl() {
+    /* An unknown slug is ignored rather than treated as an error. These slugs became a published
+       interface the moment somebody first pasted a link into an email, so an old link has to
+       degrade to a partial selection rather than to a broken page. */
+    var m = /[?&]s=([^&]*)/.exec(window.location.search);
+    if (!m) { return; }
+    var wanted = {};
+    decodeURIComponent(m[1]).split(",").forEach(function (s) { wanted[s] = true; });
+    boxes.forEach(function (b) {
+      if (wanted[b.dataset.token.replace("=", "-")]) { b.checked = true; }
+    });
+  }
+
+  /* ---------------------------------------------------------------------------------------
+     WIRING
+     --------------------------------------------------------------------------------------- */
+
+  form.addEventListener("change", function () { showAll = false; render(); });
+
+  /* A native reset fires before the inputs are cleared, so re-render on the next tick. Focus is
+     never moved on a filter change: the reader is in the panel, and yanking focus to the results
+     defeats the rapid comparison the panel exists for. */
+  form.addEventListener("reset", function () {
+    showAll = false;
+    window.setTimeout(render, 0);
+  });
+
+  /* Reveals and re-hides. It does NOT clear -- the panel's own button does that, and one control
+     per action. */
+  showAllBtn.addEventListener("click", function () { showAll = !showAll; render(); });
+
+  copyBtn.hidden = false;
+  copyBtn.addEventListener("click", function () {
+    var text = window.location.href;
+    var said = function (msg) { copySaid.textContent = msg; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { said("Link copied."); },
+        function () { said("Could not copy. The address bar carries the same link."); }
+      );
+    } else {
+      said("Copy it from the address bar.");
+    }
+  });
+
+  /* Reveal the controls last, after everything they drive is wired. Revealing them first would put
+     a live-looking checkbox in front of a reader for however long the rest takes to run. */
+  readUrl();
+  form.hidden = false;
+  render();
+}());
+</script>
