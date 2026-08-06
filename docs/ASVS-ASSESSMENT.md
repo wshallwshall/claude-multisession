@@ -28,6 +28,109 @@ instances of it.
 
 ---
 
+## What ASVS is, before any of the rest
+
+The OWASP Application Security Verification Standard is a list of security requirements for web
+applications and services, written so that each one can be checked individually and answered yes or
+no. It is not a scanner, not a certification, and not a process. It is a catalog of things a
+reviewer can verify, grouped into chapters by subject -- authentication, session management, access
+control, validation, cryptography, and so on.
+
+Two properties make it useful and awkward at the same time. It is **large**: several hundred
+individually verifiable requirements, which is far more than one person reads carefully in a week.
+And it is **specific**: each requirement is written to be checkable, so a requirement either holds
+for your code or it does not, and "roughly, yes" is not one of the answers.
+
+### The three levels
+
+The requirements are tiered, and the tiers are cumulative -- each level contains everything below
+it.
+
+| Level | Who it is for | What it means in practice |
+|---|---|---|
+| **Level 1** | Every application, as a floor | The baseline. Achievable largely from the outside, without deep access to the code |
+| **Level 2** | Applications handling sensitive data | The level most applications with real users should target. Assumes a reviewer who can read the source |
+| **Level 3** | The highest-value applications | The most rigorous tier, for systems where a compromise is severe. Assumes deep review and defense in depth |
+
+Two things about levels that catch people out. **Choosing a level is a scoping decision you have to
+argue, not a difficulty setting** -- claiming Level 2 means every Level 1 and Level 2 requirement in
+scope has been assessed, and scoping a requirement out does not buy you the level. And **a level is
+not a score**: there is no partial credit, no percentage, and nothing issues a certificate for any of
+it. OWASP publishes the standard; no body assesses you against it.
+
+### ASVS 5.0 is a renumbering, not an edition bump
+
+Version 5.0 reorganized the chapters and renumbered requirements from 4.0. Requirement identifiers
+do not carry across, so a mapping, a spreadsheet, or an internal policy built on 4.0 numbers does not
+survive the move. If you inherit prior work, expect to re-anchor it rather than translate it.
+
+> **Check the paragraph above against the standard itself before you rely on it.** It is a summary,
+> written to get you oriented, and the whole point of the next section is that a summary is not what
+> you assess against. If your level definitions come from this page rather than from the pinned text,
+> you have already made the mistake this document exists to prevent.
+
+---
+
+## Start by building the thing you will compare against, and build it from the exact wording
+
+**This is the first work item, before any scoring, any partitioning, any agent. Get the standard's
+own text, held locally, pinned to a version. Do not let an AI coding assistant write you a summary of
+the requirements and then assess against that.**
+
+It is a tempting shortcut precisely because it looks like preparation rather than a corner cut. The
+requirements are long, and a condensed version reads faster, fits in a prompt, and feels like a
+reasonable working copy. The assessment then runs smoothly, produces confident verdicts, and every
+one of them answers a slightly different question than the standard asked.
+
+### How this cost us, concretely
+
+We scored a batch of requirements against condensed wording. The verdicts looked clean and internally
+consistent, which is exactly the problem -- nothing about the output signals that the input was
+narrowed. The damage surfaced later, in two shapes:
+
+- **Requirements that lost a clause in the condensing.** A requirement with two conditions became a
+  summary with one. Every cell assessed against it was answered honestly and was still wrong, because
+  the question had quietly shrunk. This is the same failure the rest of this document keeps naming:
+  an instrument answering a narrower question than the one asked, and looking clean while doing it.
+- **Verdicts that could not be re-checked.** With no pinned text behind a cell, there was nothing to
+  re-read when a verdict was challenged. The only way to settle it was to score it again from scratch.
+
+The cost was not the first pass. It was **re-running work that had already been marked done**, and
+the slower tax of not trusting any earlier verdict once one had been shown to rest on a paraphrase.
+A verdict you cannot re-check is not cheaper than no verdict; it is more expensive, because it
+occupies the slot where a real one would go.
+
+### What to build instead
+
+Hold the requirement text locally, pinned by version, in a form a machine can read back. Then every
+verdict can name the requirement it answered and be re-read against it later. The corpus is also
+what lets a later pass detect that the standard moved under you, which a summary cannot do at all.
+
+The full mechanics -- how to pin, what to stamp on every number, and why a section name in the corpus
+is checkable where chapter prose is not -- are in
+[Never score against a paraphrase](#never-score-against-a-paraphrase) and
+[Pin the corpus](#pin-the-corpus-and-stamp-the-version-on-every-number). Read those two before
+starting, not when something goes wrong.
+
+---
+
+## Handing this to Claude Code
+
+Everything from here is written to be handed to an AI coding assistant that will do the bulk of the
+scoring. It is a working method, not a description of one: the vocabulary, the decision procedure,
+the partitioning, the review pass, and the traps that produce clean-looking wrong answers.
+
+The order that works:
+
+1. **Build the corpus first**, per the section above. Nothing downstream is trustworthy without it.
+2. **Fix the verdict vocabulary** before any cell is scored, so two sessions mean the same thing by
+   the same word.
+3. **Declare scope positively**, and argue every exclusion rather than assuming it.
+4. **Partition the work** so sessions do not collide or silently overlap.
+5. **Run the review pass**, which is where most of the wrong answers are actually caught.
+
+---
+
 ## The standard supplies no verdict rubric
 
 ASVS 5.0's assessment guidance is *deliberately non-prescriptive*. It supplies scoping advice,
