@@ -26,6 +26,9 @@
 
 - group: Start here
   items:
+    - label: Using this with an agent
+      title: Using this with an agent
+      path: /USING-THIS-WITH-AN-AGENT.html
     - label: Concepts
       title: Concepts
       path: /CONCEPTS.html
