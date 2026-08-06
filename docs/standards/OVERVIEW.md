@@ -5,11 +5,11 @@ A set of documents for creating secure, high-quality code using Claude Code:
 - what counts as quality
 - what counts as secure
 - how to hold third-party code you will never read
-- how to govern Claude Code, or another AI-assisted coding tool when it writes much of it
+- how to govern Claude Code, or another AI-assisted coding tool, when it writes much of it
 - how much of the result a human must actually read
 
-Plus [a two-page summary](CISO-SUMMARY.md) for a security executive who has to decide whether any of
-it is being done, rather than adopt it.
+Plus [a two-page summary](CISO-SUMMARY.md) for a security executive. It answers a different
+question: not how to adopt any of this, but how to tell whether your teams already do it.
 
 They are **starting points you adapt**, not a compliance package. Nothing here is a certificate, an
 audit, or a scored verdict about any codebase, and nothing here installs or enforces anything. Every
