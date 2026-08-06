@@ -135,6 +135,29 @@ function Write-GateLog([string]$Rule, [string]$Detail) {
     } catch { }
 }
 
+# Fold a CALLER-SUPPLIED value before it goes into a deny REASON.
+#
+# WHY THIS IS NOT COSMETIC. The reasons below carry a literal command block introduced by "What to do
+# instead:". A reason is an INSTRUCTION an agent reads and acts on, so a value a caller controls must
+# not be able to add structure to it. Two inputs reach these reasons and both are attacker-influenced:
+#
+#   * A BRANCH NAME (rule 3b). `git check-ref-format` accepts ';', '$', '|', '"' and "'" in a refname,
+#     so a branch called  x';calc;#  makes the printed remediation parse as two statements with '#'
+#     hiding the remainder.
+#   * A TARGET PATH. An embedded newline lets a crafted path forge a SECOND "What to do instead:"
+#     block. Placed first, a model reading top-down reaches the forged command before the real one.
+#     The path never has to exist; only the field does.
+#
+# So: strip the characters that add structure, and cap the length. This runs on the way OUT, because
+# the value is legitimate input -- the danger is what it becomes once embedded in text an agent obeys.
+function Get-SafeForMessage([string]$Value) {
+    $t = ("$Value" -replace '[\r\n\t]', ' ')
+    # Quote and statement separators: harmless in a refname, structural inside a printed command.
+    $t = ($t -replace "[`"'`;|&`$``]", '_')
+    if ($t.Length -gt 400) { return $t.Substring(0, 400) + '...' }
+    return $t
+}
+
 function Write-Deny([string]$Reason, [string]$Rule = "?", [string]$Detail = "") {
     Write-GateLog $Rule $Detail
 
@@ -342,6 +365,11 @@ function Test-WorktreeHijack([string]$Verb, [string]$Cmd, [string]$WtRaw) {
     $destSlug = ($dest -replace '[^A-Za-z0-9._-]+', '-').Trim('-')
     if (-not $destSlug) { $destSlug = 'reuse' }
 
+    # Everything below is interpolated into a reason that prints a command. Fold first.
+    $dest       = Get-SafeForMessage $dest
+    $head       = Get-SafeForMessage $head
+    $selfTopRaw = Get-SafeForMessage $selfTopRaw
+
     Write-Deny -Rule "3b" -Detail "git $Verb -> $selfTopRaw" -Reason @"
 BLOCKED: 'git $Verb $dest' would switch a LINKED WORKTREE ($selfTopRaw) onto the existing branch '$dest'.
 
@@ -458,6 +486,7 @@ if ($tool -in @("Bash", "PowerShell")) {
         $govCfg = Test-GovernedSharedDir (ConvertTo-CcxComparablePath -Path $common)
         if (-not $govCfg) { continue }
 
+        $badKey = Get-SafeForMessage $badKey
         Write-Deny -Rule "3c" -Detail "git config $badKey" -Reason @"
 BLOCKED: setting '$badKey' would change the SHARED git configuration of $($govCfg.Display).
 
@@ -510,6 +539,8 @@ What to do instead:
         if (-not $govWt) { continue }
 
         $pruneScript = Get-RepoScript $govWt.Display 'scripts/worktree/prune-merged.ps1'
+        $wtVerb    = Get-SafeForMessage $wtVerb
+        $victimRaw = Get-SafeForMessage $victimRaw
         Write-Deny -Rule "3d" -Detail "git worktree $wtVerb" -Reason @"
 BLOCKED: 'git worktree $wtVerb $victimRaw' acts on a worktree of $($govWt.Display) that belongs to
 ANOTHER SESSION -- git refuses to remove the worktree you are standing in, so this one is not yours.
