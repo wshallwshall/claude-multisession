@@ -40,15 +40,22 @@ cleanly as you edit it -- which you will, because none of these are usable as th
 the reverse: comfortable to read, easy to circulate and mark up, and of no use to a coding tool. The Word
 files hold the same content, generated from the same markdown.
 
-**Hand the standards to Claude Code, or another AI-assisted coding tool.** They are a base to apply, not prose to read through.
+**Some of these are dense. Claude Code can make them easier to get through.**
 
-1. Give it the markdown.
-2. Ask it to **summarize the document against your repository**.
-3. Then ask questions. What already holds? What would have to change? What would each gap cost?
+You will read these documents -- they become your rules once you adopt them. But several run long
+and technical, and starting at the top of one is a slow way to find out whether it even applies to
+you. Give Claude Code, or another AI-assisted coding tool, the markdown, and use it to close that
+gap:
 
-You learn more from those three answers than from reading the document end to end, because they are
-about your code. Two files are the exception, written for humans to read: [the CISO
-summary](CISO-SUMMARY.md) and [Human review of code](REVIEW-DEPTH.md).
+1. **Ask for a summary against your repository**, rather than a summary in general.
+2. **Ask it to rewrite a section** -- shorter, plainer, or aimed at the people you need to convince.
+3. **Then ask questions.** What already holds here? What would have to change? What would each gap
+   cost?
+
+Those answers are about your code, which is what makes them worth more than a careful read of a
+document written about nobody's code in particular. Two of the files need none of this: [the CISO
+summary](CISO-SUMMARY.md) and [Human review of code](REVIEW-DEPTH.md) are short and written to be
+read straight through.
 
 **Then write down what you actually built.** Claude Code reads a file called `CLAUDE.md` at the
 start of every session, which makes it the place a project keeps its standing rules. The

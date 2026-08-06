@@ -5,16 +5,12 @@ going wrong, and which control neutralizes each one. How much rigor a given chan
 And when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
 
-> **Meant to be worked with, not read straight through.** Most of this standard is a base for
-> Claude Code, or another AI-assisted coding tool, to apply to your code, rather than
-> prose to work through by hand.
->
-> The fastest way in: give the tool the
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md), ask it to
-> **summarize the document against your repository**, and then ask it questions. What here
-> already holds? What would have to change? What would each gap cost? That conversation is
-> worth more than reading top to bottom, because the answers are about your code rather than
-> about the document.
+> **This one is dense.** Reading it end to end works, and you will need to eventually -- it
+> becomes your standard once you adopt it. It is usually faster to hand the
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) to Claude Code, or
+> another AI-assisted coding tool, and ask it to summarize this against your repository,
+> rewrite a section in plainer terms, or answer what already holds here and what would have to
+> change.
 >
 > Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
