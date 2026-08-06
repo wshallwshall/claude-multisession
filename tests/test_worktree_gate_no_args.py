@@ -53,12 +53,28 @@ class WorktreeGateWithNoArguments(unittest.TestCase):
         env["USERPROFILE"] = str(self.home)
         env["HOME"] = str(self.home)
         # NO SCRIPT ARGUMENTS. See the module docstring.
+        #
+        # cwd IS SET DELIBERATELY, AND OMITTING IT IS A MEASUREMENT BUG, NOT A TIDINESS ONE. The gate
+        # resolves relative paths -- a `git -C ../x`, a payload cwd -- and in production the hook
+        # process inherits the session's directory, so the two agree. A harness that leaves cwd unset
+        # runs the gate wherever pytest happened to start, so the two DIVERGE, and every relative-path
+        # case then measures the harness rather than the gate.
+        #
+        # This is not hypothetical. A sibling project's gate session shipped a fix, wrote a red test
+        # for it and passed its own negative control on a "second fail-open" that existed only because
+        # their harness left cwd unset. A fourth adversarial reviewer refuted it and they retracted it.
+        # The red test had pinned the harness.
+        #
+        # Default to the payload's own cwd when the payload names one, because that is what production
+        # does. A test that deliberately wants divergence must pass it explicitly and say why.
+        cwd = payload.get("cwd") or None
         return subprocess.run(
             [self.pwsh, "-NoProfile", "-File", str(t.GATE)],
             input=json.dumps(payload),
             capture_output=True,
             text=True,
             env=env,
+            cwd=cwd,
             timeout=TIMEOUT_SECONDS,
         )
 
