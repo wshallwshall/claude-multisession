@@ -29,7 +29,24 @@ one of them is meant to be edited down to your setting before it is useful.
 | This overview | -- | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/OVERVIEW.docx) |
 | **A `CLAUDE.md` template** -- `CLAUDE.md` is the file Claude Code reads at the start of every session, so it is where a project's standing rules live. This one is a starting point. | -- | [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) | -- |
 
-Rows are in the [recommended reading order](#the-order-to-read-them-in).
+## The order to read them in
+
+1. **[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md)** first, because it is the one that
+   changes tomorrow rather than next quarter, and because its risk tier decides how much of the
+   rest applies to any given change.
+2. **[Human review of code](REVIEW-DEPTH.md)** second, and early on purpose. It answers the question a
+   manager asks before any of this gets funded -- how much of the code a human still has to read --
+   and it is the shortest of them.
+3. **[Dependency integrity](DEPENDENCY-INTEGRITY.md)** next. Its controls are the most mechanical of
+   the set, and you probably already have half of them; it is the one most likely to be adopted
+   close to whole.
+4. **[Code quality](CODE-QUALITY.md)** fourth. It assumes you have somewhere to put a blocking check,
+   which the first two get you thinking about.
+5. **[Secure development](SECURE-DEVELOPMENT.md)** last. It is the widest and the most
+   setting-specific, and it is the one you should expect to rewrite rather than adopt.
+
+If you read only one paragraph of any of them, read its scope-and-limits block. That block is what
+tells you whether the rest applies to you, and it is deliberately placed before the rules.
 
 **Markdown is best for sharing with AI. Word is best for sharing with humans.**
 
@@ -115,25 +132,6 @@ you are currently losing.
 | [Security standard assessment](../ASVS-ASSESSMENT.md) | A method for assessing a codebase against a standard with several hundred requirements: verdict vocabularies that mean the same thing to two reviewers, evidence anchors a machine can re-check, pinning the standard's corpus so it cannot shift underneath you, and how to read a movement in a score. |
 | [Code quality](CODE-QUALITY.md) | Rows that may decide a verdict separated from rows that may only start a conversation, the published evidence behind refusing to gate on a single number, a map from each way machine-written code goes wrong to the control that neutralizes it, and review depth as a per-file decision so a large diff stays finite. |
 | [Secure development](SECURE-DEVELOPMENT.md) | A written producer-versus-operator ownership split, a per-interface threat model that gives review something to check against, a finite secure-coding list, an honest read of what a green pipeline has and has not established, and a release gate that is a checklist rather than a debate. |
-
-## The order to read them in
-
-1. **[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md)** first, because it is the one that
-   changes tomorrow rather than next quarter, and because its risk tier decides how much of the
-   rest applies to any given change.
-2. **[Human review of code](REVIEW-DEPTH.md)** second, and early on purpose. It answers the question a
-   manager asks before any of this gets funded -- how much of the code a human still has to read --
-   and it is the shortest of them.
-3. **[Dependency integrity](DEPENDENCY-INTEGRITY.md)** next. Its controls are the most mechanical of
-   the set, and you probably already have half of them; it is the one most likely to be adopted
-   close to whole.
-4. **[Code quality](CODE-QUALITY.md)** fourth. It assumes you have somewhere to put a blocking check,
-   which the first two get you thinking about.
-5. **[Secure development](SECURE-DEVELOPMENT.md)** last. It is the widest and the most
-   setting-specific, and it is the one you should expect to rewrite rather than adopt.
-
-If you read only one paragraph of any of them, read its scope-and-limits block. That block is what
-tells you whether the rest applies to you, and it is deliberately placed before the rules.
 
 ## Where these came from, and what they assume
 
