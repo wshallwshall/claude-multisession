@@ -46,7 +46,8 @@ files hold the same content, generated from the same markdown.
 3. Then ask questions. What already holds? What would have to change? What would each gap cost?
 
 You learn more from those three answers than from reading the document end to end, because they are
-about your code. [The CISO summary](CISO-SUMMARY.md) is the exception. It is written to be read.
+about your code. Two files are the exception, written for humans to read: [the CISO
+summary](CISO-SUMMARY.md) and [Human review of code](REVIEW-DEPTH.md).
 
 **Then write down what you actually built.** Claude Code reads a file called `CLAUDE.md` at the
 start of every session, which makes it the place a project keeps its standing rules. The
