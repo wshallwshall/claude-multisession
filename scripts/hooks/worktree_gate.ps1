@@ -85,6 +85,38 @@ param(
 # asserted, and this label can never again be the only thing a reader compares.
 $GateVersion = "1"
 
+# The file this gate was LOADED FROM, hashed at deny time -- not the source somebody is reading. This
+# gate is PUBLISHED and gets installed from whatever checkout the installer happened to run in, so
+# "installed" and "the version in the repo I am looking at" are different files and nothing on the
+# machine says which is which. The hand-bumped label above cannot close that -- it lied once already --
+# so both of the gate's outputs carry the digest of that file beside it. 12 lowercase hex, the SAME
+# fold as install-gate.ps1 -Status and bin/ccx-doctor.ps1, so the three can be compared by eye.
+#
+# SAID PRECISELY, because the imprecise version is the same class of lie: this is the digest of the
+# file ON DISK WHEN THE DENY IS COMPOSED, not of the bytes PowerShell parsed at process start.
+# Measured -- a gate slowed with a sleep and then appended to mid-flight stamped the NEW digest -- so
+# if install-gate.ps1 replaces the installed copy while an invocation is in the air, that one deny
+# names a file slightly newer than the rules that produced it. The window is one hook lifetime wide
+# and needs a concurrent install to open. Closing it would mean hashing eagerly at script scope, i.e.
+# paying the read on every ALLOW, which is the overwhelming majority of invocations; the wrong trade.
+$script:GateSelf = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
+$script:GateSha = $null
+
+function Get-GateSha {
+    # LAZY and memoized. A PreToolUse hook runs on every matched tool call on the box and the
+    # overwhelming majority decide nothing and exit 0; only a deny (or the bootstrap-failure receipt)
+    # ever needs this, and the deny path wants it twice. Never throws, never writes to stderr: a
+    # provenance stamp must not be able to turn an allow into an emission, and
+    # tests/test_worktree_gate_no_args.py requires stderr to be empty.
+    if ($script:GateSha) { return $script:GateSha }
+    $script:GateSha = "unavailable"
+    try {
+        $h = (Get-FileHash -LiteralPath $script:GateSelf -Algorithm SHA256 -ErrorAction Stop).Hash
+        if ($h -and $h.Length -ge 12) { $script:GateSha = $h.Substring(0, 12).ToLowerInvariant() }
+    } catch { }
+    return $script:GateSha
+}
+
 # Fail OPEN: any unhandled error must let the tool call through, never block it.
 $ErrorActionPreference = "SilentlyContinue"
 
@@ -116,8 +148,11 @@ function Write-GateLog([string]$Rule, [string]$Detail) {
             if ($t.Length -gt 400) { $t.Substring(0, 400) + '...' } else { $t }
         }
         $stamp = (Get-Date).ToString("s")
-        $line = "$stamp`tv$GateVersion`tpid=$PID`trule=$(& $clean $Rule)`ttool=$(& $clean $tool)" +
-                "`tcwd=$(& $clean $cwdRaw)`t$(& $clean $Detail)"
+        # The digest sits BESIDE the label, not instead of it: a reader diffing two records then sees
+        # the label agree while the digest disagrees, which is the measured incident made visible in
+        # the receipt rather than only in -Status.
+        $line = "$stamp`tv$GateVersion`tsha=$(Get-GateSha)`tpid=$PID`trule=$(& $clean $Rule)" +
+                "`ttool=$(& $clean $tool)`tcwd=$(& $clean $cwdRaw)`t$(& $clean $Detail)"
 
         # Every session on the box shares this file, so concurrent denies race. Add-Content silently
         # dropped records under contention -- and a lossy counter is worse than none, because it reads
@@ -161,13 +196,33 @@ function Get-SafeForMessage([string]$Value) {
 function Write-Deny([string]$Reason, [string]$Rule = "?", [string]$Detail = "") {
     Write-GateLog $Rule $Detail
 
+    # PROVENANCE, stamped centrally. A deny reason is the one output an agent READS AND OBEYS, and
+    # until now it carried nothing at all: no rule id, no version, no digest -- so a reported deny
+    # could not be joined to a log record, and "which file said this" was unanswerable on a machine
+    # where the installed gate and the checked-out one are routinely different files.
+    #
+    # Here rather than at the eight (soon nine) call sites: a per-rule stamp is one a future rule
+    # forgets. LAST rather than first: bin/ccx-doctor.ps1 prints only the first 200 characters of a
+    # reason, so a leading stamp would push the BLOCKED: sentence out of every evidence line. Both
+    # interpolated values go through the sanctioned fold -- $Rule is a literal today, but the reason
+    # is an instruction and nothing reaches it unfolded.
+    #
+    # WHICH HALF IS AUTHORITATIVE: the DIGEST identifies the file. The path is a reading aid and is
+    # folded for safety, so a gate installed under a path containing " ' ; | & $ or a backtick -- a
+    # UNC admin share \\host\c$\... is the realistic one -- prints those as _ and is not literal.
+    # Compare the digest; use the path to find the file.
+    $ruleTag = Get-SafeForMessage $Rule
+    $selfTag = Get-SafeForMessage $script:GateSelf
+    $stamped = $Reason.TrimEnd() +
+        "`n`n-- ccx worktree gate rule $ruleTag v$GateVersion sha $(Get-GateSha) from $selfTag"
+
     # The hookSpecificOutput WRAPPER IS MANDATORY. A bare {"permissionDecision":"deny"} is silently
     # ignored and the tool call proceeds (measured, and reported upstream).
     $payload = @{
         hookSpecificOutput = @{
             hookEventName            = "PreToolUse"
             permissionDecision       = "deny"
-            permissionDecisionReason = $Reason
+            permissionDecisionReason = $stamped
         }
     }
     [Console]::Out.Write(($payload | ConvertTo-Json -Compress -Depth 6))

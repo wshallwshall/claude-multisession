@@ -34,6 +34,13 @@ import _ccxtest as t
 GATE = t.REPO_ROOT / "scripts" / "hooks" / "worktree_gate.ps1"
 
 # Values a caller influences that reach a deny reason, and the rule that prints them.
+#
+# The last two are not caller-influenced today -- $Rule is a literal at every call site and
+# $script:GateSelf is the path the harness invoked. They are listed anyway because they are
+# interpolated into the SAME instruction text by the provenance stamp in Write-Deny, and the rule
+# this file pins is "nothing reaches a deny reason unfolded", not "nothing hostile does". Assigning
+# them (rather than folding inline inside the interpolation) is what makes the scan below able to
+# see them at all.
 FOLDED_VALUES = {
     "$dest": "3b (a branch name)",
     "$head": "3b (a branch name)",
@@ -41,6 +48,8 @@ FOLDED_VALUES = {
     "$badKey": "3c (a git config key)",
     "$wtVerb": "3d (a git subcommand)",
     "$victimRaw": "3d (a worktree path)",
+    "$ruleTag": "the provenance stamp (the rule id)",
+    "$selfTag": "the provenance stamp (the running gate's path)",
 }
 
 PAYLOADS = {
