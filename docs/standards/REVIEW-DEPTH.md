@@ -53,7 +53,7 @@ The useful answer is not a quantity at all. It is a **decision procedure**.
 
 ---
 
-## The rule: depth follows risk, decided per change
+## Human review depth follows risk and is decided per change
 
 Resolve every change to a tier before work starts. The tier sets how deeply a human reads, along
 with which gates and which provenance records are mandatory.
@@ -147,8 +147,11 @@ output, or a floor nobody enforces. It is worth knowing which.
 - **Define "restricted data" for your setting** in one sentence, in your own working agreement.
   Everything above depends on that line being drawn somewhere findable.
 - **Do not weaken the two full-read conditions.** They are the part that pays for itself.
-- **Decide the explanation question deliberately**, write down which reading you took, and apply it
-  the same way to everyone.
+- **Write down what "you can explain it" is allowed to mean here.** This document accepts an
+  explanation you reached with the tool's help. The stricter alternative is that a person must be
+  able to explain the code unaided. Either is defensible; pick one, record which one, and hold
+  everyone to it. The failure is not choosing the looser reading -- it is different people applying
+  different readings on different days, so nobody can say what the rule actually is.
 
 ## Related
 
