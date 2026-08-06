@@ -88,7 +88,24 @@ try {
 
 if (-not $reason) { exit 0 }
 
-$msg = "Blocked blanket git staging: $reason Stage explicit paths instead: 'git add <path> ...' then 'git commit -m ...'. (ccx guard; disable via /hooks.)"
+# PROVENANCE, matching worktree_gate.ps1. A deny is text an agent reads and obeys, and until this
+# was added neither hook said WHICH copy of itself produced it. An installer resolves its source
+# from wherever it was invoked, so "installed" and "the version in the repo I am reading" are
+# routinely different files, and nothing on the machine says so.
+#
+# The digest is of THIS file as loaded, not of a source checkout, because the installed copy is what
+# actually adjudicated. Folded to 12 lowercase hex -- the same fold install-gate.ps1 -Status and
+# ccx-doctor.ps1 print, so a reader can compare the three by eye. Computed only on a deny, which is
+# the only path that reaches here.
+$sha = try {
+    (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.Substring(0, 12).ToLowerInvariant()
+} catch {
+    # Say so in words rather than printing something that looks like a digest. A blank or a
+    # plausible-looking placeholder is worse than an admission: it reads as provenance.
+    'unavailable'
+}
+
+$msg = "Blocked blanket git staging: $reason Stage explicit paths instead: 'git add <path> ...' then 'git commit -m ...'. (ccx guard, sha $sha; disable via /hooks.)"
 $payload = [pscustomobject]@{
     hookSpecificOutput = [pscustomobject]@{
         hookEventName            = 'PreToolUse'

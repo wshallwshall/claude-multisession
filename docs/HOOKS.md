@@ -302,8 +302,10 @@ a day or one in a thousand", or "did that fix change anything". Every severity r
 machinery was therefore an opinion.
 
 A receipt is smaller than any other fix and it is the prerequisite for ranking the rest. The shipped
-record is one tab-separated line: timestamp, hook version, pid, rule, tool, cwd, and a short detail
-each rule composes itself.
+record is one tab-separated line carrying at least: timestamp, hook version, the 12-character
+digest of the gate file that adjudicated, pid, rule, tool, cwd, and a short detail each rule
+composes itself. The digest is there because the version label is hand-maintained and has been
+wrong before -- a label alone cannot tell you which copy of the hook actually ran.
 
 Three constraints that are easy to get wrong:
 
