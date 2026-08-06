@@ -59,7 +59,7 @@
     - label: Secure development
       title: "Secure development: the process a build must satisfy"
       path: /standards/SECURE-DEVELOPMENT.html
-    - label: Security standard assessment
+    - label: Use OWASP ASVS 5.0
       title: Running a large security-standard assessment with AI agents
       path: /ASVS-ASSESSMENT.html
 

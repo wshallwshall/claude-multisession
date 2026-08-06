@@ -461,7 +461,7 @@ the [SSDF publication listing](https://csrc.nist.gov/Projects/ssdf/publications)
 | The process a build must satisfy, and who owns which control | [Secure development](SECURE-DEVELOPMENT.md) |
 | Trusting code you did not write, and controlling what you publish | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |
 | Judging code, whoever wrote it | [Code quality](CODE-QUALITY.md) |
-| Running an assessment against a standard with several hundred requirements | [Security standard assessment](../ASVS-ASSESSMENT.md) |
+| Running an assessment against a standard with several hundred requirements | [Use OWASP ASVS 5.0](../ASVS-ASSESSMENT.md) |
 | Saying which kind of claim you are making | [CI and standards](../CI-AND-STANDARDS.md) |
 | All of it, and how to adopt | [Overview](OVERVIEW.md) |
 

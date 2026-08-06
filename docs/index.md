@@ -407,7 +407,7 @@ In practice:
 - [Drift audit case study](CASE-STUDY-drift-audit.md) -- a redacted account of auditing the whole
   path from checkout to decision. A method document; it carries no status table or finding list, on
   purpose.
-- [Security standard assessment](ASVS-ASSESSMENT.md) -- a method for scoring a codebase against a
+- [Use OWASP ASVS 5.0](ASVS-ASSESSMENT.md) -- a method for scoring a codebase against a
   several-hundred-requirement standard when most of the scoring is done by agent sessions. It
   publishes no results, deliberately.
 
