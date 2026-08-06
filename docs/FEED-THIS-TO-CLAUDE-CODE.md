@@ -74,10 +74,10 @@ This is the part to get right before you do anything else. Read it twice.
 | Reading, `git status`, `git log`, inspecting files | **Allowed** | Surveying is not changing |
 | `bin/ccx-doctor.ps1` | **Allowed** | It prints `running inside a session : YES (installers refuse here; auditing is allowed)` and audits anyway |
 | `install-gate.ps1 -Status` | **Allowed** | Explicitly exempt. Auditing is not installing |
-| `install-coordination.ps1` | **REFUSES** | Throws when `$env:CLAUDECODE` is `1` |
-| `install-git-hooks.ps1` | **REFUSES** | Same |
-| `install-gate.ps1` (without `-Status`) | **REFUSES** | Same |
-| `install-selfheal.ps1` | **REFUSES** | Same |
+| `install-coordination.ps1` | **Refused** | Throws when `$env:CLAUDECODE` is `1` |
+| `install-git-hooks.ps1` | **Refused** | Same |
+| `install-gate.ps1` (without `-Status`) | **Refused** | Same |
+| `install-selfheal.ps1` | **Refused** | Same |
 
 The four installers test for the literal string `1`. The reason is not fussiness: **a session that
 can install these controls can remove them.** The refusal is the control. Treat it as a wall, not an
