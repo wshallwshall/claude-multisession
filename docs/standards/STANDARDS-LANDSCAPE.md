@@ -77,7 +77,7 @@ three specific documents rather than a list.
   AI-generated source code from human-written code, which is a scoping exclusion rather than
   guidance.
 - **The LLM application ranking** addresses securing an application that calls a language model at
-  run time. That is a different subject from governing what an assistant writes for you, and the two
+  run time. That is a different subject from governing what an AI coding assistant writes for you, and the two
   are conflated constantly.
 - **The NIST control overlays for securing AI systems** are in development, with no draft overlay
   published as of 2026-08-06, so nothing can be aligned with them today.

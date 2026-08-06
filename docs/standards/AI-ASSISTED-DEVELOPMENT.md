@@ -153,7 +153,7 @@ unchanged.
 This axis measures development-process data exposure *and* production code-path sensitivity. Four
 levels again.
 
-- **D0 None** -- no restricted data anywhere in scope; code-only assistant context; not on the
+- **D0 None** -- no restricted data anywhere in scope; code-only context; not on the
   sensitive production path.
 - **D1 Synthetic in development, sensitive path in production** -- development and test use
   synthetic data only, and the production code path carries restricted data.
@@ -308,7 +308,7 @@ the standard; the sections after it are the footnotes.
 | **Verification gates** | Advisory | The **full local gate must pass**, new behavior gets a test, verify-before-add for any new dependency | Plus **blocking** static analysis, dependency audit and secret scanning in the pipeline, and an AI-run review that a human arbitrates -- advisory, never a gate | Plus project-specific sink-aware rules, no unresolved findings, and a release gate |
 | **Human review depth** | Author self-review | Self-review plus plan approval; the gates are the compensating second reviewer | Plus AI-run review of the diff, and a second human for consequential changes where one exists | Plus a qualified human must approve **and** be able to explain every change. No merge on the AI coding assistant's own assurance |
 | **Control parity** | Apply the control where you add it | Plus enumerate sibling paths when adding or changing a control, and cover them or record the gap | Plus one deterministic parity check over all instances where feasible | An asymmetric security control is a release-gate finding, not an accepted default |
-| **Provenance** | None required | One coherent layer per commit; assistant identity and version recorded | Plus a link to the decision record and the approved plan | Plus a claims-register entry, and an assessment of AI-authored code as third-party-equivalent where a regime requires it |
+| **Provenance** | None required | One coherent layer per commit; AI coding assistant identity and version recorded | Plus a link to the decision record and the approved plan | Plus a claims-register entry, and an assessment of AI-authored code as third-party-equivalent where a regime requires it |
 | **Forbidden** | *The floor, at every tier* | Plus: merging an unreviewed diff onto a shipping branch; adding a suggested dependency without verifying it exists, is reputable, and is the intended package | Plus: merging code you cannot explain even with help; skipping a blocking gate; self-certifying security by prompting; routing restricted data across a tool-server or egress boundary | Plus: an irreversible decision with no decision record; production exposure without the release gate satisfied or a dated, signed risk acceptance |
 
 > **The non-negotiable rule of the gate row.** A gate is a **deterministic check with an exit code**
@@ -538,7 +538,7 @@ near-neighbour.
 
 | Use this | Not this |
 |---|---|
-| "Assistant-run code review as a **compensating control**" | "Reviewed", in a sense that implies an independent audit |
+| "AI-run code review as a **compensating control**" | "Reviewed", in a sense that implies an independent audit |
 | "Plan **approved by a human** before implementation" | "**Autonomously** developed" |
 | "Gates **enforce intent deterministically**" | "**Certified** secure" |
 | "**Built with assistance** under this standard" | "Assistance **made development faster**" (unmeasured) |

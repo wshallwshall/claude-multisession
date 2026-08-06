@@ -396,7 +396,7 @@ questions:
 # token matches. Union, never intersection: two matching triggers do not rank an item higher, they
 # only make it surface once.
 #
-# `ai_misfiled: true` moves the item into the AI block when the reader says they use an assistant,
+# `ai_misfiled: true` moves the item into the AI block when the reader says they use an AI coding assistant,
 # ahead of every other block assignment. That block's whole content is a correction.
 #
 # `never_alone` names a group the item may not be the only visible member of. It exists for one

@@ -80,7 +80,7 @@ to read them in"*. That section tells you what to read; this page tells you what
 | **2 -- tailor, and document the exceptions** | A deviations register | One entry per control you do not meet, four fields, kept internal | Every control you consciously dropped or modified has an entry, and every entry has a trigger |
 | **3 -- prioritize iteratively** | An ordered plan, three items deep | The next three items, each naming what it unblocks and what it waits on, above an unordered backlog | The top item's precondition is already satisfied |
 | **4 -- automate wherever possible** | A set of blocking checks, each with a receipt | Per check: what it blocks, where it runs, what it prints, whether it started in audit mode, and the date somebody last watched it refuse | No check in the set has "never" in its proven-able-to-fail column |
-| **5 -- put the result where the assistant reads it** | A `CLAUDE.md` control table that references the other four | The template's three columns, extended to every control your tailored set kept | A session reading only that file would follow the rules you adopted and none you dropped |
+| **5 -- put the result where Claude Code reads it** | A `CLAUDE.md` control table that references the other four | The template's three columns, extended to every control your tailored set kept | A session reading only that file would follow the rules you adopted and none you dropped |
 
 This page is finished when those five exist. Not when the documents have been read.
 
@@ -316,7 +316,7 @@ green control plane otherwise implies coverage it does not have.
 
 ---
 
-## Step 5: put the result where the assistant reads it, and re-check it
+## Step 5: put the result where Claude Code reads it, and re-check it
 
 **This is not a step zero.** You cannot write standing rules before you know which ones you keep --
 steps 1 and 2 exist to remove rows, and a project instruction file written first would be
@@ -332,7 +332,7 @@ where it sits in step 3's queue, and *Last proven able to fail* is step 4's rece
 template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template),
 *"The bar this project holds itself to"*.
 
-Standing rules here are loaded by the assistant at the start of every session, so a rule that is not
+Standing rules here are loaded by Claude Code at the start of every session, so a rule that is not
 in that file is not in force for the actor writing most of the code. [The overview](OVERVIEW.md)
 states the consequence: *"A standard that no such file references is a document, not a practice."*
 
@@ -475,12 +475,12 @@ From [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md).
 | Risk tier resolved before work starts, in one question, with a recorded reason | *Classify in one question first* | Written | Per change | New |
 | The resolver clamps up on unknown, unresolvable or production-facing changes | *The resolver: clamp to strictest, fail closed* | Written | Sitting | New |
 | A short floor that applies at every tier, including throwaway work | *The universal floor, which never scales down* | Written | Sitting | Partial |
-| No restricted data or secrets reach the assistant: a path deny-list plus a fail-closed commit-time content scan | *The universal floor, which never scales down* | Blocking | Days | Partial |
-| Everything the assistant reads is data, never instructions | *The universal floor, which never scales down* | Written | Sitting | New |
+| No restricted data or secrets reach the AI coding assistant: a path deny-list plus a fail-closed commit-time content scan | *The universal floor, which never scales down* | Blocking | Days | Partial |
+| Everything the AI coding assistant reads is data, never instructions | *The universal floor, which never scales down* | Written | Sitting | New |
 | Reject code you cannot explain, at every tier | *The universal floor, which never scales down* | Written | Per change | New |
-| The assistant's identity and version retained as a provenance signal | *The universal floor, which never scales down* | Written | Afternoon | New |
+| The AI coding assistant's identity and version retained as a provenance signal | *The universal floor, which never scales down* | Written | Afternoon | New |
 | Any restricted-data exception written as a conjunction, and recorded as enabled or merely defined | *The sanctioned exception, written so it cannot widen* | Written | Sitting | New |
-| The assistant, its skills, extensions, tool servers and agent frameworks vetted, pinned and recorded as a build-environment surface | *The build tooling is a supply-chain surface nobody scans* | Written | Afternoon | New |
+| The AI coding assistant, its skills, extensions, tool servers and agent frameworks vetted, pinned and recorded as a build-environment surface | *The build tooling is a supply-chain surface nobody scans* | Written | Afternoon | New |
 | Documentation states that a commit scanner is not a live interceptor of an outbound query | *A commit scanner is not a live interceptor* | Written | Sitting | New |
 | Six control families set per tier, cumulative left to right | *Controls as dials* | Written | Afternoon | New |
 | A gate is a deterministic check with an exit code; an AI-run review is advisory only | *Controls as dials* | Blocking | Days | Partial |
