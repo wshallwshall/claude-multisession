@@ -461,13 +461,25 @@
   line-height: 1.5;
 }
 
-/* The whole row is the hit target, and it is at least 44px tall. */
-.ssel-opt { display: block; margin: 0 0 0.15rem; }
+/* The whole row is the hit target, and it is at least 44px tall.
 
-.ssel-opt label {
+   THE FLEX CONTAINER HAS TO BE THE WRAPPER, not the label. The input and the label are SIBLINGS in
+   the markup. Putting display:flex on the label made it a block-level flex box, so every label was
+   pushed onto its own line underneath its own checkbox. `flex: none` on .ssel-box below only means
+   anything once .ssel-opt is the flex parent -- which is the shape that rule was always written
+   against. */
+.ssel-opt {
   display: flex;
   gap: 0.55rem;
   align-items: flex-start;
+  margin: 0 0 0.15rem;
+}
+
+.ssel-opt label {
+  /* min-width:0 lets a long option wrap inside its grid track instead of widening the column. A
+     flex item's default min-width is auto, which refuses to shrink below its longest word. */
+  flex: 1;
+  min-width: 0;
   min-height: 44px;
   padding: 0.5rem 0.5rem 0.5rem 0;
   line-height: 1.45;
