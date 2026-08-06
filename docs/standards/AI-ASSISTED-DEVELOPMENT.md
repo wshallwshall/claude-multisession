@@ -5,63 +5,57 @@ going wrong, and which control neutralizes each one. How much rigor a given chan
 And when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
 
-> **This one is dense.** Reading it end to end works, and you will need to eventually -- it
-> becomes your standard once you adopt it. It is usually faster to hand the
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) to Claude Code, or
-> another AI coding assistant, and ask it to summarize this against your repository,
-> rewrite a section in plainer terms, or answer what already holds here and what would have to
-> change.
->
-> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx).
+> **Take a copy:**
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md)
+> or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
 ## What you get
 
-- **A rigor dial instead of an all-or-nothing process.** Two axes and a four-cell tier ladder
-  resolve any change to exactly one tier, and the tier says which controls are mandatory and which
-  you may skip. A one-line fix does not carry release-grade ceremony, in writing, which is what
-  stops a heavy process from being ignored wholesale.
-- **A classification you can do in seconds.** One question decides most changes, and the cheap
-  answer errs strict rather than convenient.
-- **Five named failure modes, each with a named control.** Every rule below traces to one of them,
-  so you can audit your own practice with five questions -- and test any proposed new rule by asking
-  which mode it neutralizes. If the answer is none, it is decoration.
-- **A hard line between a control and a wish.** A gate is a deterministic check with an exit code.
-  The model never certifies its own output. That single rule is what most agent-assisted processes
+- **A rigor dial instead of an all-or-nothing process.** Two axes and a four-cell tier ladder resolve
+  any change to exactly one tier, and that tier says which controls are mandatory and which you may
+  skip. A one-line fix carries no release-grade ceremony, in writing, which is what stops a heavy
+  process from being ignored wholesale.
+- **A classification you can do in seconds.** One question decides most changes, and the cheap answer
+  errs strict rather than convenient.
+- **Five named failure modes, each with a named control.** Every rule below traces to one of them, so
+  you can audit your own practice with five questions, and test any proposed new rule by asking which
+  mode it neutralizes. If the answer is none, it is decoration.
+- **A hard line between a control and a wish.** A gate is a deterministic check with an exit code, and
+  the model never certifies its own output. That single rule is what most agent-assisted processes
   blur.
-- **A defensible posture when there is no second reviewer.** Name the control you cannot meet, name
-  the compensating set, name the event that ends the deviation -- instead of overclaiming review
-  coverage or quietly having none.
-- **Wording that survives a reviewer.** An approved-phrasing table with the overclaim beside each
+- **A defensible posture when there is no second reviewer.** Name the control you cannot meet, the
+  compensating set, and the event that ends the deviation -- instead of overclaiming review coverage
+  or quietly having none.
+- **Wording that survives a reviewer.** An approved-phrasing table sets the overclaim beside each
   correct near-neighbour, so you can publish what your process buys without accidentally making a
   compliance claim.
 - **An adversarial verification pass that is actually independent**, written as a technique rather
-  than a product feature. Verifiers that did not produce the artifact, told to refute rather than
-  review, given distinct lenses, reporting a counterexample and a command log. Plus the honest
-  cases where the pass is pure waste.
-- **Five habits that raise assistant output quality in the codebase you already have**, and the
-  reason each one works.
+  than a product feature: verifiers that did not produce the artifact, told to refute rather than
+  review, given distinct lenses, reporting a counterexample and a command log. Plus the honest cases
+  where the pass is pure waste.
+- **Five habits that raise the quality of what an AI coding assistant returns in the codebase you
+  already have**, and the reason each one works.
 
 ## What this costs you, and where it does not apply
 
-- **This page ships nothing.** No hooks, no prompts, no configuration, no workflow. It is a standard
-  and a set of rules. Everything it references as a mechanism lives in another page of this site or
-  in your own repository.
-- **It confers no certification** on your product, your team, or anyone adopting your software, and
-  it is not a substitute for an adopter's own assessment. It produces build-provenance evidence,
-  which is an input to somebody else's review, never a replacement for it.
-- **The tier resolver has no automatic detector.** It is a human-applied checklist. Its whole
+- **This page ships nothing** -- no hooks, no prompts, no configuration, no workflow. It is a standard
+  and a set of rules, and everything it references as a mechanism lives in another page of this site
+  or in your own repository.
+- **It confers no certification** on your product, your team, or anyone adopting your software, and it
+  is not a substitute for an adopter's own assessment. It produces build-provenance evidence, which is
+  an input to somebody else's review, never a replacement for it.
+- **The tier resolver has no automatic detector.** It is a human-applied checklist whose whole
   guarantee is that it fails closed and leaves a recorded reason someone can disagree with later.
 - **Deliberately vendor-neutral.** No product names, mode names, command names, version thresholds,
-  concurrency ceilings or per-run prices appear here. Those move faster than a documentation page
-  can be revised, and every one of them was wrong within a release in the material this was drawn
-  from. Where a limit matters to a design decision, the rule is to discover it with a pilot run
-  rather than quote it.
+  concurrency ceilings or per-run prices appear here. Those move faster than a documentation page can
+  be revised, and every one of them was wrong within a release in the material this was drawn from.
+  Where a limit matters to a design decision, discover it with a pilot run rather than quote it.
 - **No speed claim.** Nothing here is measured as a productivity gain, and the site's rule against
   claiming an unmeasured one applies to this document first. What the loop buys is auditability,
   continuity, reviewability and safety.
 - **The adversarial pass is wrong for most work.** It earns its cost on coverage across a large
-  surface. On a single-file change it adds latency and burn and improves nothing.
+  surface; on a single-file change it adds latency and burn and improves nothing.
 - **Solo and very small teams are a first-class case here, and it is a documented deviation, not a
   clean pass.** If you have real independent review available, several sections below are stricter
   than you need and one is unnecessary.
@@ -71,12 +65,13 @@ worth almost nothing.
 The smallest first step, then the rest in order. Each one is useful alone.
 
 1. **Write the floor down and enforce the two halves of it that are mechanical.** No restricted data
-   or secrets to the AI coding assistant, backed by a path deny-list *and* a fail-closed commit-time content
-   scan, because a path rule cannot stop a paste. See
-   [The leak gate](../LEAK-GATE.md) for a working scanner and its blind spots.
+   or secrets to the AI coding assistant, backed by a path deny-list *and* a fail-closed commit-time
+   content scan, because a path rule cannot stop a paste. [The leak gate](../LEAK-GATE.md) has a
+   working scanner and its blind spots.
 2. **Adopt the one-question classification.** You do not need the whole matrix on day one; you need
    the ratchet question and the habit of recording the answer.
-3. **Make one gate deterministic and blocking**, and stop treating an AI coding assistant's review as a gate.
+3. **Make one gate deterministic and blocking**, and stop treating an AI coding assistant's review as
+   a gate.
 4. **Start writing a testable intent before prompting**, and review the returned diff against it.
 5. **Add the tier matrix and the controls-as-dials table**, once the floor is real. Adopting the
    dials before the floor produces ceremony over a hole.
@@ -104,12 +99,14 @@ rather than a list of habits.
 answers none of them is ceremony, and ceremony is what gets dropped first under pressure -- taking
 the load-bearing rules beside it.
 
-On the fifth mode specifically: assistance raises confidence faster than it raises correctness, and
-this bites hardest exactly when the author reviews their own assisted output. That is the strongest
-argument for keeping a review step you might otherwise drop for speed, and for the adversarial
-verification pass in section 7. It is also why the site's rule *"Do not claim a speed or quality gain
-you have not measured here"* in [CI and standards](../CI-AND-STANDARDS.md) applies to your own
-impressions of the loop, not only to published figures.
+**The fifth mode bites hardest in self-review.** Assistance raises confidence faster than it raises
+correctness, and the gap is widest exactly when the author reviews their own assisted output. That is
+the strongest argument for keeping a review step you might otherwise drop for speed, and for the
+adversarial verification pass in section 7.
+
+**It also constrains what you may say about your own loop.** The site's rule *"Do not claim a speed or
+quality gain you have not measured here"* in [CI and standards](../CI-AND-STANDARDS.md) applies to
+your impressions of the loop, not only to published figures.
 
 ---
 
@@ -123,13 +120,14 @@ Nothing here is always-on except a short floor. Everything else is a dial set by
 > in production, or can you not yet prove that it never will?**
 
 If yes, or if you cannot prove it, the change is **T3**. Only on a confident no does the reach axis
-become the tiebreaker between the lower tiers. Most day-to-day work in a system that carries
-sensitive data resolves on this question alone; the reach axis matters mainly for code-only and
-synthetic-only changes.
+become the tiebreaker between the lower tiers.
 
-### The two axes
+Most day-to-day work in a system that carries sensitive data resolves on this question alone. The
+reach axis matters mainly for code-only and synthetic-only changes.
 
-**Reach (blast radius).**
+### Reach is blast radius, not headcount
+
+Four levels, set by how far a mistake in the change can travel.
 
 - **R0 Throwaway** -- a spike or one-off script; not on a shipping branch; no external consumer;
   a short single-session trajectory.
@@ -144,12 +142,16 @@ synthetic-only changes.
 
 *Revised.* The source material expressed this axis as **team size**, which leaves a solo maintainer
 permanently in the lowest band no matter what the change touches. It is re-expressed here as blast
-radius so that change shape, not headcount, sets the floor. The cell values in the matrix below were
-carried over from the team-size version rather than re-derived against the new axis, so treat them
-as directional: check the cells against your own work before adopting them unchanged.
+radius so that change shape, not headcount, sets the floor.
 
-**Sensitivity (the dominant ratchet).** This measures development-process data exposure *and*
-production code-path sensitivity.
+**Treat the matrix cells below as directional.** They were carried over from the team-size version
+rather than re-derived against the new axis, so check them against your own work before adopting them
+unchanged.
+
+### Sensitivity is the dominant ratchet
+
+This axis measures development-process data exposure *and* production code-path sensitivity. Four
+levels again.
 
 - **D0 None** -- no restricted data anywhere in scope; code-only assistant context; not on the
   sensitive production path.
@@ -177,10 +179,11 @@ Each cell resolves to exactly one tier: **T0 Exploratory**, **T1 Guarded**, **T2
 | **R2 cross-cutting** | T2 | T2 | T3 | T3 |
 | **R3 release** | T3 | T3 | T3 | T3 |
 
-The two axes are not symmetric, and that is deliberate. **D2 and D3 force at least T3 regardless of
-reach; D1 floors at T2.** Reach only scales the lower-sensitivity cells. Reading the matrix as a
-lattice join guarantees monotonicity: more reach *or* more sensitivity is stricter, never laxer, so
-no cell can accidentally be more permissive than a cell it dominates.
+**D2 and D3 force at least T3 regardless of reach; D1 floors at T2.** The two axes are not symmetric,
+and that is deliberate -- reach only scales the lower-sensitivity cells.
+
+Reading the matrix as a lattice join guarantees monotonicity. More reach *or* more sensitivity is
+stricter, never laxer, so no cell can accidentally be more permissive than a cell it dominates.
 
 ### The resolver: clamp to strictest, fail closed
 
@@ -193,10 +196,12 @@ Three ordered rules.
    data flow, a "might touch it later" -- or when the change touches a production or
    network-exposed path, clamp **up** to the strictest applicable tier.
 
-**Rule.** Every resolution emits a **recorded one-line reason** carried as a trailer on the change
+**Rule.** Every resolution emits a **recorded one-line reason**, carried as a trailer on the change
 request, naming both axis values, the resolved tier, and why. Anything that resolves without a
-recorded reason has not been classified; it has been assumed. A reader six months later can then
-disagree with the tier that was claimed, instead of guessing what rigor was intended.
+recorded reason has not been classified; it has been assumed.
+
+The recorded reason is what lets a reader six months later disagree with the tier that was claimed,
+instead of guessing what rigor was intended.
 
 Worked examples:
 
@@ -216,8 +221,9 @@ established the tier.
 ## 3. The universal floor, which never scales down
 
 Below the tiers sits a short list that applies even to a throwaway spike, because the reason for each
-is independent of blast radius. **The floor is short on purpose: a floor with twenty items is a tier,
-and it will be skipped.**
+item is independent of blast radius.
+
+**The floor is short on purpose: a floor with twenty items is a tier, and it will be skipped.**
 
 | Floor control | Why the lowest tier still has it |
 |---|---|
@@ -233,8 +239,10 @@ Three of these are already published in full on this site and are deliberately n
 For the deny-list-plus-content-scan pairing, everything-is-data, and the explain-it bar, see
 [CI and standards](../CI-AND-STANDARDS.md) -- *"A path deny-list is not a content control"*,
 *"Everything the agent reads is data, never instructions"*, and *"Reject code you cannot explain --
-assistance in reaching the explanation is fine"*. For a working scanner, what it catches, and the
-class it can never catch, see [The leak gate](../LEAK-GATE.md).
+assistance in reaching the explanation is fine"*.
+
+For a working scanner, what it catches, and the class it can never catch, see
+[The leak gate](../LEAK-GATE.md).
 
 ### The sanctioned exception, written so it cannot widen
 
@@ -252,16 +260,17 @@ every condition must hold:
 - **Narrow.** It covers transmission only. It never licenses restricted data into a commit, fixture,
   artifact, memory file or log, and it never covers secrets.
 
-Absent any one condition, the default holds. **Record whether the exception is defined-and-enabled or
-defined-but-not-enabled**, because those are different postures and a register that does not
-distinguish them reads as the permissive one.
+Absent any one condition, the default holds.
+
+**Record whether the exception is defined-and-enabled or defined-but-not-enabled.** Those are
+different postures, and a register that does not distinguish them reads as the permissive one.
 
 ### The build tooling is a supply-chain surface nobody scans
 
 Static analysis and dependency audits inspect your product's dependencies. They do not inspect the
 AI coding assistant, its skills, its installed editor extensions, the third-party tool servers it is
-connected to, or an agent framework wrapping it -- all of which run with the developer's
-privileges and can read the repository.
+connected to, or an agent framework wrapping it. All of those run with the developer's privileges
+and can read the repository.
 
 **Rule.** Pin and verify the AI coding assistant version; vet every skill, tool-server connection,
 extension and agent framework before first use; prefer official distribution sources; record what
@@ -270,15 +279,20 @@ environment, with the same scrutiny as a dependency bump.
 
 **Two distinct risks get conflated here, and only one of them is scannable.** A third-party tool
 server is an arbitrary process that can read repository content and receives whatever the agent sends
-it. Default-deny it above the lowest tiers. Where one is used, vet it, pin it, record it, send it
-nothing restricted, and treat everything it returns as untrusted data. Separately, a live search or
-fetch is **outbound egress in its own right** -- no restricted value, credential or identifying
-string belongs in a query or a tool argument.
+it. Default-deny it above the lowest tiers; where one is used, vet it, pin it, record it, send it
+nothing restricted, and treat everything it returns as untrusted data.
 
-The asymmetry is the part worth internalising: **a commit-time content scanner catches a forbidden
-string that lands in a commit, but it is not a live interceptor of an outbound query.** Nothing
-mechanical stands between the agent and that channel. The discipline there is on the human, and your
-documentation must say so rather than letting a green scanner imply coverage it does not have.
+**A live search or fetch is outbound egress in its own right.** No restricted value, credential or
+identifying string belongs in a query or a tool argument.
+
+### A commit scanner is not a live interceptor
+
+**A commit-time content scanner catches a forbidden string that lands in a commit, but it is not a
+live interceptor of an outbound query.** That asymmetry is the part worth internalising.
+
+Nothing mechanical stands between the agent and that channel. The discipline there is on the human,
+and your documentation must say so rather than letting a green scanner imply coverage it does not
+have.
 
 ---
 
@@ -291,18 +305,20 @@ the standard; the sections after it are the footnotes.
 |---|---|---|---|---|
 | **Spec and plan rigor** | Inline intent in the prompt | Written, testable intent, approved before any edit | Plus a durable decision record for any hard-to-reverse decision, written before the build, with a threat-model note | Plus intent-to-test traceability: each change's test names the requirement or decision it verifies |
 | **Context isolation** | Single session | Curated project instruction file, fresh context per task, explicit decomposition | Plus one working tree per parallel session, single-writer shared memory, default-deny egress | Same, mandatory; committed context and memory files never carry restricted data or secrets |
-| **Verification gates** | Advisory | The **full local gate must pass**, new behavior gets a test, verify-before-add for any new dependency | Plus **blocking** static analysis, dependency audit and secret scanning in the pipeline, and an AI coding AI-run review that a human arbitrates -- advisory, never a gate | Plus project-specific sink-aware rules, no unresolved findings, and a release gate |
+| **Verification gates** | Advisory | The **full local gate must pass**, new behavior gets a test, verify-before-add for any new dependency | Plus **blocking** static analysis, dependency audit and secret scanning in the pipeline, and an AI-run review that a human arbitrates -- advisory, never a gate | Plus project-specific sink-aware rules, no unresolved findings, and a release gate |
 | **Human review depth** | Author self-review | Self-review plus plan approval; the gates are the compensating second reviewer | Plus AI-run review of the diff, and a second human for consequential changes where one exists | Plus a qualified human must approve **and** be able to explain every change. No merge on the AI coding assistant's own assurance |
 | **Control parity** | Apply the control where you add it | Plus enumerate sibling paths when adding or changing a control, and cover them or record the gap | Plus one deterministic parity check over all instances where feasible | An asymmetric security control is a release-gate finding, not an accepted default |
 | **Provenance** | None required | One coherent layer per commit; assistant identity and version recorded | Plus a link to the decision record and the approved plan | Plus a claims-register entry, and an assessment of AI-authored code as third-party-equivalent where a regime requires it |
 | **Forbidden** | *The floor, at every tier* | Plus: merging an unreviewed diff onto a shipping branch; adding a suggested dependency without verifying it exists, is reputable, and is the intended package | Plus: merging code you cannot explain even with help; skipping a blocking gate; self-certifying security by prompting; routing restricted data across a tool-server or egress boundary | Plus: an irreversible decision with no decision record; production exposure without the release gate satisfied or a dated, signed risk acceptance |
 
-> **The non-negotiable rule of the gate row.** A gate is a **deterministic check with an exit
-code** > -- a hook, a deny-list, a blocking pipeline job, a validate-and-dry-run command. It is
-never an > instruction to the model to be careful. Prompt-based optimization for security or
-maintainability > is unstable and must not be relied on. **The model must not self-certify
-security or > maintainability by prompting alone**, an AI coding AI-run review is advisory input
-a human arbitrates, > and no change merges on the AI coding assistant's own assurance that it is safe.
+> **The non-negotiable rule of the gate row.** A gate is a **deterministic check with an exit code**
+> -- a hook, a deny-list, a blocking pipeline job, a validate-and-dry-run command. It is never an
+> instruction to the model to be careful.
+>
+> Prompt-based optimization for security or maintainability is unstable and must not be relied on.
+> **The model must not self-certify security or maintainability by prompting alone.** An AI-run
+> review is advisory input a human arbitrates, and no change merges on the AI coding assistant's own
+> assurance that it is safe.
 
 [CI and standards](../CI-AND-STANDARDS.md) owns where to place each gate, how to keep a local run
 and the pipeline agreeing, and how to prove a green gate can actually fail. In particular:
@@ -325,8 +341,9 @@ improve output are things you write, not things you prompt.
 
 The always-loaded instruction file is the anchor for every session. Treat it as an artifact under
 maintenance rather than a scratchpad: **when the code stops matching it, the document is the thing
-that is wrong.** A stale anchor is worse than none, because it is confidently loaded into every
-session.
+that is wrong.**
+
+A stale anchor is worse than none, because it is confidently loaded into every session.
 
 ### Quote the invariant, do not gesture at it
 
@@ -338,16 +355,19 @@ where drift starts.
 
 Name the files and seams to be touched, the test to be added, the invariants that must not break, and
 the tier. Then review the returned diff **against that plan**; divergence is a review finding, not a
-detail. The site owns the plan-then-diff rule in
-[CI and standards](../CI-AND-STANDARDS.md) *"Approve a plan first, then review the diff against the
-plan"*.
+detail.
+
+The site owns the plan-then-diff rule in [CI and standards](../CI-AND-STANDARDS.md) *"Approve a plan
+first, then review the diff against the plan"*.
 
 ### Memory holds facts, never values
 
 Persistent cross-session memory is for decisions, maps and conventions. Never restricted values,
-never credentials. It also lives outside the repository in most setups, which means it is outside
-every content gate you installed -- see [Coordination](../COORDINATION.md) for the single-writer rule
-when several sessions share it.
+never credentials.
+
+It also lives outside the repository in most setups, which puts it outside every content gate you
+installed. See [Coordination](../COORDINATION.md) for the single-writer rule when several sessions
+share it.
 
 ### Compaction is a choice about what to keep
 
@@ -395,9 +415,10 @@ Symptom, then action:
 | A long session approaching its limit | Compact, aiming the summary at interface shape and decisions |
 | Always | Fresh context per task; keep context utilization low; decompose into short trajectories |
 
-The threshold for taking manual control back, and the reason grinding in a polluted context is the
-expensive failure rather than a bad suggestion, are in
-[CI and standards](../CI-AND-STANDARDS.md) *"Know when to take manual control back"*.
+[CI and standards](../CI-AND-STANDARDS.md) *"Know when to take manual control back"* owns two more
+things: the threshold for taking manual control back, and the reason grinding in a polluted context
+is the expensive failure rather than a bad suggestion.
+
 Session-level hygiene -- one logical task per session, one working tree per session, one dependency
 environment per tree -- is in [Tips and tricks](../TIPS-AND-TRICKS.md) section 2.
 
@@ -405,45 +426,57 @@ environment per tree -- is in [Tips and tricks](../TIPS-AND-TRICKS.md) section 2
 
 ## 6. Provenance, review, and saying what you actually have
 
+Two obligations run through this section: record what actually happened, and describe it in words
+that survive a reader who checks.
+
 ### What the agent decides, and what you decide
 
 Owned by [CI and standards](../CI-AND-STANDARDS.md) *"What the agent decides, and what you decide"*,
 in a two-column table: the agent commits; you push, open, merge, release, delete and install. Nothing
-about that split is restated here. The one addition this standard makes is that **the tier is part of
-the plan you approve**, not something derived afterwards to justify the review depth you happened to
-apply.
+about that split is restated here.
+
+**The one addition this standard makes: the tier is part of the plan you approve.** It is not
+something derived afterwards to justify the review depth you happened to apply.
 
 ### Control parity is a review gate
 
-An AI coding assistant implements a control exactly where it was prompted and misses its siblings. Make
-enumerating them a review step rather than a hope, and prefer one deterministic check over all
-instances to a recurring manual sweep. Full rule and the audit finding behind it: [CI and
+An AI coding assistant implements a control exactly where it was prompted and misses its siblings.
+Make enumerating them a review step rather than a hope, and prefer one deterministic check over all
+instances to a recurring manual sweep.
+
+Full rule and the audit finding behind it: [CI and
 standards](../CI-AND-STANDARDS.md) *"Enumerate sibling paths for every control"*.
 
 ### Provenance: record it, and count it before you cite it
 
-Recording the AI coding assistant's identity and version is worth doing. The usual mechanism is a
+Recording the AI coding assistant's identity and version is worth doing, and the usual mechanism is a
 per-commit trailer naming the AI coding assistant as a co-author. Citing that trailer as a **built
 control** is a different claim, and it is the one that failed.
 
 *Revised.* The trailer was published as a built control and as part of a retained evidence set.
-Measured in one repository's own history, adoption was **zero**: many tracked files instructed that
+Measured in one repository's own history, adoption was **zero**. Many tracked files instructed that
 the trailer be omitted, and a required merge check rejected it outright, because a trailer co-author
-read as an unsigned contributor and turned that check red. The blocker was structural, not cultural.
+read as an unsigned contributor and turned that check red.
+
+The blocker was structural, not cultural.
 
 **Rule.** Do not present a convention-only provenance trailer as a built control or as retained
-evidence. Count it in the actual history first. If the count is zero, record it as
-**designed-and-blocked**, name the structural blocker, and add a drift test that fails if the claim
-is reinstated while the practice contradicts it. Before enforcing any trailer, check its form against
-the merge gates that will see it; then enforce it with a commit-time hook **plus** an independent
-pipeline backstop, so a local bypass does not defeat it. The general form of this --
-[CI and standards](../CI-AND-STANDARDS.md) *"Measure the adoption of a convention before citing it as
-evidence"* -- is on the site already; the two deltas above are the parts specific to a provenance
-trailer.
+evidence. Count it in the actual history first.
 
-Be equally precise about granularity. A commit trailer records provenance at **commit** granularity.
-It does not mark which lines or hunks were AI-authored. If a downstream process wants the
-line-level distinction, that is a separate, unbuilt thing, and saying so costs nothing.
+**If the count is zero, record it as designed-and-blocked**, name the structural blocker, and add a
+drift test that fails if the claim is reinstated while the practice contradicts it.
+
+Before enforcing any trailer, check its form against the merge gates that will see it. Then enforce
+it with a commit-time hook **plus** an independent pipeline backstop, so a local bypass does not
+defeat it.
+
+The general form of this is on the site already -- [CI and
+standards](../CI-AND-STANDARDS.md) *"Measure the adoption of a convention before citing it as
+evidence"*. The two deltas above are the parts specific to a provenance trailer.
+
+**Be equally precise about granularity.** A commit trailer records provenance at **commit**
+granularity; it does not mark which lines or hunks were AI-authored. If a downstream process wants
+the line-level distinction, that is a separate, unbuilt thing, and saying so costs nothing.
 
 ### When there is no second reviewer
 
@@ -452,27 +485,31 @@ standard. The honest response is to record it as one rather than to redefine the
 
 - **The control that cannot be met:** independent human review of every change.
 - **The compensating set that stands in for it:** blocking automated analysis and dependency audit
-  that cannot be waived; an AI coding AI-run review that a human arbitrates; branch protection with
+  that cannot be waived; an AI-run review that a human arbitrates; branch protection with
   required checks; no direct pushes to the integration branch.
 - **The wording constraint:** this is a **compensating control**, explicitly not an independent
   audit, and no published claim may imply otherwise.
 - **The end condition:** a second maintainer joins.
 
-The obligation that *is* achievable alone is concrete: the full gate green, the reviews run and
+**The obligation that *is* achievable alone is concrete:** the full gate green, the reviews run and
 triaged, and every change explained-or-discarded -- where you engage with and stand behind the
-explanation rather than rubber-stamping it. The obligation that is not achievable alone is
-independent review, and it stays in the register as a deviation until it is.
+explanation rather than rubber-stamping it.
 
-Given that posture, the single highest-leverage control to build first is an adversarial check on
-whether the tests assert anything. It earns that place because it is the only one that is independent
-of the author's own confidence -- and the fifth failure mode says confidence is exactly what is
-unreliable in the self-review case.
+The obligation that is *not* achievable alone is independent review. It stays in the register as a
+deviation until it is met.
+
+**Build the adversarial check on whether the tests assert anything first.** Given that posture it is
+the single highest-leverage control, because it is the only one independent of the author's own
+confidence. The fifth failure mode says confidence is exactly what is unreliable in the self-review
+case.
 
 *Revised.* An earlier form of this made independent review a **precondition for production
 exposure**. For software that others self-host, the producing project does not control the deployment
 decision, and gating an adopter's rollout on an engagement you have not funded asserts authority you
-do not have. The standard **records what has and has not been independently verified**; the adopting
-organization owns the decision to deploy.
+do not have.
+
+The standard **records what has and has not been independently verified**; the adopting organization
+owns the decision to deploy.
 
 ### The deviations register
 
@@ -486,11 +523,13 @@ no date cannot be aged.
 | **Build trigger** | The concrete event that forces the real control to be built -- a second reviewer joining, a first external audit, a regulated deployment, the first release someone else installs |
 | **Design record** | A pointer to where the intended shape is written down |
 
-Two rules travel with the register. **Only a dated, signed acceptance is governance** -- an unsigned
-register is an un-accepted open gap wearing the costume of a decision, and a release gate that leans
-on one is not a gate. And **do not publish the register's contents as a public inventory of which
-controls are currently absent** if the software is security-relevant; keep the meta-rule public and
-the instance internal.
+Two rules travel with the register.
+
+**Only a dated, signed acceptance is governance.** An unsigned register is an un-accepted open gap
+wearing the costume of a decision, and a release gate that leans on one is not a gate.
+
+**Do not publish the register's contents as a public inventory of which controls are currently
+absent** if the software is security-relevant. Keep the meta-rule public and the instance internal.
 
 ### Claims and wording
 
@@ -506,10 +545,11 @@ near-neighbour.
 | "Provenance recorded at **commit granularity**, by convention" | "**Verified secure by the model**" |
 
 Keep a claims register holding the exact approved wording next to its evidence, and let nothing ship
-that is not in it. The register mechanics, the honesty taxonomy behind it, and the aligned /
-built-to / self-assessed vocabulary are all owned by
-[CI and standards](../CI-AND-STANDARDS.md) *"Say which kind of claim you are making"* -- read that
-before publishing anything from this document.
+that is not in it.
+
+The register mechanics, the honesty taxonomy behind it, and the aligned / built-to / self-assessed
+vocabulary are all owned by [CI and standards](../CI-AND-STANDARDS.md) *"Say which kind of claim you
+are making"*. Read that before publishing anything from this document.
 
 ### The attestation posture
 
@@ -521,22 +561,27 @@ Say this once, structurally, near the top of whatever you publish -- not as a fo
 
 The positive form names its own scope: *the project self-attests that it builds under this
 standard with the AI coding assistant governed as a tool -- explicitly not that the output is
-independently audited.* Where you borrow discipline from a regime you are not subject to, say that
-it is adopted **by analogy and voluntarily**, name the regime you are not subject to, and state
-that producing the artifacts confers nothing.
+independently audited.*
+
+Where you borrow discipline from a regime you are not subject to, say that it is adopted **by analogy
+and voluntarily**. Name the regime you are not subject to, and state that producing the artifacts
+confers nothing.
 
 ---
 
 ## 7. The adversarial verification pass
 
+An adversarial pass is a separate check on work already produced, run so that the checker is not the
+thing being checked. This section covers how to keep it independent, and when it is worth its cost.
+
 ### Why a second opinion from the same session is worth almost nothing
 
 A single agent that writes an answer and is then asked to check it has a **structural** defect, not a
-quality defect: the context that produced the answer is the context judging it, and it is biased
-toward what it already decided was fine. More reasoning effort in the same context does not fix this,
-because the bias is not a shortage of effort.
+quality defect. The context that produced the answer is the context judging it, and it is biased
+toward what it already decided was fine.
 
-The fix has two parts, and both are necessary:
+More reasoning effort in the same context does not fix this, because the bias is not a shortage of
+effort. The fix has two parts, and both are necessary:
 
 1. **Independence.** Hand verification to a separate agent that never saw the reasoning that produced
    the output. Keeping each verifier's task short enough that it finishes and returns also keeps its
@@ -582,17 +627,18 @@ vetoes regardless of score, because an averaged score hides a disqualifying defe
 first failure mode of panel review.
 
 **Do not treat the winner as the answer.** In the run this was drawn from, only one proposal was free
-of fatal flaws, and the final design was that proposal's spine with specific ideas **grafted from
-proposals that had lost**, with every fatal flaw explicitly resolved rather than averaged away.
+of fatal flaws. The final design was that proposal's spine with specific ideas **grafted from
+proposals that had lost**, and every fatal flaw was explicitly resolved rather than averaged away.
 Discarding the losers' good ideas is the second failure mode of panel review.
 
 ### Reading a split verdict
 
-On a split, the useful output is **not a tally**. It is the strongest surviving objection. Carry it
-forward and resolve it by name. Where a residual risk cannot be closed, document it honestly -- for
-instance as no worse than the behavior that already ships -- and make it visible rather than
-claiming it closed. A residual risk that is named survives review; one that is quietly absorbed
-resurfaces as an incident.
+On a split, the useful output is **not a tally**. It is the strongest surviving objection: carry it
+forward and resolve it by name.
+
+Where a residual risk cannot be closed, document it honestly -- for instance as no worse than the
+behavior that already ships -- and make it visible rather than claiming it closed. A residual risk
+that is named survives review; one that is quietly absorbed resurfaces as an incident.
 
 ### Findings from a sweep are candidates, not findings
 
@@ -601,9 +647,11 @@ enters a register, a report or a fix queue, and expect a substantial fraction no
 
 **Rule.** Report **candidate** and **confirmed** as separate numbers so the sweep's yield is visible,
 and make the confirmation step adversarial in the same sense as the verification pass -- a confirmer
-asked to agree will agree. The residual risk after confirmation is usually not a wrong finding; it is
-a control implemented exactly where it was prompted and missing at its siblings, which is why control
-parity is a review gate and not an afterthought.
+asked to agree will agree.
+
+The residual risk after confirmation is usually not a wrong finding. It is a control implemented
+exactly where it was prompted and missing at its siblings, which is why control parity is a review
+gate and not an afterthought.
 
 ### When the pass earns its cost, and when it is waste
 
@@ -613,10 +661,12 @@ parity is a review gate and not an afterthought.
 | **The scale outgrows a single context** -- a large migration, a repository-wide refactor | **Interactive and iterative work** -- the human is already in the loop on every step |
 | **The cost of a miss exceeds the compute cost** -- a hard-to-reverse architectural decision, a launch-readiness check | **The budget is tight** -- a single large sweep can consume a materially larger share of a usage allowance than a normal working day |
 
-The reason it fails on small work is structural rather than economic: **fan-out earns its value from
-coverage across a large surface, and a single-file task has no surface to fan out across.** The pass
-adds latency and burn without improving the result. The corollary is that a targeted, scoped review of
-a finished change is usually a better instrument than leaving a session-wide maximum-effort setting on.
+**It fails on small work for a structural reason, not an economic one.** Fan-out earns its value from
+coverage across a large surface, and a single-file task has no surface to fan out across. The pass
+adds latency and burn without improving the result.
+
+The corollary is that a targeted, scoped review of a finished change is usually a better instrument
+than leaving a session-wide maximum-effort setting on.
 
 ### Cost posture and the stop rule
 
@@ -636,16 +686,18 @@ meaningless, is owned by [Usage awareness](../USAGE-AWARENESS.md).
 
 ### Put the plan in an artifact, not in the conversation
 
-When a run spans many agents or many hours, the plan -- the dependency graph, the loops, the fan-out
--- should live in a written script or file that the run follows, not in the conversation that produced
-it. A plan held in conversational context degrades with everything else in that context. A plan held
+When a run spans many agents or many hours, the plan should live in a written script or file that the
+run follows, not in the conversation that produced it. The plan here means the dependency graph, the
+loops, the fan-out.
+
+A plan held in conversational context degrades with everything else in that context. A plan held
 in an artifact is stable across the whole run and re-readable by every agent that joins it. The same
 argument supports caching completed sub-results so a resumed run does not redo them.
 
 If the fan-out is several *sessions* rather than several agents inside one session, the isolation and
 hand-off mechanics are owned by [Worktrees](../WORKTREES.md) and
-[Coordination](../COORDINATION.md), and the identifier-collision class that every other control is
-blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
+[Coordination](../COORDINATION.md). The identifier-collision class that every other control is blind
+to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
 
 ---
 
@@ -663,7 +715,7 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
 | Every tier | Vet the AI coding assistant, its skills, its extensions and its tool servers -- no product gate inspects them |
 | Every tier | A commit-time scanner is not a live interceptor of an outbound query. That discipline is human |
 | Gating | A gate is a deterministic check with an exit code. Never ask the model to be secure |
-| Gating | An AI coding AI-run review is advisory input a human arbitrates, never a gate |
+| Gating | An AI-run review is advisory input a human arbitrates, never a gate |
 | Writing prompts | Quote the real invariant lines; do not gesture at them |
 | Writing prompts | Write a testable intent first, then review the diff against it |
 | Context | Fresh context per task, short trajectories; compact toward interface shape and decisions |
@@ -692,7 +744,7 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
   the levels in your own domain's vocabulary, and make the sensitivity axis mean the thing your
   regulator, your customers or your risk register actually cares about.
 - **The tier names, if they mislead.** Four tiers is enough; the labels are not load-bearing.
-- **The contents of the verification-gate row.** Which analyzs, which audits, which command -- those
+- **The contents of the verification-gate row.** Which analyzers, which audits, which command -- those
   are yours. What is not yours to change is that they are deterministic and blocking.
 - **The floor's first row.** "Restricted data" has to be defined for your context, concretely enough
   that someone can decide in seconds whether a payload qualifies.
@@ -700,7 +752,7 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
 
 **What you must not weaken.**
 
-- **The gate definition.** The moment an AI coding AI-run review counts as a gate, the whole structure is
+- **The gate definition.** The moment an AI-run review counts as a gate, the whole structure is
   decorative. Advisory input a human arbitrates is the strongest form it may take.
 - **The fail-closed resolver.** A resolver that resolves ambiguity downward is not a classifier, it is
   a permission slip.

@@ -2,38 +2,36 @@
 
 Trusting what you did not write, and controlling what you ship.
 
-Two questions, one document. **Inbound:** you import code you did not write, cannot fully audit, and
-that changes underneath you -- how do you control that without reading it? **Outbound:** you publish
-a build that other people install -- how do they know it is the thing you meant to send, and how do
-you know it contains only what you intended?
-
-> **This one is dense.** Reading it end to end works, and you will need to eventually -- it
-> becomes your standard once you adopt it. It is usually faster to hand the
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) to Claude Code, or
-> another AI coding assistant, and ask it to summarize this against your repository,
-> rewrite a section in plainer terms, or answer what already holds here and what would have to
-> change.
->
-> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx).
+> **Take a copy:**
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md)
+> or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
-The two halves share a shape. In both, the honest answer is not "review it harder". It is a small
-number of machine-enforced controls, plus human attention spent at two or three specific moments
-rather than spread thin across everything.
+Two directions, one document.
+
+**Inbound.** You import code you did not write, cannot fully audit, and that changes underneath you.
+How do you control that without reading it?
+
+**Outbound.** You publish a build that other people install. How do they know it is the thing you
+meant to send, and how do you know it contains only what you intended?
+
+Both halves share a shape. The honest answer in each is not "review it harder". It is a small number
+of machine-enforced controls, plus human attention spent at two or three specific moments rather
+than spread thin across everything.
 
 ---
 
 ## What you get
 
-- **A dependency discipline that never asks you to read library source.** Third-party code is a
-  black box by definition. The controls below manage it as one -- identify, vet at adoption, test at
-  your own boundary, surveil, pin -- so the obligation is finite instead of impossible.
-- **Human effort concentrated at two moments.** Adopting a dependency and bumping its version. A
-  few minutes of provenance work at adoption, a changelog-and-lock-delta read at each bump.
+- **A dependency discipline that never asks you to read library source.** The controls below manage
+  third-party code as the black box it is -- identify, vet at adoption, test at your own boundary,
+  surveil, pin -- so the obligation is finite instead of impossible.
+- **Human effort concentrated at two moments: adoption and each version bump.** A few minutes of
+  provenance work when you add a dependency, a changelog-and-lock-delta read when you bump it.
   Everything else runs unattended until it pings you.
-- **A defense against a package name that looks right and is not.** Assistant-suggested imports make
-  plausible-but-fake names a routine hazard rather than an exotic one, and the same check that
-  catches a fabricated name also catches a typosquat of a real one.
+- **A defense against a package name that looks right and is not.** Imports suggested by an AI coding
+  assistant make plausible-but-fake names a routine hazard rather than an exotic one, and the same
+  check that catches a fabricated name also catches a typosquat of a real one.
 - **An upstream behavior change that fails in your test suite instead of in production.** Tests
   written at the integration boundary are the black-box substitute for reading the code, and they
   turn a silent semantic change into a red bump.
@@ -41,8 +39,8 @@ rather than spread thin across everything.
   step, because the upload is irreversible and an exclusion list ships whatever nobody thought to
   exclude.
 - **A one-command verification story for whoever installs your build.** Published digests, build
-  provenance tied to a repository and a commit, and an attestation over the artifact -- so an adopter
-  can check what you shipped without contacting you or trusting your description of your own process.
+  provenance tied to a repository and a commit, and an attestation over the artifact. An adopter can
+  check what you shipped without contacting you or trusting your description of your own process.
 - **Language given back to you for saying what these controls do not do.** Wording for the runtime
   tamper question that neither oversells a self-check nor pretends the problem is unsolvable.
 
@@ -98,9 +96,11 @@ Then, in order of value per unit of effort:
 ### Third-party code is code of unknown provenance, and the discipline says so
 
 Third-party code is **code of unknown provenance**: software you incorporate but did not develop and
-cannot fully audit. Naming it that way is useful because it states the honest position. You are not
-going to read your dependency tree. Nobody does. The discipline that follows from that never asks
-you to; it asks you to manage each component as a black box.
+cannot fully audit. Naming it that way states the honest position -- you are not going to read your
+dependency tree, and nobody does.
+
+The discipline that follows never asks you to. It asks you to manage each component as a black box,
+and the table says where the human effort lands.
 
 | What the discipline requires | The black-box control | Where the human effort lands |
 |---|---|---|
@@ -119,8 +119,11 @@ requires reading library internals -- because a control nobody can perform is no
 
 On a security-critical path, the choice of dependency is the control. A reputable, widely adopted,
 actively maintained library has been effectively reviewed by a population far larger than you can
-field. That is what discharges the risk of not reading it, and it is where the adoption minutes
-should go -- not into skimming internals, which produces the feeling of review without the substance.
+field.
+
+That review is what discharges the risk of not reading it, and it is where the adoption minutes
+should go. Do not spend them skimming internals, which produces the feeling of review without the
+substance.
 
 **Rule.** Spend adoption time on the judgment: is this the package I meant, is the project healthy
 and maintained, is the license acceptable, is it actually used by anyone. On a security-critical
@@ -129,63 +132,68 @@ seam, prefer the widely reviewed option to the clever one, and record why in the
 ### The hallucinated package, and why an AI coding assistant makes it routine
 
 An AI coding assistant generates a plausible import the same way it generates plausible prose. A
-package name that reads correctly, sits in the right namespace, and matches the shape of real
-names in that ecosystem is exactly the output the model is good at producing. And it is
-indistinguishable, at the point of use, from a name that exists. That regularity is the attack
-surface: a name suggested often enough can be registered by somebody else.
+package name that reads correctly, sits in the right namespace, and matches the shape of real names
+in that ecosystem is exactly the output the model is good at producing.
 
-The site already carries the rule, the gate shape and the published magnitude with its model-era
-caveat, so it is not restated here: [Verify a dependency before adding it, and know what
-verification cannot see](../CI-AND-STANDARDS.md#verify-a-dependency-before-adding-it-and-know-what-verification-cannot-see).
+At the point of use, that name is indistinguishable from one that exists. The regularity is the
+attack surface: a name suggested often enough can be registered by somebody else.
 
-Two things worth adding at this document's altitude:
+The rule, the gate shape and the published magnitude with its model-era caveat are already on the
+site. They are not restated here: [Verify a dependency before adding it, and know what verification
+cannot see](../CI-AND-STANDARDS.md#verify-a-dependency-before-adding-it-and-know-what-verification-cannot-see).
 
-- **The automated check covers a narrower class than it appears to.** Existence, publishing history,
-  an age floor and canonical-name identity are all mechanical. *Is this the project I meant* is not.
-  A package that genuinely exists, publishes files, is years old and is served under its own
-  canonical name can still be a different project than the one intended, and it passes everything.
-- **This is the one moment the black-box discipline is not self-sufficient.** Every other inbound
-  control assumes you got the right component. Verify-before-add is the control that establishes the
-  assumption, so it is the one place a human is structurally required.
+Two things are worth adding at this document's altitude.
+
+**The automated check covers a narrower class than it appears to.** Existence, publishing history, an
+age floor and canonical-name identity are all mechanical. *Is this the project I meant* is not. A
+package that genuinely exists, publishes files, is years old and is served under its own canonical
+name can still be a different project than the one intended. It passes everything.
+
+**This is the one moment the black-box discipline is not self-sufficient.** Every other inbound
+control assumes you got the right component. Verify-before-add is the control that establishes the
+assumption, so it is the one place a human is structurally required.
 
 ### Explaining code and reading dependencies are different obligations
 
 "Reject code you cannot explain" and "do not read your dependencies" look contradictory. They are
 not, and the boundary between them is ownership rather than authorship.
 
-- Code **in your tree** is yours to account for, whoever or whatever typed it. The site's settled
-  position -- an explanation reached with assistance is acceptable, rubber-stamping is not, opaque
-  even with help is discarded, capture it durably -- is at [Reject code you cannot explain --
-  assistance in reaching the explanation is
-  fine](../CI-AND-STANDARDS.md#reject-code-you-cannot-explain----assistance-in-reaching-the-explanation-is-fine).
-- Code **behind a package boundary** is not yours to account for. You account for its *provenance*
-  and for the *behavior you depend on*, which is what the table above enumerates.
+**Code in your tree** is yours to account for, whoever or whatever typed it. The site's settled
+position is that an explanation reached with assistance is acceptable, rubber-stamping is not, opaque
+even with help is discarded, and you capture it durably. It is stated at [Reject code you cannot
+explain -- assistance in reaching the explanation is
+fine](../CI-AND-STANDARDS.md#reject-code-you-cannot-explain----assistance-in-reaching-the-explanation-is-fine).
+
+**Code behind a package boundary** is not yours to account for. You account for its *provenance* and
+for the *behavior you depend on*, which is what the table above enumerates.
 
 **Rule.** Apply the explainability bar at the tree boundary, not at the import statement. Then note
 the consequence: anything that moves code across that boundary moves the obligation with it. Two
 things do -- vendoring, and generated code checked in. Both arrive looking like dependencies and are
 owned code the moment they land.
 
-Two additions worth carrying from the argument that produced the pragmatic bar, neither of which the
-site states:
+Two additions are worth carrying from the argument that produced the pragmatic bar, neither of which
+the site states.
 
-- **An AI coding assistant's explanation can be confidently wrong in exactly the way its code can.** The human
-  verifies the explanation; accepting it is the rubber-stamp under a different name.
-- **When it breaks, you may not have the AI coding assistant in the loop.** That is the honest residual risk of
-  the pragmatic bar, and it argues for unaided comprehension specifically on the seams where a
-  mistake is most expensive -- authentication, cryptography, and wherever regulated data crosses.
+**An AI coding assistant's explanation can be confidently wrong in exactly the way its code can.**
+The human verifies the explanation; accepting it is the rubber-stamp under a different name.
 
-A cheap detector for drift on this rule: periodically pick a merged assisted change and ask its
+**When it breaks, you may not have the AI coding assistant in the loop.** That is the honest residual
+risk of the pragmatic bar. It argues for unaided comprehension specifically on the seams where a
+mistake is most expensive -- authentication, cryptography, and wherever regulated data crosses.
+
+**A cheap detector for drift on this rule:** periodically pick a merged assisted change and ask its
 author to explain it cold. If that is uncomfortable to schedule, the bar has already slipped.
 
 ### Vendored code is owned code, not a dependency
 
 Copying third-party source into your tree converts cheap-to-manage third-party code into code you
-own. Worse, it silently leaves the machinery: a vendored path is not in the lockfile, so the advisory
-auditor never sees it, and static analysis configured for your first-party package skips the new
-directory. Every dependency control reports green while covering nothing.
+own.
 
-This is the sibling-path failure in its most common form
+Worse, it silently leaves the machinery behind. A vendored path is not in the lockfile, so the
+advisory auditor never sees it, and static analysis configured for your first-party package skips the
+new directory. Every dependency control reports green while covering nothing -- the sibling-path
+failure in its most common form
 ([CI and standards](../CI-AND-STANDARDS.md#enumerate-sibling-paths-for-every-control)).
 
 **Rule.** If you vendor, hold the copy to the same gates as first-party code, in the same change that
@@ -202,31 +210,32 @@ decision is revisitable instead of permanent by default.
 ### Every manifest in the repository needs its own audit net
 
 Advisory surveillance and blocking audits are configured per ecosystem. A repository that adds a
-second language, a build tool with its own manifest, or a documentation site with its own
-dependency tree grows a tree that nothing watches -- while the dashboard still says the repository is
-covered.
+second language, a build tool with its own manifest, or a documentation site with its own dependency
+tree grows a tree that nothing watches. The dashboard still says the repository is covered.
 
 **Rule.** Enumerate the manifests and wire **both halves** for each: scheduled surveillance that
 raises a change when an advisory lands, and a **blocking**, install-free audit that fails closed on
-any advisory. Prefer one check that fails when a manifest exists with no corresponding audit entry,
-so the parity is deterministic rather than a recurring manual sweep. Triage a transitive advisory by
-pinning it out through the ecosystem's own override mechanism.
+any advisory.
+
+Prefer one check that fails when a manifest exists with no corresponding audit entry, so the parity
+is deterministic rather than a recurring manual sweep. Triage a transitive advisory by pinning it out
+through the ecosystem's own override mechanism.
 
 **Judging impact, not skipping it.** A tree that is build-time only -- bundlers, test runners, type
-checkers -- is a build-supply-chain concern rather than a runtime exposure, and that difference is
-worth stating when you triage. It is not a reason to leave the tree unsurveilled: the build tooling
-is the part that touches every line of code you ship.
+checkers -- is a build-supply-chain concern rather than a runtime exposure. That difference is worth
+stating when you triage. It is not a reason to leave the tree unsurveilled: the build tooling is the
+part that touches every line of code you ship.
 
 ### Pin the resolved graph, and enforce the pin at install
 
-The general principle is two sentences, and both halves are load-bearing.
+Both halves of the rule are load-bearing.
 
 **Rule.** Pin the entire resolved dependency graph by cryptographic digest, in an artifact that is
 checked in and reviewable. Then make the **install step refuse anything not in the pin**, so a
 substituted artifact fails at install on every machine rather than at audit on whichever machine
 happened to run the auditor.
 
-Resolution-time pinning without install-time enforcement is the common half-measure: it makes builds
+Resolution-time pinning without install-time enforcement is the common half-measure. It makes builds
 reproducible, which is worth having, and it does not make them verified.
 
 Three questions to answer for your own ecosystem before assuming you have this:
@@ -239,16 +248,17 @@ Three questions to answer for your own ecosystem before assuming you have this:
 The site's [Constrain every install site from a checked-in
 lock](../CI-AND-STANDARDS.md#constrain-every-install-site-from-a-checked-in-lock) covers the
 CI-facing half, including the regenerate-and-diff gate that keeps the lock honest. Two deltas belong
-here rather than there:
+here rather than there.
 
-- **A version pin does not satisfy a supply-chain scorer's pinned-dependency requirement**, and more
-  importantly does not satisfy the property you actually wanted. If your CI tooling is installed by
-  version rather than by digest, it is unpinned in the sense that matters.
-- **A hash-pinned toolchain kept *outside* your existing regenerate-and-diff machinery rots into a
-  pinned, stale and unpatched one** -- which is a worse posture than floating, because it looks
-  controlled. Keep every lock, including the one for CI-only tooling, inside the same machinery that
-  regenerates the runtime locks. Declare the tooling group non-default, and add a test asserting it
-  does not leak into the runtime exports.
+**A version pin does not satisfy a supply-chain scorer's pinned-dependency requirement**, and more
+importantly does not satisfy the property you actually wanted. If your CI tooling is installed by
+version rather than by digest, it is unpinned in the sense that matters.
+
+**A hash-pinned toolchain kept *outside* your existing regenerate-and-diff machinery rots into a
+pinned, stale and unpatched one** -- which is a worse posture than floating, because it looks
+controlled. Keep every lock, including the one for CI-only tooling, inside the same machinery that
+regenerates the runtime locks. Declare the tooling group non-default, and add a test asserting it
+does not leak into the runtime exports.
 
 ### The version bump is a bounded review
 
@@ -280,12 +290,14 @@ having correctly identified the component.
 
 ### The artifact contains only what you declared
 
-Covered in full at [Package manifests are allowlists, not
-sweeps](../CI-AND-STANDARDS.md#package-manifests-are-allowlists-not-sweeps), and not restated. One
-instance worth naming here, because it is the case people assume cannot happen: **material a project
-treats as withheld can travel inside a published distribution** without anyone reviewing the
-packaging list. That is because the packaging list was written as an exclusion and the material was
-added later. Checking the thing you built is not checking the thing that shipped.
+One instance worth naming: **material a project treats as withheld can travel inside a published
+distribution**, without anyone reviewing the packaging list. That is the case people assume cannot
+happen. It happens because the packaging list was written as an exclusion and the material was added
+later.
+
+Checking the thing you built is not checking the thing that shipped. The rule itself is covered in
+full at [Package manifests are allowlists, not
+sweeps](../CI-AND-STANDARDS.md#package-manifests-are-allowlists-not-sweeps), and not restated.
 
 ### Publishing credentials should be minted per run, not stored
 
@@ -297,13 +309,13 @@ own workflow identity, scoped to a specific repository, workflow and environment
 the length of an upload. State the *property* -- short-lived, workflow-bound -- rather than a
 current time-to-live, which is a provider implementation detail.
 
-Two conditions travel with it, and both have bitten people:
+Two conditions travel with it, and both have bitten people.
 
-- **Restrict the publishing workflow to trusted triggers** -- a tag or a push -- and never to a
-  trigger that grants write credentials to code from an untrusted contributor. Pin the publishing
-  action.
-- **It does not defend against takeover of the publishing account.** Multi-factor on the account and
-  environment protection rules are what cover that, and they are a different control.
+**Restrict the publishing workflow to trusted triggers** -- a tag or a push -- and never to a trigger
+that grants write credentials to code from an untrusted contributor. Pin the publishing action.
+
+**A per-run credential does not defend against takeover of the publishing account.** Multi-factor on
+the account and environment protection rules are what cover that, and they are a different control.
 
 *(Ecosystem-specific: the mechanism exists on some registries and not others, and the exact scoping
 vocabulary differs. The property is general; the availability is not.)*
@@ -333,9 +345,10 @@ are quoted for the shape of the finding, not as constants.
 **Rule.** Before crediting a signing control, measure two things: what proportion of artifacts carry
 a signature, and what proportion of those signatures a consumer can actually resolve to an identity.
 Prefer identity-based signing bound to the build workflow and recorded in a transparency log, where
-verification does not depend on a key-distribution story that never worked. Signing repository tags
-and commits remains worthwhile for source provenance -- it is the *artifact* signature path that this
-finding replaced.
+verification does not depend on a key-distribution story that never worked.
+
+Signing repository tags and commits remains worthwhile for source provenance. It is the *artifact*
+signature path that this finding replaced.
 
 ### Build provenance, and the lowest-tech verification path
 
@@ -343,8 +356,8 @@ Two artifacts do most of the work for whoever installs your build.
 
 **Rule.** Generate **build provenance** in the pipeline, proving the artifact traces to a specific
 repository, workflow and commit rather than to somebody's machine. Isolating the build behind a
-dedicated reusable workflow raises the assurance further, and the published build-level frameworks
-are what let you say which level you reached without inventing a scale.
+dedicated reusable workflow raises the assurance further. The published build-level frameworks are
+what let you say which level you reached without inventing a scale.
 
 **Rule.** Publish a **signed digest manifest** with every release, and document the exact
 verification commands including the offline path. This is the one route a reviewer on a restricted or
@@ -352,19 +365,25 @@ disconnected network can always run, and it should be the documented baseline ra
 afterthought. If your signing scheme supports bundling a transparency-log inclusion proof with the
 artifact, bundle it, for the same reason.
 
-Keyless, identity-based signing removes long-lived key management, which is a real win. Be clear
-about what it does to the threat model rather than what it removes from it: **you are no longer
-protecting a key, you are protecting the pipeline identity.** Account multi-factor, branch protection
-and pipeline hardening become the load-bearing controls. A project that adopts keyless signing and
-leaves the pipeline unhardened has moved the target, not removed it.
+**Keyless signing moves the threat model, it does not remove it.** Identity-based signing removes
+long-lived key management, which is a real win. Be clear about what it does to the threat model
+rather than what it removes from it.
+
+You are no longer protecting a key, you are protecting the pipeline identity. Account multi-factor,
+branch protection and pipeline hardening become the load-bearing controls. A project that adopts
+keyless signing and leaves the pipeline unhardened has moved the target, not removed it.
 
 ### A component inventory is not tamper detection, and saying so matters
 
 **Rule.** Generate a component inventory with each release, in the formats your consumers ingest, and
 attach it to the release and to the archived build. Then be precise about what it buys, because it is
-routinely quoted as integrity evidence it does not provide. It buys at least: answering *do we ship
-component X* within minutes of a widely publicised advisory; drift detection, by diffing a produced
-inventory against the intended manifest; and satisfying procurement reviews that ask for one.
+routinely quoted as integrity evidence it does not provide.
+
+It buys at least:
+
+- answering *do we ship component X* within minutes of a widely publicised advisory
+- drift detection, by diffing a produced inventory against the intended manifest
+- satisfying procurement reviews that ask for one
 
 It does not detect tampering with your own code. Nothing about it is a signature.
 
@@ -415,9 +434,10 @@ unsophisticated tampering, and produces an audit signal. That is worth having.
 
 It cannot be more than that, because the checker runs in the same trust domain as the thing it
 checks. Whoever can edit the code on disk can also edit the manifest, the embedded key, or the
-verification routine; whoever can alter the runtime can stub it. The chain of trust only terminates
-in hardware measured boot, which is the operator's platform decision and not something your software
-ships.
+verification routine; whoever can alter the runtime can stub it.
+
+The chain of trust only terminates in hardware measured boot, which is the operator's platform
+decision and not something your software ships.
 
 **Rule.** Ship it as defense in depth if you ship it, and document the limit **in the same paragraph
 as the feature**, not in a footnote. Never let it be quoted as prevention. This is the general rule
@@ -435,25 +455,28 @@ The strongest tamper controls are outside the software:
 - mandatory-access-control confinement
 - admission control that rejects an unsigned artifact
 
-You cannot own any of them. What you can do is ship a hardening guide with a concrete list of paths
-to monitor and example rules, so an operator has something to apply on day one rather than a category
-name.
+You cannot own any of them. What you can do is ship a hardening guide, with a concrete list of paths
+to monitor and example rules. An operator then has something to apply on day one rather than a
+category name.
 
-**Rule.** Publish a two-column responsibility split before claiming any control. The producing
-project owns secure development practice, secure-by-default configuration, testing and attestation
-of the software, vulnerability response, and evidence. The operating organization owns host and
-network, identity and key management in their environment, backups and availability, their own
-compliance program, and monitoring and patching. State plainly that shipping the software confers no
-certification on the operator: your attestation is an input to their assessment, never a substitute
-for it. The register to use for that wording is on the site already -- built to, aligned with,
-self-assessed against, never certified
+**Rule.** Publish a two-column responsibility split before claiming any control.
+
+**The producing project owns** secure development practice, secure-by-default configuration, testing
+and attestation of the software, vulnerability response, and evidence.
+
+**The operating organization owns** host and network, identity and key management in their
+environment, backups and availability, their own compliance program, and monitoring and patching.
+
+State plainly that shipping the software confers no certification on the operator. Your attestation
+is an input to their assessment, never a substitute for it. The register to use for that wording is
+on the site already -- built to, aligned with, self-assessed against, never certified
 ([CI and standards](../CI-AND-STANDARDS.md#use-the-register-you-actually-have-aligned-built-to-self-assessed)).
 
 ### Roll a blocking verification control out in audit mode first
 
 A control that rejects artifacts failing verification will also reject valid artifacts whenever its
-*own* preconditions are unmet -- for instance when the enforcing component cannot reach the store
-holding the signatures it must fetch.
+*own* preconditions are unmet. One example: the enforcing component cannot reach the store holding
+the signatures it must fetch.
 
 **Rule.** Start any such control in a mode that reports but does not block, confirm it is resolving
 what it needs, then switch to enforce. A control that blocks legitimate deployments on day one gets

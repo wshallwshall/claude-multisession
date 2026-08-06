@@ -28,7 +28,7 @@ code, and the one where a wrong answer is expensive in both directions.**
 
 - **It focuses your effort rather than reducing it.** Deciding the tier takes judgment at the start
   of each change, and that judgment is not free. What you get back is a deep read that lands only
-  where it earns its cost, instead of attention spread evenly over code that does not need it.
+  where it earns its cost. It is not attention spread evenly over code that does not need it.
 - **It assumes you can tell what a change touches.** If your system has no clear boundary around
   restricted data or authorization, the rule clamps everything to the strictest tier, and that is
   expensive. Fixing the boundary is the cheaper project.
@@ -47,7 +47,7 @@ Three answers circulate, and all three fail for the same reason: they are not de
 |---|---|
 | **"A fixed percentage."** | Nobody can say which 30 percent, so in practice it means the easy 30 percent. It is also unauditable: no evidence distinguishes a project that did it from one that says it did. |
 | **"All of it, unaided."** | The strongest possible guard, and the reason it fails is not laziness. A rule that is ignored under deadline pressure protects nothing, and this one is ignored first. |
-| **"None, the tests cover it."** | Tests check what somebody thought to check. They do not tell you whether the code does something else as well, and an AI coding assistant is good at producing code that passes the test it was shown. |
+| **"None, the tests cover it."** | Tests check what somebody thought to check. They do not tell you whether the code does something else as well. An AI coding assistant is good at producing code that passes the test it was shown. |
 
 The useful answer is not a quantity at all. It is a **decision procedure**.
 
@@ -93,21 +93,23 @@ Below every tier sits one rule that never turns off:
 
 > **Reject code you cannot explain, even if it works.**
 
-This is the line between an AI coding assistant accelerating a team and an AI coding assistant quietly
-filling a codebase with **code of unknown provenance** -- code whose behavior nobody on the team
-can account for. The failure it prevents is a documented one: developers who can produce
-working-looking code but cannot reason about, fix, or maintain it. You discover this during an
-incident, which is the worst possible time.
+This is the line between an AI coding assistant that accelerates a team and one that quietly fills
+a codebase with **code of unknown provenance**. That is code whose behavior nobody on the team can
+account for.
 
-### Does explaining it *with the AI coding assistant's help* count?
+The failure it prevents is a documented one: developers who can produce working-looking code but
+cannot reason about, fix, or maintain it. You discover this during an incident, which is the worst
+possible time.
 
-This is the genuinely contested question, and an honest standard should say so rather than pretend
-it is settled.
+### AI-assisted explanation is contested, and accepted here with guardrails
+
+Whether an AI-assisted explanation satisfies the floor is genuinely contested. An honest standard
+should say so rather than pretend it is settled.
 
 **The position taken here: yes, with guardrails.** An explanation reached with AI assistance
 satisfies the floor. The strict reading -- a human understands every line unaided -- is the stronger
-anti-provenance guard, but for a small team it is the rule that gets quietly dropped first, and a
-dropped rule protects nothing.
+anti-provenance guard. For a small team, though, it is the rule that gets quietly dropped first, and
+a dropped rule protects nothing.
 
 The guardrails are what make the looser reading defensible:
 
@@ -148,10 +150,12 @@ output, or a floor nobody enforces. It is worth knowing which.
   Everything above depends on that line being drawn somewhere findable.
 - **Do not weaken the two full-read conditions.** They are the part that pays for itself.
 - **Write down what "you can explain it" is allowed to mean here.** This document accepts an
-  explanation you reached with the tool's help. The stricter alternative is that a person must be
-  able to explain the code unaided. Either is defensible; pick one, record which one, and hold
-  everyone to it. The failure is not choosing the looser reading -- it is different people applying
-  different readings on different days, so nobody can say what the rule actually is.
+  explanation you reached with the AI coding assistant's help. The stricter alternative is that a
+  person must be able to explain the code unaided.
+
+Either reading is defensible. Pick one, record which one, and hold everyone to it. The failure is
+not choosing the looser reading. It is different people applying different readings on different
+days, so nobody can say what the rule actually is.
 
 ## Related
 

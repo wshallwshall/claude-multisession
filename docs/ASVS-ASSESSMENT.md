@@ -7,43 +7,49 @@ rather than by one person reading code all week.
 **This document contains no results, and that is deliberate.** An assessment's findings are a map of
 where a system is weak: which control is off, which surface is uncovered, which item nobody has got
 to yet. That map belongs in a private record with the people who can act on it, not in a public
-repository. So nothing below states a verdict, a count, a percentage, or a level attainment for any
-codebase. What is here is the part that transfers: the procedure, the vocabulary, the traps, and the
-review pass. If you want to know where a system stands, run the assessment against that system --
-do not read someone's published summary of theirs.
+repository.
+
+So nothing below states a verdict, a count, a percentage, or a level attainment for any codebase.
+What is here is the part that transfers: the procedure, the vocabulary, the traps, and the review
+pass. To find out where a system stands, run the assessment against that system -- do not read
+someone's published summary of theirs.
 
 That separation is itself one of the lessons. Publishing the method invites scrutiny of the
 reasoning. Publishing the register invites something else.
 
-**Two independent sources.** What follows was first written from published method documents, then
-corrected and deepened against a first-hand practitioner account from a session that ran an
+**Two independent sources.** This was first written from published method documents, then corrected
+and deepened against a first-hand practitioner account. That account came from a session that ran an
 assessment end to end and was asked afterwards for method only. Where the two disagreed, the
-first-hand account won. Its organizing insight is worth stating up front, because most of the traps
-below are instances of it: **the recurring failure is an instrument answering a narrower question
-than the one asked, and looking clean while doing it.**
+first-hand account won.
+
+**Its organizing insight, stated up front:** the recurring failure is an instrument answering a
+narrower question than the one asked, and looking clean while doing it. Most of the traps below are
+instances of it.
 
 ---
 
-## Why this document has to exist at all
+## The standard supplies no verdict rubric
 
 ASVS 5.0's assessment guidance is *deliberately non-prescriptive*. It supplies scoping advice,
 evidence expectations, and a reporting obligation -- and **no verdict rubric**. It names verified,
 exception, and non-applicable-with-rationale. The words most assessors actually reach for --
 "partial", "not implemented" -- appear nowhere in it.
 
-That gap is invisible until you have several agents working in parallel. Each one arrives at a cell
-with a reasonable, unwritten rule in its head; each produces a defensible verdict; and the same
-requirement changes grade inside a day because two sessions weighed the same evidence differently.
-Nothing looks wrong at any point. Both verdicts are argued. Both cite real code.
+**The gap is invisible until several agents work in parallel.** Each one arrives at a cell with a
+reasonable, unwritten rule in its head, and each produces a defensible verdict. The same requirement
+then changes grade inside a day, because two sessions weighed the same evidence differently. Nothing
+looks wrong at any point: both verdicts are argued, and both cite real code.
 
-An AI-assisted assessment amplifies this in a specific way: agents are fluent. An agent will produce
-a paragraph of on-topic, confident, well-structured reasoning about a control whether or not it read
+**An AI-assisted assessment amplifies this, because agents are fluent.** An agent will produce a
+paragraph of on-topic, confident, well-structured reasoning about a control whether or not it read
 the requirement, whether or not the cited file supports the claim, and whether or not the search it
-ran could have returned anything. **Fluency is not the failure mode you are used to defending
-against.** The whole method below is a set of forcing functions that make the difference between a
-real verdict and a fluent one mechanically visible.
+ran could have returned anything.
 
-### The prerequisite, before any of it
+**Fluency is not the failure mode you are used to defending against.** The whole method below is a
+set of forcing functions that make the difference between a real verdict and a fluent one
+mechanically visible.
+
+### Hold the standard's own text locally, pinned by version
 
 You need the standard's actual text, held locally, pinned by version. If your project does not hold
 it, obtaining it is step zero of the assessment, not an optimization -- see
@@ -52,16 +58,17 @@ depends on an assessor being able to quote the requirement it is judging.
 
 ---
 
-## One record of record
+## One computed record is the authority
 
 **Exactly one machine-readable scorecard is the authority.** Everything else links to it. Nothing
 else restates it.
 
-A status written into prose is a copy. It is correct on the day it is typed and rots silently after --
-and prose is where restatement is most tempting, because it reads well: a summary here, a remediation
-note there, an architecture page mentioning where things stand. The observable symptom is several
-documents asserting mutually inconsistent totals, each defensible at the moment it was written, with
-no way for a reader to tell which is current.
+**A status written into prose is a copy.** It is correct on the day it is typed and rots silently
+after. Prose is also where restatement is most tempting, because it reads well: a summary here, a
+remediation note there, an architecture page mentioning where things stand.
+
+**The observable symptom is inconsistent totals.** Several documents each assert one, each defensible
+at the moment it was written, with no way for a reader to tell which is current.
 
 | Rule | Why |
 |---|---|
@@ -73,18 +80,19 @@ no way for a reader to tell which is current.
 If a document must display a number, generate that document. The cost of a small rendering script is
 far below the cost of one afternoon spent working out which of four totals is real.
 
-### The failure that actually teaches this
+### A planning document published a figure nobody measured
 
-The mild version is several dated prose documents each asserting a figure, each superseded within
-weeks, readers taking whichever they found first and finding they do not agree. Annoying, survivable.
+**The mild version is annoying but survivable.** Several dated prose documents each assert a figure,
+each superseded within weeks. Readers take whichever they found first and discover the figures do
+not agree.
 
-The expensive version: **a planning document published a figure that had never been measured** -- in a
-document whose entire purpose was to tell the next person what to do. Two subsequent sessions planned
-against it. It was wrong by roughly a factor of five, and the plan's sizing, its sequencing and its
+**The expensive version: a planning document published a figure that had never been measured.** Its
+entire purpose was to tell the next person what to do, and two subsequent sessions planned against
+it. It was wrong by roughly a factor of five. The plan's sizing, its sequencing and its
 definition-of-done all inherited the error, each of them looking perfectly reasonable on its own terms.
 
 Hence the sharper form of the rule: **one computed record; everything else renders it.** No document
-*states* a figure; documents *derive* it. And the priority ordering that follows from the above:
+*states* a figure; documents *derive* it. The priority ordering follows from that:
 
 > **A stale rule in a dispatch document is worse than a stale number in a data file**, because every
 > future worker inherits it before doing any work of their own.
@@ -123,17 +131,18 @@ Cells carrying an inherited grade look identical to freshly derived ones in a sp
 a verdict in them. Merge them into a headline and you publish an average over judgments, some of
 which were never made against the actual requirement. It renders like a measurement and is not one.
 
-So: give it a **distinct verdict value**, **exclude it from any pass total**, and report *verified*
-and *not-yet-re-verified* as two numbers rather than one. Report **survey progress** -- how much of
-the set has been read against the pinned text -- as its own figure, and say on every verdict total
-that it covers examined cells only.
+So give it a **distinct verdict value** and **exclude it from any pass total**. Report *verified* and
+*not-yet-re-verified* as two numbers rather than one. Report **survey progress** -- how much of the
+set has been read against the pinned text -- as its own figure, and say on every verdict total that
+it covers examined cells only.
 
 **The word itself was the bug.** The state meant *"inherited from an earlier assessment and never
-re-read against the standard's own text"*. It was read as *"nobody has ever looked at this"*. Those
-are **re-verification debt** and **unexplored surface**, and they imply completely different work:
-one is a re-derivation against text you already hold, the other is an investigation. Everything
-downstream -- effort estimates, sequencing, what a reader thinks the deficit is -- forks on which one
-the reader assumed.
+re-read against the standard's own text"*. It was read as *"nobody has ever looked at this"*.
+
+Those two readings are **re-verification debt** and **unexplored surface**, and they imply completely
+different work: one is a re-derivation against text you already hold, the other is an investigation.
+Everything downstream -- effort estimates, sequencing, what a reader thinks the deficit is -- forks on
+which one the reader assumed.
 
 Three things that worked:
 
@@ -144,21 +153,24 @@ Three things that worked:
   defect: a summary line silently omitted one state, so the components did not add up and nothing said
   so.
 
-The renderer failures were of a piece with the naming failure -- one classified a read-and-parked cell
+The renderer failures were of a piece with the naming failure: one classified a read-and-parked cell
 as never-read, which is the same confusion implemented in code.
 
-State the debt in accurate words for the same reason. If those cells were graded before -- just
+**State the debt in accurate words for the same reason.** If those cells were graded before -- just
 against a restatement -- then calling them "never examined" overstates the deficit and misdescribes
-what has to happen next. The honest phrasing is *"N verified against the pinned requirement text; M
-carry verdicts not yet re-verified against it."* Overstating a deficit gets corrected, and the
-correction costs you credibility on everything you got right.
+what has to happen next.
+
+The honest phrasing is *"N verified against the pinned requirement text; M carry verdicts not yet
+re-verified against it."* Overstating a deficit gets corrected, and the correction costs you
+credibility on everything you got right.
 
 ### "It can be configured" is never a pass
 
-This is the single most common agent over-claim, and the reason it survives review is that the
-evidence is genuine: the control exists, it is well built, it is documented, and it works when
-enabled. In a codebase where most security features are opt-in, this one misreading can convert a
-large fraction of the assessment into unearned passes with real code cited under every one.
+This is the single most common agent over-claim, and it survives review because the evidence is
+genuine: the control exists, it is well built, it is documented, and it works when enabled.
+
+In a codebase where most security features are opt-in, this one misreading can convert a large
+fraction of the assessment into unearned passes, with real code cited under every one.
 
 A pass requires the verb satisfied by a **shipped default**, or by a **gate that refuses to start**
 when its precondition is absent. A configurable-on control, a documented recommendation, and a signed
@@ -167,15 +179,17 @@ relaxation are all not passes.
 ### `partial` needs a distinguishing test or it becomes a wastebasket
 
 `partial` is the grade an assessor reaches for when the answer is uncomfortable. Undefined, it
-absorbs everything ambiguous and stops carrying information -- a reader cannot tell whether it means
+absorbs everything ambiguous and stops carrying information: a reader cannot tell whether it means
 "nearly done" or "a hook exists that nobody implemented".
 
-Define it as the **residual of the ordered procedure below**, not as a feeling, and require the cell
-to say which of three shapes it is: *ships off*, *warns instead of refusing*, or *covers part of the
-surface*. Anything with no implementing code in any configuration is not partial -- it is a fail.
-Anything satisfied by a shipped default is not partial -- it is a pass.
+Define it as the **residual of the ordered procedure below**, not as a feeling. Require the cell to
+say which of three shapes it is: *ships off*, *warns instead of refusing*, or *covers part of the
+surface*.
 
-### The standing tie-breaker
+Anything with no implementing code in any configuration is not partial -- it is a fail. Anything
+satisfied by a shipped default is not partial -- it is a pass.
+
+### When uncertain, take the worse grade
 
 **When uncertain between two grades, take the worse one.** An unearned pass is the specific failure
 the whole exercise exists to prevent. Write this down; it is the rule agents most need permission to
@@ -185,11 +199,12 @@ apply.
 
 ## The decision procedure: ordered, first match wins
 
-Weighing the whole picture per cell feels more rigorous than a checklist. It produces results that
-are defensible one at a time and unstable across the set, because identical evidence lands
-differently depending on which consideration the assessor happened to weigh first.
+**Make the questions a numbered sequence, and let the first matching rule decide.** Weighing the
+whole picture per cell feels more rigorous than a checklist. It produces results that are defensible
+one at a time and unstable across the set, because identical evidence lands differently depending on
+which consideration the assessor happened to weigh first.
 
-So make the questions a numbered sequence, and let the **first matching rule decide**:
+The sequence, first match wins:
 
 1. **Does the requirement apply on the declared scope?**
    No -> `na`, and write the rationale. No rationale, no `na`.
@@ -205,18 +220,18 @@ So make the questions a numbered sequence, and let the **first matching rule dec
 6. **If two assessors following 1-5 disagree** -> `needs-review`, with the disagreement recorded.
 
 **The ordering is load-bearing, not cosmetic.** Asking *"is the verb's subject in scope?"* before
-*"does code implement the verb?"* produces a different answer than the reverse, and both orderings are
+*"does code implement the verb?"* produces a different answer than the reverse. Both orderings are
 defensible right up until you pick one and write it down. A cell that has moved between grades
 repeatedly is usually a cell where two people applied the same rules in different order.
 
-**Record which rule fired on each cell.** That single field is what turns a later disagreement into a
+**Record which rule fired on each cell.** That single field turns a later disagreement into a
 one-question argument instead of a coin flip: you argue about applicability, or about defaults, not
 about the verdict as a whole.
 
-And keep worked examples of the genuinely hard calls in the method document -- written so the next
-agent reaches the same answer rather than re-litigating it from scratch. (Keep the examples' *reasoning*
-public and their *subject* private if the finding is sensitive; the shape of the call is the
-transferable part.)
+**Keep worked examples of the genuinely hard calls** in the method document, written so the next
+agent reaches the same answer rather than re-litigating it from scratch. Keep the examples'
+*reasoning* public and their *subject* private if the finding is sensitive; the shape of the call is
+the transferable part.
 
 ---
 
@@ -247,40 +262,43 @@ and one evidence pointer in a single context window.
 
 ## Not applicable must be argued, never assumed
 
-`na` is the grade with the highest yield and the lowest resistance: it removes work and improves the
-shape of the record at the same time, and every individual exclusion sounds sensible. Left
-undefined, it eats the assessment.
+`na` is the grade with the highest yield and the lowest resistance. It removes work and improves the
+shape of the record at the same time, and every individual exclusion sounds sensible. Left undefined,
+it eats the assessment.
 
 **The test is on the verb's subject.** Ask what the requirement demands be true, and *of what*. If
 the subject is the substrate the software is deployed onto -- host, hypervisor, CPU, firmware,
 network, or the deploying organization's own controls -- rather than the artifacts you declared in
 scope, `na` is defensible. Write the rationale; no rationale, no `na`.
 
-Guard that boundary in **both** directions:
+Guard that boundary in **both** directions.
 
-- **Reporting on a property is not providing it.** Shipping code that observes, measures, or gates on
-  a substrate property does not make the cell in-scope. This is the trap that survives review best,
-  because the cited code is real, relevant, and in exactly the right area.
-- **The substrate merely being involved does not make the cell out-of-scope.** Neither the presence
-  nor the absence of surrounding code settles applicability on its own.
+**Reporting on a property is not providing it.** Shipping code that observes, measures, or gates on
+a substrate property does not make the cell in-scope. This is the trap that survives review best,
+because the cited code is real, relevant, and in exactly the right area.
+
+**The substrate merely being involved does not make the cell out-of-scope.** Neither the presence
+nor the absence of surrounding code settles applicability on its own.
 
 ### Grade the strength of the `na`
 
-All `na`s get written the same way, so a cell that is out of scope by physics reads identically to
-one that is out of scope only because you are relying on the deploying organization to cover it. The
-second kind is a **transferred obligation wearing the costume of a closed question**.
+All `na`s get written the same way. A cell that is out of scope by physics therefore reads
+identically to one that is out of scope only because you are relying on the deploying organization to
+cover it. The second kind is a **transferred obligation wearing the costume of a closed question**.
 
-Say on the cell how strong the exclusion is. If the product ships a seam it could have implemented,
-or the exclusion assumes an enterprise control covers some path, the `na` is **conditional** -- write
-the assumption as an explicit **deployment requirement**, and flag the paths where the premise is
+Say on the cell how strong the exclusion is. The `na` is **conditional** if the product ships a seam
+it could have implemented, or if the exclusion assumes an enterprise control covers some path. Write
+that assumption as an explicit **deployment requirement**, and flag the paths where the premise is
 least certain.
 
 ### Building a control can create the obligation
 
 A conditional requirement (*"when using X..."*) is correctly `na` while its precondition is false and
 unreachable. Building X later makes it applicable, with nothing implementing it and no signal that
-anything changed. When a rationale depends on a precondition being unreachable, **write that
-dependency onto the cell** and re-check those cells whenever the feature they depend on is proposed.
+anything changed.
+
+When a rationale depends on a precondition being unreachable, **write that dependency onto the cell**
+and re-check those cells whenever the feature they depend on is proposed.
 
 ### Scoping a cell out does not buy the level claim
 
@@ -288,14 +306,15 @@ Once the `na`s are well-reasoned and documented it is a very short step to writi
 attained. The record says excluded, the summary says verified, and both authors think they are being
 accurate.
 
-Two facts make that indefensible:
+Two facts make that indefensible.
 
-- The standards body **assigns each requirement to a level** and retains authority over the
-  requirement set. A level claim that omits requirements it places at that level is non-conformant on
-  the standard's own terms, however good the argument.
-- Check whether the edition you are assessing against still contains any clause preserving a
-  compliance claim under documented exclusions. Older editions of a standard may say things the
-  current one dropped -- and a rationale citing dropped text is citing a superseded standard.
+**The standards body assigns each requirement to a level** and retains authority over the requirement
+set. A level claim that omits requirements it places at that level is non-conformant on the
+standard's own terms, however good the argument.
+
+**Check whether the edition you are assessing against** still contains any clause preserving a
+compliance claim under documented exclusions. Older editions of a standard may say things the current
+one dropped, and a rationale citing dropped text is citing a superseded standard.
 
 **Therefore:** treat scoping as a statement about *what was assessed*, never about what was achieved.
 Any outward-facing statement either enumerates what was excluded or says something weaker than
@@ -305,13 +324,15 @@ Any outward-facing statement either enumerates what was excluded or says somethi
 
 ## Deployment-time controls in software nobody has deployed
 
-A large share of an application standard's operational requirements are about a running system. If
-your artifact is a beta with zero running instances -- nobody has deployed it, nobody is operating it
--- two dishonest shortcuts are available and both are tempting:
+A large share of an application standard's operational requirements are about a running system.
+Suppose your artifact is a beta with zero running instances: nobody has deployed it, nobody is
+operating it. Two dishonest shortcuts are then available, and both are tempting.
 
-1. **Score it satisfied** because the recommended deployment would satisfy it. This assesses a
-   hypothetical operator, not the software.
-2. **Score it `na`** because there is no deployment. This quietly erases a real requirement.
+**The first is to score it satisfied**, because the recommended deployment would satisfy it. That
+assesses a hypothetical operator, not the software.
+
+**The second is to score it `na`**, because there is no deployment. That quietly erases a real
+requirement.
 
 The rule, stated generally:
 
@@ -320,39 +341,41 @@ The rule, stated generally:
 > subject is the host, network, or organization is `na` **with a written rationale and a stated
 > deployment requirement**, so the obligation lands somewhere instead of evaporating.
 
-Zero deployments changes exactly two things, and neither is the bar. It removes **false urgency** --
-there is no exposed instance to panic about -- and it removes **vacuous migration cost**, because
-there is no installed base to migrate, so "we cannot change that now" is not available as a reason.
+**Zero deployments changes exactly two things, and neither is the bar.** It removes **false
+urgency**: there is no exposed instance to panic about. It removes **vacuous migration cost**: there
+is no installed base to migrate, so "we cannot change that now" is not available as a reason.
+
 It **never** lowers the bar on a control, and it never converts a missing control into a
 non-applicable one.
 
 ### Correct the tense of the impact sentence, never the score
 
-Stated as an operation: **non-deployment is a correction to the tense of a cell's impact sentence, and
-to nothing else.** A failing control stays failing, at the same severity. Write *"would expose X on
-first deployment"*, never *"X is exposed"*.
+Stated as an operation: **non-deployment is a correction to the tense of a cell's impact sentence,
+and to nothing else.** A failing control stays failing, at the same severity. Write *"would expose X
+on first deployment"*, never *"X is exposed"*.
 
-That is not a softening. It is accuracy in both directions: the record is read as authoritative, and a
-cell asserting a live exposure that does not exist is itself a false premise -- the same defect the
+That is not a softening. It is accuracy in both directions. The record is read as authoritative, and
+a cell asserting a live exposure that does not exist is itself a false premise -- the same defect the
 standard warns about when a compensating control rests on one.
 
-Two guards keep it from becoming a dodge:
+Two guards keep it from becoming a dodge.
 
-- **It cuts one way only.** It removes false urgency and vacuous migration cost. It never downgrades a
-  finding, never justifies shipping a control off by default, never excuses skipping a gate. Drafters
-  will attempt all three; reverse each and record the reversal on the cell so the next pass does not
-  re-attempt it.
-- **It raises the bar rather than lowering it.** With nothing deployed, a breaking change costs
-  **zero**. So the most common justification for leaving a control weak -- "we cannot change this, it
-  would break existing installs" -- evaporates entirely. Non-deployment is the reason there is still
-  time to get it right, not a reason to defer.
+**It cuts one way only.** It removes false urgency and vacuous migration cost. It never downgrades a
+finding, never justifies shipping a control off by default, never excuses skipping a gate. Drafters
+will attempt all three; reverse each and record the reversal on the cell so the next pass does not
+re-attempt it.
+
+**It raises the bar rather than lowering it.** With nothing deployed, a breaking change costs
+**zero**. So the most common justification for leaving a control weak -- "we cannot change this, it
+would break existing installs" -- evaporates entirely. Non-deployment is the reason there is still
+time to get it right, not a reason to defer.
 
 ---
 
 ## Evidence: an anchor a machine can re-check
 
 "Implemented in the auth module" is not evidence. Neither is an evidence field that says "the system
-enforces X" -- that is the requirement with the subject swapped, fluent and on-topic and containing
+enforces X" -- that is the requirement with the subject swapped. It is fluent, on-topic, and contains
 nothing anyone can check. **If the evidence field could have been written without opening the code,
 reject it.**
 
@@ -366,35 +389,40 @@ Require every non-`unverified` cell to carry at least one anchor of a checkable 
 | **Presence** | `path` + `line` + an **expected token that must occur exactly once** in the file, resolving within a window around that line | The token still resolves, exactly once, inside the window |
 | **Absence** | a `pattern` that must return nothing, **plus a `positive_control` pattern that must still match**, **plus a stated reintroduction** the pattern is required to match | Negative returns nothing, positive still matches, and the reintroduction still trips the pattern |
 
-**Anchor to a token, not to a line number.** Line-numbered evidence is precise on the day it is
-written; every edit above it shifts the line, the whole anchor set thrashes, and reviewers learn to
-ignore anchor failures -- which is strictly worse than having no anchors at all. Path plus line plus
-token tolerates ordinary edits and fails on the ones that matter.
+### Anchor to a token, not to a line number
+
+Line-numbered evidence is precise on the day it is written. Every edit above it shifts the line, the
+whole anchor set thrashes, and reviewers learn to ignore anchor failures. That is strictly worse than
+having no anchors at all. Path plus line plus token tolerates ordinary edits and fails on the ones
+that matter.
 
 **Exactly once** is doing real work in that table. A token that occurs several times can resolve
 against the wrong occurrence after a refactor and pass forever.
 
 An anchor that no longer resolves **invalidates the cell's verdict**, not just the pointer. Run the
-check on every commit, wire it fail-closed, and **re-resolve the whole set against current mainline on
-a schedule, not on demand** -- on demand means the set is only ever re-checked by someone who already
-suspects something.
+check on every commit, wire it fail-closed, and **re-resolve the whole set against current mainline
+on a schedule, not on demand**. On demand means the set is only ever re-checked by someone who
+already suspects something.
 
 ### What only shows up once anchors are in use
 
-- **Drift is the gate working, not a defect.** The correct response to a broken anchor is to
-  **re-anchor by content**: find where the thing the cell actually graded now lives, and re-read the
-  surrounding lines. **Never nearest-match.** Re-pointing at whatever token happens to sit closest to
-  the old line is how a citation ends up describing code the cell never assessed.
-- **An anchor that must borrow an unrelated neighbour to be unique is fragile by construction.** If
-  the on-topic token is not unique and you reach for a nearby unrelated string to disambiguate, an
-  edit to code the cell does not grade will break the citation -- and a broken citation invites exactly
-  the nearest-match re-pointing above. Prefer a token that is unique *and* on-topic. If none exists,
-  that is a signal about the cell, not about the anchor format: the mechanism it claims to cite may not
-  be as identifiable as the verdict assumes.
-- **A freshness gap the stamp cannot close.** A cell can be entirely honest about what was read and
-  silent about how *old* that reading already was, because nothing re-ran the check between the reading
-  and the signature. Surface "this reading is N commits behind mainline" in the rendered view, so
-  staleness is visible without anyone having to ask.
+**Drift is the gate working, not a defect.** The correct response to a broken anchor is to
+**re-anchor by content**: find where the thing the cell actually graded now lives, and re-read the
+surrounding lines. **Never nearest-match.** Re-pointing at whatever token happens to sit closest to
+the old line is how a citation ends up describing code the cell never assessed.
+
+**An anchor that must borrow an unrelated neighbour to be unique is fragile by construction.**
+Suppose the on-topic token is not unique, so you reach for a nearby unrelated string to disambiguate.
+An edit to code the cell does not grade then breaks the citation, and a broken citation invites
+exactly the nearest-match re-pointing above. Prefer a token that is unique *and* on-topic.
+
+If no such token exists, that is a signal about the cell, not about the anchor format: the mechanism
+it claims to cite may not be as identifiable as the verdict assumes.
+
+**A freshness gap the stamp cannot close.** A cell can be entirely honest about what was read and
+silent about how *old* that reading already was, because nothing re-ran the check between the reading
+and the signature. Surface "this reading is N commits behind mainline" in the rendered view, so
+staleness is visible without anyone having to ask.
 
 ### Purpose-written tests count; a scanner alone does not
 
@@ -404,9 +432,10 @@ guidance; the second is unfalsifiable.
 
 Prefer evidence that is **executable and specific to the requirement**: a test written to demonstrate
 the verb, a check that the control *refuses* when its precondition is absent, an anchor pinned to the
-line that does the refusing. Automation is not the problem -- "testable using automation" is not the
-same as "ran a generic tool". Where a control's behavior is claimed, **execute it** rather than
-describing it.
+line that does the refusing.
+
+Automation is not the problem -- "testable using automation" is not the same as "ran a generic tool".
+Where a control's behavior is claimed, **execute it** rather than describing it.
 
 ### An absence claim without a live positive control is void
 
@@ -425,12 +454,13 @@ absence claim is void regardless of what the negative pattern returned.
 
 **This repository has a worked example of the same principle applied to guardrails.**
 [`bin/ccx-doctor.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/bin/ccx-doctor.ps1) does not ask whether a control is installed. It fires
-crafted input at the *installed* copy and **requires it to refuse**. It also pairs every attack with a
-negative control -- an ordinary action the same control must **allow** -- because a script that refuses
-everything is not a working guard either. It prints what it scanned on every run, and reports a
-check that could not run as `??` rather than letting a skip read as a pass. That is the exact posture
-an assessment needs: *before you trust a gate, make it fail on purpose, and prove it can see the class
-of thing it claims to have ruled out.*
+crafted input at the *installed* copy and **requires it to refuse**. It also pairs every attack with
+a negative control -- an ordinary action the same control must **allow** -- because a script that
+refuses everything is not a working guard either.
+
+It prints what it scanned on every run, and reports a check that could not run as `??` rather than
+letting a skip read as a pass. That is the exact posture an assessment needs: *before you trust a
+gate, make it fail on purpose, and prove it can see the class of thing it claims to have ruled out.*
 
 ### Confirm the instrument can represent the claim
 
@@ -470,12 +500,12 @@ purpose before you believe a pass**.
 ## Never score against a paraphrase
 
 An agent reads the control ID and a one-line summary -- from an internal scorecard, a spreadsheet, or
-an earlier assessment -- and then reasons about the code from that. It feels exactly like verification:
-code was read, a verdict was written, a citation exists. But the verb being tested is a
+an earlier assessment -- and then reasons about the code from that. It feels exactly like
+verification: code was read, a verdict was written, a citation exists. But the verb being tested is a
 **restatement**, and restatements drift toward what the project already does.
 
 Verdicts derived this way survive multiple assessment cycles, because every later pass inherits the
-same paraphrase. The failure compounds in a second way too: a paraphrase can outlive the requirement
+same paraphrase. The failure compounds in a second way too. A paraphrase can outlive the requirement
 it paraphrased, so a cell can be carefully scored against a requirement the current standard no
 longer contains.
 
@@ -518,10 +548,12 @@ re-points every ID in the scorecard at once.
 
 ## A score is a moving target
 
-A scorecard with no as-of commit is undated evidence -- and, as the anchor section says, an as-of
-commit is **necessary and nowhere near sufficient**: it records when the reading happened, not whether
-what was read has since changed. Two independent causes keep the score moving, and only one of them
-involves anybody doing assessment work:
+A scorecard with no as-of commit is undated evidence. And, as the anchor section says, an as-of
+commit is **necessary and nowhere near sufficient**: it records when the reading happened, not
+whether what was read has since changed.
+
+Two independent causes keep the score moving, and only one of them involves anybody doing assessment
+work:
 
 1. **Cells get remediated.** Someone builds the control or turns it on by default. This is the cause
    everyone expects.
@@ -529,11 +561,12 @@ involves anybody doing assessment work:
    line an anchor pointed at; a default flips; a call site moves behind a seam. The recorded verdict
    quietly stops describing the code, and **nothing about any total will tell you.**
 
-Cause 2 is the dangerous one, because every reader is trained to interrogate a number that *moved*.
-This class **hides in stillness**. Code changes, an evidence pointer drifts off what it was pinned to,
-the recorded verdict stops being true -- and no bucket total moves at all. Stability reads as "nothing
-to see". Several anchors across several cells can break in a single ordinary refactor with zero
-visible signal.
+**Cause 2 is the dangerous one**, because every reader is trained to interrogate a number that
+*moved*. This class **hides in stillness**. Code changes, an evidence pointer drifts off what it was
+pinned to, the recorded verdict stops being true -- and no bucket total moves at all.
+
+Stability reads as "nothing to see". Several anchors across several cells can break in a single
+ordinary refactor with zero visible signal.
 
 **Make the anchors the change detector.** Because each anchor is a path plus a token that must still
 resolve, a machine check on every commit tells you exactly which cells a change touched: the ones
@@ -551,8 +584,8 @@ any total.
 Bucket totals are the most readable and most misread output of an assessment. They are what a reader
 extracts, and every movement reads as the work getting better.
 
-A fails count going from N to N-1 has **at least seven** possible causes, and exactly one of them means
-the system got safer:
+A fails count going from N to N-1 has **at least seven** possible causes, and exactly one of them
+means the system got safer:
 
 | The count moved because... | Did the posture improve? | What actually happened |
 |---|---|---|
@@ -567,10 +600,11 @@ the system got safer:
 Two of those need spelling out.
 
 **The unrun prediction is the worst one**, because it is invisible to every downstream reader and to
-CI alike. Somebody reasons "this will come out at N", writes *"the check reports N"*, and the sentence
-is indistinguishable from a result -- same shape, same confidence, same place in the document. Nothing
-in the record marks it, and no gate can catch it, because a gate can only check figures that claim a
-provenance.
+CI alike. Somebody reasons "this will come out at N" and writes *"the check reports N"*. The sentence
+is indistinguishable from a result: same shape, same confidence, same place in the document.
+
+Nothing in the record marks it, and no gate can catch it, because a gate can only check figures that
+claim a provenance.
 
 > **The tell is grammatical.** A measured claim can name its command, its input tree and its exit
 > code. A predicted one names a conclusion. Ask any figure which of those it can produce.
@@ -590,8 +624,8 @@ identical at the end of it.
 
 The pressure to avoid saying that is enormous, and the substitution is always available: report *the
 instrument* getting greener as *the system* getting safer. "The checker went from many failures to
-none" is a true sentence that says nothing whatsoever about security, and it is the sentence that will
-suggest itself at the end of a long day of anchor repair.
+none" is a true sentence that says nothing whatsoever about security. It is also the sentence that
+will suggest itself at the end of a long day of anchor repair.
 
 **Say explicitly when nothing moved, and say why.** A number that did not move because the day's work
 was record integrity is a **result**. It is not a null result, and reporting it as one teaches the
@@ -616,11 +650,11 @@ software.
 ## Partitioning the work across agents
 
 Splitting a large standard across parallel sessions feels like a scheduling problem, so it gets
-solved with a chapter split and nothing else. But the collision that actually costs you is not two
-agents editing the same row -- it is **two agents applying different unwritten rules** and producing
-verdicts that cannot be reconciled later, because neither recorded which rule it applied.
+solved with a chapter split and nothing else.
 
-So partition on both axes:
+But the collision that actually costs you is not two agents editing the same row. It is **two agents
+applying different unwritten rules** and producing verdicts that cannot be reconciled later, because
+neither recorded which rule it applied. So partition on both axes.
 
 **One integrator owns every write to the record.** This is the part that held up best under real
 concurrency, and it is worth adopting before anything else here. Workers **read** the record and
@@ -628,16 +662,20 @@ produce **structured verdict files**; they never edit the record itself. A singl
 every session wants to edit does not survive parallel work, whatever the merge tooling promises.
 
 **Disjoint cells, enforced.** Give each session a set of cells nobody else holds, and make the claim
-atomic rather than advisory-by-convention. This repository's
-[`scripts/coord/claim.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/claim.ps1) is the working pattern: a claim is taken by
+atomic rather than advisory-by-convention.
+
+This repository's
+[`scripts/coord/claim.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/claim.ps1) is the working pattern. A claim is taken by
 **exclusively creating** a file, which is an atomic filesystem operation, so two sessions cannot both
 believe they hold the same key. Its free-text key form exists for exactly the case an assessment
-generates -- work that has no ticket number and that nobody thought to coordinate. Claims do not
-expire, because an auto-expiring claim silently re-opens the race it exists to prevent, and `-List`
-reports each holder's **liveness** rather than the claim's age. (The numbered form is enforced at
-commit time by [`scripts/hooks/claim_check.py`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/hooks/claim_check.py); the
-sequence-number analogue, for allocating identifiers atomically instead of by grepping for the next
-free one, is [`scripts/coord/alloc.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/alloc.ps1).)
+generates: work that has no ticket number and that nobody thought to coordinate.
+
+Claims do not expire, because an auto-expiring claim silently re-opens the race it exists to prevent.
+`-List` reports each holder's **liveness** rather than the claim's age. The numbered form is
+enforced at commit time by
+[`scripts/hooks/claim_check.py`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/hooks/claim_check.py). The sequence-number analogue,
+for allocating identifiers atomically instead of by grepping for the next free one, is
+[`scripts/coord/alloc.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/alloc.ps1).
 
 **Identical inputs, written down.** Every session gets the same three things, and gets them as files
 rather than as instructions in a prompt:
@@ -654,32 +692,39 @@ later disagreement is unresolvable and gets settled by whoever argues last.
 Partitioning by cell prevents two sessions scoring the same cell **differently in the same pass**.
 That is the collision everyone designs for, and it is not the one that bites.
 
-The one that bites: **two sessions in different workstreams drafting replacements for the same cell
+**The one that bites: two sessions in different workstreams drafting replacements for the same cell
 and disagreeing in opposite directions** -- one removing it, one keeping and rewriting it. Neither
 session is scoring; neither holds a claim on the cell as a cell; each is doing legitimate work in its
-own lane. Both changes are individually correct. Applied together they are incoherent, and applied in
-sequence the second silently overwrites the first's reasoning.
+own lane.
+
+Both changes are individually correct. Applied together they are incoherent, and applied in sequence
+the second silently overwrites the first's reasoning.
 
 So partition by cell **and** run a **collision detector at integration** over the question *"which
 cells does each pending change touch?"* -- across all pending changes, regardless of which workstream
 produced them. The instance above was caught by a human reading at assembly time, which is not a
 control; it is luck with a job title.
 
-**Contested cells get parked, not forced.** An unresolved cell feels like an unfinished job, so
-somebody picks the more defensible-sounding grade to close it out -- and it flips on the next pass, and
-the one after. Each flip consumes a full re-derivation and leaves the record looking unstable in a way
-that discredits the cells that *are* settled. Use the `needs-review` grade, record the disagreement
-itself, and let the owner close genuinely contested cells **by decision**, marked do-not-re-derive with
-the reasoning preserved. Closure by decision is not amnesia; repeated re-litigation of the same cell
-is not diligence.
+### Contested cells get parked, not forced
+
+An unresolved cell feels like an unfinished job, so somebody picks the more defensible-sounding grade
+to close it out -- and it flips on the next pass, and the one after. Each flip consumes a full
+re-derivation and leaves the record looking unstable in a way that discredits the cells that *are*
+settled.
+
+Use the `needs-review` grade, record the disagreement itself, and let the owner close genuinely
+contested cells **by decision**, marked do-not-re-derive with the reasoning preserved. Closure by
+decision is not amnesia; repeated re-litigation of the same cell is not diligence.
 
 ---
 
 ## The review pass
 
-Review naturally starts at the cited code, which is where a bad cell is *strongest*: the code is real
-and relevant, so the cell survives. Run a fixed, cheap pass in this order instead. Most bad cells die
-at step 2 or 3, before any code is opened.
+**Do not start review at the cited code.** Review naturally starts there, and that is where a bad
+cell is *strongest*: the code is real and relevant, so the cell survives.
+
+Run a fixed, cheap pass in this order instead. Most bad cells die at step 2 or 3, before any code is
+opened.
 
 | # | Check | Kills |
 |---|---|---|
@@ -701,9 +746,10 @@ distance, and the evidence for it is unambiguous:
 > Every drafting pass produced confident, well-cited, partly-wrong output. Every reviewing pass that
 > merely **read** that output agreed with it. Every reviewing pass that **ran** it found defects.
 
-A read-only review shares the drafter's failure mode, because the thing that makes a bad cell
-persuasive on paper -- fluent prose, a real path, a plausible token -- is exactly what a reader checks
-against. Running the anchor, running the grep, running the positive control is a different instrument
+A read-only review shares the drafter's failure mode. What makes a bad cell persuasive on paper --
+fluent prose, a real path, a plausible token -- is exactly what a reader checks against.
+
+Running the anchor, running the grep, running the positive control is a different instrument
 entirely. Step 4 and step 5 of the table above are the whole point of the table; the rest is triage
 that gets you to them faster.
 
@@ -717,16 +763,17 @@ read. Three lenses that pull apart cleanly:
 Reviewers given the same instruction converge on the same subset of defects and leave the rest
 untouched no matter how many of them you add.
 
-### Budget honestly
+### Say the per-cell cost early
 
 Per-cell verification at this rigour is expensive enough that naive extrapolation across a full
 standard will shock whoever is paying for it. Say the number early.
 
 Savings come from **batching by shared precondition**: one applicability investigation can serve an
-entire section, and one posture question can settle a dozen cells. They **never** come from cutting
-rigour on a cell, because an unearned verdict is the entire defect the exercise exists to prevent.
-A cheaper assessment that produces unearned passes has not saved anything; it has bought a document
-that reads like an assessment.
+entire section, and one posture question can settle a dozen cells.
+
+They **never** come from cutting rigour on a cell, because an unearned verdict is the entire defect
+the exercise exists to prevent. A cheaper assessment that produces unearned passes has not saved
+anything; it has bought a document that reads like an assessment.
 
 ### The recurring agent failure modes, in one table
 
@@ -751,21 +798,24 @@ Four of those repay a longer look.
 
 **The completeness claim is the single most common defect, and the most dangerous**, precisely because
 the paragraph around it is usually correct. "X is the only place that does Y" sits inside two hundred
-words of accurate description, and the reader's confidence in the paragraph transfers to the absolute.
-One file, opened, refutes it. Nobody opens the file, because the paragraph reads true.
+words of accurate description. The reader's confidence in the paragraph transfers to the absolute.
+One file, opened, refutes it -- and nobody opens the file, because the paragraph reads true.
 
 **A control that does nothing** is the sharpest instance of the whole document's theme. An absence
 claim was well-formed. It carried a positive control. It carried a stated reintroduction, and it
-matched it. It passed. And it was describing a mutation that a broad exception handler downstream
-would have swallowed whole, changing no behavior at all. **The checker asserted that the pattern
-matched the mutation string. It could not ask whether the mutation would bite.** Everything about the
-control was valid except the thing it was for. When you design a reintroduction, ask not only "does
-the pattern match this?" but "if this landed, would anything actually break?"
+matched it. It passed.
+
+And it was describing a mutation that a broad exception handler downstream would have swallowed whole,
+changing no behavior at all. **The checker asserted that the pattern matched the mutation string. It
+could not ask whether the mutation would bite.** Everything about the control was valid except the
+thing it was for. When you design a reintroduction, ask not only "does the pattern match this?" but
+"if this landed, would anything actually break?"
 
 **An inverted citation** is what a mechanical re-anchor buys you. A fix lands; the cited token still
-exists; it is still unique; the anchor resolves and the checker goes green. The surrounding code now
-means the opposite of what it meant, so the cell cites, as proof of a weakness, a line that sits
-safely behind the new control. This is why re-anchoring is a content operation, not a search-and-fix.
+exists; it is still unique; the anchor resolves and the checker goes green. But the surrounding code
+now means the opposite of what it meant, so the cell cites a line that sits safely behind the new
+control -- as proof of a weakness. This is why re-anchoring is a content operation, not a
+search-and-fix.
 
 **Stale-by-landing** is the mildest and the most frequent: a cell asserts a defect as present, and the
 author fixes it in the same session. The record is wrong within the hour. It is only cheap because it
@@ -776,37 +826,43 @@ any argument about drift.
 
 ## Keeping the sweep scoped
 
-A standards sweep touches everything, which makes it the most attractive carrier in the repository for
-unrelated improvements: the tree is already open, the tests are already running, and the change is
+A standards sweep touches everything, which makes it the repository's most attractive carrier for
+unrelated improvements. The tree is already open, the tests are already running, and the change is
 small and obviously good.
 
 **Every change in the sweep names the requirement it closes.** A change that cannot name one does not
-belong in the sweep -- file it and move on. This is not bureaucratic: a "while I was in there" edit
-riding in a compliance batch is a change nobody reviewed against any criterion at all, in the one
-batch a reviewer is least likely to read line by line.
+belong in the sweep -- file it and move on.
 
-Cut the work into **phases with a stated character**, lowest-risk batch first, and split each batch's
-write-up for the reader:
+This is not bureaucratic. A "while I was in there" edit riding in a compliance batch is a change
+nobody reviewed against any criterion at all, in the one batch a reviewer is least likely to read
+line by line.
 
-- **Behavior changes that need operator action** -- anything that converts a warning into a refusal
-  belongs here, with its escape hatch named explicitly.
-- **Purely additive changes** that need no action.
+Cut the work into **phases with a stated character**, lowest-risk batch first. Split each batch's
+write-up into two parts for the reader: **behavior changes that need operator action**, and **purely
+additive changes** that need none. Anything that converts a warning into a refusal belongs in the
+first part, with its escape hatch named explicitly.
 
 ### Two habits that keep the sweep's own artifacts honest
 
 **Back every enumeration with a build-failing guard, or do not enumerate.** An inventory written to
-satisfy a "document all X" requirement is complete the day it ships and silently wrong a month later,
-while still reading as authoritative. Enumerate from the code's own registry wherever one exists, so a
-new module with no row **fails the build**. Where no registry exists, curate the set explicitly, check
-against the curated list, and state exclusions as *enforced* exclusions rather than assumptions.
-Prefer "at least" phrasing anywhere the guard does not reach. Widen the guard's trigger set when a
-mechanism moves behind a seam -- a check that looks for direct use of known libraries goes blind the
-moment the work is delegated to an internal wrapper or a network call.
+satisfy a "document all X" requirement is complete the day it ships. A month later it is silently
+wrong, and still reading as authoritative.
+
+Enumerate from the code's own registry wherever one exists, so a new module with no row **fails the
+build**. Where no registry exists, curate the set explicitly, check against the curated list, and
+state exclusions as *enforced* exclusions rather than assumptions. Prefer "at least" phrasing anywhere
+the guard does not reach.
+
+Widen the guard's trigger set when a mechanism moves behind a seam: a check that looks for direct use
+of known libraries goes blind the moment the work is delegated to an internal wrapper or a network
+call.
 
 **A forward commitment without a dated trigger and a named owner is a wish.** Migration plans,
 algorithm-change plans, and review cadences all read as plans while containing no mechanism by which
-anyone would notice they slipped. Give each one a trigger condition, a dated review, and a named owner
-role -- then put the plan itself under a test that fails when a row loses its date or its owner.
+anyone would notice they slipped.
+
+Give each one a trigger condition, a dated review, and a named owner role. Then put the plan itself
+under a test that fails when a row loses its date or its owner.
 
 ---
 
@@ -818,7 +874,7 @@ better your anchors, the more reliably this happens. It is not a flaw in the anc
 anchoring doing its job on the one change you actually wanted.
 
 Inside one repository it is an ordinary same-commit edit. When the record and the code live in
-**different repositories** it is a genuinely coupled change: land either half alone and the checker
+**different repositories** it is a genuinely coupled change. Land either half alone and the checker
 goes red against the other, for as long as the gap lasts.
 
 The protocol that worked:

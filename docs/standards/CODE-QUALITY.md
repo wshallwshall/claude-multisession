@@ -1,39 +1,36 @@
 # Judging code quality, whoever or whatever wrote it
 
 A rubric for answering one question about a body of code: **is this good, or is it filler that
-looks finished?** It is written for a repository where much of the code was produced by Claude Code, or another AI coding assistant
-across parallel sessions, but nothing in it depends on who typed the lines. The rubric judges the
-artifact.
+looks finished?**
 
-> **This one is dense.** Reading it end to end works, and you will need to eventually -- it
-> becomes your rubric once you adopt it. It is usually faster to hand the
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) to Claude Code, or
-> another AI coding assistant, and ask it to summarize this against your repository,
-> rewrite a section in plainer terms, or answer what already holds here and what would have to
-> change.
->
-> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx).
+It was written for a repository where much of the code came from Claude Code, or another AI coding
+assistant, across parallel sessions. Nothing in it depends on who typed the lines. The rubric judges
+the artifact.
+
+> **Take a copy:**
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md)
+> or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
 ---
 
 ## What you get
 
-- **A scorecard you can run each release**, split into rows that are allowed to decide a verdict
-  and rows that are only allowed to start a conversation. An argument about "is this good enough"
-  then resolves against structure instead of against whoever quotes the largest number.
+- **A scorecard you can run each release**, split into rows allowed to decide a verdict and rows
+  allowed only to start a conversation. An argument about "is this good enough" then resolves
+  against structure instead of against whoever quotes the largest number.
 - **One sentence to point at** when somebody proposes a coverage floor or a complexity gate, plus
   the published evidence that makes it a defect rather than a matter of taste.
 - **The bibliography and the hedge for each of those findings**, so a decision not to gate on a
   number survives review by someone who has read the underlying paper.
-- **A map from each way machine-written code goes wrong to the control that neutralizes it**, with
-  a tag naming which of your documents owns that control -- so adopting this adds gates rather than
-  a second copy of rules you already enforce.
+- **A map from each way machine-written code goes wrong to the control that neutralizes it**, each
+  control tagged with the document that owns it. Adopting this adds gates rather than a second copy
+  of rules you already enforce.
 - **A placement rule for every gate**: which run in the local loop, which are pipeline-first, and
   the one condition under which that decision must be re-derived from scratch.
-- **A review method that makes a large diff finite**: depth tiers, so the line-by-line read is
-  aimed at the small fraction that earns it and every other file carries a named cheaper
-  obligation instead of being either skipped in silence or read at ruinous cost.
+- **A review method that makes a large diff finite.** Depth tiers aim the line-by-line read at the
+  small fraction that earns it, and give every other file a named cheaper obligation. The
+  alternative is a file either skipped in silence or read at ruinous cost.
 - **A question set for the hardest review in any codebase** -- the seam where content of unknown
   provenance becomes running code -- including the two questions almost always missed.
 - **The widely repeated figures about machine-written code that did not survive verification**,
@@ -52,19 +49,20 @@ artifact.
 - **It ships no configuration.** No workflow, no tool selection, no lint ruleset. Every gate named
   below is described by what it must prove, not by the product that proves it.
 - **Three of the eleven rows are owned by a companion document** -- your security standard, your
-  dependency standard, your test standard. This document checks that the control is present; it
-  does not restate it. If you have no such companion, the rubric will tell you a row is missing and
-  will not tell you how to build it.
+  dependency standard, your test standard. This document checks that the control is present; it does
+  not restate it. With no such companion, the rubric tells you a row is missing and not how to build
+  it.
 - **The measurement layer costs pipeline minutes and produces advisory output nobody is obliged to
   act on.** Budget the attention, not only the runtime. An advisory job nobody reads is worse than
   absent, because the scorecard still counts it.
 - **Several rows assume a pipeline that can block a merge.** Where merges cannot be blocked, Tier 1
   degrades from a control to a checklist, and the honest scorecard says so.
-- **Figures come from two places, and the difference is marked at the point of use.** Every
-  published-research figure carries an explicit **[external]** tag and its own limitation in the
-  same sentence. The remaining figures were measured in one project's practice and are stated to
-  justify a rule, never as constants you should expect to reproduce. Where a rule came from a
-  specific failure, the failure is described without its setting.
+
+**Figures come from two places, and the difference is marked at the point of use.** Every
+published-research figure carries an explicit **[external]** tag and its own limitation in the same
+sentence. The remaining figures were measured in one project's practice and are stated to justify a
+rule, never as constants you should expect to reproduce. Where a rule came from a specific failure,
+the failure is described without its setting.
 
 ---
 
@@ -88,14 +86,19 @@ artifact.
 
 ## The rubric: two tiers, weighted unequally
 
-The structural scaffold is a recognized product-quality model rather than invented categories:
+**Rule: Tier 1 decides; Tier 2 starts conversations.** A codebase is judged by the **composite**,
+never by any single row. A strong Tier 2 does not compensate for a missing Tier 1 row, and a weak
+Tier 2 row is not a finding on its own.
+
+The structural scaffold is a recognized product-quality model rather than invented categories.
 **[external]** ISO/IEC 25010:2023 decomposes maintainability into modularity, reusability,
-analyzability, modifiability and testability -- in other words low coupling plus information hiding
--- which is a structural property and not a metric score. Tier 1 is that property enforced as
+analyzability, modifiability and testability -- in other words low coupling plus information hiding.
+That is a structural property and not a metric score. Tier 1 is that property enforced as
 machine-checked architectural rules.
 
-**Tier 1 -- durable controls. These carry the verdict.** Structural, machine-enforceable
-properties where quality is hard to fake.
+### Tier 1 -- durable controls, which carry the verdict
+
+These are structural, machine-enforceable properties where quality is hard to fake.
 
 | # | Signal | What it asks | Gate type | Owner |
 |---|---|---|---|---|
@@ -106,14 +109,16 @@ properties where quality is hard to fake.
 | 5 | Security scanning plus a threat model | Are the scanners blocking, and is there a written threat model and a human review step? | Deterministic plus advisory | Your security standard; pointer only |
 | 6 | Published-artifact integrity | Does a released package ship only intended content, gated before the irreversible upload? | Deterministic | Here |
 
-Row 6 is the outbound direction of the supply chain and is distinct from row 4's inbound direction.
+**Row 6 is the outbound direction of the supply chain**, distinct from row 4's inbound direction.
 The rule and its failure shape are already published: see
 [Package manifests are allowlists, not sweeps](../CI-AND-STANDARDS.md#package-manifests-are-allowlists-not-sweeps).
-The case worth naming as an instance is that material a project treats as withheld can travel
-inside a published distribution without anyone reviewing the packaging list.
+One instance worth naming: material a project treats as withheld can travel inside a published
+distribution without anyone reviewing the packaging list.
 
-**Tier 2 -- the measurement layer. Guidance and triage, never a gate on its own.** Each of these is
-a weak or gameable predictor in isolation, so they inform review; they do not certify anything.
+### Tier 2 -- the measurement layer, which is guidance and triage
+
+Each of these is a weak or gameable predictor in isolation. **None is a gate on its own**: they
+inform review, and they do not certify anything.
 
 | # | Signal | What it asks | Gate type | Owner |
 |---|---|---|---|---|
@@ -122,10 +127,6 @@ a weak or gameable predictor in isolation, so they inform review; they do not ce
 | 9 | Duplication and reuse | Is new copy-paste flagged on the diff, with justified parity whitelisted? | Advisory | Here |
 | 10 | Lint breadth | Is a broad static-analysis ruleset enforced, from a clean baseline? | Deterministic | Here |
 | 11 | Complexity triage | Are genuinely large units surfaced for a human to look at? | Advisory | Here |
-
-**Rule.** A codebase is judged by the **composite**, never by any single row. Tier 1 decides;
-Tier 2 starts conversations. A strong Tier 2 does not compensate for a missing Tier 1 row, and a
-weak Tier 2 row is not a finding on its own.
 
 ### The anti-metric rule (hard)
 
@@ -140,16 +141,19 @@ The evidence table behind this rule already lives on this site, with each row ta
 [Never gate on a single gameable number](../CI-AND-STANDARDS.md#never-gate-on-a-single-gameable-number).
 So does the rule on judging tests:
 [Judge tests by their assertions, not their presence or their coverage](../CI-AND-STANDARDS.md#judge-tests-by-their-assertions-not-their-presence-or-their-coverage).
-The rule and its reasoning stay on that page. What follows is the bibliography behind it -- the part
-you need when somebody who disagrees asks where a number came from -- with each claim restated only
-far enough to attach its citation to it.
+
+The rule and its reasoning stay on that page. What follows is the bibliography behind it, with each
+claim restated only far enough to attach its citation. That is the part you need when somebody who
+disagrees asks where a number came from.
 
 ### Delivery-outcome metrics are a context caveat, not a signal
 
 Keep change-failure rate, lead time and their siblings out of a code-quality rubric. They measure
 delivery, not whether a given change is filler -- a different altitude from the artifact signals
-above -- and the evidence for the machine-authorship link is weaker than for the metric-validity
-findings. The actionable part is already covered by small batches and
+above. The evidence for the machine-authorship link is also weaker than the evidence for the
+metric-validity findings.
+
+The actionable part is already covered by small batches and
 [One coherent layer per commit](../CI-AND-STANDARDS.md#one-coherent-layer-per-commit). Record the
 concern as a failure mode with a remedy; do not promote it to a peer signal.
 
@@ -174,8 +178,9 @@ footnote a reader can skip.
 | Copy-instead-of-abstract is a measurable trend | 2024 was the first year copy-pasted lines (12.3 percent) exceeded "moved" or refactored lines (9.5 percent) in one commercial telemetry set | GitClear (2025). *AI Copilot Code Quality 2025.* https://www.gitclear.com/ai_assistant_code_quality_2025_research | Descriptively solid; the machine-authorship attribution is correlational, from a commercial vendor using a proprietary "moved" heuristic, and confounded by hiring cycles. Treat the trend as real and the attribution as interpretation |
 | Delivery stability moved with adoption | Adoption associated with roughly 7.2 percent lower delivery stability per 25 percent adoption | Google Cloud / DORA (2024). *Accelerate State of DevOps Report 2024.* https://dora.dev/research/2024/ | Associational, and partly revised the following year. This is why it is a context caveat and not a signal |
 
-The published-research figure on package hallucination, and the controlled trial on developer
-speed, are already carried on this site with their hedges. Do not restate either; link to
+Two further figures are already carried on this site with their hedges: the published-research
+figure on package hallucination, and the controlled trial on developer speed. Do not restate either.
+Link to
 [Verify a dependency before adding it, and know what verification cannot see](../CI-AND-STANDARDS.md#verify-a-dependency-before-adding-it-and-know-what-verification-cannot-see)
 and to the section on not claiming an unmeasured gain.
 
@@ -206,9 +211,9 @@ part of the basis, because a reader can then check that the filter actually ran.
 - **"Moved operations fell 17 percent over two years."** Refuted unanimously; did not reconcile with
   its own source.
 
-Because the refuted claims came mostly from the trend-and-telemetry angle -- vendor material and
-secondary blogs -- the rubric leans hardest on the peer-reviewed metric-validity studies and treats
-the trend data as caveated context.
+The refuted claims came mostly from the trend-and-telemetry angle -- vendor material and secondary
+blogs. So the rubric leans hardest on the peer-reviewed metric-validity studies and treats the trend
+data as caveated context.
 
 ### How to derive a rubric so it survives challenge
 
@@ -220,9 +225,9 @@ The method matters more than this particular rubric, because you will need your 
 2. **Fan out in parallel**, then put every load-bearing claim through **multi-reviewer refutation**
    where each reviewer tries to kill the claim and a majority of refutations does kill it. Only
    survivors enter the rubric. In the pass behind this document, a few dozen sources produced a
-   large candidate set; every load-bearing claim went to three-vote adversarial verification, and
+   large candidate set. Every load-bearing claim went to three-vote adversarial verification, and
    the ones that could be killed were killed. The survivors are the citation table above; the
-   casualties are listed below.
+   casualties are the refuted list above.
 3. **Anchor the structure to a recognized model** rather than inventing categories.
 4. **Score the reference project from a separate read-only audit**, so the scorecard is evidence
    rather than estimate.
@@ -230,19 +235,19 @@ The method matters more than this particular rubric, because you will need your 
 
 The general form of step 2 is already on this site as
 [Run a refutation pass on any number you are about to build a rule on](../CI-AND-STANDARDS.md#run-a-refutation-pass-on-any-number-you-are-about-to-build-a-rule-on).
-What is worth adding here is the payoff: the claims that could be killed were killed **before**
-publication, not after somebody challenged them, and that is what makes the survivors worth citing.
+Worth adding here is the payoff: the claims that could be killed were killed **before** publication,
+not after somebody challenged them. That is what makes the survivors worth citing.
 
 ---
 
 ## Failure mode, control, owner
 
 Write the rubric as a map from a failure mode to the specific machine-enforced control that
-neutralizes it, and tag each control with which document owns it. Where a companion already owns a
-control, **point at it and check only that it is present.** That leaves this document owning
-exactly the gates nothing else carries.
+neutralizes it. Tag each control with the document that owns it.
 
-The failure modes worth mapping include at least these.
+Where a companion already owns a control, **point at it and check only that it is present.** That
+leaves this document owning exactly the gates nothing else carries. The failure modes worth mapping
+include at least these.
 
 | Failure mode | The control | Owner |
 |---|---|---|
@@ -272,41 +277,50 @@ Place a measurement gate by **cost**, not by importance.
 | Diff-scoped coverage | Moderate | Pipeline, reporting on changed lines | Advisory |
 | Mutation on changed code | Depends entirely on scope and on the tool actually running | Pipeline, plus an opt-in local command | Advisory guidance |
 
-**Rule.** Cheap checks run in both places. Expensive, diff-scoped analysis is pipeline-first because
-it is too slow for the inner loop -- but each one must also be exposed as an opt-in local command a
-maintainer can run on demand. **The pipeline is authoritative in every case**; local runs exist for
-fast feedback. The mechanics of keeping those two invocations identical are already published:
+**Rule.** Cheap checks run in both places. Expensive, diff-scoped analysis is pipeline-first,
+because it is too slow for the inner loop. Each one must also be exposed as an opt-in local command
+a maintainer can run on demand.
+
+**The pipeline is authoritative in every case**; local runs exist for fast feedback. The mechanics of
+keeping those two invocations identical are already published:
 [One gate command, three call sites](../CI-AND-STANDARDS.md#one-gate-command-three-call-sites).
 
-### Review tools that apply their own edits
+### Run an applying tool before the local check quartet, never after
 
 Some review tools report findings for a person to arbitrate. Others apply their fixes directly. That
 difference is not a matter of taste -- it decides where the tool belongs in your sequence, and
 whether it is allowed to count for anything.
 
-**Run an applying tool before the local check quartet, never after.** A tool that rewrites code and
-runs after your lint, type and test run mutates the tree that run just certified. Whatever the
-quartet told you is then true of code that no longer exists. Tools that only report are safe after
-the quartet, because they change nothing. The ordering is a consequence of what the tool does, not a
-convention you could reasonably invert.
+A tool that rewrites code and runs after your lint, type and test run mutates the tree that run just
+certified. Whatever the quartet told you is then true of code that no longer exists.
 
-**An applying tool is not a control, and it may not be scored.** If no pipeline leg runs it and
-nothing reads its output, it is not a gate and not a signal. Be precise about why the liveness rule
-above -- the requirement that a gate be proven able to fail -- does not reach it: not because it is
-advisory, but because **there is no green check to trust in the first place**. State it loosely and a
-reader concludes advisory things are exempt from liveness, which is the opposite of the rule.
+Tools that only report are safe after the quartet, because they change nothing. The ordering is a
+consequence of what the tool does, not a convention you could reasonably invert.
 
-**A tool that ships with the AI coding assistant leaves nothing in your repository to score.** When the
-tool arrives with the AI coding assistant rather than with the project, no artifact under version
-control records its presence. A status claim about it can therefore be neither verified nor
-falsified from the repository, so the honest entry is no status at all -- not "built", not
-"enabled". This one is easy to get wrong by accident, because the tool is plainly doing useful
-work.
+### An applying tool is not a control, and it may not be scored
 
-**Tell it which duplication is deliberate.** A tool that rewrites for reuse will collapse repetition
-that exists on purpose, and collapsing it undoes a decision someone made for reasons. Carry the
-exclusions as an open class -- **at least** these, never a closed list -- because the closed form is
-what fails: a list of exactly two cases went to review and a third was found that it had missed. A
+If no pipeline leg runs it and nothing reads its output, it is not a gate and not a signal.
+
+Be precise about why the liveness rule above -- the requirement that a gate be proven able to fail --
+does not reach it. Not because it is advisory, but because **there is no green check to trust in the
+first place**. State it loosely and a reader concludes advisory things are exempt from liveness,
+which is the opposite of the rule.
+
+**A tool that ships with the AI coding assistant leaves nothing in your repository to score.** When
+the tool arrives with the AI coding assistant rather than with the project, no artifact under version
+control records its presence.
+
+A status claim about it can therefore be neither verified nor falsified from the repository. The
+honest entry is no status at all -- not "built", not "enabled". This one is easy to get wrong by
+accident, because the tool is plainly doing useful work.
+
+### Tell an applying tool which duplication is deliberate
+
+A tool that rewrites for reuse will collapse repetition that exists on purpose, and collapsing it
+undoes a decision someone made for reasons.
+
+Carry the exclusions as an open class -- **at least** these, never a closed list. The closed form is
+what fails: a list of exactly two cases went to review, and a third was found that it had missed. A
 starting set worth naming:
 
 - A parallel implementation kept deliberately similar across backends and pinned by a parity test.
@@ -322,18 +336,22 @@ review you asked for, and the verdict is still yours.
 ### Re-derive placement after any repair to the gate
 
 A cost figure produced by a tool that crashed before doing any work is not a measurement. One gate
-here was classified expensive and pushed onto a nightly schedule on exactly that basis; once the
+here was classified expensive and pushed onto a nightly schedule on exactly that basis. Once the
 tool was pinned to a working version, the same bounded scope finished in seconds and the gate moved
-onto every proposed change. The general rule is already stated as
+onto every proposed change.
+
+The general rule is already stated as
 [A cost model built on a broken gate is fiction](../CI-AND-STANDARDS.md#a-cost-model-built-on-a-broken-gate-is-fiction).
 The rubric-level consequence: **placement is a derived value, so re-derive it after any repair.**
 
 ### Never record a row as built without a proof-of-execution receipt
 
-A status of "built" records a gate's existence, not its execution. In one later review, three
-defects were found across two of five measurement gates, all green throughout: two gates measuring
-nothing, and one measuring correctly while publishing a wrong derived number. One of them had been
-scored built across two published versions of the rubric while producing zero units of work.
+A status of "built" records a gate's existence, not its execution.
+
+One later review found three defects across two of five measurement gates, all green throughout: two
+gates measuring nothing, and one measuring correctly while publishing a wrong derived number. One of
+them had been scored built across two published versions of the rubric while producing zero units of
+work.
 
 The liveness rules that came out of that are published in full under
 [A check that cannot fail is not a control](../CI-AND-STANDARDS.md#a-check-that-cannot-fail-is-not-a-control):
@@ -356,7 +374,7 @@ Three mechanics make that receipt trustworthy, and each was learned by losing it
 
 ### Make an advisory finding a delta against the merge base
 
-A raw advisory list over a whole repository is not usable on a change: every finding anchors on the
+A raw advisory list over a whole repository is not usable on a change. Every finding anchors on the
 same declaration line, so nothing distinguishes what the change introduced from what it inherited.
 
 **Rule.** Compute the finding set at the merge base and at the change head, and report only what the
@@ -372,19 +390,23 @@ findings into ranges so the annotation set stays legible.
 ### Install the gate's own tooling from a checked-in lock
 
 Advisory tooling installed ephemerally on a runner is still a dependency of a control. A version
-pin does not satisfy a supply-chain scorer's pinned-dependency requirement, and a hash-pinned
-toolchain kept **outside** your existing export-and-diff machinery rots into a pinned, stale and
-unpatched one -- a worse posture than floating.
+pin does not satisfy a supply-chain scorer's pinned-dependency requirement. A hash-pinned toolchain
+kept **outside** your existing export-and-diff machinery rots into a pinned, stale and unpatched
+one -- a worse posture than floating.
 
 **Rule.** Install gate tooling from a lock that records digests, kept inside the same
-regenerate-and-diff machinery as your runtime locks, and assert that it cannot leak into the runtime
-install set. *The declaration mechanism -- a non-default dependency group, an optional extra, a
-separate lock file -- is ecosystem-specific; check what yours actually guarantees rather than
-assuming a version pin is a digest pin.* The general rule is
+regenerate-and-diff machinery as your runtime locks. Assert that it cannot leak into the runtime
+install set.
+
+*The declaration mechanism -- a non-default dependency group, an optional extra, a separate lock
+file -- is ecosystem-specific. Check what yours actually guarantees rather than assuming a version
+pin is a digest pin.*
+
+The general rule is
 [Constrain every install site from a checked-in lock](../CI-AND-STANDARDS.md#constrain-every-install-site-from-a-checked-in-lock);
 the two deltas above are the additions.
 
-### Rolling out a blocking lint expansion
+### Widen a blocking lint ruleset from a clean baseline
 
 Widening a ruleset on an existing codebase produces a wall of violations that will either be
 suppressed wholesale or ignored.
@@ -420,10 +442,10 @@ visibly small.
 | Provenance note | Record where it came from and who verified it | Bundled data rather than code |
 
 **Rule.** Measured in one review: the deep-read tier was roughly five percent of the reviewed lines.
-That is the point of the classification -- the expensive read is aimed at the fraction that earns
-it, and every other file has a named cheaper obligation rather than being skipped in silence.
+That is the point of the classification. The expensive read is aimed at the fraction that earns it,
+and every other file has a named cheaper obligation rather than being skipped in silence.
 
-The comprehension bar itself is settled on this site: you must be able to explain every reviewed
+The comprehension bar itself is settled on this site. You must be able to explain every reviewed
 line and stand behind it, and reaching that explanation with assistance is fine. See *Reject code
 you cannot explain* in [CI and standards](../CI-AND-STANDARDS.md).
 
@@ -499,14 +521,14 @@ coverage.** See
 ## When review is self-review
 
 Where there is one maintainer, or no available second reviewer, row 5's human review is self-review.
-Record that as a **documented deviation** rather than describing the control as satisfied: name the
+Record that as a **documented deviation** rather than describing the control as satisfied. Name the
 control that cannot be met, the compensating set actually in force, and the event that ends the
 deviation.
 
-Then name the control that most nearly compensates. The overconfidence finding bites hardest
-exactly when the author reviews their own machine-assisted output, which makes **mutation on changed
-code** the highest-leverage gate to build first: it is the one control that adversarially checks
-whether the tests assert anything, independently of the author's confidence.
+Then name the control that most nearly compensates. The overconfidence finding bites hardest exactly
+when the author reviews their own machine-assisted output. That makes **mutation on changed code**
+the highest-leverage gate to build first. It is the one control that adversarially checks whether
+the tests assert anything, independently of the author's confidence.
 
 ---
 
@@ -537,9 +559,10 @@ whether the tests assert anything, independently of the author's confidence.
 **Decide before you publish, not after:** whether your signal numbers will be cited from outside the
 document. In the source rubric they were renumbered one revision after publication, which required
 rewriting every cross-reference in the document and its appendices. The citation identifiers were
-deliberately left alone, because they are citations rather than signals. If a number will be quoted
-elsewhere, freeze it; if you must renumber, say which identifier families are frozen and which
-moved, and rewrite every cross-reference in the same change.
+deliberately left alone, because they are citations rather than signals.
+
+If a number will be quoted elsewhere, freeze it. If you must renumber, say which identifier families
+are frozen and which moved, and rewrite every cross-reference in the same change.
 
 ---
 

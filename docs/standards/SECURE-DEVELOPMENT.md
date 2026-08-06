@@ -1,39 +1,37 @@
 # Secure development: the process a build must satisfy
 
 This is a starting point you adapt, not a compliance attestation. It describes the process a build
-has to satisfy before you can honestly say it was built securely. Who owns what, what gets threat
-modelled, and what a review checks. Which checks may never be waived, how a release is signed and
-verifiable, and what has to be true on the day you ship.
+has to satisfy before you can honestly say it was built securely.
 
-> **This one is dense.** Reading it end to end works, and you will need to eventually -- it
-> becomes your standard once you adopt it. It is usually faster to hand the
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) to Claude Code, or
-> another AI coding assistant, and ask it to summarize this against your repository,
-> rewrite a section in plainer terms, or answer what already holds here and what would have to
-> change.
->
-> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx).
+It answers who owns what, what gets threat modelled, and what a review checks. It also answers which
+checks may never be waived, how a release is signed and verifiable, and what has to be true on the
+day you ship.
+
+> **Take a copy:**
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md)
+> or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
-It is deliberately framework-neutral. It names practices, never certifications. No standards body
-issues a certificate for any of this, and a self-assessment is not one either -- so every claim here
-is phrased as something you can evidence rather than something you can be awarded.
+It is deliberately framework-neutral, and it names practices, never certifications. No standards
+body issues a certificate for any of this, and a self-assessment is not one either. So every claim
+here is phrased as something you can evidence rather than something you can be awarded.
 
-Written for a project where much of the code is written by Claude Code, or another AI coding assistant,
-and several sessions push into one
-trunk. That is not a special case for this material; it is the case where the process layer stops
-being paperwork, because the machine-enforced layer gets cheap and the human layer does not.
+Written for a project where much of the code is written by Claude Code, or another AI coding
+assistant, and several sessions push into one trunk. That is not a special case for this material.
+It is the case where the process layer stops being paperwork, because the machine-enforced layer
+gets cheap and the human layer does not.
 
 ---
 
 ## What you get
 
 - **A written ownership split.** One table saying what the producing project owns and what the
-  operating organization owns. It stops a control ending up unowned because each side assumed the
+  operating organization owns, so a control cannot end up unowned because each side assumed the
   other had it.
 - **Review with something to check against.** A per-interface threat model turns "does this change
-  look secure" into "which boundary does this touch, and does its named mitigation still hold" -- so
-  a missing control shows up as a gap in an enumeration rather than as something nobody thought of.
+  look secure" into "which boundary does this touch, and does its named mitigation still hold". A
+  missing control then shows up as a gap in an enumeration rather than as something nobody thought
+  of.
 - **A finite secure-coding list.** A reviewer, human or automated, gets a bounded set of questions
   instead of an unanswerable one.
 - **An honest read of your own pipeline.** Two layers, weighted differently, with a plain statement
@@ -47,8 +45,8 @@ being paperwork, because the machine-enforced layer gets cheap and the human lay
 - **A posture you can publish when you cannot meet every requirement.** Dated deviations, named
   compensating controls, and a trigger that ends each one -- instead of either overclaiming or
   quietly having a gap.
-- **Wording that survives a reviewer.** Phrases you can use, phrases you cannot, and the reason,
-  so publishing a security page does not accidentally assert a certification that does not exist.
+- **Wording that survives a reviewer.** Phrases you can use, phrases you cannot, and the reason, so
+  publishing a security page does not accidentally assert a certification that does not exist.
 
 ## What this costs you
 
@@ -69,20 +67,21 @@ being paperwork, because the machine-enforced layer gets cheap and the human lay
 
 ### Where this does not apply
 
-- **Throwaway work.** A spike nobody installs does not need a threat model or a release gate. Applying
-  the whole of this to code with no consumer is how a process gets abandoned wholesale.
+- **Throwaway work.** A spike nobody installs does not need a threat model or a release gate.
+  Applying the whole of this to code with no consumer is how a process gets abandoned wholesale.
 - **Anything you are not the producer of.** If you operate software rather than publish it, most of
-  the build and release sections are somebody else's obligation and the hardening sections are yours.
+  the build and release sections are somebody else's obligation and the hardening sections are
+  yours.
 - **As a compliance position.** Building to this confers nothing on the product, on you, or on an
   adopter, and it does not substitute for an adopting organization's own assessment.
 
 ## How to adopt this
 
-Smallest first step, and it is genuinely small: **write the ownership split** (section 1). One table,
-one sitting. It is the artifact that makes every later claim scopeable, and most of the arguments it
-prevents are arguments about who was supposed to do something.
+Start with the ownership split (section 1). One table, one sitting. It is the artifact that makes
+every later claim scopeable, and most of the arguments it prevents are arguments about who was
+supposed to do something.
 
-Then, in this order:
+Then work in this order:
 
 1. **Ownership split.** Section 1.
 2. **Threat model one interface** -- the riskiest, not all of them. Section 2. A single worked
@@ -115,17 +114,17 @@ or green pipeline leg rather than a claim.
 challenge, a single honest verdict-of-record, and a release gate. None of it can be discharged by a
 passing scanner. It needs a rehearsal, a signature, or an outside party.
 
-Defects concentrate in the second layer, and a perfect first layer does not compensate for an empty
-second one. **A green pipeline from a gate you ran on yourself does not substitute for an adversary
-who did not.** Say that in the same breath as any claim about your automated coverage.
+**A green pipeline from a gate you ran on yourself does not substitute for an adversary who did
+not.** Defects concentrate in the second layer, and a perfect first layer does not compensate for an
+empty second one. Say that in the same breath as any claim about your automated coverage.
 
 ---
 
 ## 1. Shared responsibility: write the split down first
 
-Software built by one party and run by another has a boundary, and the failure mode is not that
-somebody does the wrong thing -- it is that both sides assume the other has it covered. Publish the
-split as a table so that assumption cannot survive.
+Software built by one party and run by another has a boundary. The failure mode is not that somebody
+does the wrong thing -- it is that both sides assume the other has it covered. Publish the split as
+a table so that assumption cannot survive.
 
 | The producing project owns | The operating organization owns |
 |---|---|
@@ -153,20 +152,22 @@ dangerous functionality and each third-party component it pulls in.
 
 Three properties make it worth writing:
 
-- **It is reviewed against the security requirements before code exists.** After the build it becomes
+- **Reviewed against the security requirements before code exists.** After the build it becomes
   documentation; before the build it is a design gate.
-- **The reviewed artifact plus its acceptance criteria are the specification the later review checks
-  against.** Without it, review has nothing to compare the change to except taste.
-- **It is artifact-checked and advisory, not a scanner.** Do not pretend otherwise. Nothing
-  mechanical verifies that a threat model is good; a gate can only verify that one exists for a
-  boundary that was added.
+- **The specification the later review checks against.** The reviewed artifact plus its acceptance
+  criteria are what a change is compared to -- without them, review has nothing but taste.
+- **Artifact-checked and advisory, not a scanner.** Do not pretend otherwise: nothing mechanical
+  verifies that a threat model is good, and a gate can only verify that one exists for a boundary
+  that was added.
 
 The highest-value form is boring: a list of every place unknown-provenance data or code enters, and
 against each one the specific thing that bounds it. When a new ingress is added and nobody can name
 its mitigation, that is the finding.
 
-**Trust boundaries where content becomes executable** deserve a longer look than the rest. The
-questions that generalize:
+### Execution boundaries need the longest look
+
+Trust boundaries where content becomes executable deserve more scrutiny than the rest. These
+questions generalize:
 
 - Is there any path that reaches execution without the vet running? Check every caller, not the
   documented one.
@@ -204,9 +205,9 @@ reviewer can answer and these are.
 - **Use vetted cryptographic libraries.** Never roll your own.
 - **Fail closed on error.** Never log secrets or sensitive data.
 
-Two of these are already owned elsewhere on this site and are listed here only so the enumeration is
+Two more are already owned elsewhere on this site, and are named here only so the enumeration is
 complete: treating everything an agent reads as data rather than instructions, and verifying a
-dependency's identity before adding it, are both covered in
+dependency's identity before adding it. Both are covered in
 [CI and standards](../CI-AND-STANDARDS.md).
 
 ---
@@ -219,45 +220,53 @@ confirms the change conforms to the acceptance criteria of whatever specified it
 That is the requirement. Many projects cannot meet it, and the honest response is not to redefine
 "reviewed" until it fits.
 
-**When review is self-review, record it as a documented deviation.** Name the control that cannot be
-met. Name the compensating set actually in force -- typically blocking static analysis and dependency
-audit that cannot be waived, AI-run review that a human arbitrates, branch protection with
-required checks, and no direct pushes to the trunk. Name the event that ends the deviation, which is
-usually a second maintainer joining.
+### Self-review is a documented deviation, not a satisfied control
+
+Record it as a deviation. Name the control that cannot be met. Name the compensating set actually in
+force -- typically blocking static analysis and dependency audit that cannot be waived, AI-run review
+that a human arbitrates, branch protection with required checks, and no direct pushes to the trunk.
+Name the event that ends the deviation, which is usually a second maintainer joining.
 
 Then constrain the wording. The compensating set is a **compensating control, explicitly not an
 independent audit**, and no published claim may imply otherwise.
 
-**[external]** A controlled study found developers with assistant access wrote less secure code while
-being more confident it was secure. The study used a 2022-era model, so re-baseline the magnitude
-rather than quoting it; the direction is what matters here. The citation and its hedge live in one
-place -- the evidence table in
+### The confidence effect bites hardest in self-review
+
+**[external]** A controlled study found developers with access to an AI coding assistant wrote less
+secure code while being more confident it was secure. The study used a 2022-era model, so
+re-baseline the magnitude rather than quoting it; the direction is what matters here.
+
+The citation and its hedge live in one place -- the evidence table in
 [Judging code quality, whoever or whatever wrote it](CODE-QUALITY.md#the-evidence-and-the-hedge-each-citation-must-carry).
-It bites hardest exactly in the
-self-review case, which is the argument for the one control that is independent of the author's
-confidence: an adversarial check on whether the tests assert anything. See *Judge tests by their
-assertions, not their presence or their coverage* in
+
+That effect bites hardest exactly in the self-review case, which is the argument for the one control
+independent of the author's confidence: an adversarial check on whether the tests assert anything.
+See *Judge tests by their assertions, not their presence or their coverage* in
 [CI and standards](../CI-AND-STANDARDS.md).
+
+### The comprehension bar, and two additions to it
 
 The comprehension bar that goes with review -- reject code you cannot explain, with assistance in
 reaching the explanation being acceptable -- is settled on this site under that name in the same
-document. Two small additions are worth carrying:
+document.
 
-- An AI coding assistant's explanation can be confidently wrong in the same way its code can, so the human
-  verifies the explanation rather than accepting it.
-- A periodic cold spot-check of an already-merged assisted change is a cheap way to detect that
-  explaining has drifted into rubber-stamping.
+Two small additions are worth carrying. An AI coding assistant's explanation can be confidently
+wrong in the same way its code can, so the human verifies the explanation rather than accepting it.
+A periodic cold spot-check of an already-merged assisted change is a cheap way to detect that
+explaining has drifted into rubber-stamping.
 
 ---
 
 ## 5. Scanner posture: what blocks, what advises, what may never be waived
 
-The single rule: **coverage is the set of blocking checks that run on a change, not the tool
-inventory.** Advisory and scheduled-only jobs are useful and are not coverage. Classify every
-nominally-security job as one or the other and write the classification down, because the two are
-indistinguishable from a green badge.
+**Coverage is the set of blocking checks that run on a change, not the tool inventory.** Advisory and
+scheduled-only jobs are useful and are not coverage. Classify every nominally-security job as one or
+the other and write the classification down, because the two are indistinguishable from a green
+badge.
 
-What must block, and may not be waived by an author:
+### What must block, and may not be waived
+
+The following must block a change, and may not be waived by an author:
 
 - Static analysis, red on any new finding from a clean baseline.
 - Dependency vulnerability analysis, red on any new advisory.
@@ -266,10 +275,12 @@ What must block, and may not be waived by an author:
 Mechanics for all three are already published. [CI and standards](../CI-AND-STANDARDS.md) covers
 grandfathering to a clean baseline and then ratcheting, and running supply-chain audits on a schedule
 as well as on changes. It also covers the two-layer shape where a local hook gives fast feedback and
-the pipeline is the authoritative gate. Fail-closed forbidden-content scanning and the three ways a
-scanner lies are in [the leak gate](../LEAK-GATE.md).
+the pipeline is the authoritative gate.
 
-Three additions specific to a security posture:
+Fail-closed forbidden-content scanning and the three ways a scanner lies are in
+[the leak gate](../LEAK-GATE.md).
+
+### Three additions specific to a security posture
 
 **A clean run is a start condition, not a certificate.** Zero findings on a weak ruleset proves
 nothing at all. What the clean baseline buys you is the ability to enforce red-on-regression; that is
@@ -314,15 +325,17 @@ repository's visibility can change, and its history travels when it does.
 
 The rule and its mechanics are owned by [the leak gate](../LEAK-GATE.md) and by *Secrets and sensitive
 data never enter the repository, wherever it is stored* in
-[CI and standards](../CI-AND-STANDARDS.md). Two points belong to the process rather than the scanner:
+[CI and standards](../CI-AND-STANDARDS.md). Two points belong to the process rather than the scanner.
 
-- **A path deny-list is not a content control.** It keeps a file from being read; it does nothing
-  about the same content typed into a different file. Pair it with a fail-closed commit-time content
-  scan.
-- **A commit-time scanner is not a live interceptor.** It sees what lands in a commit. It does not
-  see an outbound query, a tool-server call, or a fetch argument. Nothing mechanical stands between a
-  running agent and that channel, so the discipline there is on the human -- and the standard has to
-  say so, rather than letting the green scanner imply coverage it does not have.
+**A path deny-list is not a content control.** It keeps a file from being read; it does nothing about
+the same content typed into a different file. Pair it with a fail-closed commit-time content scan.
+
+**A commit-time scanner is not a live interceptor.** It sees what lands in a commit. It does not see
+an outbound query, a tool-server call, or a fetch argument.
+
+Nothing mechanical stands between a running agent and that channel, so the discipline there is on the
+human -- and the standard has to say so, rather than letting the green scanner imply coverage it does
+not have.
 
 ---
 
@@ -332,11 +345,11 @@ Ship with transport encryption on, encryption of sensitive data at rest on, leas
 and verbose audit logging. Any insecure posture is an explicit, named, documented and audited opt-in
 behind a fail-closed guard -- never a posture a deployment inherits by omission.
 
-Two reading errors go with this and both are defects, in opposite directions:
+Two reading errors go with this, and both are defects in opposite directions.
 
-- An **off-by-default control described as if it were active**. The code exists; nothing is running.
-- A **fail-closed control mis-read as inert**. It looks like nothing is happening because nothing
-  needs to.
+**Off by default, described as active.** The code exists; nothing is running.
+
+**Fail-closed, mis-read as inert.** It looks like nothing is happening because nothing needs to.
 
 Score and describe those states separately, and state fail-open versus fail-closed next to the code
 with the reason -- see *Fail-open or fail-closed is a choice you must state* in
@@ -347,9 +360,11 @@ with the reason -- see *Fail-open or fail-closed is a choice you must state* in
 ## 8. Interface and service authentication
 
 Machine interfaces authenticate **systems, not people**. Use the strongest mechanism the peer system
-supports. Record, per connection, the mechanism, its scope, and a reference to where the credential
-lives. Keep that record alongside that connection's configuration, so the posture is reviewable one
-connection at a time rather than as a paragraph of prose.
+supports.
+
+Record, per connection, the mechanism, its scope, and a reference to where the credential lives. Keep
+that record alongside that connection's configuration, so the posture is reviewable one connection at
+a time rather than as a paragraph of prose.
 
 A workable hierarchy, strongest first:
 
@@ -366,13 +381,16 @@ Across all of them: no cleartext transport for sensitive data; credentials in a 
 never in code or configuration; least privilege per connection; network-level restriction as
 defense in depth.
 
-**Service-account posture.** Run under a least-privilege account whose credential rotates
-automatically and is never stored in configuration. Where the platform offers a managed service
-identity, use it; where the data store accepts the service identity directly, authenticate that way
-rather than with a stored password. Perform directory lookups only over a TLS-protected channel and
-fail closed on a cleartext one. The mechanics are platform-specific; the transferable property is
-that **no long-lived secret exists in a file** -- which removes both the most commonly leaked
-credential and the one whose silent expiry causes the outage nobody diagnoses.
+### Service accounts: no long-lived secret in a file
+
+Run under a least-privilege account whose credential rotates automatically and is never stored in
+configuration. Where the platform offers a managed service identity, use it. Where the data store
+accepts the service identity directly, authenticate that way rather than with a stored password.
+
+Perform directory lookups only over a TLS-protected channel and fail closed on a cleartext one. The
+mechanics are platform-specific; the transferable property is that **no long-lived secret exists in a
+file** -- which removes both the most commonly leaked credential and the one whose silent expiry
+causes the outage nobody diagnoses.
 
 ---
 
@@ -397,49 +415,64 @@ described as non-compliant for a control it does not need.
 This is the part an adopter can check without trusting anything you say about your process, which is
 what makes it worth more than the rest of your security page.
 
+### Publishing controls, and the limit each one carries
+
 **Publishing credentials.** Replace long-lived registry tokens with credentials minted per run from
 the pipeline's own workflow identity, scoped to a specific repository, workflow and environment, and
-valid only for the length of an upload. This removes the leaked-token attack class outright. Two
-conditions travel with it: restrict the publishing workflow to trusted triggers such as a tag or a
-push, never to a trigger that grants write credentials to code from an untrusted contributor, and pin
-the publishing action. It does not defend against takeover of the publishing account -- that is what
+valid only for the length of an upload. This removes the leaked-token attack class outright.
+
+Two conditions travel with it. Restrict the publishing workflow to trusted triggers such as a tag or
+a push, never to a trigger that grants write credentials to code from an untrusted contributor. And
+pin the publishing action.
+
+Per-run credentials do not defend against takeover of the publishing account -- that is what
 account-level multi-factor and environment protection rules are for.
 
 **Publishing identity does not cover the artifact.** Establishing that the upload came from your
-pipeline says nothing about whether the artifact was modified before or after it was built. Pair it
-with a signed attestation binding the distributed filename and its digest to the source repository,
-workflow and commit that produced it, recorded in a public transparency log and served alongside the
-artifact so a consumer can check it without contacting you. Neither half is sufficient alone.
+pipeline says nothing about whether the artifact was modified before or after it was built.
+
+Pair it with a signed attestation binding the distributed filename and its digest to the source
+repository, workflow and commit that produced it. Record that attestation in a public transparency
+log and serve it alongside the artifact, so a consumer can check it without contacting you. Neither
+half is sufficient alone.
 
 **Keyless signing moves the threat model, it does not remove it.** Identity-based signing with
 short-lived certificates and a transparency log removes long-lived key management, which is a real
 win. It relocates what you defend: multi-factor on the publishing account, branch protection, and
-pipeline hardening become the load-bearing controls instead of a key safe. Where consumers verify on
-restricted or disconnected networks, bundle the transparency-log inclusion proof with the artifact so
-verification does not require network access.
+pipeline hardening become the load-bearing controls instead of a key safe.
+
+Where consumers verify on restricted or disconnected networks, bundle the transparency-log inclusion
+proof with the artifact so verification does not require network access.
 
 **Measure whether a signing scheme is verifiable before crediting it.** Coverage and verifiability
-are separate questions and both can be near zero while the scheme is nominally in place. **[external]**
-When one large package registry measured its long-standing detached-signature support, only about a
-third of signing keys could be meaningfully verified and signed files were a fraction of a percent of
-everything published; support was withdrawn and existing signatures are now silently ignored. Before
-crediting a signing control, measure what proportion of artifacts carry a signature and what
+are separate questions, and both can be near zero while the scheme is nominally in place.
+
+**[external]** When one large package registry measured its long-standing detached-signature support,
+only about a third of signing keys could be meaningfully verified, and signed files were a fraction
+of a percent of everything published. Support was withdrawn, and existing signatures are now silently
+ignored.
+
+Before crediting a signing control, measure what proportion of artifacts carry a signature and what
 proportion of those a consumer can resolve to an identity.
+
+### What an adopter can verify without contacting you
 
 **Build provenance.** Provenance generated by the pipeline proves the artifact traces to a specific
 repository, workflow and commit rather than to somebody's machine. Isolating the build behind a
 dedicated reusable workflow raises the assurance level further.
 
-**A published digest manifest is the lowest-tech verification path, and should be the documented
-baseline.** Publish a signed digest manifest with every release and document the exact verification
-commands, including the offline path. That is the one route a reviewer on a restricted network can
-always run. Treat it as the baseline rather than the afterthought.
+**A published digest manifest is the lowest-tech verification path.** Make it the documented baseline
+rather than the afterthought. Publish a signed digest manifest with every release and document the
+exact verification commands, including the offline path. That is the one route a reviewer on a
+restricted network can always run.
 
 **A component inventory is not tamper detection.** Generate one per release, in the formats your
-consumers ingest, and attach it to the release and to the archived build. Be precise about what it
-buys: answering "do we ship component X" within minutes of a widely-publicised advisory, drift
-detection by diffing a produced inventory against the intended manifest, and satisfying procurement
-reviews. It is not integrity evidence for your own code and must not be quoted as such.
+consumers ingest, and attach it to the release and to the archived build.
+
+Be precise about what it buys: answering "do we ship component X" within minutes of a
+widely-publicised advisory, drift detection by diffing a produced inventory against the intended
+manifest, and satisfying procurement reviews. It is not integrity evidence for your own code and must
+not be quoted as such.
 
 **Archive each release with its build inputs and its inventory.** Two things depend on it: incident
 analysis -- what exactly was in the version somebody is running -- and reproducibility. An archive
@@ -447,9 +480,10 @@ holding only the artifact answers neither.
 
 **What leaves the build must be only what was intended.** Declare an explicit allowlist of what the
 published artifact contains, gate on it before the upload step, and verify the published artifact once
-after release, because checking what you built is not checking what shipped. The rule and its failure
-mode are stated in full under *Package manifests are allowlists, not sweeps* in
-[CI and standards](../CI-AND-STANDARDS.md). The case worth naming here is that material a project
+after release, because checking what you built is not checking what shipped.
+
+The rule and its failure mode are stated in full under *Package manifests are allowlists, not sweeps*
+in [CI and standards](../CI-AND-STANDARDS.md). The case worth naming here is that material a project
 treats as withheld can travel inside a published distribution without anyone reviewing the packaging
 list.
 
@@ -461,18 +495,21 @@ Where a copyleft license requires corresponding source, an obfuscated build also
 that obligation.
 
 The vendors concede the limit themselves. One obfuscation product's own documentation states it is
-not good at memory protection or anti-debug and that its runtime-data protection holds only if the
-interpreter and its runtime extension are not compromised -- a condition a privileged attacker defeats
-by definition. One native compiler's documentation concedes that its default single-file mode is a
-self-extracting archive whose contents land on disk for inspection. Bytecode-only distribution is
-trivially decompiled and patched.
+not good at memory protection or anti-debug. The same documentation says its runtime-data protection
+holds only if the interpreter and its runtime extension are not compromised -- a condition a
+privileged attacker defeats by definition.
+
+One native compiler's documentation concedes that its default single-file mode is a self-extracting
+archive whose contents land on disk for inspection. Bytecode-only distribution is trivially
+decompiled and patched.
 
 **The rule that survives all of it: a protection scheme that must run inside the process it protects
 assumes an uncompromised runtime, which is exactly the assumption a privileged attacker breaks.**
 Spend the budget on verification instead -- provenance, attestation, inventory, digests -- because
-that is what a reviewer can actually check. If you do ship a hardened build, position it as raising
-analysis cost, never as tamper-proof, and keep secrets and authorization decisions out of any artifact
-an adversary holds.
+that is what a reviewer can actually check.
+
+If you do ship a hardened build, position it as raising analysis cost, never as tamper-proof, and keep
+secrets and authorization decisions out of any artifact an adversary holds.
 
 ---
 
@@ -483,20 +520,24 @@ unsophisticated tampering and produces an audit signal. That is worth having, an
 
 It cannot be more, because **the checker runs in the same trust domain as the thing it checks**.
 Anyone who can edit the code on disk can also edit the manifest, the embedded key, or the verification
-routine; anyone who can alter the runtime can stub it. The chain of trust only terminates in hardware
-measured boot, which is a platform decision the operator makes and not something the software ships.
+routine; anyone who can alter the runtime can stub it.
 
-Ship it as defense in depth, document the limit in the same paragraph as the feature, and never let it
-be quoted as prevention.
+The chain of trust only terminates in hardware measured boot, which is a platform decision the
+operator makes and not something the software ships. Ship the check as defense in depth, document the
+limit in the same paragraph as the feature, and never let it be quoted as prevention.
 
 **State the honest objective.** On a host where the adversary has administrative privilege, every
 application-level control is ultimately defeatable -- agents can be disabled, baselines altered, the
 runtime patched, behavior hooked at load time. Say so explicitly rather than letting the control list
-imply prevention. What is achievable is to make tampering noisy, costly and detectable, to produce
-audit evidence, and to push the trust root as low as the operator is willing to go.
+imply prevention.
 
-**Operator-owned hardening: document and recommend, never claim.** These are all stronger than
-anything in the paragraph above:
+What is achievable is to make tampering noisy, costly and detectable, to produce audit evidence, and
+to push the trust root as low as the operator is willing to go.
+
+### Operator-owned hardening: document and recommend, never claim
+
+These controls are all stronger than any application-level control named above, and none of them are
+yours:
 
 - file-integrity monitoring against a baseline
 - immutable or read-only deployment with writable state confined to the data store
@@ -504,12 +545,15 @@ anything in the paragraph above:
 - confinement under a mandatory access control system
 - signed-artifact admission control that rejects anything unsigned
 
-None of them are yours. Ship a hardening guide with a concrete list of paths to monitor and example
-rules, so the operator has something to apply on day one rather than a category name.
+Ship a hardening guide with a concrete list of paths to monitor and example rules, so the operator has
+something to apply on day one rather than a category name.
 
-**Roll out a blocking verification control in audit mode first.** A control that rejects artifacts
-failing verification will also reject valid artifacts whenever its own preconditions are unmet -- for
-instance when the enforcing component cannot reach the store holding the signatures it must fetch.
+### Roll out a blocking verification control in audit mode first
+
+A control that rejects artifacts failing verification will also reject valid artifacts whenever its
+own preconditions are unmet -- for instance when the enforcing component cannot reach the store
+holding the signatures it must fetch.
+
 Start in audit mode where it reports but does not block, confirm it is resolving what it needs, then
 switch to enforce. The alternative is a rollout that blocks legitimate deployments on day one and gets
 switched off permanently as a result.
@@ -530,8 +574,10 @@ A response program is a process control, not a document. It needs:
 **State when the clock starts, next to the window.** The two obvious choices give very different
 numbers. Measuring from your own triage is right for your own defects. Measuring from the point an
 upstream fixed version exists is right for a third-party advisory, because a clock started at triage
-runs against something you cannot act on. Pick per finding class, say which, and track the waiting
-period itself so an unfixable advisory is visible rather than silently blowing a window.
+runs against something you cannot act on.
+
+Pick per finding class, say which, and track the waiting period itself, so an unfixable advisory is
+visible rather than silently blowing a window.
 
 ---
 
@@ -571,20 +617,22 @@ internally-run pipeline cannot substitute for. Their absence caps what you can h
 matter how good the automated layer is.
 
 Where the engagement has not happened, say so plainly and hold the gap under a dated signed
-acceptance. Do not let a self-assessment read as verification, and do not omit the cost context. A
-bare "not yet performed" with no explanation reads as negligence. But "not yet performed, and here is
-the order of magnitude it would cost" reads as a funding constraint a reader can evaluate.
+acceptance. Do not let a self-assessment read as verification, and do not omit the cost context.
+
+A bare "not yet performed" with no explanation reads as negligence. But "not yet performed, and here
+is the order of magnitude it would cost" reads as a funding constraint a reader can evaluate.
 
 **Do not gate somebody else's deployment on your engagement.** For software an adopter self-hosts, the
 decision to deploy and the assessment supporting it belong to the adopting organization. Record what
 has and has not been independently verified; do not assert authority over a rollout you do not
-control. This is a correction to an earlier version of this material, which stated the independent
-review as a precondition for production exposure -- an over-reach for software the producer does not
-operate.
+control.
 
-If you are running a formal assessment against a published verification standard, the method for it
-is covered in [running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md).
-That covers:
+This is a correction to an earlier version of this material, which stated the independent review as a
+precondition for production exposure -- an over-reach for software the producer does not operate.
+
+If you are running a formal assessment against a published verification standard, the method for it is
+covered in [running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md). That
+covers:
 
 - verdict vocabulary
 - why `unverified` must never read as a pass
@@ -615,13 +663,17 @@ jobs were miscounted as gating coverage. Verify enforcement from the blocking-jo
 green badge -- see *A check that cannot fail is not a control* in
 [CI and standards](../CI-AND-STANDARDS.md).
 
-**Confirming the control plane is a separate pass from reading code, and it comes first.** For each
+### Confirm the control plane before reading any code
+
+Confirming the control plane is a separate pass from reading code, and it comes first. For each
 required check, confirm three things and read no source: that it exists, that it blocks rather than
 advises, and that it was green on the exact commit being released. The release change's own pipeline
-run is the control plane executing. Review the scanner suppression list explicitly rather than
-accepting it, because a suppressed rule class is a control that has been turned off. Mark which
-nominally-security jobs are advisory and do not count those as coverage. Only then spend line-by-line
-reading on what the automated controls cannot cover.
+run is the control plane executing.
+
+Review the scanner suppression list explicitly rather than accepting it, because a suppressed rule
+class is a control that has been turned off. Mark which nominally-security jobs are advisory and do
+not count those as coverage. Only then spend line-by-line reading on what the automated controls
+cannot cover.
 
 ---
 
@@ -629,9 +681,10 @@ reading on what the automated controls cannot cover.
 
 The register you have is **built to**, **aligned with**, and **self-assessed against**, each backed by
 evidence. You do not have **certified**, **verified**, or **compliant**, and writing one of those is
-the fastest way to have the whole page discounted. The general rule, with the honesty-state tagging
-and the claims register that goes with it, is in
-[CI and standards](../CI-AND-STANDARDS.md). Four things specific to a security claim:
+the fastest way to have the whole page discounted.
+
+The general rule, with the honesty-state tagging and the claims register that goes with it, is in
+[CI and standards](../CI-AND-STANDARDS.md). Four things are specific to a security claim:
 
 - **State the attestation posture positively, with its scope named.** "This project attests that it
   builds under this standard" is a claim you can support. "The output is independently audited" is
@@ -643,8 +696,10 @@ and the claims register that goes with it, is in
   voluntarily; producing the artifacts confers nothing.
 - **Never restate another document's assurance-level target, count, or score.** Two documents that
   each restate the other's target will eventually disagree, and both will look authoritative. Name the
-  record of record and link to it, so there is exactly one place that can be wrong. This is the
-  state-it-once rule applied to the one class of fact where being wrong is most expensive.
+  record of record and link to it, so there is exactly one place that can be wrong.
+
+That last one is the state-it-once rule applied to the one class of fact where being wrong is most
+expensive.
 
 **Cite a proposed requirement as proposed.** Where a standard or regulation is under revision, a draft
 that has not been finalised is never a current requirement, and the frame is "if finalised" every time
@@ -712,7 +767,7 @@ citation.
 - **The ownership split, in either direction.** Claiming an operator-side control is over-reach.
   Pushing a producer-side control onto the operator is abdication.
 - **The unwaivable set.** Static analysis, dependency analysis and secret scanning block, and an
-  author cannot wave their own change past them. The moment one becomes waivable it stops being a
+  author cannot waive their own change past them. The moment one becomes waivable it stops being a
   control and becomes a preference.
 - **The deviation format.** Dropping the date makes it unageable; dropping the trigger makes it
   permanent; dropping the signature makes it an open gap. All three fields or none of it counts.

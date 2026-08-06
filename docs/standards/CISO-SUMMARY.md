@@ -1,21 +1,11 @@
 # The CISO summary
 
-**Your developers are building with AI coding assistants. Here's a two-page guide on what to require they
-do, and how to tell whether you actually got it.**
+**Your developers are building with AI coding assistants. Here's a two-page guide on what to
+require they do, and how to tell whether you actually got it.**
 
-> **This one is written to be read**, and so is [Human review of code](REVIEW-DEPTH.md). The other
-> standards are denser. Your teams will get through those faster by handing the markdown to Claude
-> Code, or another AI coding assistant, and asking it to summarize or rewrite them against the
-> repository they actually work in.
->
-> The fastest way in: give the tool the
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md), ask it to
-> **summarize the document against your repository**, and then ask it questions. What here
-> already holds? What would have to change? What would each gap cost? That conversation is
-> worth more than reading top to bottom, because the answers are about your code rather than
-> about the document.
->
-> Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CISO-SUMMARY.docx).
+> **Take a copy:**
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md)
+> or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CISO-SUMMARY.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
 ---
@@ -35,9 +25,9 @@ do, and how to tell whether you actually got it.**
 
 ## What actually changes with an AI coding assistant in the loop
 
-Five failure modes cover it. Every control worth funding neutralizes at least one of them; a
-proposed control that answers none is ceremony, and ceremony is what gets dropped first under
-pressure -- taking the load-bearing rules beside it.
+Five failure modes cover it. Every control worth funding neutralizes at least one of them. A
+proposed control that answers none is ceremony -- and ceremony is what gets dropped first under
+pressure, taking the load-bearing rules beside it.
 
 | Failure mode | What you would see |
 |---|---|
@@ -63,8 +53,8 @@ teams will offer to drop for speed.
 | **What is in the release?** | An allowlist checked before publishing, not a sweep of the build directory | "Only what we built" |
 
 If an answer arrives as a percentage -- coverage, complexity, issue counts -- treat it as
-conversation, not verdict. Those numbers are weak or invertible predictors of real defects, and
-gating on them buys the appearance of rigor while the structural controls go unfunded.
+conversation, not verdict. Those numbers are weak or invertible predictors of real defects. Gating
+on them buys the appearance of rigor while the structural controls go unfunded.
 
 ---
 
