@@ -4,7 +4,7 @@
 whether you actually got it.**
 
 > **Meant to be worked with, not read straight through.** This summary is written to be read. The
-> four documents behind it are different: most of their content is a base for an agent to apply to
+> standards behind it are different: most of their content is a base for an agent to apply to
 > a repository, which is how your teams should expect to use them.
 >
 > The fastest way in: give an agent -- Claude Code or another -- the
@@ -98,6 +98,7 @@ The order matters. Reversed, you get a dashboard and no controls.
 | If you need | Read |
 |---|---|
 | The full control set for AI-assisted work | [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) |
+| How much of the code a human must actually read | [Review depth](REVIEW-DEPTH.md) |
 | How to judge whether code is good, whoever wrote it | [Code quality](CODE-QUALITY.md) |
 | The process a build must satisfy | [Secure development](SECURE-DEVELOPMENT.md) |
 | Trusting what you did not write, and controlling what you ship | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |

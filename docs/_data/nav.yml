@@ -26,9 +26,9 @@
 
 - group: Start here
   items:
-    - label: Using this with an agent
-      title: Using this with an agent
-      path: /USING-THIS-WITH-AN-AGENT.html
+    - label: Feed this to Claude Code
+      title: Here's what to feed to Claude Code
+      path: /FEED-THIS-TO-CLAUDE-CODE.html
     - label: Concepts
       title: Concepts
       path: /CONCEPTS.html
@@ -83,6 +83,9 @@
     - label: Dependency integrity
       title: Dependency and artifact integrity
       path: /standards/DEPENDENCY-INTEGRITY.html
+    - label: Review depth
+      title: How much of this code does a human have to read?
+      path: /standards/REVIEW-DEPTH.html
     - label: Code quality
       title: Judging code quality, whoever or whatever wrote it
       path: /standards/CODE-QUALITY.html

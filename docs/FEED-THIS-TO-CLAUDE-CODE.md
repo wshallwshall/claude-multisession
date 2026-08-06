@@ -1,11 +1,11 @@
-# Using this with an agent
+# Here's what to feed to Claude Code
 
 ## For the human, in thirty seconds
 
 Open Claude Code in the repository you want governed, and paste this:
 
 ```text
-Read https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/USING-THIS-WITH-AN-AGENT.md
+Read https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/FEED-THIS-TO-CLAUDE-CODE.md
 and follow it against this repository. Stop where it tells you to stop.
 ```
 

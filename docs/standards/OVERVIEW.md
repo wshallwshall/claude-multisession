@@ -6,6 +6,7 @@ A set of documents for creating secure, high-quality code using Claude Code:
 - what counts as secure
 - how to hold third-party code you will never read
 - how to govern the assistant writing much of it
+- how much of the result a human must actually read
 
 Plus [a two-page summary](CISO-SUMMARY.md) for a security executive who has to decide whether any of
 it is being done, rather than adopt it.
@@ -21,6 +22,7 @@ one of them is meant to be edited down to your setting before it is useful.
 | **The CISO summary** -- two pages, start here if you are deciding rather than adopting | [page](CISO-SUMMARY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CISO-SUMMARY.docx) |
 | **AI-assisted development** | [page](AI-ASSISTED-DEVELOPMENT.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx) |
 | **Dependency integrity** | [page](DEPENDENCY-INTEGRITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx) |
+| **Review depth** -- how much a human must read | [page](REVIEW-DEPTH.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/REVIEW-DEPTH.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/REVIEW-DEPTH.docx) |
 | **Code quality** | [page](CODE-QUALITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx) |
 | **Secure development** | [page](SECURE-DEVELOPMENT.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx) |
 | This overview | -- | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/OVERVIEW.docx) |
@@ -37,7 +39,7 @@ cleanly as you edit it -- which you will, because none of these are usable as th
 the reverse: comfortable to read, easy to circulate and mark up, and of no use to an agent. The Word
 files hold the same content, generated from the same markdown.
 
-**Hand the four main documents to an agent.** They are a base to apply, not prose to read through.
+**Hand the standards to an agent.** They are a base to apply, not prose to read through.
 
 1. Give Claude Code, or another agent, the markdown.
 2. Ask it to **summarize the document against your repository**.
@@ -81,7 +83,7 @@ able to fail. A standard that no working agreement references is a document, not
 - **No code ships with them.** These are rules and review procedures. Where one names a control, it
   is describing something you would build, not something in this repository.
 - **No certification, and no attainment.** Following them confers nothing on you, on your product,
-  or on anyone adopting your product. Where you need phrasing for that, the four use "built to",
+  or on anyone adopting your product. Where you need phrasing for that, they use "built to",
   "aligned with" and "self-assessed against", per
   [Say which kind of claim you are making](../CI-AND-STANDARDS.md).
 - **Not exhaustive.** Each names at least the failure modes it was written against. None of them
@@ -90,7 +92,7 @@ able to fail. A standard that no working agreement references is a document, not
 - **Not independently reviewed.** No outside party has reviewed these. That is a real gap, and each
   document says where it bears on a rule.
 
-## The four documents
+## What each one buys you
 
 Each one buys you something different. Read the line, then the document that matches the argument
 you are currently losing.
@@ -99,6 +101,7 @@ you are currently losing.
 |---|---|
 | [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) | Five named process failure modes as an organising spine, a tier ladder that says how much rigor this particular change needs, the hard line between a control and a wish -- a gate is a deterministic check, and the model never certifies its own output -- and an adversarial verification pass written as a technique, including the cases where it is pure waste. |
 | [Dependency integrity](DEPENDENCY-INTEGRITY.md) | Two directions in one document. Inbound: third-party code held as a black box you deliberately do not source-review, with the obligation made finite and the human effort concentrated at adoption and at each bump. Outbound: a published build that contains only what you declared, verifiable by the person installing it. |
+| [Review depth](REVIEW-DEPTH.md) | The answer to "how much of this must a human read" that is not a percentage: depth resolved per change by risk tier, a sensitive-data ratchet that dominates size, an unknown-clamps-up rule, two conditions that force a full line-by-line read regardless, and the contested question of whether explaining code with the assistant's help satisfies the floor. |
 | [Code quality](CODE-QUALITY.md) | Rows that may decide a verdict separated from rows that may only start a conversation, the published evidence behind refusing to gate on a single number, a map from each way machine-written code goes wrong to the control that neutralises it, and review depth as a per-file decision so a large diff stays finite. |
 | [Secure development](SECURE-DEVELOPMENT.md) | A written producer-versus-operator ownership split, a per-interface threat model that gives review something to check against, a finite secure-coding list, an honest read of what a green pipeline has and has not established, and a release gate that is a checklist rather than a debate. |
 
@@ -108,7 +111,7 @@ Individual links are in [Download every file](#download-every-file) at the top. 
 only for pulling all of them at once, into a `standards/` directory below wherever you run it:
 
 ```sh
-for f in OVERVIEW CISO-SUMMARY CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do
+for f in OVERVIEW CISO-SUMMARY REVIEW-DEPTH CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do
   curl -fsSL --create-dirs -o "standards/$f.md" \
     "https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/$f.md"
 done
@@ -117,7 +120,7 @@ done
 ```powershell
 $base = 'https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards'
 New-Item -ItemType Directory -Force standards | Out-Null
-'OVERVIEW','CISO-SUMMARY','CODE-QUALITY','SECURE-DEVELOPMENT','AI-ASSISTED-DEVELOPMENT','DEPENDENCY-INTEGRITY' |
+'OVERVIEW','CISO-SUMMARY','REVIEW-DEPTH','CODE-QUALITY','SECURE-DEVELOPMENT','AI-ASSISTED-DEVELOPMENT','DEPENDENCY-INTEGRITY' |
   ForEach-Object { Invoke-WebRequest "$base/$_.md" -OutFile "standards/$_.md" }
 ```
 
@@ -128,13 +131,16 @@ not* above, and keep your edits honest about which controls you have actually bu
 
 1. **[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md)** first, because it is the one that
    changes tomorrow rather than next quarter, and because its risk tier decides how much of the
-   other three applies to any given change.
-2. **[Dependency integrity](DEPENDENCY-INTEGRITY.md)** next. Its controls are the most mechanical of
-   the four, and you probably already have half of them; it is the one most likely to be adopted
+   rest applies to any given change.
+2. **[Review depth](REVIEW-DEPTH.md)** second, and early on purpose. It answers the question a
+   manager asks before any of this gets funded -- how much of the code a human still has to read --
+   and it is the shortest of them.
+3. **[Dependency integrity](DEPENDENCY-INTEGRITY.md)** next. Its controls are the most mechanical of
+   the set, and you probably already have half of them; it is the one most likely to be adopted
    close to whole.
-3. **[Code quality](CODE-QUALITY.md)** third. It assumes you have somewhere to put a blocking check,
+4. **[Code quality](CODE-QUALITY.md)** fourth. It assumes you have somewhere to put a blocking check,
    which the first two get you thinking about.
-4. **[Secure development](SECURE-DEVELOPMENT.md)** last. It is the widest and the most
+5. **[Secure development](SECURE-DEVELOPMENT.md)** last. It is the widest and the most
    setting-specific, and it is the one you should expect to rewrite rather than adopt.
 
 If you read only one paragraph of any of them, read its scope-and-limits block. That block is what
@@ -165,7 +171,7 @@ Three assumptions ride along, and they are the first things to check against you
 
 ## What is already elsewhere on this site
 
-The four documents link out rather than restate, and so should you when you adapt them. In
+These documents link out rather than restate, and so should you when you adapt them. In
 particular:
 
 - [CI and standards for agent-written code](../CI-AND-STANDARDS.md) owns claim honesty, judging
