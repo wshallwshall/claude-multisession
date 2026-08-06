@@ -853,7 +853,7 @@ explicitly.**
 
 ### Tag every claim with its honesty state and a pointer a reviewer can open
 
-Documentation optimism is the default failure of assistant-written prose: a control is described as
+Documentation optimism is the default failure of AI-written prose: a control is described as
 implemented before the code exists, and the description is confident enough to survive review.
 
 **Rule.** Tag each claim as **built / designed-but-deferred / aspirational**, and require a code or
@@ -1115,7 +1115,7 @@ repository disagree.
 
 ### Enumerate sibling paths for every control
 
-An assistant implements a control exactly where it was prompted and misses its siblings. In one
+An AI coding assistant implements a control exactly where it was prompted and misses its siblings. In one
 audit, **every** confirmed medium-or-higher finding had this shape: a guard live on one operating
 system and a no-op on another; a check on one destructive verb but not its counterpart; a scope check
 on the record routes but not the topology reads.

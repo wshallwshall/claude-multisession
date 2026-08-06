@@ -1,14 +1,14 @@
 # Judging code quality, whoever or whatever wrote it
 
 A rubric for answering one question about a body of code: **is this good, or is it filler that
-looks finished?** It is written for a repository where much of the code was produced by Claude Code, or another AI-assisted coding tool
+looks finished?** It is written for a repository where much of the code was produced by Claude Code, or another AI coding assistant
 across parallel sessions, but nothing in it depends on who typed the lines. The rubric judges the
 artifact.
 
 > **This one is dense.** Reading it end to end works, and you will need to eventually -- it
 > becomes your rubric once you adopt it. It is usually faster to hand the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) to Claude Code, or
-> another AI-assisted coding tool, and ask it to summarize this against your repository,
+> another AI coding assistant, and ask it to summarize this against your repository,
 > rewrite a section in plainer terms, or answer what already holds here and what would have to
 > change.
 >
@@ -198,7 +198,7 @@ and to the section on not claiming an unmeasured gain.
 These widely circulated figures about machine-authored code were checked and dropped. Naming them is
 part of the basis, because a reader can then check that the filter actually ran.
 
-- **"About 40 percent of assistant-generated programs contain security vulnerabilities."** An
+- **"About 40 percent of AI-generated programs contain security vulnerabilities."** An
   over-simplified reading of a real study (Pearce et al., *Asleep at the Keyboard*, IEEE S&P 2022,
   arXiv:2108.09293). The study stands; the headline framing does not.
 - **A "ten-fold surge in duplicate blocks" over two years.** Refuted unanimously.
@@ -296,8 +296,8 @@ above -- the requirement that a gate be proven able to fail -- does not reach it
 advisory, but because **there is no green check to trust in the first place**. State it loosely and a
 reader concludes advisory things are exempt from liveness, which is the opposite of the rule.
 
-**A tool that ships with the AI coding tool leaves nothing in your repository to score.** When the
-tool arrives with the AI coding tool rather than with the project, no artifact under version
+**A tool that ships with the AI coding assistant leaves nothing in your repository to score.** When the
+tool arrives with the AI coding assistant rather than with the project, no artifact under version
 control records its presence. A status claim about it can therefore be neither verified nor
 falsified from the repository, so the honest entry is no status at all -- not "built", not
 "enabled". This one is easy to get wrong by accident, because the tool is plainly doing useful

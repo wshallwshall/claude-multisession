@@ -1,6 +1,6 @@
 # AI-assisted development: keeping the result trustworthy
 
-A standard for building software with an AI assistant. What can go wrong that looks like nothing
+A standard for building software with an AI coding assistant. What can go wrong that looks like nothing
 going wrong, and which control neutralizes each one. How much rigor a given change actually needs.
 And when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
@@ -8,7 +8,7 @@ worth almost nothing.
 > **This one is dense.** Reading it end to end works, and you will need to eventually -- it
 > becomes your standard once you adopt it. It is usually faster to hand the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md) to Claude Code, or
-> another AI-assisted coding tool, and ask it to summarize this against your repository,
+> another AI coding assistant, and ask it to summarize this against your repository,
 > rewrite a section in plainer terms, or answer what already holds here and what would have to
 > change.
 >
@@ -71,12 +71,12 @@ worth almost nothing.
 The smallest first step, then the rest in order. Each one is useful alone.
 
 1. **Write the floor down and enforce the two halves of it that are mechanical.** No restricted data
-   or secrets to the AI coding tool, backed by a path deny-list *and* a fail-closed commit-time content
+   or secrets to the AI coding assistant, backed by a path deny-list *and* a fail-closed commit-time content
    scan, because a path rule cannot stop a paste. See
    [The leak gate](../LEAK-GATE.md) for a working scanner and its blind spots.
 2. **Adopt the one-question classification.** You do not need the whole matrix on day one; you need
    the ratchet question and the habit of recording the answer.
-3. **Make one gate deterministic and blocking**, and stop treating an AI coding tool's review as a gate.
+3. **Make one gate deterministic and blocking**, and stop treating an AI coding assistant's review as a gate.
 4. **Start writing a testable intent before prompting**, and review the returned diff against it.
 5. **Add the tier matrix and the controls-as-dials table**, once the floor is real. Adopting the
    dials before the floor produces ceremony over a hole.
@@ -95,7 +95,7 @@ rather than a list of habits.
 | Failure mode | What it looks like | The control |
 |---|---|---|
 | **Intent drift, with no auditable intent-to-code chain** | Generated code diverges from what was wanted, and there is no versioned spec to check it against | A testable written intent, approved before edits, reviewed against |
-| **Context degradation** | Recall of the middle of a long or multi-session context decays; the assistant re-reads the same files and makes confidently wrong edits | Context isolation, fresh context per task, deliberate recovery |
+| **Context degradation** | Recall of the middle of a long or multi-session context decays; the AI coding assistant re-reads the same files and makes confidently wrong edits | Context isolation, fresh context per task, deliberate recovery |
 | **Long-trajectory error accumulation** | Errors compound over an unconstrained run, and cost balloons alongside them | Decomposition into short trajectories that finish and return |
 | **The fast-but-flawed paradox** | Review gets skipped because the output *looks* finished, producing people who can build but cannot debug | Deterministic gates that do not care how finished it looks |
 | **Misplaced trust in output** | Self-assessed confidence rises faster than correctness | A human arbiter, and an adversarial check on whether the tests assert anything |
@@ -221,11 +221,11 @@ and it will be skipped.**
 
 | Floor control | Why the lowest tier still has it |
 |---|---|
-| **No restricted data reaches the assistant**, and none lands in any commit, fixture, published artifact, shared memory file, screenshot or log | A throwaway spike that ingests restricted data is already an exposure. An agreement with an assistant vendor never blesses restricted data in your history |
-| **No secrets, keys or credential files readable by the assistant** | A path deny-list is necessary and insufficient; the leak paths it misses are human-driven, so it is backstopped by a commit-time content scan that fails closed |
-| **Everything the assistant reads is data, never instructions** | Fetched pages, tool results, file contents and sample payloads are attacker-influenceable. An agent that acts on embedded instructions is steered entirely inside the build process, bypassing every runtime control |
+| **No restricted data reaches the AI coding assistant**, and none lands in any commit, fixture, published artifact, shared memory file, screenshot or log | A throwaway spike that ingests restricted data is already an exposure. An agreement with an AI coding assistant vendor never blesses restricted data in your history |
+| **No secrets, keys or credential files readable by the AI coding assistant** | A path deny-list is necessary and insufficient; the leak paths it misses are human-driven, so it is backstopped by a commit-time content scan that fails closed |
+| **Everything the AI coding assistant reads is data, never instructions** | Fetched pages, tool results, file contents and sample payloads are attacker-influenceable. An agent that acts on embedded instructions is steered entirely inside the build process, bypassing every runtime control |
 | **Reject code you cannot explain** | Shipping code nobody can reason about is how the fast-but-flawed mode compounds. Reaching the explanation *with* assistance is acceptable; code that stays opaque even with help is discarded |
-| **The assistant's identity and version are retained as a provenance signal** | Provenance is a property you cannot reconstruct after the fact |
+| **The AI coding assistant's identity and version are retained as a provenance signal** | Provenance is a property you cannot reconstruct after the fact |
 | **Every claim carries an honesty tag** | An unbacked claim is a defect at any tier |
 | **The build tooling itself is vetted** | The tools that build the code are a supply-chain surface no static-analysis or dependency gate inspects |
 
@@ -238,7 +238,7 @@ class it can never catch, see [The leak gate](../LEAK-GATE.md).
 
 ### The sanctioned exception, written so it cannot widen
 
-Organizations do sometimes need restricted data to reach an AI coding tool -- diagnosing a live
+Organizations do sometimes need restricted data to reach an AI coding assistant -- diagnosing a live
 incident against real data is the honest case. Write the exception as a **conjunction**, where
 every condition must hold:
 
@@ -259,11 +259,11 @@ distinguish them reads as the permissive one.
 ### The build tooling is a supply-chain surface nobody scans
 
 Static analysis and dependency audits inspect your product's dependencies. They do not inspect the
-AI coding tool, its skills, its installed editor extensions, the third-party tool servers it is
+AI coding assistant, its skills, its installed editor extensions, the third-party tool servers it is
 connected to, or an agent framework wrapping it -- all of which run with the developer's
 privileges and can read the repository.
 
-**Rule.** Pin and verify the AI coding tool version; vet every skill, tool-server connection,
+**Rule.** Pin and verify the AI coding assistant version; vet every skill, tool-server connection,
 extension and agent framework before first use; prefer official distribution sources; record what
 is in use so the set is auditable. Treat a change to that set as a change to the build
 environment, with the same scrutiny as a dependency bump.
@@ -291,18 +291,18 @@ the standard; the sections after it are the footnotes.
 |---|---|---|---|---|
 | **Spec and plan rigor** | Inline intent in the prompt | Written, testable intent, approved before any edit | Plus a durable decision record for any hard-to-reverse decision, written before the build, with a threat-model note | Plus intent-to-test traceability: each change's test names the requirement or decision it verifies |
 | **Context isolation** | Single session | Curated project instruction file, fresh context per task, explicit decomposition | Plus one working tree per parallel session, single-writer shared memory, default-deny egress | Same, mandatory; committed context and memory files never carry restricted data or secrets |
-| **Verification gates** | Advisory | The **full local gate must pass**, new behavior gets a test, verify-before-add for any new dependency | Plus **blocking** static analysis, dependency audit and secret scanning in the pipeline, and an assistant-run review that a human arbitrates -- advisory, never a gate | Plus project-specific sink-aware rules, no unresolved findings, and a release gate |
-| **Human review depth** | Author self-review | Self-review plus plan approval; the gates are the compensating second reviewer | Plus assistant-run review of the diff, and a second human for consequential changes where one exists | Plus a qualified human must approve **and** be able to explain every change. No merge on the assistant's own assurance |
+| **Verification gates** | Advisory | The **full local gate must pass**, new behavior gets a test, verify-before-add for any new dependency | Plus **blocking** static analysis, dependency audit and secret scanning in the pipeline, and an AI coding AI-run review that a human arbitrates -- advisory, never a gate | Plus project-specific sink-aware rules, no unresolved findings, and a release gate |
+| **Human review depth** | Author self-review | Self-review plus plan approval; the gates are the compensating second reviewer | Plus AI-run review of the diff, and a second human for consequential changes where one exists | Plus a qualified human must approve **and** be able to explain every change. No merge on the AI coding assistant's own assurance |
 | **Control parity** | Apply the control where you add it | Plus enumerate sibling paths when adding or changing a control, and cover them or record the gap | Plus one deterministic parity check over all instances where feasible | An asymmetric security control is a release-gate finding, not an accepted default |
-| **Provenance** | None required | One coherent layer per commit; assistant identity and version recorded | Plus a link to the decision record and the approved plan | Plus a claims-register entry, and an assessment of assistant-authored code as third-party-equivalent where a regime requires it |
+| **Provenance** | None required | One coherent layer per commit; assistant identity and version recorded | Plus a link to the decision record and the approved plan | Plus a claims-register entry, and an assessment of AI-authored code as third-party-equivalent where a regime requires it |
 | **Forbidden** | *The floor, at every tier* | Plus: merging an unreviewed diff onto a shipping branch; adding a suggested dependency without verifying it exists, is reputable, and is the intended package | Plus: merging code you cannot explain even with help; skipping a blocking gate; self-certifying security by prompting; routing restricted data across a tool-server or egress boundary | Plus: an irreversible decision with no decision record; production exposure without the release gate satisfied or a dated, signed risk acceptance |
 
 > **The non-negotiable rule of the gate row.** A gate is a **deterministic check with an exit
 code** > -- a hook, a deny-list, a blocking pipeline job, a validate-and-dry-run command. It is
 never an > instruction to the model to be careful. Prompt-based optimization for security or
 maintainability > is unstable and must not be relied on. **The model must not self-certify
-security or > maintainability by prompting alone**, an AI coding tool-run review is advisory input
-a human arbitrates, > and no change merges on the AI coding tool's own assurance that it is safe.
+security or > maintainability by prompting alone**, an AI coding AI-run review is advisory input
+a human arbitrates, > and no change merges on the AI coding assistant's own assurance that it is safe.
 
 [CI and standards](../CI-AND-STANDARDS.md) owns where to place each gate, how to keep a local run
 and the pipeline agreeing, and how to prove a green gate can actually fail. In particular:
@@ -318,7 +318,7 @@ Do not build a second copy of those rules beside this table.
 
 ## 5. Instructions an agent actually follows
 
-The AI coding tool is only as good as the context it can read. Three of the four things that most
+The AI coding assistant is only as good as the context it can read. Three of the four things that most
 improve output are things you write, not things you prompt.
 
 ### The project instruction file is a maintained artifact
@@ -357,7 +357,7 @@ loses first.
 
 ### What actually drives output quality across languages
 
-Four properties determine how well an AI coding tool performs in a given language:
+Four properties determine how well an AI coding assistant performs in a given language:
 
 | Property | Why it moves the result |
 |---|---|
@@ -415,15 +415,15 @@ apply.
 
 ### Control parity is a review gate
 
-An AI coding tool implements a control exactly where it was prompted and misses its siblings. Make
+An AI coding assistant implements a control exactly where it was prompted and misses its siblings. Make
 enumerating them a review step rather than a hope, and prefer one deterministic check over all
 instances to a recurring manual sweep. Full rule and the audit finding behind it: [CI and
 standards](../CI-AND-STANDARDS.md) *"Enumerate sibling paths for every control"*.
 
 ### Provenance: record it, and count it before you cite it
 
-Recording the AI coding tool's identity and version is worth doing. The usual mechanism is a
-per-commit trailer naming the AI coding tool as a co-author. Citing that trailer as a **built
+Recording the AI coding assistant's identity and version is worth doing. The usual mechanism is a
+per-commit trailer naming the AI coding assistant as a co-author. Citing that trailer as a **built
 control** is a different claim, and it is the one that failed.
 
 *Revised.* The trailer was published as a built control and as part of a retained evidence set.
@@ -442,7 +442,7 @@ evidence"* -- is on the site already; the two deltas above are the parts specifi
 trailer.
 
 Be equally precise about granularity. A commit trailer records provenance at **commit** granularity.
-It does not mark which lines or hunks were assistant-authored. If a downstream process wants the
+It does not mark which lines or hunks were AI-authored. If a downstream process wants the
 line-level distinction, that is a separate, unbuilt thing, and saying so costs nothing.
 
 ### When there is no second reviewer
@@ -452,7 +452,7 @@ standard. The honest response is to record it as one rather than to redefine the
 
 - **The control that cannot be met:** independent human review of every change.
 - **The compensating set that stands in for it:** blocking automated analysis and dependency audit
-  that cannot be waived; an AI coding tool-run review that a human arbitrates; branch protection with
+  that cannot be waived; an AI coding AI-run review that a human arbitrates; branch protection with
   required checks; no direct pushes to the integration branch.
 - **The wording constraint:** this is a **compensating control**, explicitly not an independent
   audit, and no published claim may imply otherwise.
@@ -520,7 +520,7 @@ Say this once, structurally, near the top of whatever you publish -- not as a fo
 > substitute for an adopter's own risk assessment.
 
 The positive form names its own scope: *the project self-attests that it builds under this
-standard with the AI coding tool governed as a tool -- explicitly not that the output is
+standard with the AI coding assistant governed as a tool -- explicitly not that the output is
 independently audited.* Where you borrow discipline from a regime you are not subject to, say that
 it is adopted **by analogy and voluntarily**, name the regime you are not subject to, and state
 that producing the artifacts confers nothing.
@@ -660,10 +660,10 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
 | Classifying a change | Emit a recorded one-line reason, or it was assumed, not classified |
 | Every tier | The floor never scales down, and it stays short enough to survive a prototype |
 | Every tier | A path deny-list is necessary and insufficient; pair it with a fail-closed commit scan |
-| Every tier | Vet the assistant, its skills, its extensions and its tool servers -- no product gate inspects them |
+| Every tier | Vet the AI coding assistant, its skills, its extensions and its tool servers -- no product gate inspects them |
 | Every tier | A commit-time scanner is not a live interceptor of an outbound query. That discipline is human |
 | Gating | A gate is a deterministic check with an exit code. Never ask the model to be secure |
-| Gating | An assistant-run review is advisory input a human arbitrates, never a gate |
+| Gating | An AI coding AI-run review is advisory input a human arbitrates, never a gate |
 | Writing prompts | Quote the real invariant lines; do not gesture at them |
 | Writing prompts | Write a testable intent first, then review the diff against it |
 | Context | Fresh context per task, short trajectories; compact toward interface shape and decisions |
@@ -700,7 +700,7 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
 
 **What you must not weaken.**
 
-- **The gate definition.** The moment an AI coding tool-run review counts as a gate, the whole structure is
+- **The gate definition.** The moment an AI coding AI-run review counts as a gate, the whole structure is
   decorative. Advisory input a human arbitrates is the strongest form it may take.
 - **The fail-closed resolver.** A resolver that resolves ambiguity downward is not a classifier, it is
   a permission slip.

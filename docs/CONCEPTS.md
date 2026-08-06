@@ -94,7 +94,7 @@ separate build environment. Three things are not isolated, and each has bitten:
 |---|---|
 | the git directory | one `.git/config.lock`; concurrent `git worktree add` races it, which is why creation is serialised under a cross-session mutex |
 | the git hooks directory | one `pre-commit` / `commit-msg` / `pre-push` set governs **every** worktree at once, and sees every write route into the repo |
-| the assistant's own project memory | it lives outside the repo, one directory per machine, and last write wins. Reads are fine; coordinate writes, or let exactly one session own them |
+| the AI coding assistant's own project memory | it lives outside the repo, one directory per machine, and last write wins. Reads are fine; coordinate writes, or let exactly one session own them |
 
 And one thing is isolated that you may wish were not: a project-scoped `.claude/settings.json` is
 usually git-ignored, so it is a creation-time snapshot that nothing refreshes and that several

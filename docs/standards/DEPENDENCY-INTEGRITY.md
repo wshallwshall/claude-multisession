@@ -10,7 +10,7 @@ you know it contains only what you intended?
 > **This one is dense.** Reading it end to end works, and you will need to eventually -- it
 > becomes your standard once you adopt it. It is usually faster to hand the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md) to Claude Code, or
-> another AI-assisted coding tool, and ask it to summarize this against your repository,
+> another AI coding assistant, and ask it to summarize this against your repository,
 > rewrite a section in plainer terms, or answer what already holds here and what would have to
 > change.
 >
@@ -126,9 +126,9 @@ should go -- not into skimming internals, which produces the feeling of review w
 and maintained, is the license acceptable, is it actually used by anyone. On a security-critical
 seam, prefer the widely reviewed option to the clever one, and record why in the vet note.
 
-### The hallucinated package, and why an assistant makes it routine
+### The hallucinated package, and why an AI coding assistant makes it routine
 
-An AI coding tool generates a plausible import the same way it generates plausible prose. A
+An AI coding assistant generates a plausible import the same way it generates plausible prose. A
 package name that reads correctly, sits in the right namespace, and matches the shape of real
 names in that ecosystem is exactly the output the model is good at producing. And it is
 indistinguishable, at the point of use, from a name that exists. That regularity is the attack
@@ -169,9 +169,9 @@ owned code the moment they land.
 Two additions worth carrying from the argument that produced the pragmatic bar, neither of which the
 site states:
 
-- **An AI coding tool's explanation can be confidently wrong in exactly the way its code can.** The human
+- **An AI coding assistant's explanation can be confidently wrong in exactly the way its code can.** The human
   verifies the explanation; accepting it is the rubber-stamp under a different name.
-- **When it breaks, you may not have the AI coding tool in the loop.** That is the honest residual risk of
+- **When it breaks, you may not have the AI coding assistant in the loop.** That is the honest residual risk of
   the pragmatic bar, and it argues for unaided comprehension specifically on the seams where a
   mistake is most expensive -- authentication, cryptography, and wherever regulated data crosses.
 

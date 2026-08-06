@@ -1,6 +1,6 @@
 # How much of AI-generated code does a human have to read?
 
-**The question every engineering manager asks once an AI coding tool starts writing most of the
+**The question every engineering manager asks once an AI coding assistant starts writing most of the
 code, and the one where a wrong answer is expensive in both directions.**
 
 > **Take a copy:**
@@ -47,7 +47,7 @@ Three answers circulate, and all three fail for the same reason: they are not de
 |---|---|
 | **"A fixed percentage."** | Nobody can say which 30 percent, so in practice it means the easy 30 percent. It is also unauditable: no evidence distinguishes a project that did it from one that says it did. |
 | **"All of it, unaided."** | The strongest possible guard, and the reason it fails is not laziness. A rule that is ignored under deadline pressure protects nothing, and this one is ignored first. |
-| **"None, the tests cover it."** | Tests check what somebody thought to check. They do not tell you whether the code does something else as well, and an assistant is good at producing code that passes the test it was shown. |
+| **"None, the tests cover it."** | Tests check what somebody thought to check. They do not tell you whether the code does something else as well, and an AI coding assistant is good at producing code that passes the test it was shown. |
 
 The useful answer is not a quantity at all. It is a **decision procedure**.
 
@@ -79,7 +79,7 @@ Two properties make this work, and they are worth stating to whoever asks for an
 These are not negotiable by tier, and both come from experience rather than theory:
 
 1. **A security-critical seam you must fully own** -- authentication, authorization, cryptography, a
-   network bind guard. Read every line by hand. Not because the AI coding tool is unreliable here, but
+   network bind guard. Read every line by hand. Not because the AI coding assistant is unreliable here, but
    because this is the code you will have to defend later, in a room, from memory.
 2. **Anything you cannot yet verify** -- no test you trust, no spec you can check it against. Depth
    substitutes for verification when verification is missing. Write the test instead if you can;
@@ -93,13 +93,13 @@ Below every tier sits one rule that never turns off:
 
 > **Reject code you cannot explain, even if it works.**
 
-This is the line between an AI coding tool accelerating a team and an AI coding tool quietly
+This is the line between an AI coding assistant accelerating a team and an AI coding assistant quietly
 filling a codebase with **code of unknown provenance** -- code whose behavior nobody on the team
 can account for. The failure it prevents is a documented one: developers who can produce
 working-looking code but cannot reason about, fix, or maintain it. You discover this during an
 incident, which is the worst possible time.
 
-### Does explaining it *with the assistant's help* count?
+### Does explaining it *with the AI coding assistant's help* count?
 
 This is the genuinely contested question, and an honest standard should say so rather than pretend
 it is settled.

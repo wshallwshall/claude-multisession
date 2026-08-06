@@ -8,7 +8,7 @@ verifiable, and what has to be true on the day you ship.
 > **This one is dense.** Reading it end to end works, and you will need to eventually -- it
 > becomes your standard once you adopt it. It is usually faster to hand the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) to Claude Code, or
-> another AI-assisted coding tool, and ask it to summarize this against your repository,
+> another AI coding assistant, and ask it to summarize this against your repository,
 > rewrite a section in plainer terms, or answer what already holds here and what would have to
 > change.
 >
@@ -19,7 +19,7 @@ It is deliberately framework-neutral. It names practices, never certifications. 
 issues a certificate for any of this, and a self-assessment is not one either -- so every claim here
 is phrased as something you can evidence rather than something you can be awarded.
 
-Written for a project where much of the code is written by Claude Code, or another AI-assisted coding tool,
+Written for a project where much of the code is written by Claude Code, or another AI coding assistant,
 and several sessions push into one
 trunk. That is not a special case for this material; it is the case where the process layer stops
 being paperwork, because the machine-enforced layer gets cheap and the human layer does not.
@@ -221,7 +221,7 @@ That is the requirement. Many projects cannot meet it, and the honest response i
 
 **When review is self-review, record it as a documented deviation.** Name the control that cannot be
 met. Name the compensating set actually in force -- typically blocking static analysis and dependency
-audit that cannot be waived, assistant-run review that a human arbitrates, branch protection with
+audit that cannot be waived, AI-run review that a human arbitrates, branch protection with
 required checks, and no direct pushes to the trunk. Name the event that ends the deviation, which is
 usually a second maintainer joining.
 
@@ -243,7 +243,7 @@ The comprehension bar that goes with review -- reject code you cannot explain, w
 reaching the explanation being acceptable -- is settled on this site under that name in the same
 document. Two small additions are worth carrying:
 
-- An AI coding tool's explanation can be confidently wrong in the same way its code can, so the human
+- An AI coding assistant's explanation can be confidently wrong in the same way its code can, so the human
   verifies the explanation rather than accepting it.
 - A periodic cold spot-check of an already-merged assisted change is a cheap way to detect that
   explaining has drifted into rubber-stamping.

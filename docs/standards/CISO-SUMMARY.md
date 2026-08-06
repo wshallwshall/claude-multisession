@@ -1,11 +1,11 @@
 # The CISO summary
 
-**Your developers are building with AI assistants. Here's a two-page guide on what to require they
+**Your developers are building with AI coding assistants. Here's a two-page guide on what to require they
 do, and how to tell whether you actually got it.**
 
 > **This one is written to be read**, and so is [Human review of code](REVIEW-DEPTH.md). The other
 > standards are denser. Your teams will get through those faster by handing the markdown to Claude
-> Code, or another AI-assisted coding tool, and asking it to summarize or rewrite them against the
+> Code, or another AI coding assistant, and asking it to summarize or rewrite them against the
 > repository they actually work in.
 >
 > The fastest way in: give the tool the
@@ -33,7 +33,7 @@ do, and how to tell whether you actually got it.**
 
 ---
 
-## What actually changes with an assistant in the loop
+## What actually changes with an AI coding assistant in the loop
 
 Five failure modes cover it. Every control worth funding neutralizes at least one of them; a
 proposed control that answers none is ceremony, and ceremony is what gets dropped first under
