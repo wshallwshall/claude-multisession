@@ -28,7 +28,7 @@ gets cheap and the human layer does not.
 - **A written ownership split.** One table saying what the producing project owns and what the
   operating organization owns, so a control cannot end up unowned because each side assumed the
   other had it.
-- **Review with something to check against.** A per-interface threat model turns "does this change
+- **Review with something to check against.** A per-boundary threat model turns "does this change
   look secure" into "which boundary does this touch, and does its named mitigation still hold". A
   missing control then shows up as a gap in an enumeration rather than as something nobody thought
   of.
@@ -84,7 +84,7 @@ supposed to do something.
 Then work in this order:
 
 1. **Ownership split.** Section 1.
-2. **Threat model one interface** -- the riskiest, not all of them. Section 2. A single worked
+2. **Threat model one trust boundary** -- the riskiest, not all of them. Section 2. A single worked
    boundary teaches the format better than a sweep does.
 3. **Make the scanner posture honest.** Section 5. Classify every nominally-security job as blocking
    or advisory before adding any new one. This usually reveals that coverage is narrower than the
@@ -106,8 +106,8 @@ Then work in this order:
 Judge a build's security as a composite of two layers. Never on one row of either.
 
 **The machine-enforced layer** is blocking analysis and secret-scan gates, secure coding practice,
-dependency and supply-chain integrity, secrets hygiene, secure-by-default configuration, interface
-authentication, and tamper-evident audit logging. It is hard to fake, because its evidence is a red
+dependency and supply-chain integrity, secrets hygiene, secure-by-default configuration,
+machine-to-machine authentication, and tamper-evident audit logging. It is hard to fake, because its evidence is a red
 or green pipeline leg rather than a claim.
 
 **The process layer** is an exercised vulnerability-response program, an independent external
@@ -144,11 +144,16 @@ provide.
 
 ---
 
-## 2. Threat model each interface before you build it
+## 2. Threat model each trust boundary before you build it
 
-Every interface and component gets a written, lightweight threat model. It enumerates the trust
-boundaries, names a mitigation for each ingress, and puts a constraining control on each piece of
-dangerous functionality and each third-party component it pulls in.
+A **trust boundary** is anywhere input you do not control crosses into code you do. A network
+interface is one. So is a command line, a file dropped in a watched directory, a scheduled job
+reading shared storage, a queue consumer, a webhook, an inter-process channel, and a database
+somebody else writes to. If your system has no network interfaces at all, it still has boundaries.
+
+Every boundary and component gets a written, lightweight threat model. It names a mitigation for each
+way in, and puts a constraining control on each piece of dangerous functionality and each
+third-party component it pulls in.
 
 Three properties make it worth writing:
 
@@ -195,7 +200,7 @@ reviewer can answer and these are.
 - **Parameterised queries only.** No string-built statements anywhere, no exceptions held open by a
   comment.
 - **Authentication and authorization enforced on every action, deny by default.**
-- **For any interface that parses structured documents:** disable external-entity resolution and
+- **For anything that parses structured documents:** disable external-entity resolution and
   document-type processing, size-limit payloads against a schema, apply rate limits and timeouts, and
   never return internal detail in a fault response.
 - **For file handling:** confine reads and writes to configured directories and canonicalise paths so
@@ -357,10 +362,10 @@ with the reason -- see *Fail-open or fail-closed is a choice you must state* in
 
 ---
 
-## 8. Interface and service authentication
+## 8. Machine-to-machine authentication
 
-Machine interfaces authenticate **systems, not people**. Use the strongest mechanism the peer system
-supports.
+A caller that is a machine authenticates as a **system, not a person**. Use the strongest mechanism
+the peer system supports.
 
 Record, per connection, the mechanism, its scope, and a reference to where the credential lives. Keep
 that record alongside that connection's configuration, so the posture is reviewable one connection at
@@ -713,7 +718,7 @@ citation.
 | When | Rule |
 |---|---|
 | Starting | Write the producer-versus-operator split before claiming any control |
-| Designing | Threat model each interface before the build; name a mitigation per ingress |
+| Designing | Threat model each trust boundary before the build; name a mitigation for each way in |
 | Designing | At an execution boundary, check every caller reaches it, not the documented one |
 | Coding | Validate at ingress, parameterise every query, confine every path, fail closed |
 | Reviewing | Self-review is a documented deviation, not a satisfied control |

@@ -74,6 +74,9 @@
     - label: Steering
       title: Steering a running session
       path: /STEERING.html
+    - label: Session mail
+      title: "The async lane: reaching sessions the realtime channel cannot"
+      path: /SESSION-MAIL.html
     - label: Sequence allocation
       title: Sequence allocation
       path: /SEQUENCE-ALLOC.html
