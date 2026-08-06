@@ -477,11 +477,17 @@
 
 .ssel-opt label {
   /* min-width:0 lets a long option wrap inside its grid track instead of widening the column. A
-     flex item's default min-width is auto, which refuses to shrink below its longest word. */
+     flex item's default min-width is auto, which refuses to shrink below its longest word.
+
+     The left border is declared HERE, transparent, and only recoloured when ticked. Declaring it
+     only in the checked rule made ticking a box add 3px plus its padding, so every label shifted
+     sideways at the moment of clicking it. Reserve the space always; change only the colour. */
   flex: 1;
   min-width: 0;
   min-height: 44px;
-  padding: 0.5rem 0.5rem 0.5rem 0;
+  padding: 0.5rem 0.5rem 0.5rem 0.45rem;
+  border-left: 3px solid transparent;
+  border-radius: 0 var(--ssel-radius) var(--ssel-radius) 0;
   line-height: 1.45;
   font-size: 0.92rem;
   cursor: pointer;
@@ -491,20 +497,22 @@
   flex: none;
   width: 1.05rem;
   height: 1.05rem;
-  margin: 0.28rem 0 0 0.35rem;
+  /* Sit on the FIRST LINE of the label, not the top of the row. The label's first line box is
+     1.45 x 0.92rem = 1.334rem tall and starts 0.5rem down, so centring a 1.05rem control on it
+     needs 0.5rem + (1.334rem - 1.05rem) / 2. align-items:center would centre against the WHOLE
+     label instead, which drifts visibly the moment an option wraps to two lines -- and several do. */
+  margin: 0.64rem 0 0 0;
   accent-color: var(--ssel-accent);
 }
 
 /* Order matters: the input precedes the label in the DOM, so the adjacent-sibling selector is what
-   marks a ticked row. Weight AND a left rule AND color, never color alone. */
+   marks a ticked row. Weight AND a left rule AND color, never color alone. Geometry does not change
+   here -- the border and its padding are already reserved above, so nothing reflows on a tick. */
 .ssel-box:checked + label {
   font-weight: 650;
   color: var(--ssel-accent);
-  border-left: 3px solid var(--ssel-accent);
-  padding-left: 0.45rem;
-  margin-left: -0.48rem;
+  border-left-color: var(--ssel-accent);
   background: var(--ssel-accent-soft);
-  border-radius: 0 var(--ssel-radius) var(--ssel-radius) 0;
 }
 
 /* The site removes no focus ring and neither does this. A hand-styled control is exactly where the
