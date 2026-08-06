@@ -58,11 +58,19 @@
     control to get the full unfiltered list. Nothing here needs you to know a standard's name.
   </p>
 
+  {%- comment -%}
+    "Unfiltered" and NOT "unfiltered and complete". The word was scoped by "everything they would
+    filter", so it was defensible, but it is the strongest completeness cue on the baseline page and
+    its nearest correction used to be a few lines below it. The boundary lines are in the footer
+    now, past every card, so this says where they went rather than leaning on them being close. The
+    live region directly under the results heading still carries both defeaters in the meantime.
+  {%- endcomment -%}
   <noscript>
     <p class="ssel-noscript">
       <strong>The controls need JavaScript, so they are not shown.</strong> Everything they would
-      filter is below, unfiltered and complete, and the routing table further down this page answers
-      the same question without any of this. Nothing is reachable only through the controls.
+      filter is below, unfiltered, and the routing table further down this page answers the same
+      question without any of this. Nothing is reachable only through the controls, and the boundary
+      lines that qualify this result are at the end of it.
     </p>
   </noscript>
 
@@ -143,9 +151,19 @@
       list of what reaches you.
     </p>
 
-    <p class="ssel-boundary">{{ d.boundary.no_legal_advice }}</p>
-    <p class="ssel-boundary">{{ d.boundary.not_complete }}</p>
+    {%- comment -%}
+      WHAT STAYS UP HERE, AND WHY ONLY THIS. Everything between the form and the first card is
+      DYNAMIC: it changes with the selection, and it is the reader's own state rather than framing
+      around it. The static boundary lines and the organization-layer panel used to sit here too,
+      and between them they put roughly ten blocks of qualification between a reader and the answer
+      they came for -- which buried the thing the qualification was written to qualify. They are in
+      the footer below the blocks now, in full and unedited. Nothing was dropped or softened; only
+      the position relative to the answer changed.
 
+      So: the live region, the hidden-count control, the widening notice and the per-option notes.
+      Each of them is either a control or a statement that is false until the reader has done
+      something, which is exactly what has to be next to the thing it describes.
+    {%- endcomment -%}
     {%- comment -%}
       The hidden count is the strongest completeness defeater available, because it converts "the
       list is everything" into "the list is what YOU narrowed to" and puts undoing it one click
@@ -168,8 +186,6 @@
     <p class="ssel-note" id="ssel-note-{{ q.id }}-{{ o.id }}" hidden>{{ o.note }}</p>
     {%- endif %}{% endfor %}{% endfor %}
 
-    <p class="ssel-privacy">{{ d.boundary.privacy }}</p>
-
     {%- comment -%}
       THE FOUR BLOCKS, in a fixed order. A reader who stops after the first has still been told
       something true. Each block prints its own "empty" sentence rather than vanishing, because an
@@ -178,8 +194,10 @@
       In the served HTML each card sits in its resting home -- tier 0 in block A, tier 6 in block D,
       everything else in block C. The script moves cards between blocks as selections change. That
       is why the AI block carries `starts_hidden` in the data: nothing rests in it, so without that
-      it would ship as a heading standing over nothing. Block B has no resting cards either, but it
-      carries the organization-layer panel, which is content in its own right.
+      it would ship as a heading standing over nothing. Block B carries it for the same reason and
+      now for that reason alone -- it used to hold the organization-layer panel, which is why it
+      stayed on screen while empty; that panel is in the footer below the blocks now, so an empty
+      block B is simply an empty block and behaves like one.
 
       EVERY "EMPTY" SENTENCE SHIPS HIDDEN, and the script is the only thing that reveals one. This
       is not a detail. Those sentences say "nothing mapped here binds you directly" and "nothing
@@ -187,6 +205,14 @@
       them -- so a reader with JavaScript off, which is the baseline this whole feature rests on,
       was being handed a clearance notice on top of the answer. An absence sentence is only ever
       true relative to something the reader told the page, so it may only appear once they have.
+
+      THE INTRODUCTION IS THE EXACT MIRROR OF THAT RULE, and the two are easy to conflate, so:
+      `.ssel-block-intro` SHIPS VISIBLE and the script is the only thing that ever HIDES one. An
+      intro is true of the block in every state -- it describes what the block is for -- so with
+      JavaScript off, where every card is present under every heading, hiding it would strip the
+      framing from the one reader who has no way to get it back. It is hidden only where the empty
+      sentence is revealed, so that an empty block collapses to its heading and one line instead of
+      printing an introduction promising rows that are not there.
     {%- endcomment -%}
     {%- for block in d.blocks %}
     <section class="ssel-block" id="ssel-block-{{ block.id }}" data-block="{{ block.id }}"{% if block.starts_hidden %} hidden{% endif %}>
@@ -202,18 +228,17 @@
         The openers. Each is the sentence that pays for the whole app for one shape of ask, so they
         render above the items rather than below them. Hidden until their option is ticked.
 
-        These sit BELOW the empty sentence rather than above it. An empty block still has this
-        panel in it, and a substantial panel introduced by "nobody has asked you for anything" read
-        as though the panel were the nothing.
+        These sit BELOW the empty sentence rather than above it. An empty block can still have an
+        opener showing in it, and a substantial panel introduced by "nobody has asked you for
+        anything" read as though the panel were the nothing.
+
+        An opener is a RESULT -- it answers the ask the reader just described -- which is why it
+        stays in the block while the organization-layer panel, which explains a distinction that
+        holds whatever anybody ticked, moved to the footer.
       {%- endcomment -%}
       {%- for q in d.questions %}{% for o in q.options %}{% if o.opener %}
       <p class="ssel-opener" id="ssel-opener-{{ q.id }}-{{ o.id }}" hidden>{{ o.opener }}</p>
       {%- endif %}{% endfor %}{% endfor %}
-
-      <div class="ssel-layer" id="ssel-layer-note">
-        <h5>{{ d.org_vs_software_layer.heading }}</h5>
-        <p>{{ d.org_vs_software_layer.body }}</p>
-      </div>
       {%- endif %}
 
       <div class="ssel-items" id="ssel-items-{{ block.id }}">
@@ -315,6 +340,52 @@
       {%- endcomment -%}
       <p class="ssel-more"><a href="#what-this-page-did-not-assess">The longer version, further down this page</a></p>
     </section>
+
+    {%- comment -%}
+      THE FOOTER: everything in the result panel that does NOT change with a selection.
+
+      It sits after the blocks and after the permanent last card, which are the answer, and before
+      the two disclosures, which are the deeper explanation. That is the whole of the change: these
+      sentences used to stand between the form and the first result, and a reader had to get past
+      roughly ten blocks of framing to reach the thing being framed. NOTHING HERE IS WEAKENED BY
+      THE MOVE -- same words, same length, body text, full size, no disclosure around them, and no
+      "see below" standing in for any of them. A boundary a reader scrolls past is decoration; so
+      is a boundary a reader never reaches because they gave up before the answer.
+    {%- endcomment -%}
+    <div class="ssel-footer">
+      <p class="ssel-boundary">{{ d.boundary.no_legal_advice }}</p>
+      <p class="ssel-boundary">{{ d.boundary.not_complete }}</p>
+
+      {%- comment -%}
+        THE ORGANIZATION-LAYER PANEL. It used to render inside block B, where it appeared whenever
+        the reader ships software -- including when block B had no items, so a full explanatory
+        paragraph turned up underneath "nobody has asked you for anything you have recorded here
+        yet". It is EXPLANATION, not a result, and that is the distinction it is here to draw, so
+        it belongs with the other things that are true regardless of what was ticked.
+
+        It is still conditional: the script shows it when an organization-layer instrument is in
+        the result or the reader says they ship software. It therefore ships VISIBLE, like the
+        block introductions and unlike the empty sentences -- the sentence is true unconditionally,
+        so a reader with JavaScript off should have it. At the zero state every card is present, so
+        the script's first render leaves it exactly as served and nothing flickers.
+
+        AN h4, AND IT HAS TO BE. It was an h5 when it lived inside block B, where the block's own
+        h4 was a correct parent. Down here the nearest preceding heading is the h4 of the permanent
+        "Not on this map" card -- a sibling section it has nothing to do with -- so an h5 would make
+        a reader navigating by heading level land on this panel as a CHILD of the one card whose
+        whole job is to say what the map does not cover, which is close to the opposite of what the
+        panel means. In the footer it is a peer of the blocks and of that card, so it takes their
+        level. The rendered weight is unchanged: `.ssel-layer h4` in the CSS below carries exactly
+        what `.ssel-layer h5` carried, and it has to, because `.ssel-block > h4` is a child
+        combinator that cannot reach inside `.ssel-layer`.
+      {%- endcomment -%}
+      <div class="ssel-layer" id="ssel-layer-note">
+        <h4>{{ d.org_vs_software_layer.heading }}</h4>
+        <p>{{ d.org_vs_software_layer.body }}</p>
+      </div>
+
+      <p class="ssel-privacy">{{ d.boundary.privacy }}</p>
+    </div>
 
     <details class="ssel-panel-detail">
       <summary>{{ d.routes.heading }}</summary>
@@ -560,8 +631,11 @@
   font-weight: 650;
 }
 
-/* The boundary lines are body text, in the result, above the first card. Not a footnote, not
-   smaller, not collapsed. A boundary a reader has to go looking for is decoration. */
+/* The boundary lines are body text, in the result panel, directly under the last of it. Not a
+   footnote, not smaller, not collapsed, not behind a disclosure. They used to sit above the first
+   card and were moved below the answer because ten blocks of framing ahead of the result is its own
+   way of not being read. Nothing about their WEIGHT changed with the position: same size as body
+   text, same rule down the left. */
 .ssel-boundary {
   margin: 0 0 0.5rem;
   padding-left: 0.8rem;
@@ -579,7 +653,18 @@
   font-size: 0.94rem;
 }
 
-.ssel-privacy { margin: 0.75rem 0 1.25rem; color: var(--ssel-muted); font-size: 0.88rem; }
+.ssel-privacy { margin: 0.75rem 0 0; color: var(--ssel-muted); font-size: 0.88rem; }
+
+/* The static footer -- the two boundary lines, the organization-layer panel and the privacy line.
+   A rule separates it from the last block, and that is the only thing separating it: nothing in
+   here is smaller, lighter, indented or collapsed relative to what it was when it sat above the
+   first card. The rule marks "this stopped being your result and started being the boundary around
+   it", which is a distinction the reader benefits from and the previous order could not draw. */
+.ssel-footer {
+  margin: 1.75rem 0 0;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--ssel-strong);
+}
 
 .ssel-block { margin: 1.75rem 0; }
 .ssel-block > h4 { margin: 0 0 0.35rem; font-size: 1.02rem; font-weight: 700; }
@@ -597,7 +682,11 @@
   max-width: 74ch;
 }
 
-.ssel-layer h5 { margin: 0 0 0.35rem; font-size: 0.98rem; font-weight: 700; color: var(--ssel-fg); }
+/* h4 rather than h5 since the panel moved to the footer, where it is a peer of the blocks and not a
+   child of one. `.ssel-block > h4` above is a CHILD combinator, so it does not reach in here and
+   this rule is the only thing sizing the panel's heading -- same values it carried as an h5, so the
+   heading level changed and the rendered weight did not. */
+.ssel-layer h4 { margin: 0 0 0.35rem; font-size: 0.98rem; font-weight: 700; color: var(--ssel-fg); }
 .ssel-layer p { margin: 0; }
 
 .ssel-items { display: grid; gap: 0.9rem; }
@@ -957,8 +1046,10 @@
       if (!stillShown || !stillShown.classList.contains("is-hidden")) { held.focus(); }
     }
 
-    /* Openers, notes and the organization-layer panel. Computed BEFORE the block pass below, which
-       needs to know whether the layer panel is showing: a block holding it is not empty. */
+    /* Openers, notes and the organization-layer panel. This used to have to run BEFORE the block
+       pass, because the layer panel lived inside block B and a block holding it was not empty. The
+       panel is in the footer now and no block's emptiness depends on anything computed here, so
+       the order is only the readable one. */
     openers.forEach(function (p) { p.hidden = true; });
     notes.forEach(function (p) { p.hidden = true; });
 
@@ -990,33 +1081,49 @@
       }
     });
 
+    /* The layer panel lives in the footer, not in a block, so this decides only whether the reader
+       is shown it -- it no longer keeps a block on screen. Unchanged otherwise: an organization-
+       layer instrument in the result, or a reader who ships software, is who the distinction is
+       for. Note the direction: the panel ships VISIBLE and this is what hides it. At the zero state
+       every card is showing, so orgVisible is true and the first render is a no-op on it. */
     var orgVisible = visible.some(function (c) { return c.dataset.group === "org-instruments"; });
     layerNote.hidden = !(orgVisible || sel.selected["role=software"]);
 
-    /* THE BLOCK PASS. Three rules, and the middle one is the fix for a page that contradicted
+    /* THE BLOCK PASS. Four rules, and the middle two are each the fix for a page that contradicted
        itself:
          -- an empty sentence appears only once the reader has told the page something, because
             "nothing mapped here binds you directly" is a finding relative to an answer and a
             falsehood without one;
-         -- a block disappears when it has no cards, nothing to say, and nothing else in it;
+         -- an empty block collapses to its heading and that one sentence: the introduction is
+            hidden EXACTLY where the empty sentence is revealed, so a block with nothing in it
+            costs three lines instead of five;
+         -- a block disappears when it has no cards and nothing to say;
          -- `hidden` set in the served markup is cleared here, so from the first render the script
             owns every block's visibility and the markup owns only the no-JavaScript baseline. */
     BLOCKS.forEach(function (id) {
       var empty = emptyEls[id];
       var speaks = !!(empty && empty.textContent.trim());
-      var carries = (id === "b" && !layerNote.hidden);
-      if (empty) { empty.hidden = counts[id] > 0 || !speaks || !sel.any; }
-      /* A block carrying only the organization-layer panel keeps its heading and drops its
-         introduction, which promises rows ("each row leads with what the document issues") that
-         are not there. The panel is itself an answer to the heading. */
+
+      /* ONE condition drives both toggles, deliberately. The intro is hidden in precisely the case
+         where the empty sentence is shown, and computing that once is what stops the two from ever
+         disagreeing -- "no introduction and no absence sentence either" and "an introduction
+         promising rows above a sentence saying there are none" are both reachable from two
+         independently maintained expressions, and both are worse than either state. */
+      var emptyShown = counts[id] === 0 && speaks && sel.any;
+      if (empty) { empty.hidden = !emptyShown; }
+
+      /* The direction here is the opposite of the empty sentence's, and that is the point. The
+         intro ships VISIBLE and is only ever hidden from here: with JavaScript off every card is
+         present under every heading, and the intro is the framing that says what the heading means
+         -- true in every state, so the no-JavaScript reader keeps it. (The empty sentence is the
+         mirror: it ships hidden, because with JavaScript off it would sit above the very cards
+         that contradict it and hand the reader a clearance they were never given.) */
       var intro = blockEls[id] ? blockEls[id].querySelector(".ssel-block-intro") : null;
-      if (intro) { intro.hidden = (counts[id] === 0 && carries); }
+      if (intro) { intro.hidden = emptyShown; }
+
       if (blockEls[id]) {
         blockEls[id].hidden = false;
-        blockEls[id].classList.toggle(
-          "is-hidden",
-          counts[id] === 0 && !carries && !(speaks && sel.any)
-        );
+        blockEls[id].classList.toggle("is-hidden", counts[id] === 0 && !emptyShown);
       }
     });
 

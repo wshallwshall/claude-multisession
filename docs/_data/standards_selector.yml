@@ -32,10 +32,17 @@ reference_page: "STANDARDS-REFERENCE.html"
 # ---------------------------------------------------------------------------------------------
 # THE BOUNDARY PANELS
 #
-# These render inside the result region itself, above the first item, in every state including the
-# unfiltered resting state. Not a footer, not a collapsed element, not smaller than body text. A
-# disclaimer that is read once and then scrolled past is a disclaimer that does no work; the ones
-# below are load-bearing, so they sit where the answer is.
+# These render inside the result region itself, as full-size body text, in every state including
+# the unfiltered resting state. Not collapsed, not behind a disclosure, not smaller than body text,
+# and never replaced by a "see below" pointing at them.
+#
+# THE RULE IS ABOUT WEIGHT, NOT POSITION, and the two got conflated once already. They sit in a
+# static footer directly under the answer -- after the four result blocks and after the permanent
+# last card -- rather than above the first item. They used to sit above it, and the effect was that
+# roughly ten blocks of framing stood between a reader and the thing the framing qualified, which
+# buried it just as thoroughly as a footnote would have. A disclaimer that is read once and then
+# scrolled past does no work; so does one a reader never reaches because they gave up before the
+# answer. The ones below are load-bearing, so they sit with the answer, at full weight.
 # ---------------------------------------------------------------------------------------------
 boundary:
   no_legal_advice: >-
@@ -54,9 +61,13 @@ boundary:
   privacy: >-
     Your selections stay in this page. Nothing is stored, and nothing is sent anywhere.
 
-# Rendered at the top of the "what can actually be produced" block whenever an organization-layer
-# instrument is in the result, and always when the reader ships software. This is the highest-value
-# sentence the selector can show, which is why it is not reachable only by scrolling.
+# Rendered in the result footer, alongside the boundary lines, whenever an organization-layer
+# instrument is in the result, and always when the reader ships software. It sits there rather than
+# inside a result block because it is EXPLANATION and not a result: it is true whatever anybody
+# ticked, and it used to turn up under a block that could have nothing in it, so a full explanatory
+# paragraph appeared beneath "nobody has asked you for anything". This is the highest-value sentence
+# the selector can show, which is why it is never collapsed, never behind a disclosure and never
+# smaller than body text.
 org_vs_software_layer:
   heading: "The organization layer is not the software layer"
   body: >-
