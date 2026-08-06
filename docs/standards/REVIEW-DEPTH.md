@@ -1,7 +1,7 @@
 # How much of this code does a human have to read?
 
-**The question every engineering manager asks once an assistant starts writing most of the code, and
-the one where a wrong answer is expensive in both directions.**
+**The question every engineering manager asks once an AI coding tool starts writing most of the
+code, and the one where a wrong answer is expensive in both directions.**
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/REVIEW-DEPTH.md)
@@ -20,21 +20,21 @@ the one where a wrong answer is expensive in both directions.**
 - **Two conditions that force a full line-by-line read regardless of tier**, so the hardest cases
   cannot be argued down.
 - **A floor that survives every other dial being turned down**, stated in one sentence a whole
-  organisation can remember.
+  organization can remember.
 - **Questions to ask a team**, with what a good answer sounds like, so you can tell a real practice
   from a described one without reading the code yourself.
 
 ## What this costs you, and where it does not apply
 
-- **It shifts effort rather than removing it.** Deciding the tier takes judgement at the start of
+- **It shifts effort rather than removing it.** Deciding the tier takes judgment at the start of
   each change. The saving is that the deep read lands only where it earns its cost.
 - **It assumes you can tell what a change touches.** If your system has no clear boundary around
-  restricted data or authorisation, the rule clamps everything to the strictest tier, and that is
+  restricted data or authorization, the rule clamps everything to the strictest tier, and that is
   expensive. Fixing the boundary is the cheaper project.
 - **It confers no certification.** Following it is not an attestation, and no outside body issues
   one for it.
 - **It is written for a small team, including a solo maintainer with no second reviewer.** Larger
-  organisations should read the tier as a floor and add their own review policy on top.
+  organizations should read the tier as a floor and add their own review policy on top.
 
 ---
 
@@ -68,7 +68,7 @@ Two properties make this work, and they are worth stating to whoever asks for an
 
 - **The sensitive-data ratchet dominates.** A change that touches or protects restricted data lands
   at the higher tiers no matter how small it is. Size scales the lower tiers only. A one-line change
-  to an authorisation path is not a one-line-change review.
+  to an authorization path is not a one-line-change review.
 - **Unknown clamps up, and fails closed.** If nobody can say whether a change touches restricted
   data, or whether it is exposed beyond the local machine, it resolves to the stricter tier. The
   cheap answer is the strict one, so the incentive to leave the question open is removed.
@@ -77,8 +77,8 @@ Two properties make this work, and they are worth stating to whoever asks for an
 
 These are not negotiable by tier, and both come from experience rather than theory:
 
-1. **A security-critical seam you must fully own** -- authentication, authorisation, cryptography, a
-   network bind guard. Read every line by hand. Not because the assistant is unreliable here, but
+1. **A security-critical seam you must fully own** -- authentication, authorization, cryptography, a
+   network bind guard. Read every line by hand. Not because the AI coding tool is unreliable here, but
    because this is the code you will have to defend later, in a room, from memory.
 2. **Anything you cannot yet verify** -- no test you trust, no spec you can check it against. Depth
    substitutes for verification when verification is missing. Write the test instead if you can;
@@ -92,11 +92,11 @@ Below every tier sits one rule that never turns off:
 
 > **Reject code you cannot explain, even if it works.**
 
-This is the line between an assistant accelerating a team and an assistant quietly filling a
-codebase with **code of unknown provenance** -- code whose behaviour nobody on the team can account
-for. The failure it prevents is a documented one: developers who can produce working-looking code
-but cannot reason about, fix, or maintain it. You discover this during an incident, which is the
-worst possible time.
+This is the line between an AI coding tool accelerating a team and an AI coding tool quietly
+filling a codebase with **code of unknown provenance** -- code whose behavior nobody on the team
+can account for. The failure it prevents is a documented one: developers who can produce
+working-looking code but cannot reason about, fix, or maintain it. You discover this during an
+incident, which is the worst possible time.
 
 ### Does explaining it *with the assistant's help* count?
 
@@ -117,7 +117,7 @@ The guardrails are what make the looser reading defensible:
 - It does not apply to the two full-read conditions above. On a security seam, unaided is the bar.
 - **Record where you took the looser reading**, so the deviation is visible rather than assumed.
 
-If your organisation wants the strict reading, take it. What matters is that the choice is written
+If your organization wants the strict reading, take it. What matters is that the choice is written
 down and the same for everyone, rather than decided per change by whoever is tired.
 
 ---
@@ -141,7 +141,7 @@ output, or a floor nobody enforces. It is worth knowing which.
 
 ## Adapting this to your project
 
-- **Rename the tiers** to whatever your organisation already uses. The names do not matter; the
+- **Rename the tiers** to whatever your organization already uses. The names do not matter; the
   ratchet and the clamp do.
 - **Define "restricted data" for your setting** in one sentence, in your own working agreement.
   Everything above depends on that line being drawn somewhere findable.

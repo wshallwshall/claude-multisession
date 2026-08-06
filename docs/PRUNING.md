@@ -56,7 +56,7 @@ in `prune-merged.ps1` carries three signals, not one:
 Signal 3 is scoped deliberately: a worktree created with `-Base origin/<parent>` points at the
 *parent's* upstream, so a merged parent makes a never-pushed child report `[gone]`. And `gone` means
 *the remote ref is absent* -- a closed PR and a `push --delete` produce it too. It is a reason to remove
-the **worktree**, never a licence to delete the **branch**.
+the **worktree**, never a license to delete the **branch**.
 
 ### The converse trap is the one that destroyed a worktree
 
@@ -192,8 +192,8 @@ A fence believed to be wider than it is, is worse than no fence -- because it is
 prints what it cannot see, in the receipt as well as on the terminal:
 
 - a session writing into a worktree **by absolute path from elsewhere** (the 29% above);
-- a `cwd` recorded as a UNC (`\\host\C$\...`) or 8.3 short path -- the match is a normalised string
-  compare and neither spelling normalises to the worktree's own path;
+- a `cwd` recorded as a UNC (`\\host\C$\...`) or 8.3 short path -- the match is a normalized string
+  compare and neither spelling normalizes to the worktree's own path;
 - a session that never registered;
 - a session that only edits files and **runs no git command** -- it touches none of the seven metadata
   files, so signal 2 is blind to it as well.
@@ -391,9 +391,9 @@ The reaper clears them, under rules worth copying:
   directory is gone **and** deregistered, so there is no session left in there to collide with. A claim
   whose holder is merely quiet is never touched, and an auto-expiring claim would silently re-open the
   race it exists to prevent.
-- **full normalised path equality only** -- no leaf name, no prefix, no `StartsWith`. Releasing a
+- **full normalized path equality only** -- no leaf name, no prefix, no `StartsWith`. Releasing a
   *living* worktree's claim hands its key to another session and invites the duplicate build the
-  registry exists to stop. One normaliser on both sides, or the match silently misses and the claim is
+  registry exists to stop. One normalizer on both sides, or the match silently misses and the claim is
   quietly left stranded.
 - a dry run releases nothing.
 - an **unreadable** claim file belongs to the registry, not to any worktree -- by definition we could not

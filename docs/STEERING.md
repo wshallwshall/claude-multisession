@@ -79,7 +79,7 @@ Two reasons it is local and opt-in rather than tracked and always-on:
 
 - **It costs a process spawn before every tool call.** Measured on the repo this tooling was
   developed in: roughly 366 ms per tool call, of which about 267 ms is bare PowerShell startup and
-  cannot be optimised away. That is a standing tax on every tool call in every session, paid for a
+  cannot be optimized away. That is a standing tax on every tool call in every session, paid for a
   feature you use occasionally. State the cost of an always-on hook up front; do not let someone
   discover it as unexplained slowness.
 - **`*.local.*` is git-ignored** by this repo's `.gitignore`, which is the convention throughout:
@@ -91,7 +91,7 @@ session you want to steer is already running.
 
 ## Why a file, and not an environment variable
 
-This is the load-bearing design decision, and it generalises well beyond steering.
+This is the load-bearing design decision, and it generalizes well beyond steering.
 
 An environment variable is read into a process at start. A session that is already running will never
 see you set one. Editing hook wiring has the same defect one level up: settings are read when a
@@ -191,7 +191,7 @@ command can see", which for an opt-in feature is a statement of fact, not a faul
 ## Proving it end to end
 
 The hook reads no stdin -- everything it needs comes from the environment and the file -- so you can
-drive it directly and read the decision it emits, rather than inferring behaviour from the source:
+drive it directly and read the decision it emits, rather than inferring behavior from the source:
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-steer.ps1 "throwaway probe, ignore"

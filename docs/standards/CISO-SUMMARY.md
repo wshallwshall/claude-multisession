@@ -22,12 +22,12 @@ do, and how to tell whether you actually got it.**
 
 ## The bottom line
 
-- **The risk categories are not new.** Injection, weak authorisation, bad dependencies and leaked
+- **The risk categories are not new.** Injection, weak authorization, bad dependencies and leaked
   secrets are the same list as last year. What changed is **volume, speed, and confidence**.
 - **Reviewing more code is not the answer.** The answer is controls that do not care how finished
   the output looks, because looking finished is precisely what assisted output is good at.
 - **Ask for receipts, not assurances.** A control that has never been proven able to fail is
-  indistinguishable from no control. That single question separates real programmes from theatre.
+  indistinguishable from no control. That single question separates real programs from theatre.
 - **None of this certifies anything.** These documents are a bar to set, not an attestation to
   present. Anyone who tells you otherwise is selling something.
 
@@ -35,7 +35,7 @@ do, and how to tell whether you actually got it.**
 
 ## What actually changes with an assistant in the loop
 
-Five failure modes cover it. Every control worth funding neutralises at least one of them; a
+Five failure modes cover it. Every control worth funding neutralizes at least one of them; a
 proposed control that answers none is ceremony, and ceremony is what gets dropped first under
 pressure -- taking the load-bearing rules beside it.
 
@@ -74,7 +74,7 @@ gating on them buys the appearance of rigor while the structural controls go unf
    strict type checking, dependency verification and hash pinning, blocking security scanners, and
    an allowlist on what gets published.
 2. **A human arbiter who cannot be skipped**, especially where a change touches restricted data or
-   an authorisation path.
+   an authorization path.
 3. **Measurement, last, and never as a gate on its own.** Mutation testing, coverage visibility,
    duplication detection and complexity triage inform a person. They do not certify anything.
 
@@ -89,7 +89,7 @@ The order matters. Reversed, you get a dashboard and no controls.
   are most concerned with.
 - **Not independently reviewed.** No outside party has reviewed this material.
 - **Not exhaustive.** It names at least the failure modes it was written against, not every risk
-  your programme carries.
+  your program carries.
 - **Not a substitute for your own threat model.** Nothing here knows what your systems do.
 
 ---

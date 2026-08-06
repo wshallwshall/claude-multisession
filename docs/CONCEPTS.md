@@ -230,7 +230,7 @@ present.
 > **Trap.** The fence returned `DEAD`/`STALE`/absent for a worktree, and that was read as permission
 > to delete it.
 >
-> **Rule.** Wire liveness so it can only block a destructive action, never authorise one. A negative
+> **Rule.** Wire liveness so it can only block a destructive action, never authorize one. A negative
 > verdict is the *absence of a veto*, not a permission. Say so in a comment next to the code, because
 > the inverse reading is the natural one, and `occupancy.ps1` encodes it structurally:
 > `Get-WorktreeOccupants` returns veto-worthy rows only, and drops `DEAD`/`STALE` on the floor so no
@@ -396,7 +396,7 @@ abandonment with, see section 3, so breaking a lock re-opens the exact race the 
 
 The corresponding rule for claims: `-List` reports each holder's **liveness**, not the claim's age.
 
-> **Trap.** Age was the original signal and it was actively misleading. A claim was labelled
+> **Trap.** Age was the original signal and it was actively misleading. A claim was labeled
 > `STALE ~21h` and recommended for release; its holder had committed **two minutes earlier**.
 > Following the tool's own recommendation would have freed the key for a second session to start
 > building what someone was mid-flight on, the exact duplicate build the registry exists to prevent.
@@ -405,7 +405,7 @@ The corresponding rule for claims: `-List` reports each holder's **liveness**, n
 > normal shape of long work. Recommend a force-release only in the one state that can be *proven*
 > (the worktree no longer exists on disk); in every other state say so and say "confirm first". A
 > failed probe reports `failed`, never `gone`, because a probe that reported death would turn an
-> unreadable path into a licence to release a live session's claim.
+> unreadable path into a license to release a live session's claim.
 
 Because there is no timer, a record whose *content* is broadcast must be correctable in place:
 
@@ -431,7 +431,7 @@ These look like style. They are correctness.
 ### Canonicalise before comparing, and fold for comparison only
 
 `ConvertTo-CcxComparablePath` (PowerShell) and `fold_path()` (Python) are the *only* implementations.
-Both do `GetFullPath`/`abspath` first, then normalise separators to `/`, strip a trailing `/`, and
+Both do `GetFullPath`/`abspath` first, then normalize separators to `/`, strip a trailing `/`, and
 lower-case **only on a case-insensitive filesystem**.
 
 > **Trap 1.** Four of five earlier copies skipped canonicalisation. Without it,
@@ -641,7 +641,7 @@ Every failure mode in this system is **byte-identical to success**.
 A hook that is wired but resolves nothing prints the same output as a healthy hook with no peers. A
 fence that could not read the registry returns the same empty list as a fence that read it and found
 nobody. A gate whose helper files were not installed exits 0, exactly like a gate that saw nothing to
-deny. A control that was merged but never installed is a source artefact with green tests.
+deny. A control that was merged but never installed is a source artifact with green tests.
 
 That is why so much of this repository is receipts rather than logic: print what you scanned, count
 what you examined, distinguish "found nothing" from "could not look", and name your blind spots on

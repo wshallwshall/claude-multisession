@@ -2,7 +2,7 @@
 
 `scripts/security/scan_forbidden.py` refuses to let identifying content reach a public repository.
 
-Publishing a repo that grew up in private is not a licence question, it is a *string* question. The
+Publishing a repo that grew up in private is not a license question, it is a *string* question. The
 code is fine. What follows it out the door is the absolute path some traceback printed, the address
 of a box someone pasted out of a terminal, a token prefix in a config example, and the name of the
 client the work was actually for. None of that is a syntax error, a test failure, or a *secret* in
@@ -16,7 +16,7 @@ virtualenv, or on a CI runner.
 
 ## What it catches
 
-**Structural detectors** are compiled into the script and always run, because they recognise a
+**Structural detectors** are compiled into the script and always run, because they recognize a
 *shape* and not a name. There is no list to keep current: they work in a fresh fork, in CI with no
 secrets, in a contributor's clone.
 
@@ -50,7 +50,7 @@ Exit `0` clean, `1` forbidden content found, `2` usage error / nothing scanned /
 echoing it into a CI log copies the leak into a public place. The default output is location and
 category, never the matched text.
 
-### Three behaviours worth knowing, because each one is a way a scanner lies
+### Three behaviors worth knowing, because each one is a way a scanner lies
 
 **1. Zero files scanned is a refusal, not a pass.** A run that examined nothing certifies nothing.
 Wrong directory, not a repository, every path swallowed by a skip rule -- all of them exit `2` and
@@ -240,14 +240,14 @@ to coverage instead of to detectors.
 
 ## The permanent blind spot
 
-**A scanner cannot see a policy judgement.**
+**A scanner cannot see a policy judgment.**
 
 "This content does not belong in a public repository" is not a token class, and no pattern will ever
 catch it. Every one of these can pass this gate cleanly, because every one of them is *ordinary
 prose containing no forbidden string*:
 
 - a design note that describes an internal system in enough detail to attack it;
-- a case study whose specifics identify the organisation it happened at;
+- a case study whose specifics identify the organization it happened at;
 - a benchmark number that fingerprints a host;
 - a lesson that cannot be told without shipping the recipe for bypassing a control.
 

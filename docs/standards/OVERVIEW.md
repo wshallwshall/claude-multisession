@@ -70,7 +70,7 @@ able to fail. A standard that no working agreement references is a document, not
 - **A written split between what you own and what an adopter owns**, before you claim any control.
   That gap is where a control ends up unowned by both sides, each assuming the other had it.
 - **A risk tier you can resolve in one question**, so a one-line fix does not carry the same
-  obligation as a change to an authorisation path, and so the cheap answer errs strict rather than
+  obligation as a change to an authorization path, and so the cheap answer errs strict rather than
   convenient.
 - **Wording you can actually publish.** Approved phrasings next to the overclaims they replace, and
   a rule for saying what a gate does not prove -- which is what stops a document being rejected by
@@ -99,10 +99,10 @@ you are currently losing.
 
 | Document | What it buys you |
 |---|---|
-| [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) | Five named process failure modes as an organising spine, a tier ladder that says how much rigor this particular change needs, the hard line between a control and a wish -- a gate is a deterministic check, and the model never certifies its own output -- and an adversarial verification pass written as a technique, including the cases where it is pure waste. |
+| [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) | Five named process failure modes as an organizing spine, a tier ladder that says how much rigor this particular change needs, the hard line between a control and a wish -- a gate is a deterministic check, and the model never certifies its own output -- and an adversarial verification pass written as a technique, including the cases where it is pure waste. |
 | [Dependency integrity](DEPENDENCY-INTEGRITY.md) | Two directions in one document. Inbound: third-party code held as a black box you deliberately do not source-review, with the obligation made finite and the human effort concentrated at adoption and at each bump. Outbound: a published build that contains only what you declared, verifiable by the person installing it. |
 | [Human review of code](REVIEW-DEPTH.md) | The answer to "how much of this must a human read" that is not a percentage: depth resolved per change by risk tier, a sensitive-data ratchet that dominates size, an unknown-clamps-up rule, two conditions that force a full line-by-line read regardless, and the contested question of whether explaining code with the assistant's help satisfies the floor. |
-| [Code quality](CODE-QUALITY.md) | Rows that may decide a verdict separated from rows that may only start a conversation, the published evidence behind refusing to gate on a single number, a map from each way machine-written code goes wrong to the control that neutralises it, and review depth as a per-file decision so a large diff stays finite. |
+| [Code quality](CODE-QUALITY.md) | Rows that may decide a verdict separated from rows that may only start a conversation, the published evidence behind refusing to gate on a single number, a map from each way machine-written code goes wrong to the control that neutralizes it, and review depth as a per-file decision so a large diff stays finite. |
 | [Secure development](SECURE-DEVELOPMENT.md) | A written producer-versus-operator ownership split, a per-interface threat model that gives review something to check against, a finite secure-coding list, an honest read of what a green pipeline has and has not established, and a release gate that is a checklist rather than a debate. |
 
 ## Fetch the whole set in one command
@@ -166,7 +166,7 @@ Three assumptions ride along, and they are the first things to check against you
 - **The domain is stripped on purpose.** These were written in a setting with regulated data and a
   compliance regime, and the specifics of that setting are not here. Rules are expressed generically
   -- "regulated data", "an untrusted inbound payload", "a compliance regime the adopting
-  organisation operates". **Where a rule could not be generalised it was dropped rather than
+  organization operates". **Where a rule could not be generalized it was dropped rather than
   disguised**, so the set is not a complete account of the practice it came from.
 
 ## What is already elsewhere on this site

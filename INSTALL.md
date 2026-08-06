@@ -6,7 +6,7 @@ Read this section first, because it is the reason the rest of the document is sh
 
 > **Cloning this repository installs nothing.** Merging a hook does not install one. Every control
 > here runs from a copy or a wiring entry that an installer has to write, and until that happens the
-> file you are reading is a source artefact, not an enforcement.
+> file you are reading is a source artifact, not an enforcement.
 
 That failure is invisible by construction. A repository with no controls installed still gives you a
 session banner, a status message on every prompt, and green output. There is no error, no warning,
@@ -366,7 +366,7 @@ Honest limits, both of them current: this installer has no `-Status` and no `-Un
 (removing the gate's allowlist is what renders it inert), and it takes one `-ConfigDir` per run rather
 than discovering them the way its sibling does.
 
-One implementation note that generalises past this script: neither installer gives `$HookPath` or
+One implementation note that generalizes past this script: neither installer gives `$HookPath` or
 `$SettingsPath` a parameter default. Parameter defaults are evaluated during **binding**, before the
 first line of the body -- so a default that throws pre-empts the refusal guard below it and the script
 dies with an unrelated error instead of refusing. A guard is only a guard if nothing can run ahead of
@@ -390,7 +390,7 @@ Five things, reported separately:
   means matched but the script ignores it; `opt-in` means off by design. A count of "3" is not
   information unless you know whether 3 is right, so this asserts against an expectation instead.
 - **`skipped`.** Directories whose NAME matched a config root but that are not one, each with the
-  reason it was rejected. The pattern `.claude-account-*` also matches a launcher's `.lock` artefact,
+  reason it was rejected. The pattern `.claude-account-*` also matches a launcher's `.lock` artifact,
   which on a real machine is a directory -- and wiring one means writing settings into a lock file.
   Rejections are printed rather than dropped, because a candidate that vanished silently reads exactly
   like one that never existed.

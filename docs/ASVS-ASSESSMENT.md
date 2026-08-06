@@ -18,7 +18,7 @@ reasoning. Publishing the register invites something else.
 **Two independent sources.** What follows was first written from published method documents, then
 corrected and deepened against a first-hand practitioner account from a session that ran an
 assessment end to end and was asked afterwards for method only. Where the two disagreed, the
-first-hand account won. Its organising insight is worth stating up front, because most of the traps
+first-hand account won. Its organizing insight is worth stating up front, because most of the traps
 below are instances of it: **the recurring failure is an instrument answering a narrower question
 than the one asked, and looking clean while doing it.**
 
@@ -580,7 +580,7 @@ in-scope versus total. Both counts are correct. They are counts of different thi
 between them is arithmetic, not progress.
 
 **And the case people miss entirely: a count that does not move at all can hide real improvement and
-real regression cancelling out** -- or, worse, can hide the silent-invalidation class above, where
+real regression canceling out** -- or, worse, can hide the silent-invalidation class above, where
 nothing moved because nothing was looking.
 
 ### Zero movement can be the most honest thing you report

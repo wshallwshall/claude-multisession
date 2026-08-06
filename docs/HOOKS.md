@@ -282,7 +282,7 @@ claim gate treats `docPaths.prefixes: []` the same way.
 
 ### The first rule to fire is the only one that speaks
 
-`Write-Deny` exits. So rules are evaluated in source order and there is **no defence in depth between
+`Write-Deny` exits. So rules are evaluated in source order and there is **no defense in depth between
 them** -- a later rule guarding the same case is unreachable, and looks live in the source. Two
 practical consequences:
 
@@ -468,7 +468,7 @@ had 85 passing tests and every one of them bound the **repo** copy, while enforc
 installed copy that was days behind. Reverse drift is equally invisible -- delete a rule from source
 and the stale installed copy keeps enforcing it forever, while every test correctly reports it gone.
 
-So establish behaviour by driving crafted input into the **installed** hook and reading the decision
+So establish behavior by driving crafted input into the **installed** hook and reading the decision
 it emits:
 
 ```powershell

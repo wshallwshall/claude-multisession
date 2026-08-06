@@ -133,7 +133,7 @@ Landing the first PR is precisely what puts the second one `BEHIND`, and nothing
 update loop rather than an unbounded one.
 
 > Measured with the repository's "allow update branch" setting off. Whether turning that setting on
-> changes the behaviour is **unverified** -- no back-fill was ever observed, and the forge's own
+> changes the behavior is **unverified** -- no back-fill was ever observed, and the forge's own
 > documentation does not connect the setting to this case. Do not repeat it as fact.
 
 ### A merge-watcher needs three arms, not two
@@ -210,7 +210,7 @@ git grep -n "one distinctive phrase from YOUR entry"
 Renumbering an item from `1252` to `1316` across a changelog turned `cp1252` into `cp1316`, in a
 file nobody re-reads.
 
-Two things went wrong and both generalise. The replacement was a **bare number**, so it matched
+Two things went wrong and both generalize. The replacement was a **bare number**, so it matched
 inside unrelated tokens. And it was re-run during **conflict fixup** -- which is exactly when a sweep
 gets repeated carelessly, on a file whose content just changed underneath it.
 
@@ -301,7 +301,7 @@ pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Apply     # act on a ta
 ```
 
 For a single finished worktree, [`remove.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/worktree/remove.ps1) is the manual path. Two
-of its behaviours matter at merge time:
+of its behaviors matter at merge time:
 
 - It **references the tip before removing anything**, and with `-DeleteBranch` writes it to
   `refs/<prefix>/removed/<name>` first. A commit in no ref is in no reflog either, and nothing in the

@@ -49,9 +49,9 @@ answer at one layer is not evidence about the next.
 | Layer | The question it answers | Instrument | The failure that looks like success |
 |---|---|---|---|
 | **Source** | Does the rule exist in this checkout? | Read the file; run the test suite | The rule is merged, tested and green -- and has never been installed anywhere |
-| **Installed** | Is that rule in the copy the client executes? | SHA-256 of the installed artefact vs the source | Installed copy is days behind source. Reverse drift is equally invisible: delete a rule from source and the stale installed copy keeps enforcing it forever, while every test correctly reports it gone |
+| **Installed** | Is that rule in the copy the client executes? | SHA-256 of the installed artifact vs the source | Installed copy is days behind source. Reverse drift is equally invisible: delete a rule from source and the stale installed copy keeps enforcing it forever, while every test correctly reports it gone |
 | **Wired** | Does anything actually invoke that copy? | Read live matchers out of every config root; diff them against the rules the *installed* script implements | A matcher exists but names a similarly-titled script from a different project; or a rule is implemented and no matcher ever reaches it |
-| **Effective** | What does it decide when fed a real input? | Pipe crafted input at the installed artefact and read the emitted decision | Rules exit on first match, so a later rule may be structurally unreachable. A helper the script dot-sources is absent, so it exits 0 and enforces nothing |
+| **Effective** | What does it decide when fed a real input? | Pipe crafted input at the installed artifact and read the emitted decision | Rules exit on first match, so a later rule may be structurally unreachable. A helper the script dot-sources is absent, so it exits 0 and enforces nothing |
 
 Three consequences follow directly, and they are the three most expensive mistakes available here.
 
@@ -62,7 +62,7 @@ merged code as coverage. On the repo this tooling was developed in, a coordinati
 unwired for hours while the settings file looked entirely correct, because a similarly-named entry from
 another project occupied the slot it wanted.
 
-**Establish behaviour by driving input into the installed artefact, not by reading source.** The
+**Establish behavior by driving input into the installed artifact, not by reading source.** The
 installed copy, the settings matcher and the source can all disagree with one another, and only one of
 them decides anything.
 
@@ -86,9 +86,9 @@ are the reason the first one goes unnoticed.
 | Class | What drifts | Symptom | Instrument |
 |---|---|---|---|
 | **D1 -- Session drift** | Where work happens: a session builds in the shared checkout instead of an isolated one | Two sessions overwrite each other; a tree is swapped out from under a live session | Target-path gating at tool time; a `SessionStart` backstop that repairs and *says so* |
-| **D2 -- Control drift** | Which artefact enforces: source, installed copy and wired matcher diverge | Nothing. This is the silent class | SHA parity per layer; matcher-vs-implemented-rule diff |
+| **D2 -- Control drift** | Which artifact enforces: source, installed copy and wired matcher diverge | Nothing. This is the silent class | SHA parity per layer; matcher-vs-implemented-rule diff |
 | **D3 -- Coverage drift** | What the rules can see: work moves to routes the rule set does not cover | A control is live, correct, and simply never invoked | Fire it on purpose; enumerate the routes; report every non-match you deliberately allow |
-| **D4 -- Belief drift** | What everyone thinks is true: docs, memory, status and premises diverge from behaviour | Confident, wrong statements -- including your own from last month | Re-measure the premise; date and attribute every figure; state status exactly |
+| **D4 -- Belief drift** | What everyone thinks is true: docs, memory, status and premises diverge from behavior | Confident, wrong statements -- including your own from last month | Re-measure the premise; date and attribute every figure; state status exactly |
 
 D1 is the problem you set out to solve. D2, D3 and D4 are the reasons you believe you already solved
 it. An audit that only looks for D1 will pass.
@@ -131,7 +131,7 @@ cries wolf gets routed around, and then you have nothing.
 The obvious design for "don't build in the shared checkout" is to deny writes from sessions whose cwd
 is that checkout. It is wrong. Measured on the repo this tooling was developed in, over 30 days, **29%
 of write calls came from a session sitting in the shared checkout and landing inside a separate
-worktree by absolute path** -- already correct behaviour. A cwd-keyed gate would have denied every one
+worktree by absolute path** -- already correct behavior. A cwd-keyed gate would have denied every one
 of them.
 
 Key write-gating on the destination. A session may then stay where it is and simply write into its
@@ -156,7 +156,7 @@ design, and it is why the kill switch is documented in plain sight in the script
 than hidden. Obscurity was tried and is not a control -- the file is one directory listing away. Rule 1a
 is the control.
 
-Generalise it: **any control with a mutable enforcement surface must govern that surface, and the
+Generalize it: **any control with a mutable enforcement surface must govern that surface, and the
 governing rule must be evaluated separately from the rule it protects.**
 
 ### 3. An unbacked backstop is worse than an admitted gap
@@ -184,7 +184,7 @@ in the parameter's own comment why: it is a decision to make on purpose, not one
 an unrelated install.
 
 The corollary is **ship the cure before the prohibition.** If a prohibition removes the only path to
-the sanctioned behaviour, the prohibition is the defect.
+the sanctioned behavior, the prohibition is the defect.
 
 Two smaller rules in the same family:
 
@@ -233,7 +233,7 @@ the repository's copy of the script. Nothing anywhere read the installed copy or
 Enforcement was running from an installed copy that was days behind source, and the entire suite was
 green about it.
 
-The fix is a test that skips unless the installed artefact exists. It then asserts SHA-256 equality
+The fix is a test that skips unless the installed artifact exists. It then asserts SHA-256 equality
 with the source, *and* that the live hook matchers superset the handled-tool list -- **and prints what
 it scanned, so a skip never reads as a pass.** This repository carries that as a tripwire
 (`Get-HandledTools` in `bin/ccx-doctor.ps1` reads the rule set out of the *installed* copy and diffs it
@@ -247,7 +247,7 @@ against every config root's matchers), reporting three distinct states rather th
 
 ### Fire every control on purpose, and pair every attack with a negative control
 
-Reading a control does not establish its behaviour; feeding it does. `bin/ccx-doctor.ps1` pipes crafted
+Reading a control does not establish its behavior; feeding it does. `bin/ccx-doctor.ps1` pipes crafted
 `PreToolUse` payloads at the *installed* gate, attempts a blanket stage, attempts a commit claiming an
 unheld work item, attempts a push to a protected ref -- and requires a refusal in each case. Everything
 runs against throwaway fixtures in the temp directory, with their own repositories, their own allowlist
@@ -261,7 +261,7 @@ copied but the helpers it dot-sources or imports are not produces a control that
 for a reason unrelated to what it checks. Without a negative control that failure reads as perfect
 enforcement.
 
-Attack results are downgraded to `??`, never `OK`, when the artefact under test is the source rather
+Attack results are downgraded to `??`, never `OK`, when the artifact under test is the source rather
 than an installed copy. Proving the rules work says nothing about whether anything is enforcing.
 
 ### The probe is part of the system under test
@@ -272,7 +272,7 @@ working directory and no tool input at all. Every path-keyed rule correctly allo
 reported the gate broken. The gate was fine. The probe was broken.
 
 `New-PreToolUsePayload` now throws on an empty tool input, and the attack block catches an abort and
-records `??` for the attacks that never fired -- so a cancelled sequence can never read as a silent
+records `??` for the attacks that never fired -- so a canceled sequence can never read as a silent
 pass. **A probe that cannot build its own input must refuse to report a verdict rather than report the
 target's answer to an empty question.**
 
@@ -283,11 +283,11 @@ answer.
 ### Prove each fix by mutation
 
 Passing tests do not show that the tests *could* fail on the defect. For each shipped gate fix in this
-corpus, five mutations were applied to the shipped artefact one at a time and each was required to go
+corpus, five mutations were applied to the shipped artifact one at a time and each was required to go
 red. That exercise is also what surfaced three regressions an adversarial review found in the first
 attempt at one of the fixes -- regressions that were then pinned with their own test file.
 
-Mutate the shipped artefact deliberately, confirm each mutation goes red, and pin every regression
+Mutate the shipped artifact deliberately, confirm each mutation goes red, and pin every regression
 adversarial review finds. Build the control, then attack it.
 
 ### Test the real pair, not stubs
@@ -397,7 +397,7 @@ Two controls in this repository are, by their nature, only partly provable:
 
 The one external reference this document depends on is public:
 [`anthropics/claude-code#76590`](https://github.com/anthropics/claude-code/issues/76590), the
-half-failed automatic worktree behaviour that the `SessionStart` backstop
+half-failed automatic worktree behavior that the `SessionStart` backstop
 (`scripts/worktree/worktree-selfheal.ps1`) repairs -- and announces when it does, because a silent
 repair is indistinguishable from nothing having been wrong.
 
@@ -411,5 +411,5 @@ withheld deliberately and permanently.** Publishing an attacker index alongside 
 converts a guardrail repository into a bypass manual, and the audience for the two is not the same
 audience.
 
-What generalises is the method, and the method is above in full. If you want the specifics for your own
+What generalizes is the method, and the method is above in full. If you want the specifics for your own
 estate, they are one command away -- and unlike a published register, yours will be current.

@@ -12,7 +12,7 @@ branch -> PR -> merge flow is unchanged.
 
 > **Platform.** These scripts are PowerShell 7, developed and exercised on Windows. They run on
 > PowerShell 7 elsewhere and the path handling is written for it, but Windows is the tested platform
-> and the one the defaults assume. Where behaviour degrades off Windows it is called out below.
+> and the one the defaults assume. Where behavior degrades off Windows it is called out below.
 
 Related: [`docs/CONCEPTS.md`](CONCEPTS.md) for the state root and the liveness fence,
 [`docs/PRUNING.md`](PRUNING.md) for the automated reaper, [`INSTALL.md`](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) for wiring
@@ -68,7 +68,7 @@ so and prints the path rather than exiting green over a window that never opened
 **The trap.** Creating a worktree off local `main` looks obviously correct, and in a repository with
 several worktrees local `main` is usually behind its upstream. The new worktree starts from stale
 code, everything built in it is built against that stale code, and *every subsequent merge-state
-judgement inherits the staleness* -- including the reaper's "is this merged?" test. Nothing is visibly
+judgment inherits the staleness* -- including the reaper's "is this merged?" test. Nothing is visibly
 wrong until the merge.
 
 **The rule.** `new.ps1` fetches first, and the default base is a **remote-tracking** ref
@@ -337,11 +337,11 @@ about to come back to. `git worktree remove` already deregisters the one you rem
 is a second, much wider action wearing the costume of a cleanup step.
 
 The related failure -- a removal that deregisters the worktree and then fails to delete the directory,
-leaving a folder git no longer recognises -- and how to recover from it are covered in
+leaving a folder git no longer recognizes -- and how to recover from it are covered in
 [`docs/PRUNING.md`](PRUNING.md), which owns the unattended path.
 
 For bulk cleanup use `prune-merged.ps1`. It is a dry run by default, and its rule is
-**merged AND clean AND NOT occupied**; occupancy can only ever veto a removal, never authorise one.
+**merged AND clean AND NOT occupied**; occupancy can only ever veto a removal, never authorize one.
 
 ---
 

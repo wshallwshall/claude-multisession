@@ -3,7 +3,7 @@
 A rubric for answering one question about a body of code: **is this good, or is it filler that
 looks finished?** It is written for a repository where much of the code was produced by Claude Code, or another AI-assisted coding tool
 across parallel sessions, but nothing in it depends on who typed the lines. The rubric judges the
-artefact.
+artifact.
 
 > **Meant to be worked with, not read straight through.** Most of this rubric is a base for
 > Claude Code, or another AI-assisted coding tool, to apply to your code, rather than
@@ -30,7 +30,7 @@ artefact.
   the published evidence that makes it a defect rather than a matter of taste.
 - **The bibliography and the hedge for each of those findings**, so a decision not to gate on a
   number survives review by someone who has read the underlying paper.
-- **A map from each way machine-written code goes wrong to the control that neutralises it**, with
+- **A map from each way machine-written code goes wrong to the control that neutralizes it**, with
   a tag naming which of your documents owns that control -- so adopting this adds gates rather than
   a second copy of rules you already enforce.
 - **A placement rule for every gate**: which run in the local loop, which are pipeline-first, and
@@ -84,7 +84,7 @@ artefact.
    cannot answer. Make it print what it examined before you believe its green. See
    [Receipts: count what the check examined, never what it found](../CI-AND-STANDARDS.md#receipts-count-what-the-check-examined-never-what-it-found).
 4. **Attack it with the failure class it was built to catch**, before you record it as built.
-5. **Record your thresholds in your own appendix**, labelled project-set rather than
+5. **Record your thresholds in your own appendix**, labeled project-set rather than
    evidence-certified, and revisit them as data accumulates.
 6. **Re-run the scorecard each release.** The rows do not move; the answers do.
 
@@ -92,7 +92,7 @@ artefact.
 
 ## The rubric: two tiers, weighted unequally
 
-The structural scaffold is a recognised product-quality model rather than invented categories:
+The structural scaffold is a recognized product-quality model rather than invented categories:
 **[external]** ISO/IEC 25010:2023 decomposes maintainability into modularity, reusability,
 analyzability, modifiability and testability -- in other words low coupling plus information hiding
 -- which is a structural property and not a metric score. Tier 1 is that property enforced as
@@ -105,10 +105,10 @@ properties where quality is hard to fake.
 |---|---|---|---|---|
 | 1 | Enforced architecture boundaries | Are module and layer rules machine-checked in the pipeline, rather than documented? | Deterministic | Here |
 | 2 | Strict type checking | Is the strictest available mode on, with no blanket suppressions -- every suppression carrying its error code? | Deterministic | Here |
-| 3 | Tests verify behaviour | Do tests assert real values and failure paths, rather than mock choreography? | Deterministic | Your test standard; checked here |
+| 3 | Tests verify behavior | Do tests assert real values and failure paths, rather than mock choreography? | Deterministic | Your test standard; checked here |
 | 4 | Dependency integrity | Is every dependency existence-verified, hash-locked, and is a new import audited? | Deterministic | Your dependency standard; pointer only |
 | 5 | Security scanning plus a threat model | Are the scanners blocking, and is there a written threat model and a human review step? | Deterministic plus advisory | Your security standard; pointer only |
-| 6 | Published-artefact integrity | Does a released package ship only intended content, gated before the irreversible upload? | Deterministic | Here |
+| 6 | Published-artifact integrity | Does a released package ship only intended content, gated before the irreversible upload? | Deterministic | Here |
 
 Row 6 is the outbound direction of the supply chain and is distinct from row 4's inbound direction.
 The rule and its failure shape are already published: see
@@ -151,13 +151,13 @@ far enough to attach its citation to it.
 ### Delivery-outcome metrics are a context caveat, not a signal
 
 Keep change-failure rate, lead time and their siblings out of a code-quality rubric. They measure
-delivery, not whether a given change is filler -- a different altitude from the artefact signals
+delivery, not whether a given change is filler -- a different altitude from the artifact signals
 above -- and the evidence for the machine-authorship link is weaker than for the metric-validity
 findings. The actionable part is already covered by small batches and
 [One coherent layer per commit](../CI-AND-STANDARDS.md#one-coherent-layer-per-commit). Record the
 concern as a failure mode with a remedy; do not promote it to a peer signal.
 
-The reason generalises: **when someone proposes adding an outcome metric to an artefact rubric,
+The reason generalizes: **when someone proposes adding an outcome metric to an artifact rubric,
 the objection is altitude, not distaste.**
 
 ---
@@ -172,7 +172,7 @@ footnote a reader can skip.
 | Raw cyclomatic complexity is a weak defect predictor | Correlation with real bugs of about **0.06** (Kendall); "adds little if any" beyond executable-line counts | Chen, C. (2019). *An Empirical Investigation of Correlation between Code Complexity and Bugs.* arXiv:1912.01142 [cs.SE]. https://arxiv.org/abs/1912.01142 | Argues against a single-number gate, not against measuring. Complexity is still a useful local triage smell |
 | Vendor "cognitive complexity" adds nothing | No incremental predictive value over traditional measures; the peer-reviewed evaluation concludes it "does not appear to fulfill the promise" | Lavazza, L., Abualkishik, A. Z., Liu, G., & Morasca, S. (2023). *An Empirical Evaluation of the "Cognitive Complexity" Measure as a Predictor of Code Understandability.* Journal of Systems and Software, 197, 111561. https://doi.org/10.1016/j.jss.2022.111561 | Replacing a cyclomatic gate with a cognitive one buys nothing. The finding is about predictive value, and says nothing about how often the measure is sold or adopted |
 | Static-analysis severity counts are weak, inconsistent, sometimes inverted | Across 33 large projects and roughly 27,000 faults, flagged "dirty" classes were no more fault-prone than clean ones | Lenarduzzi, V., Saarimaki, N., & Taibi, D. (2020). *Some SonarQube issues have a significant but small effect on faults and changes: A large-scale empirical study.* Journal of Systems and Software, 170, 110750. https://arxiv.org/abs/1908.11590 | Effects are small and sometimes inverted. Useful as a cheap filter; not a quality score |
-| Mutation score is a poor single number, but mutation testing is high-value guidance | Mostly a test-suite-size artefact as a linear proxy; top-decile suites catch **8 to 46 percent** more real faults | Papadakis, M., Shin, D., Yoo, S., & Bae, D.-H. (2018). *Are Mutation Scores Correlated with Real Fault Detection? A Large Scale Empirical Study on the Relationship Between Mutants and Real Faults.* ICSE 2018. https://doi.org/10.1145/3180155.3180183 | Read the survivors; never publish the score as a grade |
+| Mutation score is a poor single number, but mutation testing is high-value guidance | Mostly a test-suite-size artifact as a linear proxy; top-decile suites catch **8 to 46 percent** more real faults | Papadakis, M., Shin, D., Yoo, S., & Bae, D.-H. (2018). *Are Mutation Scores Correlated with Real Fault Detection? A Large Scale Empirical Study on the Relationship Between Mutants and Real Faults.* ICSE 2018. https://doi.org/10.1145/3180155.3180183 | Read the survivors; never publish the score as a grade |
 | High line coverage is where weak assertions hide | Coverage is gameable: high coverage with weak assertions is the canonical hiding place, and line count measures size, not quality | Corollary of the mutation and complexity findings above, not an independent study -- carry that hedge | The replacement is diff-scoped visibility, not a repository percentage |
 | Assisted authors write less secure code while feeling more confident | A controlled study found assisted developers wrote less secure code yet were more confident it was secure | Perry, N., Srivastava, M., Kumar, D., & Boneh, D. (2023). *Do Users Write More Insecure Code with AI Assistants?* ACM CCS 2023. arXiv:2211.03622. https://arxiv.org/abs/2211.03622 | Model-era-specific: the study used a 2022-generation model. Frontier models plausibly perform better -- re-baseline rather than quoting it as a constant |
 | Copy-instead-of-abstract is a measurable trend | 2024 was the first year copy-pasted lines (12.3 percent) exceeded "moved" or refactored lines (9.5 percent) in one commercial telemetry set | GitClear (2025). *AI Copilot Code Quality 2025.* https://www.gitclear.com/ai_assistant_code_quality_2025_research | Descriptively solid; the machine-authorship attribution is correlational, from a commercial vendor using a proprietary "moved" heuristic, and confounded by hiring cycles. Treat the trend as real and the attribution as interpretation |
@@ -227,7 +227,7 @@ The method matters more than this particular rubric, because you will need your 
    large candidate set; every load-bearing claim went to three-vote adversarial verification, and
    the ones that could be killed were killed. The survivors are the citation table above; the
    casualties are listed below.
-3. **Anchor the structure to a recognised model** rather than inventing categories.
+3. **Anchor the structure to a recognized model** rather than inventing categories.
 4. **Score the reference project from a separate read-only audit**, so the scorecard is evidence
    rather than estimate.
 5. **Label every claim with its limitation as you carry it.**
@@ -242,7 +242,7 @@ publication, not after somebody challenged them, and that is what makes the surv
 ## Failure mode, control, owner
 
 Write the rubric as a map from a failure mode to the specific machine-enforced control that
-neutralises it, and tag each control with which document owns it. Where a companion already owns a
+neutralizes it, and tag each control with which document owns it. Where a companion already owns a
 control, **point at it and check only that it is present.** That leaves this document owning
 exactly the gates nothing else carries.
 
@@ -259,7 +259,7 @@ The failure modes worth mapping include at least these.
 | A control implemented on one path and missed on its siblings | Enumerate sibling paths for every control and encode the enumeration as one deterministic check where feasible | [Enumerate sibling paths for every control](../CI-AND-STANDARDS.md#enumerate-sibling-paths-for-every-control). Here, this is what signal 6 exists to catch |
 | Velocity mistaken for delivered quality | Small batches, one coherent layer per change | Your working agreement. A context caveat, not a signal |
 
-**Rule.** When a new control is proposed, ask which failure mode it neutralises. If the answer is
+**Rule.** When a new control is proposed, ask which failure mode it neutralizes. If the answer is
 none, it is decoration. When a control is missing, the owner tag tells you which document to fix.
 
 ---
@@ -300,11 +300,12 @@ above -- the requirement that a gate be proven able to fail -- does not reach it
 advisory, but because **there is no green check to trust in the first place**. State it loosely and a
 reader concludes advisory things are exempt from liveness, which is the opposite of the rule.
 
-**A tool that ships with the assistant leaves nothing in your repository to score.** When the tool
-arrives with the coding assistant rather than with the project, no artifact under version control
-records its presence. A status claim about it can therefore be neither verified nor falsified from
-the repository, so the honest entry is no status at all -- not "built", not "enabled". This one is
-easy to get wrong by accident, because the tool is plainly doing useful work.
+**A tool that ships with the AI coding tool leaves nothing in your repository to score.** When the
+tool arrives with the AI coding tool rather than with the project, no artifact under version
+control records its presence. A status claim about it can therefore be neither verified nor
+falsified from the repository, so the honest entry is no status at all -- not "built", not
+"enabled". This one is easy to get wrong by accident, because the tool is plainly doing useful
+work.
 
 **Tell it which duplication is deliberate.** A tool that rewrites for reuse will collapse repetition
 that exists on purpose, and collapsing it undoes a decision someone made for reasons. Carry the
@@ -418,7 +419,7 @@ visibly small.
 |---|---|---|
 | Read every line | Full comprehension. Explain each line and stand behind it; rubber-stamping is forbidden, and code that stays opaque is rejected | Third-party or unknown-provenance code you are adopting as your own. This is what converts it into owned code |
 | Review the guard | Read only the trust-boundary functions that admit unknown-provenance input. The question is "is the gate sound?", not "is every line correct?" | A large first-party file whose only exposure is one boundary |
-| Drift check | Skim a first-party parallel implementation for divergence from the thing it shadows. Not line-by-line | A deliberate second implementation of behaviour that exists elsewhere |
+| Drift check | Skim a first-party parallel implementation for divergence from the thing it shadows. Not line-by-line | A deliberate second implementation of behavior that exists elsewhere |
 | Glance | Confirm the shape of a representative example. Representative, not exhaustive | Sample or template code that shows a pattern |
 | Provenance note | Record where it came from and who verified it | Bundled data rather than code |
 
@@ -441,7 +442,7 @@ whose citations all point at the wrong lines within one release is not a checkli
 ## Reviewing a trust boundary
 
 When a component executes, imports or loads content of unknown provenance, review the **boundary**
-rather than the body, against a fixed question set. These generalise from a real review of one such
+rather than the body, against a fixed question set. These generalize from a real review of one such
 seam; the two most commonly missed are the last two.
 
 1. **Does the vet actually bound what can load?** Not "does a vet exist" -- does it constrain the
@@ -459,7 +460,7 @@ seam; the two most commonly missed are the last two.
 8. **If it installs a resolution shim, is the shim scoped to the load window and removed
    afterwards, and does it resolve only the names it is meant to?** A shim at the front of the
    resolution order shadows genuine components for its whole lifetime.
-9. **Does a failed load clean up after itself**, leaving no partially initialised state registered?
+9. **Does a failed load clean up after itself**, leaving no partially initialized state registered?
 10. **Is there a platform on which the runtime check returns early and does nothing?** If so, the
     real boundary is an install-time filesystem permission that somebody must confirm was actually
     applied -- and if that platform is your primary one, the runtime check is not the control you
@@ -519,7 +520,7 @@ whether the tests assert anything, independently of the author's confidence.
 
 - The tool behind every gate. Nothing here names one, deliberately.
 - The thresholds. Set them from your own accumulating data and record them in your own appendix,
-  labelled project-set rather than evidence-certified.
+  labeled project-set rather than evidence-certified.
 - The owner tags. They should name the documents you actually have.
 - Row 10's ruleset, and row 1's boundary rules. Both are project-shaped by definition.
 - The depth-tier names, if yours are clearer. Keep the property that every file gets exactly one.
@@ -556,7 +557,7 @@ moved, and rewrite every cross-reference in the same change.
 | Gating | Never certify quality, or fail a build, on any single gameable number |
 | Gating | No validated universal threshold exists. Set yours, record it, label it project-set |
 | Gating | Advisory findings are a delta against the merge base, annotated where the reviewer is |
-| Gating | An outcome metric belongs in a delivery review, not an artefact rubric. Altitude, not distaste |
+| Gating | An outcome metric belongs in a delivery review, not an artifact rubric. Altitude, not distaste |
 | Placing | Cheap gates run in both places; expensive ones are pipeline-first but locally invocable |
 | Placing | The pipeline is authoritative. Local runs exist for fast feedback |
 | Placing | Re-derive placement after any repair -- a cost model built on a broken gate is fiction |
@@ -579,11 +580,11 @@ moved, and rewrite every cross-reference in the same change.
 
 - [CI and standards](../CI-AND-STANDARDS.md) -- the metric table with its [external] tags, judging
   tests by assertions, receipts and liveness, sibling-path enumeration, the allowlist rule for
-  published artefacts, and the claim-honesty register
+  published artifacts, and the claim-honesty register
 - [Tips and tricks](../TIPS-AND-TRICKS.md) -- sections 4 and 5, writing a guardrail and measuring
   whether it works
 - [Case study: auditing a multi-session estate as one system](../CASE-STUDY-drift-audit.md) --
-  proving a fix by deliberately mutating the shipped artefact
+  proving a fix by deliberately mutating the shipped artifact
 - [Running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md) -- verdict
   vocabularies, evidence anchors, corpus pinning, and how to read a movement in a score
 - [The leak gate](../LEAK-GATE.md) -- the three ways a scanner lies, and the blind spot no scanner

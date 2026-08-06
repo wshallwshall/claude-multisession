@@ -35,10 +35,10 @@ rather than spread thin across everything.
 - **Human effort concentrated at two moments.** Adopting a dependency and bumping its version. A
   few minutes of provenance work at adoption, a changelog-and-lock-delta read at each bump.
   Everything else runs unattended until it pings you.
-- **A defence against a package name that looks right and is not.** Assistant-suggested imports make
+- **A defense against a package name that looks right and is not.** Assistant-suggested imports make
   plausible-but-fake names a routine hazard rather than an exotic one, and the same check that
   catches a fabricated name also catches a typosquat of a real one.
-- **An upstream behaviour change that fails in your test suite instead of in production.** Tests
+- **An upstream behavior change that fails in your test suite instead of in production.** Tests
   written at the integration boundary are the black-box substitute for reading the code, and they
   turn a silent semantic change into a red bump.
 - **A published build that contains only what you declared.** An allowlist checked before the upload
@@ -90,9 +90,9 @@ Then, in order of value per unit of effort:
    proposals.
 3. Pin the resolved graph and **enforce the pins at install time**, not only at resolution time.
 4. Adopt the verify-before-add rule and record a dated vet note with each new dependency.
-5. Write behaviour tests at each integration boundary that matters.
-6. Declare an allowlist of what your published artefact contains and gate on it **before** upload.
-7. Publish digests, then build provenance, then an attestation over the artefact.
+5. Write behavior tests at each integration boundary that matters.
+6. Declare an allowlist of what your published artifact contains and gate on it **before** upload.
+7. Publish digests, then build provenance, then an attestation over the artifact.
 8. Archive each release with its build inputs and its component inventory.
 
 ---
@@ -109,8 +109,8 @@ you to; it asks you to manage each component as a black box.
 | What the discipline requires | The black-box control | Where the human effort lands |
 |---|---|---|
 | Uniquely identify each component and its exact version | Pin the whole resolved tree by digest; emit a component inventory | One-time, then automated |
-| Vet provenance at adoption | Due diligence when you add it: real package, not a near-miss of one; maintained; acceptable licence; genuinely used | A few minutes per new dependency |
-| Specify what you need and verify it | Test the behaviour you depend on, at your own integration boundary | Written once, runs forever |
+| Vet provenance at adoption | Due diligence when you add it: real package, not a near-miss of one; maintained; acceptable license; genuinely used | A few minutes per new dependency |
+| Specify what you need and verify it | Test the behavior you depend on, at your own integration boundary | Written once, runs forever |
 | Evaluate known advisories against your pinned versions | Automated surveillance, not a re-read | Automated; triage on alert |
 | Control change | Pin so nothing drifts; every bump is a reviewed change, re-audited and re-tested | Read the changelog and the lock delta, not the code |
 | Contain what you cannot vouch for | Least-privilege runtime, so an unreviewed component has a bounded blast radius | Architectural, set once |
@@ -126,17 +126,17 @@ actively maintained library has been effectively reviewed by a population far la
 field. That is what discharges the risk of not reading it, and it is where the adoption minutes
 should go -- not into skimming internals, which produces the feeling of review without the substance.
 
-**Rule.** Spend adoption time on the judgement: is this the package I meant, is the project healthy
-and maintained, is the licence acceptable, is it actually used by anyone. On a security-critical
+**Rule.** Spend adoption time on the judgment: is this the package I meant, is the project healthy
+and maintained, is the license acceptable, is it actually used by anyone. On a security-critical
 seam, prefer the widely reviewed option to the clever one, and record why in the vet note.
 
 ### The hallucinated package, and why an assistant makes it routine
 
-An assistant generates a plausible import the same way it generates plausible prose. A package name
-that reads correctly, sits in the right namespace, and matches the shape of real names in that
-ecosystem is exactly the output the model is good at producing. And it is indistinguishable, at the
-point of use, from a name that exists. That regularity is the attack surface: a name suggested often
-enough can be registered by somebody else.
+An AI coding tool generates a plausible import the same way it generates plausible prose. A
+package name that reads correctly, sits in the right namespace, and matches the shape of real
+names in that ecosystem is exactly the output the model is good at producing. And it is
+indistinguishable, at the point of use, from a name that exists. That regularity is the attack
+surface: a name suggested often enough can be registered by somebody else.
 
 The site already carries the rule, the gate shape and the published magnitude with its model-era
 caveat, so it is not restated here: [Verify a dependency before adding it, and know what
@@ -163,7 +163,7 @@ not, and the boundary between them is ownership rather than authorship.
   assistance in reaching the explanation is
   fine](../CI-AND-STANDARDS.md#reject-code-you-cannot-explain----assistance-in-reaching-the-explanation-is-fine).
 - Code **behind a package boundary** is not yours to account for. You account for its *provenance*
-  and for the *behaviour you depend on*, which is what the table above enumerates.
+  and for the *behavior you depend on*, which is what the table above enumerates.
 
 **Rule.** Apply the explainability bar at the tree boundary, not at the import statement. Then note
 the consequence: anything that moves code across that boundary moves the obligation with it. Two
@@ -173,9 +173,9 @@ owned code the moment they land.
 Two additions worth carrying from the argument that produced the pragmatic bar, neither of which the
 site states:
 
-- **An assistant's explanation can be confidently wrong in exactly the way its code can.** The human
+- **An AI coding tool's explanation can be confidently wrong in exactly the way its code can.** The human
   verifies the explanation; accepting it is the rubber-stamp under a different name.
-- **When it breaks, you may not have the assistant in the loop.** That is the honest residual risk of
+- **When it breaks, you may not have the AI coding tool in the loop.** That is the honest residual risk of
   the pragmatic bar, and it argues for unaided comprehension specifically on the seams where a
   mistake is most expensive -- authentication, cryptography, and wherever regulated data crosses.
 
@@ -195,7 +195,7 @@ This is the sibling-path failure in its most common form
 **Rule.** If you vendor, hold the copy to the same gates as first-party code, in the same change that
 introduces it:
 
-- behaviour tests over the vendored surface
+- behavior tests over the vendored surface
 - a header in each file recording what it mirrors and why, so drift is reviewable
 - analysis scope extended to include the path, with any suppression carrying a per-line justification
   that names the rule
@@ -225,9 +225,9 @@ is the part that touches every line of code you ship.
 
 The general principle is two sentences, and both halves are load-bearing.
 
-**Rule.** Pin the entire resolved dependency graph by cryptographic digest, in an artefact that is
+**Rule.** Pin the entire resolved dependency graph by cryptographic digest, in an artifact that is
 checked in and reviewable. Then make the **install step refuse anything not in the pin**, so a
-substituted artefact fails at install on every machine rather than at audit on whichever machine
+substituted artifact fails at install on every machine rather than at audit on whichever machine
 happened to run the auditor.
 
 Resolution-time pinning without install-time enforcement is the common half-measure: it makes builds
@@ -282,7 +282,7 @@ having correctly identified the component.
 
 ## Outbound: what you publish
 
-### The artefact contains only what you declared
+### The artifact contains only what you declared
 
 Covered in full at [Package manifests are allowlists, not
 sweeps](../CI-AND-STANDARDS.md#package-manifests-are-allowlists-not-sweeps), and not restated. One
@@ -312,9 +312,9 @@ Two conditions travel with it, and both have bitten people:
 *(Ecosystem-specific: the mechanism exists on some registries and not others, and the exact scoping
 vocabulary differs. The property is general; the availability is not.)*
 
-### Publishing identity does not cover the artefact
+### Publishing identity does not cover the artifact
 
-Establishing that an upload came from your pipeline says nothing about whether the artefact was
+Establishing that an upload came from your pipeline says nothing about whether the artifact was
 modified before or after it was built. The registries that offer identity-based publishing say so in
 their own documentation, which is the sort of caveat worth reading before crediting a control.
 
@@ -334,18 +334,18 @@ verified at all, and signed files were a fraction of a percent of everything pub
 withdrawn and existing signatures are now ignored. Figures are that registry's, at that time; they
 are quoted for the shape of the finding, not as constants.
 
-**Rule.** Before crediting a signing control, measure two things: what proportion of artefacts carry
+**Rule.** Before crediting a signing control, measure two things: what proportion of artifacts carry
 a signature, and what proportion of those signatures a consumer can actually resolve to an identity.
 Prefer identity-based signing bound to the build workflow and recorded in a transparency log, where
 verification does not depend on a key-distribution story that never worked. Signing repository tags
-and commits remains worthwhile for source provenance -- it is the *artefact* signature path that this
+and commits remains worthwhile for source provenance -- it is the *artifact* signature path that this
 finding replaced.
 
 ### Build provenance, and the lowest-tech verification path
 
-Two artefacts do most of the work for whoever installs your build.
+Two artifacts do most of the work for whoever installs your build.
 
-**Rule.** Generate **build provenance** in the pipeline, proving the artefact traces to a specific
+**Rule.** Generate **build provenance** in the pipeline, proving the artifact traces to a specific
 repository, workflow and commit rather than to somebody's machine. Isolating the build behind a
 dedicated reusable workflow raises the assurance further, and the published build-level frameworks
 are what let you say which level you reached without inventing a scale.
@@ -354,7 +354,7 @@ are what let you say which level you reached without inventing a scale.
 verification commands including the offline path. This is the one route a reviewer on a restricted or
 disconnected network can always run, and it should be the documented baseline rather than an
 afterthought. If your signing scheme supports bundling a transparency-log inclusion proof with the
-artefact, bundle it, for the same reason.
+artifact, bundle it, for the same reason.
 
 Keyless, identity-based signing removes long-lived key management, which is a real win. Be clear
 about what it does to the threat model rather than what it removes from it: **you are no longer
@@ -374,10 +374,10 @@ It does not detect tampering with your own code. Nothing about it is a signature
 
 ### Archive each release with its build inputs and its inventory
 
-**Rule.** Retain, per released version, the artefact, the inputs it was built from, and its component
+**Rule.** Retain, per released version, the artifact, the inputs it was built from, and its component
 inventory. Two questions depend on it and neither can be answered later without it: *what exactly was
 in the version this adopter is running*, and *can we rebuild it at all*. An archive holding only the
-artefact answers neither.
+artifact answers neither.
 
 ---
 
@@ -388,7 +388,7 @@ short on purpose, because most of what works here is not yours to own.
 
 ### Obfuscation is not the integrity story for source-available code
 
-If your source is published, obfuscating or compiling the shipped artefact protects nothing that
+If your source is published, obfuscating or compiling the shipped artifact protects nothing that
 matters. There is no confidentiality to preserve, and the tamper resistance gained is marginal:
 
 - Bytecode-only distribution is decompiled and patched by public tooling.
@@ -400,13 +400,13 @@ matters. There is no confidentiality to preserve, and the tamper resistance gain
 The protection schemes that run *inside* the process they protect assume an uncompromised runtime,
 and that is precisely the assumption a privileged attacker breaks.
 
-Where a licence obliges you to provide corresponding source, an obfuscated build also creates
+Where a license obliges you to provide corresponding source, an obfuscated build also creates
 friction with that obligation.
 
 **Rule.** Spend the effort on verification instead -- provenance, attestation, inventory, published
 digests -- because that is what a reviewer can independently check. If you ship a hardened build for
 other reasons, position it as raising analysis cost and never as tamper-proof, and keep secrets and
-authorisation decisions out of any artefact an adversary holds.
+authorization decisions out of any artifact an adversary holds.
 
 *(Specific defeat tooling is deliberately not enumerated here. The conclusion stands on the vendors'
 own stated limits, and the assessment is version-specific enough that it should be re-derived rather
@@ -423,7 +423,7 @@ verification routine; whoever can alter the runtime can stub it. The chain of tr
 in hardware measured boot, which is the operator's platform decision and not something your software
 ships.
 
-**Rule.** Ship it as defence in depth if you ship it, and document the limit **in the same paragraph
+**Rule.** Ship it as defense in depth if you ship it, and document the limit **in the same paragraph
 as the feature**, not in a footnote. Never let it be quoted as prevention. This is the general rule
 about stating what a gate does not prove
 ([CI and standards](../CI-AND-STANDARDS.md#state-what-a-gate-does-not-prove)) applied to the hardest
@@ -437,7 +437,7 @@ The strongest tamper controls are outside the software:
 - immutable or read-only deployment with writable state confined to the data store
 - least-privilege file ownership, so the running account cannot rewrite its own code
 - mandatory-access-control confinement
-- admission control that rejects an unsigned artefact
+- admission control that rejects an unsigned artifact
 
 You cannot own any of them. What you can do is ship a hardening guide with a concrete list of paths
 to monitor and example rules, so an operator has something to apply on day one rather than a category
@@ -445,9 +445,9 @@ name.
 
 **Rule.** Publish a two-column responsibility split before claiming any control. The producing
 project owns secure development practice, secure-by-default configuration, testing and attestation
-of the software, vulnerability response, and evidence. The operating organisation owns host and
+of the software, vulnerability response, and evidence. The operating organization owns host and
 network, identity and key management in their environment, backups and availability, their own
-compliance programme, and monitoring and patching. State plainly that shipping the software confers no
+compliance program, and monitoring and patching. State plainly that shipping the software confers no
 certification on the operator: your attestation is an input to their assessment, never a substitute
 for it. The register to use for that wording is on the site already -- built to, aligned with,
 self-assessed against, never certified
@@ -455,7 +455,7 @@ self-assessed against, never certified
 
 ### Roll a blocking verification control out in audit mode first
 
-A control that rejects artefacts failing verification will also reject valid artefacts whenever its
+A control that rejects artifacts failing verification will also reject valid artifacts whenever its
 *own* preconditions are unmet -- for instance when the enforcing component cannot reach the store
 holding the signatures it must fetch.
 
@@ -466,7 +466,7 @@ switched off permanently, and the second attempt is much harder to fund than the
 ### State the objective honestly: detection, not prevention
 
 On a host where the adversary has administrative privilege, every application-level control is
-ultimately defeatable -- agents disabled, baselines altered, the interpreter patched, behaviour hooked
+ultimately defeatable -- agents disabled, baselines altered, the interpreter patched, behavior hooked
 at load time.
 
 **Rule.** Say that in the documentation rather than letting the control list imply prevention. The
@@ -477,13 +477,13 @@ and to push the trust root as low as the operator is willing to go.
 
 ## Which rules are universal, and which are one ecosystem's mechanics
 
-The failure shapes generalise. The mechanisms do not, and a document that implies otherwise sends a
+The failure shapes generalize. The mechanisms do not, and a document that implies otherwise sends a
 reader looking for a guarantee their toolchain does not offer.
 
 | Rule | Scope |
 |---|---|
 | Verify a dependency's identity before adding it; record a dated vet note | Universal |
-| Manage third-party code as a black box; test the behaviour you depend on at your boundary | Universal |
+| Manage third-party code as a black box; test the behavior you depend on at your boundary | Universal |
 | Vendored code is owned code and must join every first-party gate | Universal |
 | One surveillance net plus one blocking audit **per manifest** | Universal (the wiring is per ecosystem) |
 | Pin the resolved graph by digest and enforce the pin at install | Universal as a property; **the guarantee is per ecosystem** |
@@ -491,13 +491,13 @@ reader looking for a guarantee their toolchain does not offer.
 | Advisory audit tool, its default severity threshold, install-free mode | Ecosystem-specific |
 | Transitive-advisory override mechanism | Ecosystem-specific |
 | Non-default dependency groups for CI-only tooling | Ecosystem-specific |
-| Allowlist what the published artefact contains; gate before upload | Universal |
+| Allowlist what the published artifact contains; gate before upload | Universal |
 | Per-run, workflow-bound publishing credentials | **Registry-specific** -- available on some, absent on others |
 | Registry-served attestation binding filename and digest to a commit | **Registry-specific** |
 | Build provenance from the pipeline; assurance levels from a published framework | Universal in concept, forge-specific in tooling |
 | Signed digest manifest, with documented offline verification | Universal, and the lowest common denominator |
 | Component inventory per release, attached to the release and the archive | Universal (format choice is consumer-driven) |
-| Archive artefact, build inputs and inventory per version | Universal |
+| Archive artifact, build inputs and inventory per version | Universal |
 | Runtime self-check is detection only; hardening is operator-owned | Universal |
 
 Where the mechanics here have a shape, it is a Python-and-npm shape with a GitHub-flavoured pipeline
@@ -512,7 +512,7 @@ own toolchain before repeating any of it as a claim.
 |---|---|
 | Adding a dependency | Verify identity, not existence alone. Record a dated vet note. Never install ad hoc |
 | Adding a dependency | On a security-critical seam, the widely reviewed library **is** the mitigation |
-| Depending on behaviour | Test it at your own integration boundary -- that is the black-box substitute for reading it |
+| Depending on behavior | Test it at your own integration boundary -- that is the black-box substitute for reading it |
 | Pinning | Pin by digest and enforce at install. A version pin is not a hash pin |
 | Pinning CI tooling | Keep its lock inside the same regenerate-and-diff machinery, or it rots into pinned-and-stale |
 | Bumping | Read the changelog and the lock delta. Let the pipeline re-audit and re-test |
@@ -520,12 +520,12 @@ own toolchain before repeating any of it as a claim.
 | Auditing | One surveillance net and one **blocking** audit per manifest; run on a schedule too |
 | Auditing | Build-time-only trees are a different impact class, not an exemption |
 | Containing | Least-privilege runtime; every inbound payload validated before it reaches anything |
-| Publishing | Allowlist the contents, gate before upload, verify the published artefact once after |
+| Publishing | Allowlist the contents, gate before upload, verify the published artifact once after |
 | Publishing | Short-lived workflow-bound credentials; restrict the trigger; pin the publish action |
-| Publishing | Publishing identity does not cover the artefact -- pair it with an attestation |
+| Publishing | Publishing identity does not cover the artifact -- pair it with an attestation |
 | Publishing | Measure signature coverage **and** verifiability before crediting a signing control |
 | Releasing | Publish signed digests with documented offline verification. It is the baseline, not the extra |
-| Releasing | Archive the artefact, its build inputs and its inventory, per version |
+| Releasing | Archive the artifact, its build inputs and its inventory, per version |
 | Claiming | An inventory answers "do we ship X". It is not tamper detection |
 | Claiming | Publish the producer/operator responsibility split before claiming any control |
 | Runtime | A self-integrity check is detection. Document the limit in the same paragraph |
@@ -576,4 +576,4 @@ own toolchain before repeating any of it as a claim.
   permanent blind spot a scanner cannot cover
 - [Tips and tricks](../TIPS-AND-TRICKS.md) -- writing a guardrail, and measuring whether it works
 - [Case study: auditing a multi-session estate as one system](../CASE-STUDY-drift-audit.md) --
-  proving a fix by deliberately mutating the shipped artefact
+  proving a fix by deliberately mutating the shipped artifact

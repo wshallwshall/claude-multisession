@@ -52,9 +52,9 @@ never run, because there is no command that runs them:
 |---|---|
 | Static analysis / SAST | Runs as a hosted action; no local entry point exists |
 | Content and secret scanning | Needs the full history and a rule source the clone does not carry |
-| Inventory / doc-drift guards | Require a new artefact to be registered in an index **in the same commit** |
+| Inventory / doc-drift guards | Require a new artifact to be registered in an index **in the same commit** |
 | Real-database legs | Silently *skip* locally because no server is reachable |
-| Artefact-integrity gates | Compare a built artefact against a manifest that is only built in CI |
+| Artifact-integrity gates | Compare a built artifact against a manifest that is only built in CI |
 
 **Rule.** Keep an explicit list of the checks that run only in CI, and before pushing, self-run the
 ones your diff plausibly trips. When you report a run, **name the commands you actually ran** rather
@@ -73,12 +73,12 @@ Two symmetric failures, both of which produce a green you cannot use:
 1. **Blind locally.** A scanner refuses to run without a token or rule source, so on a machine
    without one it exits non-zero for a reason unrelated to your code. That looks exactly like the
    gate being broken, and it teaches people to skip it.
-2. **Strong for the wrong reason.** The mirror image is worse. A guard whose behaviour depends on an
+2. **Strong for the wrong reason.** The mirror image is worse. A guard whose behavior depends on an
    environment variable that only one CI job sets will *pass in CI because the variable is absent*
    while failing on every developer box that has it. A guard that is strictly weaker in CI than on a
    laptop is not a guard.
 
-**Rule.** For any check whose behaviour depends on a credential or an environment variable, write
+**Rule.** For any check whose behavior depends on a credential or an environment variable, write
 down which jobs supply it, and confirm the gate is **at least as strong in CI as locally**. Make a
 missing credential produce a distinct, self-describing exit state -- never a silent pass, and never an
 exit code indistinguishable from a real finding.
@@ -200,7 +200,7 @@ it runs, so no single context string matches both states. Requiring them wedges 
 them out means a real regression in them cannot block a merge.
 
 Add one roll-up job that depends on the conditional legs, runs unconditionally, and fails only on a
-failed or cancelled dependency -- **a skipped dependency passes**:
+failed or canceled dependency -- **a skipped dependency passes**:
 
 {% raw %}
 ```yaml
@@ -234,7 +234,7 @@ its run: put a test inside the always-run required suite that drives the same sh
 against a deliberately injected defect and asserts it fires. A change that blinds the detector then
 reds the PR even though the scan itself never gates.
 
-That is the technique `bin/ccx-doctor.ps1` generalises -- it fires each control at a case the control
+That is the technique `bin/ccx-doctor.ps1` generalizes -- it fires each control at a case the control
 exists to refuse, and pairs every attack with a **negative control**, an ordinary action the same
 control must allow. A script that refuses everything is not a working guard either, and a probe with
 no positive control proves nothing.
@@ -286,7 +286,7 @@ so piping a failing scanner into a pager or a line counter prints `0` over a fai
 example in [`TIPS-AND-TRICKS.md`](TIPS-AND-TRICKS.md) section 5.)
 
 **Rule.** When you need to know whether work actually succeeded, read the per-step conclusions and
-confirm the produced artefacts exist and are **non-empty** -- a byte size, not just a name. Never
+confirm the produced artifacts exist and are **non-empty** -- a byte size, not just a name. Never
 branch on a job conclusion for a step-level question.
 
 ### Receipts: count what the check examined, never what it found
@@ -297,7 +297,7 @@ mutant while a trailing `|| true` reported success in 37 seconds. One of those g
 "Built" across two published versions of a rubric while producing zero units of work.
 
 **Rule.** Every gate publishes proof of execution: **units examined** -- files scanned, lines
-analysed, cases processed, detectors loaded -- non-zero whenever the tool ran, whatever it concluded.
+analyzd, cases processed, detectors loaded -- non-zero whenever the tool ran, whatever it concluded.
 Make zero-units-examined exit non-zero, so a schema or path change cannot read as a clean sweep. Then
 add a separate job that reads the receipts and demands either proof of execution or an explicit
 reason.
@@ -327,7 +327,7 @@ catches a typo'd or renamed input directory. Publish which of the two happened.
 ### A reconciliation containing a derived term is blind to that term
 
 A mutation gate validated `killed + survived + no-tests + other == total`. But `killed` was derived
-as `total - listed`, so the identity reduces to *"every listed mutant carries a recognised status"*
+as `total - listed`, so the identity reduces to *"every listed mutant carries a recognized status"*
 and **any** value of `killed` satisfies it. A run that genuinely processed 461 mutants and reported
 `killed = 0` sailed through the sum check.
 
@@ -462,7 +462,7 @@ Meanwhile the monitor truthfully reported zero failing checks and a merged state
 not on the trunk. The merge looks completely successful and nothing warns you.
 
 **Rule.** Push every commit **first**, then arm auto-merge, then assert the PR's head revision equals
-your local `HEAD`. That one comparison is the whole defence. After any auto-merge, verify the
+your local `HEAD`. That one comparison is the whole defense. After any auto-merge, verify the
 **content** landed by searching the merged trunk for a token from the change -- never infer it from a
 merged status.
 
@@ -577,13 +577,13 @@ reddened **every open PR** on the same day, and every contributor read it as the
 breaking something.
 
 **Rule.** Constrain every install site from a checked-in lock, and have a gate re-export the lock and
-diff it, so a dependency change cannot land without regenerating **all** of the lock artefacts. Check
-your ignore rules while you are there: a new lock artefact whose name matches a broad ignore pattern
+diff it, so a dependency change cannot land without regenerating **all** of the lock artifacts. Check
+your ignore rules while you are there: a new lock artifact whose name matches a broad ignore pattern
 is silently never committed.
 
 ### Same-commit registration gates, and the bot with no path to green
 
-Several CI-only gates require a new security-relevant artefact to be registered in an inventory
+Several CI-only gates require a new security-relevant artifact to be registered in an inventory
 **and** its documentation row added in the same change. Two changes merging in parallel each
 satisfied their own half and broke the trunk.
 
@@ -641,9 +641,9 @@ env var rather than interpolating it into the script text.
 A build that packages by *excluding* known-bad paths ships whatever nobody thought to exclude, and
 the upload is irreversible.
 
-**Rule.** Declare an explicit **allowlist** of what the published artefact contains, and add a
-fail-closed gate that verifies the built artefact against it **before** the upload step. Verify the
-published artefact once after release too -- checking the thing you built is not checking the thing
+**Rule.** Declare an explicit **allowlist** of what the published artifact contains, and add a
+fail-closed gate that verifies the built artifact against it **before** the upload step. Verify the
+published artifact once after release too -- checking the thing you built is not checking the thing
 that shipped.
 
 ### Grandfather to a clean baseline, then ratchet
@@ -692,7 +692,7 @@ A hundred-file import sort or formatter migration conflicts with every in-flight
 and the conflicts are mechanical noise that hides real changes.
 
 **Rule.** Schedule sweeps as a dedicated pass when no other session is in flight, land them alone,
-and announce them. **Never bundle a sweep with a behavioural change.**
+and announce them. **Never bundle a sweep with a behavioral change.**
 
 ---
 
@@ -711,7 +711,7 @@ and announce them. **Never bundle a sweep with a behavioural change.**
 | Scanner green for months | Nothing was ever measured | Publish units **examined**; zero units exits non-zero |
 | "Nothing to measure" | Could be a dead gate or a real no-op | Require a reason derived from an inspected input |
 | Sum check passes on a wrong number | A term was derived as a remainder | Count parts independently; cross-check with a second measurement |
-| Job badge green, step failed | `continue-on-error` at job level | Read step conclusions and artefact sizes |
+| Job badge green, step failed | `continue-on-error` at job level | Read step conclusions and artifact sizes |
 | "It's a flake" | Livelock, or a test that was right | Make it fail deterministically before you believe timing |
 | Re-run fails identically | Base is pinned until the branch is pushed | Update the branch and push; re-running is not revalidation |
 | Merged, but the change is absent | Auto-merge squashed an earlier revision | Push all, then arm, then assert the head revision |
@@ -763,7 +763,7 @@ duplicated fact.
 #### The one exception: short imperatives at the point of use
 
 Applied absolutely, *never restate* pushes rules into a reference nobody opens mid-task, and a
-pointer that is not followed changes no behaviour.
+pointer that is not followed changes no behavior.
 
 **Rule.** Duplicate a rule only when it is a **one-line imperative that cannot meaningfully drift**,
 and only where the work happens. Anything with a mechanism, a number, or a caveat in it gets stated
@@ -862,7 +862,7 @@ and its evidence. No claim ships without a pointer a grader can open.
 
 ### Use the register you actually have: aligned, built-to, self-assessed
 
-Standards bodies that publish control catalogues generally issue no certificate, so "certified"
+Standards bodies that publish control catalogs generally issue no certificate, so "certified"
 phrasing describes something that does not exist. "Verified against X" asserts a completed
 verification that an in-progress survey does not support, and a rosier count reached via a
 non-standard verdict category is not rescuable by narrowing the scope.
@@ -948,7 +948,7 @@ split is restated there.
 
 ### One coherent layer per commit
 
-A commit mixing a refactor, a behaviour change and a mechanical sweep cannot be reviewed, reverted or
+A commit mixing a refactor, a behavior change and a mechanical sweep cannot be reviewed, reverted or
 bisected -- and small-batch discipline is the one part of the delivery-stability concern that is
 actually actionable.
 
@@ -1030,7 +1030,7 @@ a memory note.
 ### Secrets and sensitive data never enter the repository, wherever it is stored
 
 A private remote feels like it changes what may be committed. It does not -- history is forever, and a
-private repo can become public, be mirrored, or be packaged into a published artefact.
+private repo can become public, be mirrored, or be packaged into a published artifact.
 
 **Rule.** Source credentials from the environment or a secret store; keep versioned per-environment
 files non-secret; keep fixtures synthetic; ignore local stores, dumps and credential files by
@@ -1060,11 +1060,11 @@ note with the dependency, and hash-lock the result. Never install ad hoc: declar
 
 Coverage percentage hides assertion-free tests and mock choreography -- a suite can execute every line
 and verify nothing. **[external]**, from published research rather than measured here: mutation score
-is a poor linear proxy on its own (largely a suite-size artefact), but top-decile suites catch
+is a poor linear proxy on its own (largely a suite-size artifact), but top-decile suites catch
 materially more real faults -- so mutation is valuable as **guidance** precisely where coverage is
 blind.
 
-**Rule.** Require value and negative-path assertions against real behaviour over mock-call
+**Rule.** Require value and negative-path assertions against real behavior over mock-call
 assertions, and run mutation on changed code as advisory guidance a human reads. Treat a high
 proportion of *"was this called"* assertions as a smell to review, not a metric to gate.
 
@@ -1081,7 +1081,7 @@ The metrics teams reach for first are weak or inverted predictors. Every figure 
 | High line coverage | The canonical place bad code hides, when assertions are weak |
 
 **Rule.** Surface these as **advisory triage a human arbitrates**; never let one be the pass/fail. Let
-machine-enforced structure -- layer boundaries, strict typing, behaviour-verifying tests, dependency
+machine-enforced structure -- layer boundaries, strict typing, behavior-verifying tests, dependency
 integrity -- carry the verdict, and judge by the composite, never by any single row.
 
 ### There is no validated universal threshold

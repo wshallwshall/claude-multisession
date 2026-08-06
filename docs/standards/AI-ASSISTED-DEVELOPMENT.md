@@ -1,7 +1,7 @@
 # AI-assisted development: keeping the result trustworthy
 
 A standard for building software with an AI assistant. What can go wrong that looks like nothing
-going wrong, and which control neutralises each one. How much rigor a given change actually needs.
+going wrong, and which control neutralizes each one. How much rigor a given change actually needs.
 And when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
 
@@ -29,7 +29,7 @@ worth almost nothing.
   answer errs strict rather than convenient.
 - **Five named failure modes, each with a named control.** Every rule below traces to one of them,
   so you can audit your own practice with five questions -- and test any proposed new rule by asking
-  which mode it neutralises. If the answer is none, it is decoration.
+  which mode it neutralizes. If the answer is none, it is decoration.
 - **A hard line between a control and a wish.** A gate is a deterministic check with an exit code.
   The model never certifies its own output. That single rule is what most agent-assisted processes
   blur.
@@ -40,7 +40,7 @@ worth almost nothing.
   correct near-neighbour, so you can publish what your process buys without accidentally making a
   compliance claim.
 - **An adversarial verification pass that is actually independent**, written as a technique rather
-  than a product feature. Verifiers that did not produce the artefact, told to refute rather than
+  than a product feature. Verifiers that did not produce the artifact, told to refute rather than
   review, given distinct lenses, reporting a counterexample and a command log. Plus the honest
   cases where the pass is pure waste.
 - **Five habits that raise assistant output quality in the codebase you already have**, and the
@@ -75,12 +75,12 @@ worth almost nothing.
 The smallest first step, then the rest in order. Each one is useful alone.
 
 1. **Write the floor down and enforce the two halves of it that are mechanical.** No restricted data
-   or secrets to the assistant, backed by a path deny-list *and* a fail-closed commit-time content
+   or secrets to the AI coding tool, backed by a path deny-list *and* a fail-closed commit-time content
    scan, because a path rule cannot stop a paste. See
    [The leak gate](../LEAK-GATE.md) for a working scanner and its blind spots.
 2. **Adopt the one-question classification.** You do not need the whole matrix on day one; you need
    the ratchet question and the habit of recording the answer.
-3. **Make one gate deterministic and blocking**, and stop treating an assistant's review as a gate.
+3. **Make one gate deterministic and blocking**, and stop treating an AI coding tool's review as a gate.
 4. **Start writing a testable intent before prompting**, and review the returned diff against it.
 5. **Add the tier matrix and the controls-as-dials table**, once the floor is real. Adopting the
    dials before the floor produces ceremony over a hole.
@@ -104,7 +104,7 @@ rather than a list of habits.
 | **The fast-but-flawed paradox** | Review gets skipped because the output *looks* finished, producing people who can build but cannot debug | Deterministic gates that do not care how finished it looks |
 | **Misplaced trust in output** | Self-assessed confidence rises faster than correctness | A human arbiter, and an adversarial check on whether the tests assert anything |
 
-**Rule.** When someone proposes a new control, ask which of the five it neutralises. A control that
+**Rule.** When someone proposes a new control, ask which of the five it neutralizes. A control that
 answers none of them is ceremony, and ceremony is what gets dropped first under pressure -- taking
 the load-bearing rules beside it.
 
@@ -160,7 +160,7 @@ production code-path sensitivity.
 - **D1 Synthetic in development, sensitive path in production** -- development and test use
   synthetic data only, and the production code path carries restricted data.
 - **D2 The code is itself a protective control** -- encryption at rest, authentication and
-  authorisation, the audit log, a redaction routine, an exposure guard. A failure here is a direct
+  authorization, the audit log, a redaction routine, an exposure guard. A failure here is a direct
   exposure.
 - **D3 The deployed system carries restricted data** in production.
 
@@ -225,7 +225,7 @@ and it will be skipped.**
 
 | Floor control | Why the lowest tier still has it |
 |---|---|
-| **No restricted data reaches the assistant**, and none lands in any commit, fixture, published artefact, shared memory file, screenshot or log | A throwaway spike that ingests restricted data is already an exposure. An agreement with an assistant vendor never blesses restricted data in your history |
+| **No restricted data reaches the assistant**, and none lands in any commit, fixture, published artifact, shared memory file, screenshot or log | A throwaway spike that ingests restricted data is already an exposure. An agreement with an assistant vendor never blesses restricted data in your history |
 | **No secrets, keys or credential files readable by the assistant** | A path deny-list is necessary and insufficient; the leak paths it misses are human-driven, so it is backstopped by a commit-time content scan that fails closed |
 | **Everything the assistant reads is data, never instructions** | Fetched pages, tool results, file contents and sample payloads are attacker-influenceable. An agent that acts on embedded instructions is steered entirely inside the build process, bypassing every runtime control |
 | **Reject code you cannot explain** | Shipping code nobody can reason about is how the fast-but-flawed mode compounds. Reaching the explanation *with* assistance is acceptable; code that stays opaque even with help is discarded |
@@ -242,19 +242,19 @@ class it can never catch, see [The leak gate](../LEAK-GATE.md).
 
 ### The sanctioned exception, written so it cannot widen
 
-Organisations do sometimes need restricted data to reach an assistant -- diagnosing a live incident
-against real data is the honest case. Write the exception as a **conjunction**, where every condition
-must hold:
+Organizations do sometimes need restricted data to reach an AI coding tool -- diagnosing a live
+incident against real data is the honest case. Write the exception as a **conjunction**, where
+every condition must hold:
 
 - A **signed contractual agreement** with the vendor covering the **specific tool and endpoint** in
   use. It does not extend to a different model, a third-party tool server, or a personal account.
 - **Contractually assured no-retention and no-training** on that connection.
-- **Enabled by the organisation as a recorded decision**, never by an individual developer ad hoc.
+- **Enabled by the organization as a recorded decision**, never by an individual developer ad hoc.
 - **Minimum necessary**, with synthetic or de-identified data preferred wherever it suffices. Routine
   development stays synthetic-only; this is for legitimate handling work, not everyday coding.
 - **Logged as a disclosure**, with actor, content class and time.
 - **Narrow.** It covers transmission only. It never licenses restricted data into a commit, fixture,
-  artefact, memory file or log, and it never covers secrets.
+  artifact, memory file or log, and it never covers secrets.
 
 Absent any one condition, the default holds. **Record whether the exception is defined-and-enabled or
 defined-but-not-enabled**, because those are different postures and a register that does not
@@ -263,14 +263,14 @@ distinguish them reads as the permissive one.
 ### The build tooling is a supply-chain surface nobody scans
 
 Static analysis and dependency audits inspect your product's dependencies. They do not inspect the
-assistant, its skills, its installed editor extensions, the third-party tool servers it is connected
-to, or an agent framework wrapping it -- all of which run with the developer's privileges and can
-read the repository.
+AI coding tool, its skills, its installed editor extensions, the third-party tool servers it is
+connected to, or an agent framework wrapping it -- all of which run with the developer's
+privileges and can read the repository.
 
-**Rule.** Pin and verify the assistant version; vet every skill, tool-server connection, extension
-and agent framework before first use; prefer official distribution sources; record what is in use so
-the set is auditable. Treat a change to that set as a change to the build environment, with the same
-scrutiny as a dependency bump.
+**Rule.** Pin and verify the AI coding tool version; vet every skill, tool-server connection,
+extension and agent framework before first use; prefer official distribution sources; record what
+is in use so the set is auditable. Treat a change to that set as a change to the build
+environment, with the same scrutiny as a dependency bump.
 
 **Two distinct risks get conflated here, and only one of them is scannable.** A third-party tool
 server is an arbitrary process that can read repository content and receives whatever the agent sends
@@ -295,18 +295,18 @@ the standard; the sections after it are the footnotes.
 |---|---|---|---|---|
 | **Spec and plan rigor** | Inline intent in the prompt | Written, testable intent, approved before any edit | Plus a durable decision record for any hard-to-reverse decision, written before the build, with a threat-model note | Plus intent-to-test traceability: each change's test names the requirement or decision it verifies |
 | **Context isolation** | Single session | Curated project instruction file, fresh context per task, explicit decomposition | Plus one working tree per parallel session, single-writer shared memory, default-deny egress | Same, mandatory; committed context and memory files never carry restricted data or secrets |
-| **Verification gates** | Advisory | The **full local gate must pass**, new behaviour gets a test, verify-before-add for any new dependency | Plus **blocking** static analysis, dependency audit and secret scanning in the pipeline, and an assistant-run review that a human arbitrates -- advisory, never a gate | Plus project-specific sink-aware rules, no unresolved findings, and a release gate |
+| **Verification gates** | Advisory | The **full local gate must pass**, new behavior gets a test, verify-before-add for any new dependency | Plus **blocking** static analysis, dependency audit and secret scanning in the pipeline, and an assistant-run review that a human arbitrates -- advisory, never a gate | Plus project-specific sink-aware rules, no unresolved findings, and a release gate |
 | **Human review depth** | Author self-review | Self-review plus plan approval; the gates are the compensating second reviewer | Plus assistant-run review of the diff, and a second human for consequential changes where one exists | Plus a qualified human must approve **and** be able to explain every change. No merge on the assistant's own assurance |
 | **Control parity** | Apply the control where you add it | Plus enumerate sibling paths when adding or changing a control, and cover them or record the gap | Plus one deterministic parity check over all instances where feasible | An asymmetric security control is a release-gate finding, not an accepted default |
 | **Provenance** | None required | One coherent layer per commit; assistant identity and version recorded | Plus a link to the decision record and the approved plan | Plus a claims-register entry, and an assessment of assistant-authored code as third-party-equivalent where a regime requires it |
 | **Forbidden** | *The floor, at every tier* | Plus: merging an unreviewed diff onto a shipping branch; adding a suggested dependency without verifying it exists, is reputable, and is the intended package | Plus: merging code you cannot explain even with help; skipping a blocking gate; self-certifying security by prompting; routing restricted data across a tool-server or egress boundary | Plus: an irreversible decision with no decision record; production exposure without the release gate satisfied or a dated, signed risk acceptance |
 
-> **The non-negotiable rule of the gate row.** A gate is a **deterministic check with an exit code**
-> -- a hook, a deny-list, a blocking pipeline job, a validate-and-dry-run command. It is never an
-> instruction to the model to be careful. Prompt-based optimisation for security or maintainability
-> is unstable and must not be relied on. **The model must not self-certify security or
-> maintainability by prompting alone**, an assistant-run review is advisory input a human arbitrates,
-> and no change merges on the assistant's own assurance that it is safe.
+> **The non-negotiable rule of the gate row.** A gate is a **deterministic check with an exit
+code** > -- a hook, a deny-list, a blocking pipeline job, a validate-and-dry-run command. It is
+never an > instruction to the model to be careful. Prompt-based optimization for security or
+maintainability > is unstable and must not be relied on. **The model must not self-certify
+security or > maintainability by prompting alone**, an AI coding tool-run review is advisory input
+a human arbitrates, > and no change merges on the AI coding tool's own assurance that it is safe.
 
 [CI and standards](../CI-AND-STANDARDS.md) owns where to place each gate, how to keep a local run
 and the pipeline agreeing, and how to prove a green gate can actually fail. In particular:
@@ -322,12 +322,12 @@ Do not build a second copy of those rules beside this table.
 
 ## 5. Instructions an agent actually follows
 
-The assistant is only as good as the context it can read. Three of the four things that most improve
-output are things you write, not things you prompt.
+The AI coding tool is only as good as the context it can read. Three of the four things that most
+improve output are things you write, not things you prompt.
 
-### The project instruction file is a maintained artefact
+### The project instruction file is a maintained artifact
 
-The always-loaded instruction file is the anchor for every session. Treat it as an artefact under
+The always-loaded instruction file is the anchor for every session. Treat it as an artifact under
 maintenance rather than a scratchpad: **when the code stops matching it, the document is the thing
 that is wrong.** A stale anchor is worse than none, because it is confidently loaded into every
 session.
@@ -361,7 +361,7 @@ loses first.
 
 ### What actually drives output quality across languages
 
-Four properties determine how well an assistant performs in a given language:
+Four properties determine how well an AI coding tool performs in a given language:
 
 | Property | Why it moves the result |
 |---|---|
@@ -386,7 +386,7 @@ habits that raise output in any language:
   and budget extra review.
 
 **The load-bearing sentence:** structure and documentation matter as much as language choice. A
-well-organised codebase with types, docstrings and a context file outperforms a poorly structured one
+well-organized codebase with types, docstrings and a context file outperforms a poorly structured one
 in the same language.
 
 ### Recovering from context degradation
@@ -397,7 +397,7 @@ Symptom, then action:
 |---|---|
 | Repeating itself, re-reading the same files, confidently wrong edits | Clear the context and restart with a sharper prompt that incorporates what was learned |
 | A long session approaching its limit | Compact, aiming the summary at interface shape and decisions |
-| Always | Fresh context per task; keep context utilisation low; decompose into short trajectories |
+| Always | Fresh context per task; keep context utilization low; decompose into short trajectories |
 
 The threshold for taking manual control back, and the reason grinding in a polluted context is the
 expensive failure rather than a bad suggestion, are in
@@ -419,16 +419,16 @@ apply.
 
 ### Control parity is a review gate
 
-An assistant implements a control exactly where it was prompted and misses its siblings. Make
+An AI coding tool implements a control exactly where it was prompted and misses its siblings. Make
 enumerating them a review step rather than a hope, and prefer one deterministic check over all
-instances to a recurring manual sweep. Full rule and the audit finding behind it:
-[CI and standards](../CI-AND-STANDARDS.md) *"Enumerate sibling paths for every control"*.
+instances to a recurring manual sweep. Full rule and the audit finding behind it: [CI and
+standards](../CI-AND-STANDARDS.md) *"Enumerate sibling paths for every control"*.
 
 ### Provenance: record it, and count it before you cite it
 
-Recording the assistant's identity and version is worth doing. The usual mechanism is a per-commit
-trailer naming the assistant as a co-author. Citing that trailer as a **built control** is a
-different claim, and it is the one that failed.
+Recording the AI coding tool's identity and version is worth doing. The usual mechanism is a
+per-commit trailer naming the AI coding tool as a co-author. Citing that trailer as a **built
+control** is a different claim, and it is the one that failed.
 
 *Revised.* The trailer was published as a built control and as part of a retained evidence set.
 Measured in one repository's own history, adoption was **zero**: many tracked files instructed that
@@ -456,7 +456,7 @@ standard. The honest response is to record it as one rather than to redefine the
 
 - **The control that cannot be met:** independent human review of every change.
 - **The compensating set that stands in for it:** blocking automated analysis and dependency audit
-  that cannot be waived; an assistant-run review that a human arbitrates; branch protection with
+  that cannot be waived; an AI coding tool-run review that a human arbitrates; branch protection with
   required checks; no direct pushes to the integration branch.
 - **The wording constraint:** this is a **compensating control**, explicitly not an independent
   audit, and no published claim may imply otherwise.
@@ -476,7 +476,7 @@ unreliable in the self-review case.
 exposure**. For software that others self-host, the producing project does not control the deployment
 decision, and gating an adopter's rollout on an engagement you have not funded asserts authority you
 do not have. The standard **records what has and has not been independently verified**; the adopting
-organisation owns the decision to deploy.
+organization owns the decision to deploy.
 
 ### The deviations register
 
@@ -523,11 +523,11 @@ Say this once, structurally, near the top of whatever you publish -- not as a fo
 > certification, or fitness on the product, on the author, or on anyone adopting it, and it is not a
 > substitute for an adopter's own risk assessment.
 
-The positive form names its own scope: *the project self-attests that it builds under this standard
-with the assistant governed as a tool -- explicitly not that the output is independently audited.*
-Where you borrow discipline from a regime you are not subject to, say that it is adopted **by analogy
-and voluntarily**, name the regime you are not subject to, and state that producing the artefacts
-confers nothing.
+The positive form names its own scope: *the project self-attests that it builds under this
+standard with the AI coding tool governed as a tool -- explicitly not that the output is
+independently audited.* Where you borrow discipline from a regime you are not subject to, say that
+it is adopted **by analogy and voluntarily**, name the regime you are not subject to, and state
+that producing the artifacts confers nothing.
 
 ---
 
@@ -557,7 +557,7 @@ and *"Make the reviewer execute the citation, not read it"* in
 
 Independence degrades unless it is designed in. Four rules.
 
-- **Give the verifiers the artefact and the claim, not the author's framing.** No naming, no
+- **Give the verifiers the artifact and the claim, not the author's framing.** No naming, no
   rationale, no summary of why it is right. The implementer's vocabulary contaminates the critic's
   judgment.
 - **Give each verifier a distinct lens**, not the same brief repeated, so their failures are
@@ -572,7 +572,7 @@ Independence degrades unless it is designed in. Four rules.
 
 ### Propose, judge, synthesise, critique
 
-For a design decision rather than a patch, the two-lane pattern generalises to a panel:
+For a design decision rather than a patch, the two-lane pattern generalizes to a panel:
 
 - several independent proposals, each written from a declared lens
 - each proposal scored by several adversarial judges, each with its own lens
@@ -594,7 +594,7 @@ Discarding the losers' good ideas is the second failure mode of panel review.
 
 On a split, the useful output is **not a tally**. It is the strongest surviving objection. Carry it
 forward and resolve it by name. Where a residual risk cannot be closed, document it honestly -- for
-instance as no worse than the behaviour that already ships -- and make it visible rather than
+instance as no worse than the behavior that already ships -- and make it visible rather than
 claiming it closed. A residual risk that is named survives review; one that is quietly absorbed
 resurfaces as an incident.
 
@@ -638,12 +638,12 @@ Treat a fan-out as **a permission granted for one hard task, not a quality setti
 Deciding whether you can afford the run at all, and why a percentage without its account is
 meaningless, is owned by [Usage awareness](../USAGE-AWARENESS.md).
 
-### Put the plan in an artefact, not in the conversation
+### Put the plan in an artifact, not in the conversation
 
 When a run spans many agents or many hours, the plan -- the dependency graph, the loops, the fan-out
 -- should live in a written script or file that the run follows, not in the conversation that produced
 it. A plan held in conversational context degrades with everything else in that context. A plan held
-in an artefact is stable across the whole run and re-readable by every agent that joins it. The same
+in an artifact is stable across the whole run and re-readable by every agent that joins it. The same
 argument supports caching completed sub-results so a resumed run does not redo them.
 
 If the fan-out is several *sessions* rather than several agents inside one session, the isolation and
@@ -657,7 +657,7 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
 
 | When | Rule |
 |---|---|
-| Proposing a control | Name which of the five failure modes it neutralises. None means decoration |
+| Proposing a control | Name which of the five failure modes it neutralizes. None means decoration |
 | Classifying a change | One question first: does any path touch or protect restricted data in production |
 | Classifying a change | Sensitivity ratchets up and dominates reach; reach only scales the low-sensitivity cells |
 | Classifying a change | Unknown, unresolvable, or production-facing: clamp up to the strictest tier |
@@ -696,7 +696,7 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
   the levels in your own domain's vocabulary, and make the sensitivity axis mean the thing your
   regulator, your customers or your risk register actually cares about.
 - **The tier names, if they mislead.** Four tiers is enough; the labels are not load-bearing.
-- **The contents of the verification-gate row.** Which analyses, which audits, which command -- those
+- **The contents of the verification-gate row.** Which analyzs, which audits, which command -- those
   are yours. What is not yours to change is that they are deterministic and blocking.
 - **The floor's first row.** "Restricted data" has to be defined for your context, concretely enough
   that someone can decide in seconds whether a payload qualifies.
@@ -704,7 +704,7 @@ blind to is owned by [Sequence allocation](../SEQUENCE-ALLOC.md).
 
 **What you must not weaken.**
 
-- **The gate definition.** The moment an assistant-run review counts as a gate, the whole structure is
+- **The gate definition.** The moment an AI coding tool-run review counts as a gate, the whole structure is
   decorative. Advisory input a human arbitrates is the strongest form it may take.
 - **The fail-closed resolver.** A resolver that resolves ambiguity downward is not a classifier, it is
   a permission slip.

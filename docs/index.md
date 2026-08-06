@@ -129,7 +129,7 @@ you check whether an agent's tool call caused it.
 
 **PowerShell 7 + Windows-first.** Nearly every shipped script is PowerShell, with a handful of
 stdlib-only, portable Python checkers. It runs on PowerShell 7 for Linux and macOS, but the Windows
-paths are the ones that were exercised, and two behaviours degrade elsewhere: self-marking in the
+paths are the ones that were exercised, and two behaviors degrade elsewhere: self-marking in the
 roster, and path case-folding.
 
 **There is no `ccx` executable on `PATH`.** Every command is a plain script run with `pwsh`; where

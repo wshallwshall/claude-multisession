@@ -14,7 +14,7 @@ here on purpose: a count in prose is stale on the next file added. Count it agai
 actually have instead, and note that the scope is the question. `git ls-files 'bin/*.ps1' 'bin/*.py'
 'scripts/*.ps1' 'scripts/*.py'` is the *shipped* set. A bare `git ls-files '*.ps1'
 '*.py'` returns something else: it also sweeps in `examples/` and `tests/`. It runs on PowerShell 7
-for Linux and macOS, but the Windows paths are the ones that were exercised, and two behaviours
+for Linux and macOS, but the Windows paths are the ones that were exercised, and two behaviors
 degrade elsewhere (self-marking in the roster, and path case-folding). A bash port is a different
 project.
 
@@ -93,7 +93,7 @@ developed in, over 30 days:
   it with a hook; a reminder produces no evidence either way.
 - **Gate on the write's target path, never the session's cwd.** 29% of writes came from a session
   *sitting* in the primary and landing inside a sibling worktree by absolute path -- already correct
-  behaviour that a cwd-keyed gate would have denied every one of.
+  behavior that a cwd-keyed gate would have denied every one of.
 
 ---
 
@@ -377,7 +377,7 @@ so they get the one counterpart they need -- config discovery, the git runner, p
 `scripts/hooks/_ccxconfig.py`, which states the three things the two sides must agree on. Two copies
 of a safety check drift, and the copy that drifts is the one nobody is testing. The shared substrate
 files exist precisely because five copies of "resolve the git common dir" had already drifted into
-five behaviours, two of which produced a state root at the filesystem root when git failed.
+five behaviors, two of which produced a state root at the filesystem root when git failed.
 
 ---
 
@@ -526,6 +526,6 @@ Small, boring, and load-bearing when several tools write files another tool read
   message a human reads. Case-folding is conditional on the platform, because on a case-sensitive
   filesystem two spellings really are two directories.
 
-## Licence
+## License
 
 MIT. See `LICENSE`.

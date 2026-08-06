@@ -85,7 +85,7 @@ developed in: 44% of the file writes made by sessions launched in the shared pri
 primary's own tree, despite a banner asking otherwise. That is why the `PreToolUse` worktree gate
 exists, and why it keys on the write's **target path** rather than the session's working directory.
 29% of writes came from a session sitting in the primary and writing into a sibling worktree by
-absolute path -- already correct behaviour that a cwd-keyed rule would have denied.
+absolute path -- already correct behavior that a cwd-keyed rule would have denied.
 
 ---
 
@@ -93,7 +93,7 @@ absolute path -- already correct behaviour that a cwd-keyed rule would have deni
 
 Any sequence git cannot see -- decision-record numbers, issue numbers as headings in one long file,
 `<YOUR SEQUENCE>` -- is a shared resource. Two sessions that both grep for "the next free number"
-pick the same one, create differently-named artefacts, **merge clean**, and corrupt the sequence
+pick the same one, create differently-named artifacts, **merge clean**, and corrupt the sequence
 with no conflict anywhere. It happened three times on the repo this tooling was developed in. A
 worktree does not help (the collision is *between* worktrees), a file lock does not help (different
 filenames), and `git merge-tree` cannot help (it merges clean by construction).
@@ -201,12 +201,12 @@ pwsh -NoProfile -File scripts/quality/check-ascii.ps1 -Fix     # rewrite the saf
 
 ## Verification before "done"
 
-Run, in order: `<LINT COMMAND>`, `<TYPE-CHECK COMMAND>`, `<TEST COMMAND>`. New behaviour gets a
+Run, in order: `<LINT COMMAND>`, `<TYPE-CHECK COMMAND>`, `<TEST COMMAND>`. New behavior gets a
 test. If a check cannot run locally, say which one and why rather than declaring success.
 
 Four verification rules that this tooling exists because of:
 
-1. **Test the installed artefact, not the repo copy.** Hooks and gates execute from an installed
+1. **Test the installed artifact, not the repo copy.** Hooks and gates execute from an installed
    copy outside the working tree. A suite that binds only the repo copy stays green while
    enforcement runs from a stale installed one -- in both directions, including a rule you deleted
    from source that the stale copy keeps enforcing.
@@ -219,7 +219,7 @@ Four verification rules that this tooling exists because of:
 2. **Assert the decision and the reason, not survival.** A test that only checks nothing was
    destroyed passes against a build that has lost its primary safety fence, because a backstop
    caught it. Carry a positive control in the same run wherever you can.
-3. **Prove a new check can fail.** Mutate the shipped artefact deliberately and confirm each
+3. **Prove a new check can fail.** Mutate the shipped artifact deliberately and confirm each
    mutation goes red. Passing tests do not show the tests could have failed on the defect.
 4. **State status exactly.** Write "Mostly done -- X and Y; NOT done: Z." Never a bare "Done". The
    next session acts on the status, and an overstated one is worse than no status at all.
@@ -245,7 +245,7 @@ is indistinguishable from one that cannot.
 | Architecture and layer boundaries enforced in CI | `<built / partial / not built>` | `<date, or never>` |
 | Strict type checking, no blanket suppressions | `<...>` | `<...>` |
 | Dependencies existence-verified and hash-pinned | `<...>` | `<...>` |
-| Published artefact contains only what was declared | `<...>` | `<...>` |
+| Published artifact contains only what was declared | `<...>` | `<...>` |
 | Secret and identifying-content scan before publish | `<...>` | `<...>` |
 
 Two rules survive whatever you put in that table:

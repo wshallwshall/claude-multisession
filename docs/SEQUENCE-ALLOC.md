@@ -15,7 +15,7 @@ mechanism is specific to them. What a sequence *is* lives entirely in `ccx.confi
 ## The defect
 
 Two sessions each look for the next free number. Both compute the same answer -- correctly, from
-their own point of view -- and both use it. They create **differently named** artefacts:
+their own point of view -- and both use it. They create **differently named** artifacts:
 `0004-alpha.md` and `0004-beta.md`, or two `## 58.` headings sixteen hundred lines apart in the
 same file.
 
@@ -95,7 +95,7 @@ refuses with a message naming the file to edit, and the gate returns 0 without a
 | `filePattern` | yes | Regex over the repo-relative path. **Group 1 must capture the number.** |
 | `pad` | no | Zero-padding width. `0` or absent means none |
 | `indexFile` | no | An index/table file that must carry a row per number |
-| `indexRowPattern` | with `indexFile` | Regex recognising one row. **Group 1 must capture the number.** |
+| `indexRowPattern` | with `indexFile` | Regex recognizing one row. **Group 1 must capture the number.** |
 
 Both scripts validate this **before touching the registry**, and both name the file and the key in
 every message. `indexFile` and `indexRowPattern` must be given together or not at all: half a

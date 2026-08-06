@@ -55,14 +55,14 @@ Each of these was checked and each was wrong for the case it appeared to answer:
 | A cached utilization figure beside it | Wrong account **and** hours stale. Two independent defects in one field. |
 | The CLI's credentials file | The CLI again. Same category error. |
 | The per-session record on disk | Carries no account field at all, so it cannot answer the question. |
-| Token-file modification times | They track whichever account the tool last polled, so they point at its own most recent behaviour. **A signal derived from your own tool's activity is a mirror, not a measurement.** |
+| Token-file modification times | They track whichever account the tool last polled, so they point at its own most recent behavior. **A signal derived from your own tool's activity is a mirror, not a measurement.** |
 
 That last row is the general one. If your evidence for "which account is this" is a side effect of
 your own polling, you have built a loop that confirms whatever it did last.
 
 ## Rule 3: cross-check against an independent sample, and refuse when they disagree
 
-The reading is checked against a second, independently maintained sample for the same organisation.
+The reading is checked against a second, independently maintained sample for the same organization.
 If the two disagree, the result is **UNKNOWN**, not the number.
 
 Two design details matter more than they look:
@@ -107,11 +107,11 @@ Three constraints, each learned:
   subprocess on every prompt during an upstream outage, inside a hook with a 30-second budget. The
   failure mode of "retry until it works" is a hook that times out forever.
 
-## Rule 7: cache per pool, never in one unlabelled slot
+## Rule 7: cache per pool, never in one unlabeled slot
 
 A single shared cache slot lets the first writer in a refresh window define what every later reader
-reports, whatever account that reader asked about. Key the cache by pool. An unlabelled cache is an
-unlabelled claim.
+reports, whatever account that reader asked about. Key the cache by pool. An unlabeled cache is an
+unlabeled claim.
 
 ## Rule 8: a threshold is not a decision
 
