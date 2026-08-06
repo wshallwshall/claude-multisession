@@ -30,9 +30,12 @@ Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 
 **Markdown to use them. Word to circulate them.**
 
-Markdown is plain text. It drops into a repository, and it diffs cleanly as you edit it -- which you
-will, because none of these are usable as they stand. The Word files hold the same content,
-generated from the same markdown. Take those for people who will read or mark up rather than adopt.
+The two formats trade off in opposite directions. Markdown is plain text: harder on a human eye,
+with its syntax showing and its tables unaligned, and easier for an AI to work with, because that
+same plain text is exactly what an agent reads best. It also drops into a repository and diffs
+cleanly as you edit it -- which you will, because none of these are usable as they stand. Word is
+the reverse: comfortable to read, easy to circulate and mark up, and of no use to an agent. The Word
+files hold the same content, generated from the same markdown.
 
 **Hand the four main documents to an agent.** They are a base to apply, not prose to read through.
 
