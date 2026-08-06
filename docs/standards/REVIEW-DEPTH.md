@@ -1,4 +1,4 @@
-# How much of this code does a human have to read?
+# How much of AI-generated code does a human have to read?
 
 **The question every engineering manager asks once an AI coding tool starts writing most of the
 code, and the one where a wrong answer is expensive in both directions.**

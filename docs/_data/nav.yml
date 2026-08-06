@@ -84,7 +84,7 @@
       title: Dependency and artifact integrity
       path: /standards/DEPENDENCY-INTEGRITY.html
     - label: Human review of code
-      title: How much of this code does a human have to read?
+      title: How much of AI-generated code does a human have to read?
       path: /standards/REVIEW-DEPTH.html
     - label: Code quality
       title: Judging code quality, whoever or whatever wrote it
