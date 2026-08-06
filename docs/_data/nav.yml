@@ -53,6 +53,9 @@
     - label: How to adopt these
       title: "How to adopt these"
       path: /standards/ADOPTING-THESE.html
+    - label: What is actually enforced
+      title: "Which of your rules can actually stop a change, and what is that worth?"
+      path: /standards/CI-ENFORCEMENT.html
     - label: AI-assisted development
       title: "AI-assisted development: keeping the result trustworthy"
       path: /standards/AI-ASSISTED-DEVELOPMENT.html
