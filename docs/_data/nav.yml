@@ -44,6 +44,12 @@
     - label: CISO summary
       title: The CISO summary
       path: /standards/CISO-SUMMARY.html
+    - label: Which standards apply to you
+      title: "Which security standards actually apply to you?"
+      path: /standards/STANDARDS-LANDSCAPE.html
+    - label: How to adopt these
+      title: "How to adopt these"
+      path: /standards/ADOPTING-THESE.html
     - label: AI-assisted development
       title: "AI-assisted development: keeping the result trustworthy"
       path: /standards/AI-ASSISTED-DEVELOPMENT.html
