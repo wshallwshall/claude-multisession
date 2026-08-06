@@ -116,28 +116,6 @@ you are currently losing.
 | [Code quality](CODE-QUALITY.md) | Rows that may decide a verdict separated from rows that may only start a conversation, the published evidence behind refusing to gate on a single number, a map from each way machine-written code goes wrong to the control that neutralizes it, and review depth as a per-file decision so a large diff stays finite. |
 | [Secure development](SECURE-DEVELOPMENT.md) | A written producer-versus-operator ownership split, a per-interface threat model that gives review something to check against, a finite secure-coding list, an honest read of what a green pipeline has and has not established, and a release gate that is a checklist rather than a debate. |
 
-## Fetch the whole set in one command
-
-Individual links are in [The files](#the-files) at the top. This section is
-only for pulling all of them at once, into a `standards/` directory below wherever you run it:
-
-```sh
-for f in OVERVIEW CISO-SUMMARY REVIEW-DEPTH CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY; do
-  curl -fsSL --create-dirs -o "standards/$f.md" \
-    "https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/$f.md"
-done
-```
-
-```powershell
-$base = 'https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards'
-New-Item -ItemType Directory -Force standards | Out-Null
-'OVERVIEW','CISO-SUMMARY','REVIEW-DEPTH','CODE-QUALITY','SECURE-DEVELOPMENT','AI-ASSISTED-DEVELOPMENT','DEPENDENCY-INTEGRITY' |
-  ForEach-Object { Invoke-WebRequest "$base/$_.md" -OutFile "standards/$_.md" }
-```
-
-The one thing not to carry over is a claim these documents decline to make -- see *What these are
-not* above, and keep your edits honest about which controls you have actually built.
-
 ## The order to read them in
 
 1. **[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md)** first, because it is the one that
