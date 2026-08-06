@@ -1166,23 +1166,40 @@
         "list of what reaches you.";
     } else if (shown === 0) {
       /* Structurally close to unreachable, because at least two items carry ALWAYS. Written anyway,
-         and written as a route rather than a dead end. */
+         and written as a route rather than a dead end.
+
+         The boundary is stated ONCE here. It used to end "...This is not a list of what reaches
+         you", which said the same thing twice in one sentence -- and a reader who meets a guard
+         twice in three clauses starts skimming guards. */
       countEl.textContent =
         "Nothing matched that combination. That is not evidence that nothing reaches you -- this " +
-        "map covers at least " + TOTAL + " items and names what it does not cover below. This is " +
-        "not a list of what reaches you.";
+        "map covers at least " + TOTAL + " items and names what it does not cover below.";
     } else {
-      /* The "can actually be produced" clause is dropped when that block is empty rather than
+      /* THE FILTERED SENTENCE IS NOT THE ZERO-STATE SENTENCE, and it used to be. Both ended with
+         "This is not a list of what reaches you", which is true and useful when nothing has been
+         narrowed and actively wrong once it has: appended to a result the reader just produced with
+         five answers it reads as "your filtering achieved nothing", and it contradicts the heading
+         two lines above, which says What may reach you. A reader asked what they were looking at.
+
+         The guard has to survive -- the reading it prevents is that a filtered list is a
+         determination. So it is stated POSITIVELY instead, as a fact about where determinations
+         come from rather than as a negation of the thing being read, and the narrowing is credited
+         rather than dismissed.
+
+         The "can actually be produced" clause is dropped when that block is empty rather than
          printed as a zero. "At least 0" is a vacuous claim, and a vacuous claim beside a real one
-         teaches a reader to skim both. */
+         teaches a reader to skim both. It says "issue" now rather than "name something that can
+         actually be produced": it is the most actionable fact in the panel and it was phrased so it
+         read as filler. */
       countEl.textContent =
-        "Showing " + shown + " of the at least " + TOTAL + " items mapped here." +
+        "Showing " + shown + " of the at least " + TOTAL + " items mapped here, narrowed by your " +
+        "answers." +
         (counts.b === 1
-          ? " At least one of them names something that can actually be produced."
+          ? " At least one of them issues something you could hand to a buyer."
           : counts.b > 1
-            ? " At least " + counts.b + " of them name something that can actually be produced."
-            : " None of them names an artifact you could hand over.") +
-        " This is not a list of what reaches you.";
+            ? " At least " + counts.b + " of them issue something you could hand to a buyer."
+            : " None of them issues anything you could hand to a buyer.") +
+        " Whether any of them reaches you is decided by a contract clause, not by this page.";
     }
 
     /* The disclosure, and the strongest thing on the page for defeating the reading that the list
