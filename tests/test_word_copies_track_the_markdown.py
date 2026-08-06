@@ -14,6 +14,8 @@ REGENERATE WITH (from docs/standards/, needs pandoc):
     # CISO-SUMMARY is the exception: no --toc. It is a two-page document, and a table of contents
     # on it costs a whole page to list six headings the reader can already see.
     pandoc CISO-SUMMARY.md -f gfm -t docx -o word/CISO-SUMMARY.docx
+    # And the assessment method, which lives one directory up:
+    pandoc ../ASVS-ASSESSMENT.md -f gfm -t docx --toc --toc-depth=2 -o word/ASVS-ASSESSMENT.docx
 
 WHAT THIS PROVES, AND WHAT IT DOES NOT. It proves a Word copy EXISTS for every published standard,
 that each is real OOXML rather than a truncated or empty file, and that its text still carries the
@@ -55,7 +57,14 @@ def docx_text(path) -> str:
 
 
 def published_standards() -> list:
-    return sorted(p for p in STANDARDS.glob("*.md"))
+    """Every markdown file offered with a Word copy beside it.
+
+    ASVS-ASSESSMENT.md lives in docs/ rather than docs/standards/, because it predates the standards
+    section. It is offered in the same download table and generated into the same word/ directory,
+    so it is pinned here too -- a generated file nothing checks is the drift this file exists for.
+    """
+    extra = t.REPO_ROOT / "docs" / "ASVS-ASSESSMENT.md"
+    return sorted(STANDARDS.glob("*.md")) + ([extra] if extra.exists() else [])
 
 
 class EveryStandardHasAWordCopy(unittest.TestCase):
