@@ -31,6 +31,11 @@ Under the git common directory, the mail directory gets two properties for free:
 Because of that, recipient paths can be stored in **plain text**. Hashing them would buy nothing and
 would destroy the ability to read the queue with `ls` when it misbehaves.
 
+**That guarantee belongs to the path, not to the design, and it does not travel.** Move the queue
+anywhere outside `.git` -- a temp directory, a state folder beside the repository, a synced drive --
+and both properties are gone at once. The plain-text decision then has to be re-made on the new
+location's merits rather than inherited, because what made it safe was never the format.
+
 ## Address a box by the recipient's worktree
 
 Not by session id: a context clear re-mints the id and strands the mail. Not by worktree **name**:
