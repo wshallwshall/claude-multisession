@@ -1,44 +1,41 @@
 # Which security standards actually apply to you?
 
-**The question a security executive has to answer before funding anything, and the one buried under
+**The question a security executive answers before funding anything, and the one buried under
 encyclopedias that explain what each standard says rather than whether it applies to you.**
 
-> **Take a copy:**
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/STANDARDS-LANDSCAPE.md)
-> or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/STANDARDS-LANDSCAPE.docx).
+> **Take a copy:** [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/STANDARDS-LANDSCAPE.md) or
+> [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/STANDARDS-LANDSCAPE.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
-> The interactive version of this page is at
-> <https://wshallwshall.github.io/claude-multisession/standards/STANDARDS-LANDSCAPE.html>, written
-> out in full because a relative link is dead in a downloaded Word file.
+> Interactive version:
+> <https://wshallwshall.github.io/claude-multisession/standards/STANDARDS-LANDSCAPE.html> --
+> written out in full, because a relative link is dead in a downloaded Word file.
 
-**This one file carries three things, in the order a reader needs them.** First the routing below,
-which answers "what applies to me". Then [the reference](#every-document-on-this-map), one row per
-document, for when you already know what you are looking for. Then
-[the explanation](#why-this-page-is-organized-the-way-it-is), last and skippable, which is where the
-cuts and the vocabulary are argued rather than assumed.
+Three parts, in the order you need them:
 
-**On the served site there is an interactive selector between this paragraph and the routing table.**
-Tick what is true of your business and it hides the rows that cannot apply to you. It hides; it never
-computes, and it holds no fact this document does not.
+1. **[Routing](#if-this-is-your-situation)** -- which of these apply to your situation
+2. **[Reference](#every-document-on-this-map)** -- one row per document, for when you already know
+   what you are after
+3. **[Why](#why-this-page-is-organized-the-way-it-is)** -- where the cuts and the vocabulary are
+   argued; skippable
 
-**If you are reading the markdown or the Word copy, you have the answer and not a substitute for
-it.** The selector is a filter over the table below, and the table below is that same routing
-unfiltered -- the form you can print, forward to counsel and mark up. Nothing in this document
-depends on the control existing.
+The served page adds a selector above the routing table. It only hides rows: it computes nothing and
+holds no fact this document does not. A downloaded copy gives you the same routing unfiltered --
+printable, forwardable to counsel, markable.
 
-**Two things neither of them will ever do.** They will not tell you that you must comply with
-anything: that a document applies to your situation does not mean it binds you, and what binds you
-is a clause in a contract, a statute, or a procurement rule -- which no web page can settle, and no
-legal advice is given anywhere on this site. And they will not return a complete list. "At least
-these" is the only claim available, and matching nothing here is not evidence that nothing applies
-to you -- [what this page did not assess](#what-this-page-did-not-assess) names the gaps on purpose.
+**Two things this never does.** It will not tell you that you must comply: that a document applies to
+your situation does not mean it binds you, what binds you is a clause in a contract, a statute or a
+procurement rule, and nothing here is legal advice. And it will not give you a complete list. *"At
+least these"* is the only claim available, so matching nothing here is not evidence that nothing
+applies -- [the gaps are named on purpose](#what-this-page-did-not-assess).
+
+---
 
 <!--
   The line below is a sentinel. _layouts/default.html splits the rendered page on it and injects
   _includes/standards-selector.html at that point, so the interactive selector lands here without
   this markdown file carrying any HTML or template syntax. It renders as nothing on GitHub and
   pandoc emits nothing for it, so the markdown and the Word copy are unaffected. If you move it,
-  move the matching string in the layout, and see tests/test_the_selector_matches_the_routing_table.py.
+  move the matching string in the layout, and see tests/test_the_selector_matches_the_routing_table.
 -->
 
 <!-- STANDARDS-SELECTOR -->
