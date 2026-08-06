@@ -35,11 +35,8 @@
     - label: Concepts
       title: Concepts
       path: /CONCEPTS.html
-    - label: Hooks
-      title: Hooks
-      path: /HOOKS.html
 
-- group: Standards to adapt
+- group: Standards
   items:
     - label: Standards index
       title: Standards you can start from
@@ -62,6 +59,9 @@
     - label: Secure development
       title: "Secure development: the process a build must satisfy"
       path: /standards/SECURE-DEVELOPMENT.html
+    - label: Security standard assessment
+      title: Running a large security-standard assessment with AI agents
+      path: /ASVS-ASSESSMENT.html
 
 - group: Running sessions
   items:
@@ -85,8 +85,12 @@
       path: /PRUNING.html
 
 
-- group: Safety and standards
+
+- group: Guardrails
   items:
+    - label: Hooks
+      title: Hooks
+      path: /HOOKS.html
     - label: Leak gate
       title: The leak gate
       path: /LEAK-GATE.html
@@ -97,7 +101,6 @@
       title: "Usage awareness: knowing when to stop, without lying about it"
       path: /USAGE-AWARENESS.html
 
-
 - group: In practice
   items:
     - label: Tips and tricks
@@ -106,10 +109,6 @@
     - label: Drift audit case study
       title: "Case study: auditing a multi-session estate as one system"
       path: /CASE-STUDY-drift-audit.html
-    - label: Security standard assessment
-      title: Running a large security-standard assessment with AI agents
-      path: /ASVS-ASSESSMENT.html
-
 
 - group: On GitHub
   items:
