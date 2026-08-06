@@ -46,12 +46,13 @@ reference_page: "STANDARDS-REFERENCE.html"
 # ---------------------------------------------------------------------------------------------
 boundary:
   no_legal_advice: >-
-    This names documents that MAY reach a situation like yours, and what to check next. It is a
-    starting point, not a determination, and it is not legal advice. Whether any of it reaches
-    your organization is decided by a clause number, not by a web page.
+    This names documents that MAY apply to a situation like yours, and what to check next. That one
+    of them applies does not mean it binds you: what binds you is a clause in a contract, a
+    statute, or a procurement rule, and which of those you are under is not something a web page
+    can settle. It is a starting point, not a determination, and it is not legal advice.
   not_complete: >-
     At least these. This is not a complete list, and matching no situation here is not evidence
-    that nothing reaches you.
+    that nothing applies to your situation.
   status_dates: >-
     Every status shown here was checked on the date printed beside it. This is a snapshot, not a
     maintained register: several of these facts changed within the twelve months before that date
@@ -91,14 +92,14 @@ not_on_this_map:
     vehicle software. Sector regimes beyond the several named here as a set. Also absent: the
     enforcement and liability exposure that attaches to a signature or a representation, which is a
     question for counsel and not for this page.
-  # Phrased around what reaches the reader rather than around the possessive form of "obligation",
-  # on purpose, and the pin in tests/ is deliberately strict enough to catch a relapse even in a
-  # comment. The result panel never names anything as the reader's own duty, not even inside a
-  # conditional: that possessive is exactly the shape that survives review and still reads as a
-  # verdict.
+  # Phrased around what applies to the reader rather than around the possessive form of
+  # "obligation", on purpose, and the pin in tests/ is deliberately strict enough to catch a relapse
+  # even in a comment. The result panel never names anything as the reader's own duty, not even
+  # inside a conditional: that possessive is exactly the shape that survives review and still reads
+  # as a verdict.
   closer: >-
-    If what reaches you sits in one of these, this page will tell you nothing about it, and you
-    should not read its silence as coverage.
+    If what applies to your situation sits in one of these, this page will tell you nothing about
+    it, and you should not read its silence as coverage.
 
 # The instrument check, and the routes table. Both are explanation rather than result, so both sit
 # behind a disclosure -- level 2 of exactly two levels. Level 3 is the reference page, not a third
@@ -112,7 +113,7 @@ instrument_check:
     That is why no identifier here appears without its version, revision, edition or release.
 
 routes:
-  heading: "How these actually reach you"
+  heading: "How these actually arrive"
   intro: >-
     At least five routes. The route decides the owner far more reliably than the subject does,
     which is why this is the part that decides where budget lands.
@@ -176,7 +177,7 @@ blocks:
       These three are routinely misfiled as doing so.
     empty: ""
   - id: c
-    heading: "May reach you, and how"
+    heading: "May apply to your situation, and how"
     intro: "Each row carries the route it arrives by, what it issues, and when its status was checked."
     empty: "Nothing else surfaced on what you have told it so far."
   - id: d
@@ -197,26 +198,31 @@ blocks:
 # ---------------------------------------------------------------------------------------------
 groups:
   - id: producer-binding
-    label: "Addressed to a software producer"
+    label: "Makes demands of a software producer"
     ref: "#requirement-shaped-items"
   - id: rankings
-    label: "Addressed to a software producer -- a ranking, not a requirement set"
+    label: "Makes demands of a software producer -- a ranking, not a requirement set"
     ref: "#rankings-and-awareness-lists"
   - id: org-instruments
-    label: "Addressed to an organization, not a product"
+    label: "Makes demands of an organization, not a product"
     ref: "#certification-and-program-regimes"
   - id: sector-regimes
-    label: "Addressed to an organization, not a product"
+    label: "Makes demands of an organization, not a product"
     ref: "#sector-and-jurisdiction-regimes"
   - id: control-catalogs
-    label: "Addressed to an organization, not a product"
+    label: "Makes demands of an organization, not a product"
     ref: "#control-catalogs-and-operational-inputs"
   - id: assessor
-    label: "Addressed to an assessor"
-    ref: "#addressed-to-an-assessor"
+    label: "Makes demands of an assessor"
+    ref: "#makes-demands-of-an-assessor"
+  # The one label that names no audience, because this group has none. It read "addressed to
+  # nobody", which is true of these documents' normative status and misleading about their
+  # importance: a producer uses every item in the group, and the old label read as "skip this".
+  # The replacement states the test in both directions -- use it, and nobody audits you against it.
+  # The `ref` anchor moved with the heading on the reference page that it points at.
   - id: infrastructure
-    label: "Addressed to nobody: infrastructure and vocabulary"
-    ref: "#addressed-to-nobody-infrastructure-and-vocabulary"
+    label: "Input you use, not a rule you meet"
+    ref: "#input-you-use-not-a-rule-you-meet"
 
 # ---------------------------------------------------------------------------------------------
 # THE QUESTIONS
@@ -234,8 +240,9 @@ groups:
 # `widens: true`   -- "Not sure". Contributes the union of every substantive option on the question
 #                     and names itself in the widening notice. Unknown resolves toward MORE.
 # `selects_nothing: true` -- a definite answer that surfaces no item. It still prints `note`,
-#                     because "no item routes on what you named" and "nothing reaches you" are
-#                     different sentences and a reader will otherwise read the first as the second.
+#                     because "no item routes on what you named" and "nothing applies to your
+#                     situation" are different sentences and a reader will otherwise read the
+#                     first as the second.
 # `opener`         -- rendered at the top of the "what can actually be produced" block when the
 #                     option is selected. This is the sentence that pays for the whole app.
 # ---------------------------------------------------------------------------------------------
@@ -282,7 +289,16 @@ questions:
       - id: none_yet
         label: "Nowhere yet: no external customers"
         selects_nothing: true
-        note: "Nothing here binds you yet. What follows is what will arrive, and by which route."
+        # A ROUTING STATEMENT, NOT A BINDING ONE, and the difference is the whole boundary this
+        # page draws. It read "Nothing here binds you yet", which is a negative determination --
+        # the page says what MAY apply to a situation like yours and never says what binds you,
+        # and this one printed a clearance above cards that contradict it: health data surfaces a
+        # regulator's rule that does not wait for external customers, and shipping software
+        # surfaces a disclosure duty attached to registrant status. Scoped the way block a's empty
+        # sentence is scoped -- "mapped here", and on what the reader has said so far.
+        note: >-
+          Nothing mapped here routes on a market you have not entered yet. What follows is what
+          will arrive, and by which route.
       - id: unknown
         label: "Not sure"
         widens: true
@@ -292,9 +308,9 @@ questions:
     help: >-
       Answer for what the software or service handles, stores or transmits -- not for what your HR
       department holds. Asked as data rather than as industry on purpose: at least one rule's
-      statutory definition of a covered institution reaches wider than self-image, so an
-      organization that does not think of itself as one would answer the industry question with
-      confidence and be routed away from a rule that reaches it.
+      statutory definition of a covered institution is wider than self-image, so an organization
+      that does not think of itself as one would answer the industry question with confidence and
+      be routed away from a rule that applies to it.
     options:
       - id: health
         label: "Health or treatment information about identifiable people"
@@ -313,8 +329,8 @@ questions:
         selects_nothing: true
         note: >-
           No sector regime mapped here routes on the data you named. That is not the same as
-          nothing reaching you, and the sector regimes this page never mapped are listed under
-          "Not on this map" below.
+          nothing applying to your situation, and the sector regimes this page never mapped are
+          listed under "Not on this map" below.
       - id: unknown
         label: "Not sure"
         widens: true
@@ -362,7 +378,7 @@ questions:
         label: "Nothing yet: we are getting ahead of it"
         opener: >-
           Nothing narrows here. The useful answer is a different shape: what will arrive, and by
-          which route. Open "How these actually reach you" below.
+          which route. Open "How these actually arrive" below.
       - id: unknown
         label: "Not sure"
         widens: true
@@ -424,7 +440,7 @@ items:
       Routinely treated as something a customer asks for. It is a market-access rule you satisfy
       before you ship, and the owner is engineering and release, not the compliance function.
     triggers: ["market=eu_market", "market=unknown"]
-    # Widening may add a candidate. It may never upgrade a candidate into a binding, so reaching
+    # Widening may add a candidate. It may never upgrade a candidate into a binding, so surfacing
     # this item through "Not sure" demotes it out of the direct-binding block and says why.
     direct_only_when: "market=eu_market"
     qualifier: "Only if you place a product on the EU market."
@@ -814,18 +830,18 @@ items:
     group: sector-regimes
     tier: 3
     summary: >-
-      A written-program requirement whose definition of a covered institution reaches wider than
+      A written-program requirement whose definition of a covered institution is wider than
       self-image.
     issues: "Nothing. A written program, a named accountable individual, and a reporting duty."
     trigger: >-
-      Meeting the rule's statutory definition of a covered institution, which reaches wider than
+      Meeting the rule's statutory definition of a covered institution, which is wider than
       self-image.
     status: >-
       Substantive requirements fully effective 2023-06-09. The breach-reporting amendment became
       effective 2024-05-13.
     check: >-
       Organizations that do not think of themselves as financial institutions assume it does not
-      reach them. The definition is statutory, not a matter of self-description.
+      apply to them. The definition is statutory, not a matter of self-description.
     triggers: ["data=consumer_financial", "data=unknown"]
 
   - id: ferpa
@@ -953,14 +969,14 @@ items:
     group: control-catalogs
     tier: 3
     summary: >-
-      A chain that reaches you only through a clause number, and that issues something different at
+      A chain that arrives only through a clause number, and that issues something different at
       every rung.
     issues: >-
       Depends on the rung: a self-scored assessment, an annual affirmation, a third-party
       certificate, or a government assessment result.
     trigger: >-
-      A contracting officer inserting a clause, or a prime flowing it down. Nothing here reaches
-      you on its own.
+      A contracting officer inserting a clause, or a prime flowing it down. Nothing here arrives
+      on its own.
     status: >-
       Program rule effective 2024-12-16; acquisition rule effective 2025-11-10; phases beyond the
       first suspended by policy on 2026-07-13, per secondary reporting.
@@ -1035,10 +1051,12 @@ items:
     group: control-catalogs
     tier: 4
     summary: >-
-      Guidance on protecting personal data, sitting to the side of the federal control chain.
+      Guidance on protecting personally identifiable information (PII), sitting to the side of the
+      federal control chain.
     issues: "Nothing. Guidance."
     trigger: >-
-      No independent trigger. It sits beside the federal control chain, covering personal data.
+      No independent trigger. It sits beside the federal control chain, covering personally
+      identifiable information (PII).
     status: >-
       Still Final. Its withdrawal exists only as intent inside an unfinished working draft.
     check: >-
@@ -1072,7 +1090,7 @@ items:
       accreditation.
     issues: "Nothing to the audited organization. It governs the auditor."
     trigger: >-
-      It reaches you through changed audit conduct: refined remote-audit rules and a revised
+      It affects you through changed audit conduct: refined remote-audit rules and a revised
       audit-time calculation.
     status: >-
       Published 2024, replacing the 2015 edition. One accreditation body required use for all
@@ -1092,11 +1110,11 @@ items:
       The assessment procedures for the federal control catalog. A method manual for the examiner.
     issues: "Nothing to the audited organization."
     trigger: >-
-      It reaches you as the source of the questions an assessor asks about a deployed instance.
+      It affects you as the source of the questions an assessor asks about a deployed instance.
     status: >-
       Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls.
     check: >-
-      "Addressed to an assessor" does not mean "what an auditor will ask you for". It tells someone
+      "Makes demands of an assessor" does not mean "what an auditor will ask you for". It tells someone
       how to conduct an examination. Building to it produces controls nothing ever required.
     triggers: ["market=us_federal", "ask=certificate_or_report"]
 
@@ -1140,7 +1158,14 @@ items:
     summary: >-
       Identifiers and records that every dependency policy and every scanner is written in.
     issues: "Identifiers and records. Not severity, not exploitability, not priority."
-    trigger: "Every dependency policy and every scanner."
+    # The trigger cell used to answer with the vocabulary's users rather than with the party doing
+    # the demanding, which left the whole group reading as optional. It names the source of the
+    # demand now, because there always is one for a producer and it is never the program.
+    trigger: >-
+      A dependency policy, a customer contract or support agreement, or your own vulnerability
+      management -- covering both what you consume and what you ship. The program demands nothing
+      itself: what obliges anyone to act on a published identifier is the policy or the clause that
+      quotes it.
     status: >-
       Operating. The 2025 contract lapse was averted by an extension, and the program board was
       told on 2026-01-21 there is no funding cliff in March. Replacement terms are not public.

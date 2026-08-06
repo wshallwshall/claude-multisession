@@ -51,7 +51,7 @@ rather than the unusual one.
 
 ---
 
-## Addressed to a software producer
+## Makes demands of a software producer
 
 These describe how software is built and released. One of them binds a producer directly; the rest
 arrive only when a customer, a contract or a package ecosystem names them.
@@ -99,7 +99,7 @@ argue or to over-deliver. That conversation is the cheapest thing on this page.
 
 ---
 
-## Addressed to an organization, not a product
+## Makes demands of an organization, not a product
 
 None of these certifies a product, and all of them are routinely offered as product evidence. Where
 one applies to a software producer, it arrives through a contract rather than through the regime.
@@ -171,7 +171,7 @@ split that decides who owns a control at all, sits in
 
 ---
 
-## Addressed to an assessor
+## Makes demands of an assessor
 
 Three rows and one lesson: **these change what an audit looks like and impose nothing on the audited
 organization.** An unexplained change in audit shape or duration usually starts here rather than in
@@ -181,7 +181,7 @@ ever asked for.
 | What it is | What it issues | What triggers it | Status (checked 2026-08-06) | The check you can run yourself |
 |---|---|---|---|---|
 | **ISO/IEC 27006-1:2024** | Nothing to the audited organization. It governs the auditor. | It affects you through changed audit conduct: refined remote-audit rules and a revised audit-time calculation. | Published 2024, replacing the 2015 edition. One accreditation body required use for all clients by 2026-03-31; other bodies may differ. Ask your own certification body which date applies to it. | Read as a requirement on yourself, which manufactures controls the standard never asked for. An unexplained change in audit shape or duration usually starts here rather than in your auditor's temperament. |
-| **NIST SP 800-53A Rev. 5 (Release 5.2.0)** | Nothing to the audited organization. | It affects you as the source of the questions an assessor asks about a deployed instance. | Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls. | "Addressed to an assessor" does not mean "what an auditor will ask you for". It tells someone how to conduct an examination. Building to it produces controls nothing ever required. |
+| **NIST SP 800-53A Rev. 5 (Release 5.2.0)** | Nothing to the audited organization. | It affects you as the source of the questions an assessor asks about a deployed instance. | Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls. | "Makes demands of an assessor" does not mean "what an auditor will ask you for". It tells someone how to conduct an examination. Building to it produces controls nothing ever required. |
 | **NIST SP 800-171A Rev. 3 and SP 800-172A Rev. 3** | Nothing to the audited organization. A CUI assessment run to these procedures carries findings only, and there is no pass mark. | An assessment somebody else scopes and runs. | 800-171A Rev. 3 final 2024-05-14; 800-172A Rev. 3 final 2026-05-13. The defense program rule still names the June 2018 and March 2022 versions. | The newest published procedure is assumed to be the one being assessed against. The program rule still names earlier versions. |
 
 ---
