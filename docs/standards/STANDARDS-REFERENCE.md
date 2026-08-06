@@ -1,7 +1,7 @@
 # Security standards reference: what each one issues, and what triggers it
 
 **One row per document. Consult this while working, already knowing what you are looking for.** If
-instead you are trying to work out which of these reaches you at all, read
+instead you are trying to work out which of these applies to you at all, read
 [the guide](STANDARDS-LANDSCAPE.md) -- it is the same facts organized around your situation rather
 than around the documents, and it carries an interactive selector on the served site.
 
@@ -18,13 +18,18 @@ have changed since.
 **At least these items.** This is not a complete map of the security standards landscape and does not
 claim to be. [What the guide did not assess](STANDARDS-LANDSCAPE.md#what-this-page-did-not-assess)
 names what is missing on purpose, and you should not read its silence as coverage. Nothing here is
-legal advice, and nothing here says that any of it reaches your organization -- a clause number
-decides that.
+legal advice, and nothing here says that any of it binds your organization -- a clause number
+decides that, and applying to your situation is not the same thing as binding you.
 
-**Sorted by who each document is addressed to**, which is the most stable fact about it: status,
-trigger and enforcement machinery change constantly, and the audience almost never does. The cut is
-explained in [the guide](STANDARDS-LANDSCAPE.md#who-a-document-is-addressed-to). Every item appears in
-exactly one table.
+**Sorted by who each document makes demands of**, which is the most stable fact about it: status,
+trigger and enforcement machinery change constantly, and the audience almost never does. The column
+asks whose conduct a document's sentences purport to govern, not whether anything obliges you to
+follow them -- that is the trigger column's question, and most of the documents here oblige nobody
+on their own. The last section is the one whose documents govern no one's conduct at all: they
+define the terms other documents are written in, so it is named for what they are used for instead.
+The cut is explained in
+[the guide](STANDARDS-LANDSCAPE.md#who-a-document-is-addressed-to). Every item appears in exactly one
+table.
 
 ---
 
@@ -97,7 +102,7 @@ argue or to over-deliver. That conversation is the cheapest thing on this page.
 ## Addressed to an organization, not a product
 
 None of these certifies a product, and all of them are routinely offered as product evidence. Where
-one reaches a software producer, it reaches them through a contract rather than through the regime.
+one applies to a software producer, it arrives through a contract rather than through the regime.
 Why that distinction is the most useful sentence on the whole subject is in
 [the guide](STANDARDS-LANDSCAPE.md#the-organization-layer-is-not-the-software-layer).
 
@@ -128,7 +133,7 @@ vocabulary of each is deliberately absent.
 | What it is | What it issues | What triggers it | Status (checked 2026-08-06) | The check you can run yourself |
 |---|---|---|---|---|
 | **HIPAA Security Rule (45 CFR Part 164 Subpart C)** | Nothing. The enforcing agency has stated since 2003 that it recognizes no certification. | Being a covered organization, or an agreement flowing the obligation down a contract chain. | In force, operative text unchanged. A proposed overhaul published 2025-01-06 is not final; the projected final action has moved to July 2027, per secondary reporting. | Suppliers are asked to produce a certificate against it. None exists, and the enforcing agency has said so for over twenty years. It also binds an organization, not a product. |
-| **FTC Safeguards Rule under GLBA (16 CFR Part 314)** | Nothing. A written program, a named accountable individual, and a reporting duty. | Meeting the rule's statutory definition of a covered institution, which reaches wider than self-image. | Substantive requirements fully effective 2023-06-09. The breach-reporting amendment became effective 2024-05-13. | Organizations that do not think of themselves as financial institutions assume it does not reach them. The definition is statutory, not a matter of self-description. |
+| **FTC Safeguards Rule under GLBA (16 CFR Part 314)** | Nothing. A written program, a named accountable individual, and a reporting duty. | Meeting the rule's statutory definition of a covered institution, which is wider than self-image. | Substantive requirements fully effective 2023-06-09. The breach-reporting amendment became effective 2024-05-13. | Organizations that do not think of themselves as financial institutions assume it does not apply to them. The definition is statutory, not a matter of self-description. |
 | **FERPA (20 U.S.C. 1232g; 34 CFR Part 99)** | Nothing. No certificate, no assessor, no registry. Enforcement runs through federal funding. | Receiving the covered federal funds, or a contract with an institution that does. | Statute in force since 1974; the regulations were substantially amended in 2008. No status change in the last 24 months. | Sought as a compliance artifact. There is no assessor and no registry to be listed in. |
 | **CJIS Security Policy** | No central certificate. An audit by the relevant authority, with the finding landing on the agency. | An agreement giving access to the covered data. The policy names contractors within its own scope. | v6.0 issued 2024-12-27, v6.1 dated 2026-06-25. Secondary reporting says audits continue against an earlier version; confirm with the auditing authority. | A central certificate is assumed to exist, and the version being audited is assumed to be the newest published one. Confirm the audit baseline with the authority that will actually audit, on the date it will happen. |
 | **NIS2 Directive ((EU) 2022/2555)** | Nothing at EU level. Obligations, deadlines and penalties come from a member state's transposing law. | Sector plus size thresholds under national law, which has to be tested per member state. | Transposition was due 2024-10-17 and remains incomplete. The Commission referred four member states to the Court of Justice in 2026. | Read as a single EU-wide obligation with one set of thresholds. It is national law that binds, and transposition is incomplete, so the answer differs by member state and in some cases does not exist yet. |
@@ -144,13 +149,14 @@ asking a supplier to attest to a guide is asking for something no party can supp
 The chain worth carrying, because it tells you which document a question belongs to: FIPS 199
 categorizes, SP 800-60 Rev. 1 guides the categorizing, FIPS 200 sets a floor, SP 800-53B selects a
 baseline, SP 800-53 supplies the control text, and SP 800-53A assesses it. SP 800-122 sits to the
-side, covering personal data. Most questions arrive attached to the wrong link.
+side, covering personally identifiable information (PII). Most questions arrive attached to the
+wrong link.
 
 | What it is | What it issues | What triggers it | Status (checked 2026-08-06) | The check you can run yourself |
 |---|---|---|---|---|
 | **NIST SP 800-53 Rev. 5 (Release 5.2.0), with SP 800-53B and FIPS 199** | Nothing. A baseline is selected and an authorizing official decides. NIST certifies nobody. | A federal contract, a program requirement, or a customer questionnaire mapping its control set onto you. | Release 5.2.0 issued 2025-08-27 and added three controls; the baselines were not changed. FIPS 199 unchanged since February 2004. | Questions arrive attached to the wrong link in the chain. The chain worth carrying: FIPS 199 categorizes, SP 800-60 Rev. 1 guides the categorizing, FIPS 200 sets a floor, SP 800-53B selects a baseline, SP 800-53 supplies the control text, and SP 800-53A assesses it. A release is also not a revision. |
 | **NIST SP 800-161 Rev. 1 (upd 1)** | Nothing. Guidance, structured as an overlay on the control catalog. | A federal contract flow-down, or a prime pushing supply chain terms down. | Revision 1 published May 2022; update 1 issued 2024-11-01. No Revision 2 exists in any form, draft or final. | "Revision 2 is out." There is no Revision 2. The 2024-11-01 date people cite is an update to Revision 1, and the publication's own record page shows status and date. |
-| **The US defense CUI chain: SP 800-171 as pinned by contract, the CMMC program, the DFARS clauses** | Depends on the rung: a self-scored assessment, an annual affirmation, a third-party certificate, or a government assessment result. | A contracting officer inserting a clause, or a prime flowing it down. Nothing here reaches you on its own. | Program rule effective 2024-12-16; acquisition rule effective 2025-11-10; phases beyond the first suspended by policy on 2026-07-13, per secondary reporting. | Two of them. "Defense work has to move to Revision 3": a class deviation issued 2024-05-02 pins the safeguarding clause to Revision 2 and stands until rescinded, per secondary reporting, so the clause text alone gives the wrong revision. And "third-party certification becomes a condition of award in November 2026": Phase 2 and later milestones were suspended by policy on 2026-07-13, per secondary reporting, and neither rule was amended or repealed. Ask the contracting officer which level the solicitation requires, and check the rulemaking index. |
+| **The US defense CUI chain: SP 800-171 as pinned by contract, the CMMC program, the DFARS clauses** | Depends on the rung: a self-scored assessment, an annual affirmation, a third-party certificate, or a government assessment result. | A contracting officer inserting a clause, or a prime flowing it down. Nothing here arrives on its own. | Program rule effective 2024-12-16; acquisition rule effective 2025-11-10; phases beyond the first suspended by policy on 2026-07-13, per secondary reporting. | Two of them. "Defense work has to move to Revision 3": a class deviation issued 2024-05-02 pins the safeguarding clause to Revision 2 and stands until rescinded, per secondary reporting, so the clause text alone gives the wrong revision. And "third-party certification becomes a condition of award in November 2026": Phase 2 and later milestones were suspended by policy on 2026-07-13, per secondary reporting, and neither rule was amended or repealed. Ask the contracting officer which level the solicitation requires, and check the rulemaking index. |
 | **CISA Known Exploited Vulnerabilities catalog, and BOD 26-04** | Nothing to a private organization. A directive binds only the agencies it names. | Being an agency a directive names, a contract flowing it down, or your own policy adopting the catalog. | BOD 26-04, issued 2026-06-10, supersedes and revokes the 2021 and 2019 directives. The catalog itself is unchanged. | "Catalog inclusion means a fixed federal patch deadline." The directive setting flat due dates was revoked on 2026-06-10 and replaced by a risk model. The catalog is unchanged, and the revoked directive's own page is titled as revoked. |
 | **EPSS** | A daily probability and percentile per published CVE, for exploitation in the wild within thirty days. | A remediation policy that consumes it, or a risk model using exploitation likelihood as an input. | Version 4 deployed 2025-03-17; a version 5 was announced 2026-05-13. Which model generates the published scores was not confirmed. | Read as a verdict rather than as data. Which model version is actually generating the published scores is not confirmed here -- read the comment line in the published data file, not a blog post. |
 | **OWASP SAMM v2.0** | Nothing. A self-assessed score from 0 to 3 per practice, plus a community Benchmark for comparison. | Internal program work, board reporting, or a customer asking how mature your program is. | Released February 2020 and still current on the check date. The Benchmark was first published June 2024. | A self-assessed score is offered as though it were an independent finding. |
@@ -174,21 +180,25 @@ ever asked for.
 
 | What it is | What it issues | What triggers it | Status (checked 2026-08-06) | The check you can run yourself |
 |---|---|---|---|---|
-| **ISO/IEC 27006-1:2024** | Nothing to the audited organization. It governs the auditor. | It reaches you through changed audit conduct: refined remote-audit rules and a revised audit-time calculation. | Published 2024, replacing the 2015 edition. One accreditation body required use for all clients by 2026-03-31; other bodies may differ. Ask your own certification body which date applies to it. | Read as a requirement on yourself, which manufactures controls the standard never asked for. An unexplained change in audit shape or duration usually starts here rather than in your auditor's temperament. |
-| **NIST SP 800-53A Rev. 5 (Release 5.2.0)** | Nothing to the audited organization. | It reaches you as the source of the questions an assessor asks about a deployed instance. | Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls. | "Addressed to an assessor" does not mean "what an auditor will ask you for". It tells someone how to conduct an examination. Building to it produces controls nothing ever required. |
+| **ISO/IEC 27006-1:2024** | Nothing to the audited organization. It governs the auditor. | It affects you through changed audit conduct: refined remote-audit rules and a revised audit-time calculation. | Published 2024, replacing the 2015 edition. One accreditation body required use for all clients by 2026-03-31; other bodies may differ. Ask your own certification body which date applies to it. | Read as a requirement on yourself, which manufactures controls the standard never asked for. An unexplained change in audit shape or duration usually starts here rather than in your auditor's temperament. |
+| **NIST SP 800-53A Rev. 5 (Release 5.2.0)** | Nothing to the audited organization. | It affects you as the source of the questions an assessor asks about a deployed instance. | Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls. | "Addressed to an assessor" does not mean "what an auditor will ask you for". It tells someone how to conduct an examination. Building to it produces controls nothing ever required. |
 | **NIST SP 800-171A Rev. 3 and SP 800-172A Rev. 3** | Nothing to the audited organization. A CUI assessment run to these procedures carries findings only, and there is no pass mark. | An assessment somebody else scopes and runs. | 800-171A Rev. 3 final 2024-05-14; 800-172A Rev. 3 final 2026-05-13. The defense program rule still names the June 2018 and March 2022 versions. | The newest published procedure is assumed to be the one being assessed against. The program rule still names earlier versions. |
 
 ---
 
-## Addressed to nobody: infrastructure and vocabulary
+## Input you use, not a rule you meet
 
-You cannot conform to any of these, and knowing that ends several arguments. They are the vocabulary
-the rest of this page is written in.
+You cannot conform to any of these, and knowing that ends several arguments. It does not mean skip
+them: a software producer uses every one. A dependency policy is written in vulnerability
+identifiers, a scanner reports in weakness identifiers, an SBOM is emitted in one of two formats,
+and a requirements document borrows the quality vocabulary. What can put you under an obligation is
+the policy, the contract or the vulnerability management program that quotes one of these, never the
+document itself -- so use them, and look elsewhere for the demand.
 
 | What it is | What it issues | What triggers it | Status (checked 2026-08-06) | The check you can run yourself |
 |---|---|---|---|---|
 | **CWE 4.20** | An identifier for a class of mistake. Not a severity and not a priority. | Tool output, vulnerability records that map to it, and contracts asking for findings with mappings. | Version 4.20 released 2026-04-30, on a continuing versioned release cadence. | A weakness identifier is not a severity: it says what kind of mistake a finding is, not whether it matters where you run. |
-| **CVE Program** | Identifiers and records. Not severity, not exploitability, not priority. | Every dependency policy and every scanner. | Operating. The 2025 contract lapse was averted by an extension, and the program board was told on 2026-01-21 there is no funding cliff in March. Replacement terms are not public. | No published vulnerability identifiers is not a security property: it can equally mean nobody is looking, or that there is no route to publish one. |
+| **CVE Program** | Identifiers and records. Not severity, not exploitability, not priority. | A dependency policy, a customer contract or support agreement, or your own vulnerability management -- covering both what you consume and what you ship. The program demands nothing itself: what obliges anyone to act on a published identifier is the policy or the clause that quotes it. | Operating. The 2025 contract lapse was averted by an extension, and the program board was told on 2026-01-21 there is no funding cliff in March. Replacement terms are not public. | No published vulnerability identifiers is not a security property: it can equally mean nobody is looking, or that there is no route to publish one. |
 | **SBOM formats: SPDX (ISO/IEC 5962:2021) and CycloneDX (ECMA-424, 2nd edition)** | A machine-readable document a parser accepts. No conformance mark exists for either. | A customer or a regime asking for an SBOM in a commonly used machine-readable format. | ISO/IEC 5962:2021 describes SPDX 2.2.1, which current tooling has moved past; SPDX 3.0 sat at draft stage on the check date. ECMA-424 2nd edition was adopted December 2025 and defines CycloneDX v1.7. | "Prefer SPDX because it is the ISO standard." A format's standards-body lineage is not a compliance grade, and the widely quoted ISO number attaches to a 2021-era version rather than to what current tooling emits. Choosing on lineage answers a question nobody in the transaction asked. |
 | **ISO/IEC 25010:2023** | A vocabulary of quality characteristics. It states no requirement a product could meet or fail. | Requirements documents and procurement specifications that need both parties to mean the same thing. | Second edition published November 2023, cancelling and replacing the 2011 edition. Usability and portability no longer exist as top-level names. | "Usability is a characteristic." It was replaced in the 2023 edition, so a requirements document written against the 2011 names no longer resolves. |
 

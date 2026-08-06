@@ -8,7 +8,7 @@ renamed and the Word copies kept the old name until they were rebuilt.
 
 REGENERATE WITH (from docs/standards/, needs pandoc):
 
-    for f in OVERVIEW CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY REVIEW-DEPTH ADOPTING-THESE STANDARDS-LANDSCAPE STANDARDS-REFERENCE CI-ENFORCEMENT; do
+    for f in OVERVIEW CODE-QUALITY SECURE-DEVELOPMENT AI-ASSISTED-DEVELOPMENT DEPENDENCY-INTEGRITY REVIEW-DEPTH ADOPTING-THESE STANDARDS-LANDSCAPE STANDARDS-REFERENCE CI-ENFORCEMENT DILIGENCE-PACKET; do
       pandoc "$f.md" -f gfm -t docx --toc --toc-depth=2 -o "word/$f.docx"
     done
     # CISO-SUMMARY is the exception: no --toc. It is a two-page document, and a table of contents

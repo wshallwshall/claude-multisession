@@ -50,6 +50,9 @@
     - label: Standards reference
       title: "Security standards reference: what each one issues, and what triggers it"
       path: /standards/STANDARDS-REFERENCE.html
+    - label: What a buyer will ask you for
+      title: "What to ask a software vendor for, and what each answer proves"
+      path: /standards/DILIGENCE-PACKET.html
     - label: How to adopt these
       title: "How to adopt these"
       path: /standards/ADOPTING-THESE.html

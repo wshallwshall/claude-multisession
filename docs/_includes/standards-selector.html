@@ -44,7 +44,7 @@
 {%- assign sorted = d.items | sort: 'name' -%}
 
 <section class="ssel" id="standards-selector" aria-labelledby="ssel-title">
-  <h2 id="ssel-title">Work out which of these may reach you</h2>
+  <h2 id="ssel-title">Work out which of these may apply to your situation</h2>
 
   {%- comment -%}
     THE LEDE SAYS NOTHING ABOUT TICKING. It is visible whether or not the controls are, and a
@@ -87,7 +87,7 @@
     </p>
     <p class="ssel-scope">
       These questions cover at least five facts about your business. They are not a model of it,
-      and matching none of them is not evidence that nothing reaches you.
+      and matching none of them is not evidence that nothing applies to your situation.
     </p>
 
     <div class="ssel-grid">
@@ -127,7 +127,7 @@
   </form>
 
   <div class="ssel-results" id="ssel-results">
-    <h3 id="ssel-results-title" tabindex="-1">What may reach you</h3>
+    <h3 id="ssel-results-title" tabindex="-1">What may apply to your situation</h3>
 
     {%- comment -%}
       THE live region for results, and the only one attached to them. Registered on first paint with
@@ -148,7 +148,7 @@
     {%- endcomment -%}
     <p class="ssel-count" id="ssel-count" role="status">
       Showing all of the at least {{ d.items | size }} items mapped here, unfiltered. This is not a
-      list of what reaches you.
+      list of what applies to your situation.
     </p>
 
     {%- comment -%}
@@ -179,8 +179,8 @@
     {%- comment -%}
       Notes for the definite-but-empty answers ("None of these", "Nowhere yet") and for the
       not-assessed jurisdictions. They print because "no item routes on what you named" and "nothing
-      reaches you" are different sentences, and a short result is exactly where a reader misreads
-      the first as the second.
+      applies to your situation" are different sentences, and a short result is exactly where a
+      reader misreads the first as the second.
     {%- endcomment -%}
     {%- for q in d.questions %}{% for o in q.options %}{% if o.note %}
     <p class="ssel-note" id="ssel-note-{{ q.id }}-{{ o.id }}" hidden>{{ o.note }}</p>
@@ -276,11 +276,18 @@
           {%- if item.never_alone %} data-never-alone="{{ item.never_alone }}"{% endif %}
           {%- if item.never_alone_companions %} data-companions="{{ item.never_alone_companions | join: ' ' }}"{% endif %}>
           <h5 class="ssel-item-name">{{ item.name }}</h5>
+          {%- comment -%}
+            The class name predates the labels. Three of the groups name an addressee; the fourth
+            names no audience at all, because it has none -- do not "fix" its label back into an
+            addressee shape to match the class. A label reading "addressed to nobody" was accurate
+            about normative status and read as "skip this", which is the opposite of what a producer
+            should do with an identifier space its own dependency policy is written in.
+          {%- endcomment -%}
           <p class="ssel-addressed">{{ group.label }}</p>
           <p class="ssel-summary">{{ item.summary }}</p>
           {%- comment -%}
             NOT hidden, and not conditional. The qualifier used to appear only when the item was
-            reached by widening, on the reasoning that a reader who answered the real question did
+            surfaced by widening, on the reasoning that a reader who answered the real question did
             not need it. That put the one item on the map which binds a producer directly into the
             one block written in the indicative mood with its scope removed -- the single strongest
             claim the app can make, made where it is least examined. It costs one line to always
@@ -866,7 +873,7 @@
     /* `selected` is what was literally ticked. `effective` adds the widening expansions. The two
        are kept apart for one reason, and it is a correctness rule rather than a nicety: widening
        may add a CANDIDATE, but it may never upgrade a candidate into a BINDING. The market-access
-       regulation is the only item that binds a producer directly, so reaching it through "Not sure"
+       regulation is the only item that binds a producer directly, so surfacing it through "Not sure"
        has to leave it out of the direct-binding block. See `directWhen` below. */
     var selected = {};
     var effective = {};
@@ -919,8 +926,8 @@
     if (card.dataset.tier === "6") { return "d"; }
     var directWhen = card.dataset.directWhen;
     if (directWhen) {
-      /* Reached through the real answer, so it is a direct binding. Reached through "Not sure", so
-         it is a candidate and says so. */
+      /* Surfaced through the real answer, so it is a direct binding. Surfaced through "Not sure",
+         so it is a candidate and says so. */
       return sel.selected[directWhen] ? "a" : "c";
     }
     if (card.dataset.tier === "0") { return "a"; }
@@ -963,8 +970,8 @@
 
       /* COUNT PER BLOCK, NOT ACROSS THE RESULT. A result-wide count satisfied the rule on paper
          and defeated it on screen: answering health plus questionnaire put the peers in "what can
-         actually be produced" and left the instrument by itself in "may reach you", four peers
-         deep in a total nobody sees. A reader sees blocks, not totals.
+         actually be produced" and left the instrument by itself in "may apply to your situation",
+         four peers deep in a total nobody sees. A reader sees blocks, not totals.
 
          So: find whichever block already holds the most peers of that group, move the instrument
          there, and only then force the companions in -- moving the instrument up preserves a peer
@@ -1069,9 +1076,13 @@
       }
       if (b.dataset.note) {
         /* A definite-empty note says "no sector regime mapped here routes on the data you named"
-           or "nothing here binds you yet". Both are false the moment the reader also ticks a
-           substantive option in the SAME question -- and two ticks is all it took to print a
-           clearance sentence directly above the regimes it denied. Checkboxes make that reachable
+           or "nothing mapped here routes on a market you have not entered yet". Both are false the
+           moment the reader also ticks a substantive option in the SAME question -- and two ticks
+           is all it took to print a clearance sentence directly above the regimes it denied. Both
+           are scoped to what is MAPPED and to what the reader has said, rather than stated as a
+           finding about the reader: neither may say that nothing binds them, because that is a
+           determination this page never makes and the suppression below cannot catch it (a note
+           contradicted by an answer to a DIFFERENT question still prints). Checkboxes make that reachable
            and a shared link round-trips it, so the note is suppressed rather than the combination
            being forbidden. A note that is not a definite-empty note (the not-assessed
            jurisdictions) is a coverage statement and stays true regardless. */
@@ -1163,28 +1174,32 @@
          screen-reader user before anybody had done anything. */
       countEl.textContent =
         "Showing all of the at least " + TOTAL + " items mapped here, unfiltered. This is not a " +
-        "list of what reaches you.";
+        "list of what applies to your situation.";
     } else if (shown === 0) {
       /* Structurally close to unreachable, because at least two items carry ALWAYS. Written anyway,
          and written as a route rather than a dead end.
 
-         The boundary is stated ONCE here. It used to end "...This is not a list of what reaches
-         you", which said the same thing twice in one sentence -- and a reader who meets a guard
-         twice in three clauses starts skimming guards. */
+         The boundary is stated ONCE here. It used to end "...This is not a list of what applies to
+         your situation", which said the same thing twice in one sentence -- and a reader who meets
+         a guard twice in three clauses starts skimming guards. */
       countEl.textContent =
-        "Nothing matched that combination. That is not evidence that nothing reaches you -- this " +
-        "map covers at least " + TOTAL + " items and names what it does not cover below.";
+        "Nothing matched that combination. That is not evidence that nothing applies to your " +
+        "situation -- this map covers at least " + TOTAL + " items and names what it does not " +
+        "cover below.";
     } else {
       /* THE FILTERED SENTENCE IS NOT THE ZERO-STATE SENTENCE, and it used to be. Both ended with
-         "This is not a list of what reaches you", which is true and useful when nothing has been
-         narrowed and actively wrong once it has: appended to a result the reader just produced with
-         five answers it reads as "your filtering achieved nothing", and it contradicts the heading
-         two lines above, which says What may reach you. A reader asked what they were looking at.
+         "This is not a list of what applies to your situation", which is true and useful when
+         nothing has been narrowed and actively wrong once it has: appended to a result the reader
+         just produced with five answers it reads as "your filtering achieved nothing", and it
+         contradicts the heading two lines above, which says What may apply to your situation. A
+         reader asked what they were looking at.
 
          The guard has to survive -- the reading it prevents is that a filtered list is a
          determination. So it is stated POSITIVELY instead, as a fact about where determinations
          come from rather than as a negation of the thing being read, and the narrowing is credited
-         rather than dismissed.
+         rather than dismissed. It names BINDING and not applying, which is the line the footer
+         draws in full: a document can apply to a situation like yours without obligating you, and
+         only a clause decides the second.
 
          The "can actually be produced" clause is dropped when that block is empty rather than
          printed as a zero. "At least 0" is a vacuous claim, and a vacuous claim beside a real one
@@ -1199,7 +1214,7 @@
           : counts.b > 1
             ? " At least " + counts.b + " of them issue something you could hand to a buyer."
             : " None of them issues anything you could hand to a buyer.") +
-        " Whether any of them reaches you is decided by a contract clause, not by this page.";
+        " Whether any of them binds you is decided by a contract clause, not by this page.";
     }
 
     /* The disclosure, and the strongest thing on the page for defeating the reading that the list

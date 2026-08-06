@@ -393,6 +393,45 @@ precise about reach: this gets at parser, decoder and boundary surfaces, not at 
 artifact, so it narrows the dynamic-testing gap rather than closing it. Do not write it up as
 closed.
 
+### A diagram without marked trust boundaries is not a security artifact
+
+The model above is a list, and a list is hard to check for absence: nobody notices the ingress that
+was never written down. Draw the same thing. One diagram per system, showing at least the external
+entities, the processes, the data stores, and the flows between them -- with the trust boundaries
+drawn on it, as lines the flows cross.
+
+**The boundaries are the whole of what makes it a security artifact.** Components and arrows with no
+boundaries marked is architecture documentation. It is useful, it is not this, and the failure mode is
+specific rather than pedantic: it gets found later by somebody who reads it as a threat model, because
+it is the only picture in the repository and it looks like one. Mark on the diagram itself which lines
+are boundaries, or do not file it as a threat modeling artifact.
+
+**It is one artifact in two forms, and the check is that they agree.** Every crossing on the diagram
+has a row in the boundary list, and every row in the list has a crossing on the diagram. That two-way
+check is what the picture buys over the list alone, and it is a read-through rather than a tool. Label
+each flow with the data class it carries, from section 1's table, and that table's *enters through*
+column becomes checkable in both directions rather than being a field somebody filled in once.
+
+**Keep the source in the repository, in a text format that diffs.** A binary drawing in a shared folder
+cannot be reviewed inside a change and is stale by the time anyone opens it. A diagram whose source is
+text shows a new boundary as an added line in a diff, which is the same property that makes the
+boundary list worth keeping in the first place. Any format with a text source works, and this document
+names none, because the property is diffability rather than a tool.
+
+Two honest limits, in the same paragraph as the rule. **The diagram establishes nothing about the
+code.** It records what somebody believed the boundaries were; the code is where they actually are, and
+the two diverge without a sound. Nothing mechanical verifies it, which is the caveat this section
+already carries for the threat model itself and is not weakened by adding a picture to it. And it goes
+stale on at least the events that stale that table -- a change that adds a data class, gives an
+existing class a new resting place, or adds a boundary -- and on a few the table survives, among them
+a flow rerouted, a data store added, and a boundary removed. Which is why it rides the event trigger
+section 14 gives section 1's data-class table, and the row section 16's gate already carries for that
+table, rather than adding a gate row or a fifth calendar item of its own. It is also a map of every way
+into the system, so section 13's *publish the rule, not the inventory* governs what you do with it.
+
+Normative force: a written artifact, recommended. It introduces no new blocking release condition and
+weakens nothing above it.
+
 ### Execution boundaries need the longest look
 
 Trust boundaries where content becomes executable deserve more scrutiny than the rest. These
@@ -514,6 +553,60 @@ The scheduled malformed-input harness described in section 2 is classified here,
 **advisory**. It is a real control and it is not coverage, and both halves of that have to be written
 down, or the tool inventory grows while the blocking set stands still.
 
+### Dynamic testing: an event trigger, and a written record of what no trigger reached
+
+The blocking set above is entirely static. Three checks that read code, manifests and history without
+executing anything. Section 2's malformed-input harness is the only control this document states that
+runs the built code against input it did not expect, and a scheduled job with no stated trigger drifts
+into being a green light nobody asked a question of. Give it a policy, in three parts.
+
+**Trigger a dynamic pass on an event, and name the events.** At least these, and each is answerable
+from a diff rather than from a judgment:
+
+- A boundary is added to section 2's list, or the parser, decoder or deserializer behind an existing
+  one is replaced.
+- A dependency that does the parsing or decoding at a boundary crosses a major version.
+- A finding of this class arrives from any source -- an advisory, a report, a crash in the field. The
+  confirming run is section 12's, and it has to mirror the original.
+- A release changes the ingress surface.
+
+The schedule section 2 already sets stays where it is, and it is doing a different job: a fuzzer finds
+more with more machine time, so the scheduled run is how the corpus accumulates. The triggers are what
+make the pass answer a question. Neither replaces the other, and a project running only the schedule
+has a control that cannot respond to anything.
+
+**This is not a fifth item for section 14.** That pass is capped at four for the reason section 14
+states, and these are events with a diff behind them rather than calendar entries -- which is that
+section's own stated preference. Nothing here adds a row to the release gate in section 16 either. The
+record required below is a field in an entry that pass already writes, not a fifth thing for it to
+check, and the four-item cap holds.
+
+**Write down what no trigger reached, in the record somebody already writes.** Section 14's periodic
+pass produces a dated entry recording what was checked and what changed; dynamic testing is a line in
+that entry. Where no trigger has fired since the last pass, the line says dynamic testing did not run
+and carries that pass's date, rather than inheriting the last green run. That places the honesty
+control on an existing artifact with an existing owner and cadence, which is the only way a record of
+a non-run ever gets written. Where a pass did run, record its reach and not only its result: the
+harness gets at parser, decoder and
+boundary surfaces, and does not get at authorization decisions, business logic, multi-step flows, or
+state held across requests. Those are surfaces an external engagement reaches and this does not, which
+is section 15's gap and stays open however green this is.
+
+The honest limit is the one section 2 already carries, and it is the one that decides whether any of
+this meant anything: a harness that never gets past the first parse call is the dynamic-testing
+equivalent of a clean run on a weak ruleset. The coverage question is what the corpus reached, never
+how long it ran.
+
+Two things stated plainly, in this document's usual style. Nothing above blocks -- this section's
+classification of the harness as advisory does not change, and a trigger firing produces a pass and a
+record, not a red change. And nothing here is borrowed at the technique level: SP 800-115 is the
+publication whose subject this is, it is cited on this page for its process material only, and its
+technique and tooling inventory has a row in the coverage table saying so -- which is why the trigger
+list and the reach statement are unmarked and this document's own.
+
+Normative force: a triggered pass and a dated record, recommended. Nothing here blocks, the harness
+stays advisory, and no release condition changes.
+
 ### Three additions specific to a security posture
 
 **A clean run is a start condition, not a certificate.** Zero findings on a weak ruleset proves
@@ -554,6 +647,7 @@ context. None may ever be the pass or fail decision.
 |---|---|
 | Number of security scanners | A tool count. Advisory and scheduled-only jobs never redden a change |
 | Finding count reaching zero | A start condition for red-on-regression. Zero on a weak ruleset proves nothing |
+| Fuzzing hours, or corpus size | Machine time and a file count. Neither says which surfaces the corpus reached |
 | A single percentage-pass headline from an assessment | Hides the composite, and moves when the standard revises its denominator |
 | "Certified" phrasing against any framework | Describes a certificate that does not exist |
 | Count of controls marked "built" | Built is not on-by-default is not fail-closed is not independently verified |
@@ -1035,6 +1129,62 @@ data suggests, the resulting window stays labelled project-set and directional. 
 waiting period on an unfixable upstream advisory finally gets recorded, rather than being a discipline
 with nowhere to live.
 
+### The producer half: an intake a reporter can find, and an advisory a tool can read
+
+Section 1's split already puts vulnerability response and disclosure in the producing project's column,
+opposite monitoring, patching and incident response in the operating organization's. The right-hand
+half is written down. The left-hand half is the list at the top of this section, and that list says the
+machinery must exist without saying what a reporter or an adopter ever sees of it. Three things are
+what they actually encounter, and two more are decisions that show from outside only by never having
+been made.
+
+**Publish the address of the private intake channel where a reporter will look, and state what happens
+next.** What is published is where to send a report, never the reports: the channel stays confidential,
+per the list above, and only its address and its terms are public. A security
+contact at a documented address, a policy file in the repository where the source host surfaces it, and
+a stated acknowledgment time. Say what you will not do in the same place -- no payment, no bounty, no
+timeline beyond the bands, and whether a reporter is credited -- because an unstated expectation is
+where a coordinated report becomes a public one. Requiring an account, a login or a form to file is the
+same defect as an unmonitored address: a channel that exists and does not work. The dry run in the list
+above is the only thing that establishes it does.
+
+**Publish the windows with the clock start next to each one.** The bands are required above, and so is
+stating where the clock starts; the addition is that the published version carries both, because a
+window whose start point is unstated cannot be missed and is therefore not a commitment. Label them
+project-set, per this document's position that no framework supplies a validated number.
+
+**Ship an advisory per fixed vulnerability, on a channel machines read.** A changelog line is not an
+advisory. Nothing in an adopter's tooling reads prose, so a fix announced only that way reaches the
+adopters who happened to be reading. Publish at least the affected versions and the fixed version, the
+impact in one sentence, whether a configuration change mitigates it without upgrading, and a stable
+identifier. Where the ecosystem has a public advisory database or an identifier authority, file there
+too: that is the step that puts the entry into the feeds a blocking dependency audit consumes, and
+[dependency and artifact integrity](DEPENDENCY-INTEGRITY.md) covers that consuming half in full.
+Issuing one is the same act seen from the producing end, and the asymmetry is worth naming, because it
+is the common state: a project can be rigorous about every advisory it reads and have never written
+one.
+
+**Decide the threshold for what gets an advisory, and write it down.** Not every security-relevant fix
+warrants one. A project that has issued none has usually never decided rather than decided not to, and
+those two look identical from outside.
+
+**Set a maximum embargo, so coordinated does not become indefinite.** Disclosure after a fix exists is
+already required above; what it leaves open is the fix that never quite lands and the report that is
+therefore never published, which is section 13's permanent-excuse shape in different clothes. State the
+point at which you publish with or without a fix, including the mitigation if that is all there is.
+
+Two honest limits. **An advisory tells an adopter a fix exists. It does not deploy it.** Released is not
+deployed, deploying is the right-hand column of section 1's table, and writing the advisory as though
+issuing it discharged anything over there is the over-reach that table exists to prevent. And **this is
+a producer's disclosure path, not an incident response program.** Incidents are generated by running
+the software; the coverage table below records the catalog's incident-response family as not addressed
+here and gives the reason, and nothing in this subsection changes it.
+
+Normative force: published artifacts and a stated policy, recommended. The end-to-end dry run that
+already has to happen once is where this gets exercised -- file a test report into the intake, take a
+test advisory through the announce path -- so it adds no second rehearsal and no row to the release
+gate in section 16.
+
 ---
 
 ## 13. Deviations and risk acceptance
@@ -1118,8 +1268,8 @@ claim, no matter how good the automated layer is.
 Dynamic testing was named in that sentence in an earlier version of this material, and has been
 removed from it. That was wrong, and it mattered: it let a reader believe dynamic testing was
 unavailable without funding. A developer-run malformed-input harness costs runner minutes rather than
-money, and section 2 describes it. It is weaker than an external engagement, not out of reach without
-one, and both halves of that go in together.
+money, section 2 describes it, and section 5 says when it runs. It is weaker than an external
+engagement, not out of reach without one, and both halves of that go in together.
 
 ### Write the engagement down before it starts
 
@@ -1268,6 +1418,7 @@ citation.
 | Starting | Define restricted data once, as a table of classes and every place each one rests |
 | Starting | List the services neither column owns, and what fails if one goes away |
 | Designing | Threat model each trust boundary before the build; name a mitigation for each way in |
+| Designing | Draw the boundary list; a diagram with no boundaries marked on it is not a security artifact |
 | Designing | Bound resource consumption per boundary; an unbounded boundary is a finding |
 | Designing | At an execution boundary, check every caller reaches it, not the documented one |
 | Coding | Validate at ingress, parameterise every query, confine every path, fail closed |
@@ -1276,6 +1427,7 @@ citation.
 | Gating | Coverage is the blocking checks that run on the change, not the tool count |
 | Gating | A clean run is a start condition for red-on-regression, never a certificate |
 | Gating | Fire the failure class at the gate before crediting its green |
+| Gating | Trigger a dynamic pass on an event; when no trigger fires, record that nothing ran |
 | Gating | Encode a control as one shared check across sibling paths |
 | Gating | Record rigor and scope separately per blocking check; one green hides both |
 | Configuring | Secure by default; every insecure posture is a named, audited, fail-closed opt-in |
@@ -1300,6 +1452,8 @@ citation.
 | Hardening | Operator-side controls are documented and recommended, never claimed |
 | Hardening | Roll out a blocking verification control in audit mode first |
 | Responding | Rehearse the response program end to end; state where each clock starts |
+| Responding | Publish the intake, the bands and the clock start; an unmonitored address is not a channel |
+| Responding | Ship an advisory per fixed vulnerability where tooling reads it; a changelog line is not one |
 | Responding | A finding closes when its own check goes green on the fix commit, not when the fix merges |
 | Responding | The confirming run is a mirror copy; a suppression is a suppression, never a closure |
 | Responding | Measure time-to-remediate against the windows you set, then label them project-set |
@@ -1431,6 +1585,10 @@ of conformance with any of them, and none of them certify anything -- see sectio
   honesty, gate design, and the general metric evidence this document does not restate
 - [The leak gate](../LEAK-GATE.md) -- fail-closed secret and forbidden-content scanning, and the three
   ways a scanner lies
+- [Dependency and artifact integrity](DEPENDENCY-INTEGRITY.md) -- the consuming half of an advisory,
+  per-manifest audit nets, and the pinned resolved graph
+- [What to ask a software vendor for](DILIGENCE-PACKET.md) -- the buyer's side of section 12, what
+  each item of evidence proves, and why organization-layer evidence is not software-layer evidence
 - [Running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md) -- verdict
   vocabulary, evidence anchors, corpus pinning, and reading a movement in a score
 - [Case study: auditing a multi-session estate as one system](../CASE-STUDY-drift-audit.md) -- proving
