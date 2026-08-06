@@ -26,6 +26,9 @@
 
 - group: Start here
   items:
+    - label: Overview
+      title: claude-multisession
+      path: /
     - label: Feed this to Claude Code
       title: Here's what to feed to Claude Code
       path: /FEED-THIS-TO-CLAUDE-CODE.html
@@ -35,39 +38,6 @@
     - label: Hooks
       title: Hooks
       path: /HOOKS.html
-
-- group: Running sessions
-  items:
-    - label: Worktrees
-      title: Worktrees
-      path: /WORKTREES.html
-    - label: Coordination
-      title: Coordination
-      path: /COORDINATION.html
-    - label: Steering
-      title: Steering a running session
-      path: /STEERING.html
-    - label: Sequence allocation
-      title: Sequence allocation
-      path: /SEQUENCE-ALLOC.html
-    - label: PRs and merges
-      title: "Landing work: PRs and merges"
-      path: /PR-AND-MERGE.html
-    - label: Pruning
-      title: Pruning worktrees
-      path: /PRUNING.html
-
-- group: Safety and standards
-  items:
-    - label: Leak gate
-      title: The leak gate
-      path: /LEAK-GATE.html
-    - label: CI and standards
-      title: CI and standards for agent-written code
-      path: /CI-AND-STANDARDS.html
-    - label: Usage awareness
-      title: "Usage awareness: knowing when to stop, without lying about it"
-      path: /USAGE-AWARENESS.html
 
 - group: Standards to adapt
   items:
@@ -93,6 +63,41 @@
       title: "Secure development: the process a build must satisfy"
       path: /standards/SECURE-DEVELOPMENT.html
 
+- group: Running sessions
+  items:
+    - label: Worktrees
+      title: Worktrees
+      path: /WORKTREES.html
+    - label: Coordination
+      title: Coordination
+      path: /COORDINATION.html
+    - label: Steering
+      title: Steering a running session
+      path: /STEERING.html
+    - label: Sequence allocation
+      title: Sequence allocation
+      path: /SEQUENCE-ALLOC.html
+    - label: PRs and merges
+      title: "Landing work: PRs and merges"
+      path: /PR-AND-MERGE.html
+    - label: Pruning
+      title: Pruning worktrees
+      path: /PRUNING.html
+
+
+- group: Safety and standards
+  items:
+    - label: Leak gate
+      title: The leak gate
+      path: /LEAK-GATE.html
+    - label: CI and standards
+      title: CI and standards for agent-written code
+      path: /CI-AND-STANDARDS.html
+    - label: Usage awareness
+      title: "Usage awareness: knowing when to stop, without lying about it"
+      path: /USAGE-AWARENESS.html
+
+
 - group: In practice
   items:
     - label: Tips and tricks
@@ -104,6 +109,7 @@
     - label: Security standard assessment
       title: Running a large security-standard assessment with AI agents
       path: /ASVS-ASSESSMENT.html
+
 
 - group: On GitHub
   items:
