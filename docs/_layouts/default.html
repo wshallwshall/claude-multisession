@@ -30,16 +30,11 @@
 
     <div class="layout">
       <nav class="site-nav" aria-label="Documentation">
-        <ul class="nav-list">
-          <li>
-            {%- if page.url == '/' %}
-            <a class="nav-link is-current" href="{{ site.baseurl }}/" aria-current="page">Overview</a>
-            {%- else %}
-            <a class="nav-link" href="{{ site.baseurl }}/">Overview</a>
-            {%- endif %}
-          </li>
-        </ul>
-
+        {%- comment %}
+          The landing page used to be linked from a standalone list here, above the first group.
+          It is now the first item of the "Start here" group in _data/nav.yml, where a reader looks
+          for it -- and having both rendered "Overview" twice in the sidebar.
+        {%- endcomment %}
         {%- for group in site.data.nav %}
         {%- assign group_id = 'nav-group-' | append: forloop.index %}
         <p class="nav-heading" id="{{ group_id }}">{{ group.group }}</p>
