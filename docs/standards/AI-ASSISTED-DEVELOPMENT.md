@@ -5,10 +5,11 @@ going wrong, and which control neutralises each one. How much rigor a given chan
 And when to spend real money on an adversarial verification pass instead of a second opinion that is
 worth almost nothing.
 
-> **Meant to be worked with, not read straight through.** Most of this standard is a base for an
-> agent to apply to your code, not prose to work through by hand.
+> **Meant to be worked with, not read straight through.** Most of this standard is a base for
+> Claude Code, or another AI-assisted coding tool, to apply to your code, rather than
+> prose to work through by hand.
 >
-> The fastest way in: give an agent -- Claude Code or another -- the
+> The fastest way in: give the tool the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md), ask it to
 > **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is

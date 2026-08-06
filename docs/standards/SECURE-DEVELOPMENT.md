@@ -5,10 +5,11 @@ has to satisfy before you can honestly say it was built securely. Who owns what,
 modelled, and what a review checks. Which checks may never be waived, how a release is signed and
 verifiable, and what has to be true on the day you ship.
 
-> **Meant to be worked with, not read straight through.** Most of this standard is a base for an
-> agent to apply to your code, not prose to work through by hand.
+> **Meant to be worked with, not read straight through.** Most of this standard is a base for
+> Claude Code, or another AI-assisted coding tool, to apply to your code, rather than
+> prose to work through by hand.
 >
-> The fastest way in: give an agent -- Claude Code or another -- the
+> The fastest way in: give the tool the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md), ask it to
 > **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is
@@ -22,7 +23,8 @@ It is deliberately framework-neutral. It names practices, never certifications. 
 issues a certificate for any of this, and a self-assessment is not one either -- so every claim here
 is phrased as something you can evidence rather than something you can be awarded.
 
-Written for a project where much of the code is agent-written and several sessions push into one
+Written for a project where much of the code is written by Claude Code, or another AI-assisted coding tool,
+and several sessions push into one
 trunk. That is not a special case for this material; it is the case where the process layer stops
 being paperwork, because the machine-enforced layer gets cheap and the human layer does not.
 

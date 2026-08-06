@@ -3,10 +3,11 @@
 **The question every engineering manager asks once an assistant starts writing most of the code, and
 the one where a wrong answer is expensive in both directions.**
 
-> **Meant to be worked with, not read straight through.** Most of this standard is a base for an
-> agent to apply to your code, not prose to work through by hand.
+> **Meant to be worked with, not read straight through.** Most of this standard is a base for
+> Claude Code, or another AI-assisted coding tool, to apply to your code, rather than
+> prose to work through by hand.
 >
-> The fastest way in: give an agent -- Claude Code or another -- the
+> The fastest way in: give the tool the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/REVIEW-DEPTH.md),
 > ask it to **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is worth more

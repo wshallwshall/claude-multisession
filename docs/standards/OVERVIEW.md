@@ -5,7 +5,7 @@ A set of documents for creating secure, high-quality code using Claude Code:
 - what counts as quality
 - what counts as secure
 - how to hold third-party code you will never read
-- how to govern the assistant writing much of it
+- how to govern Claude Code, or another AI-assisted coding tool when it writes much of it
 - how much of the result a human must actually read
 
 Plus [a two-page summary](CISO-SUMMARY.md) for a security executive who has to decide whether any of
@@ -34,14 +34,14 @@ Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 
 The two formats trade off in opposite directions. Markdown is plain text: harder on a human eye,
 with its syntax showing and its tables unaligned, and easier for an AI to work with, because that
-same plain text is exactly what an agent reads best. It also drops into a repository and diffs
+same plain text is exactly what a coding tool reads best. It also drops into a repository and diffs
 cleanly as you edit it -- which you will, because none of these are usable as they stand. Word is
-the reverse: comfortable to read, easy to circulate and mark up, and of no use to an agent. The Word
+the reverse: comfortable to read, easy to circulate and mark up, and of no use to a coding tool. The Word
 files hold the same content, generated from the same markdown.
 
-**Hand the standards to an agent.** They are a base to apply, not prose to read through.
+**Hand the standards to Claude Code, or another AI-assisted coding tool.** They are a base to apply, not prose to read through.
 
-1. Give Claude Code, or another agent, the markdown.
+1. Give it the markdown.
 2. Ask it to **summarize the document against your repository**.
 3. Then ask questions. What already holds? What would have to change? What would each gap cost?
 

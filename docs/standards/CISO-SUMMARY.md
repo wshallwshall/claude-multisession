@@ -1,13 +1,14 @@
 # The CISO summary
 
-**Your engineers are building with AI assistants. Two pages on what to require, and how to tell
-whether you actually got it.**
+**Your developers are building with AI assistants. Here's a two-page guide on what to require they
+do, and how to tell whether you actually got it.**
 
 > **Meant to be worked with, not read straight through.** This summary is written to be read. The
-> standards behind it are different: most of their content is a base for an agent to apply to
-> a repository, which is how your teams should expect to use them.
+> standards behind it are different: most of their content is a base for
+> Claude Code, or another AI-assisted coding tool, to apply to a repository. That is how your
+> teams should expect to use them.
 >
-> The fastest way in: give an agent -- Claude Code or another -- the
+> The fastest way in: give the tool the
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CISO-SUMMARY.md), ask it to
 > **summarize the document against your repository**, and then ask it questions. What here
 > already holds? What would have to change? What would each gap cost? That conversation is
