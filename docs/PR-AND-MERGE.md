@@ -53,7 +53,7 @@ and will happily report success on a check that answered "no".
 ### The trap: a branch cut from a pre-squash commit
 
 A branch was created from a commit that had been pushed to a pull request -- a commit made shortly
-after that same PR had already squash-merged. The three-dot diff and the forge's "Files changed" tab
+after that same PR had already squash-merged. The three-dot diff and the code host's "Files changed" tab
 both reported roughly 13 files, 2,967 insertions and 19 deletions: an accurate account of what the
 branch adds, with no indication whatever that five of those files would conflict. The merge base was
 eleven squash-merged pull requests behind the trunk.
@@ -109,12 +109,12 @@ gh pr view <N> --json state,mergeable,mergeStateStatus,statusCheckRollup
 | `BEHIND` | The branch does not contain the trunk tip. Mechanical; no conflict. | Merge the trunk in, or `gh pr update-branch <N>`. | -- |
 | `DIRTY` | A real textual conflict. | Resolve by hand, deliberately, in a worktree. | Treat it as `BEHIND`. That means resolving conflicts in a hurry to make a force-push succeed. |
 | `BLOCKED` | Required checks or reviews are not satisfied. Usually still running. | Count *actual failures* in `statusCheckRollup`. Zero failures plus pending legs means **wait**. | Rebase and force-push -- it cancels the running checks and restarts the clock. |
-| `UNKNOWN` | The forge is still recomputing mergeability. | Re-read in a few seconds. | Anything else. |
+| `UNKNOWN` | The code host is still recomputing mergeability. | Re-read in a few seconds. | Anything else. |
 
 `BEHIND` and `DIRTY` are the pair that get confused, and the wrong fix is the destructive one.
 `BLOCKED` is the one that looks most actionable and usually is not.
 
-> **Limit.** `mergeStateStatus` is GitHub's field and `gh` is a GitHub client. On another forge the
+> **Limit.** `mergeStateStatus` is GitHub's field and `gh` is a GitHub client. On another code host the
 > four states still exist conceptually -- behind, conflicting, gated, not-yet-computed -- but you will
 > read them from a different API. What does not change is the rule: **establish which of the four you
 > are in before you touch the branch.**
@@ -133,7 +133,7 @@ Landing the first PR is precisely what puts the second one `BEHIND`, and nothing
 update loop rather than an unbounded one.
 
 > Measured with the repository's "allow update branch" setting off. Whether turning that setting on
-> changes the behavior is **unverified** -- no back-fill was ever observed, and the forge's own
+> changes the behavior is **unverified** -- no back-fill was ever observed, and the code host's own
 > documentation does not connect the setting to this case. Do not repeat it as fact.
 
 ### A merge-watcher needs three arms, not two

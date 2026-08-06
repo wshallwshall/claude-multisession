@@ -18,8 +18,8 @@ Scope and honest limits, first:
 - **This repository ships no CI configuration.** Nothing here installs a workflow for you. The
   scripts referenced below are illustrations of the rules -- a working gate, a working receipt, a
   working two-layer control -- not a pipeline you can adopt whole.
-- **Where the mechanics are forge-specific they are GitHub-shaped**, because that is what was
-  exercised. The failure *shapes* are not forge-specific; the field names are.
+- **Where the mechanics are host-specific they are GitHub-shaped**, because that is what was
+  exercised. The failure *shapes* are not host-specific; the field names are.
 - **Numbers here come from one of two places, and the difference is marked at the point of use.**
   Unmarked figures were measured on the repo this tooling was developed in; they are stated to
   justify a rule, never as constants you should expect to reproduce. Figures taken from published

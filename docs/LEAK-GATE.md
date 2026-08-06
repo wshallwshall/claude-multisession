@@ -24,7 +24,7 @@ secrets, in a contributor's clone.
 |---|---|
 | Absolute user-home path | `<drive>:\Users\<account>\...`, `/home/<account>/...`, `/Users/<account>/...` -- carries an OS login, usually a real person's name, and often the internal project name in the path below it. Bracket and environment placeholders (`<name>`, `$HOME`, `%USERPROFILE%`, `{home}`) and a small set of conventional stand-ins are exempt; everything else reads as a real account. |
 | Routable IPv4 | A free-standing quad that is not RFC1918, loopback, link-local, multicast, or an RFC5737 documentation address. Naming a real host is a network disclosure even when the host is "just" a jump box. Look-arounds keep dotted OIDs, version strings and spec-section citations out. |
-| Credential shapes | Private-key block headers and the prefix-anchored token formats (cloud access key ids, forge tokens, chat-platform tokens, model API keys). Prefix-anchored deliberately: an entropy heuristic over source produces a false-positive storm, and a gate people mute is worth nothing. Use a real secret scanner as well -- this catches the copy-paste cases that ride along with identifying content. |
+| Credential shapes | Private-key block headers and the prefix-anchored token formats (cloud access key ids, code-host tokens, chat-platform tokens, model API keys). Prefix-anchored deliberately: an entropy heuristic over source produces a false-positive storm, and a gate people mute is worth nothing. Use a real secret scanner as well -- this catches the copy-paste cases that ride along with identifying content. |
 
 **Token detectors** come from a file *you* supply and never commit: the literal names of the private
 projects, clients, vendors, hosts or people that must not appear. Nobody can ship that list for you,

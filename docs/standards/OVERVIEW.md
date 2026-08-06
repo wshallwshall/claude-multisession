@@ -123,8 +123,8 @@ Three assumptions ride along, and they are the first things to check against you
   reviewer, these record a documented deviation with a compensating control and a trigger that ends
   it, rather than redefining review until it looks satisfied. If you have a real second reviewer,
   several sections get shorter.
-- **A forge with a blocking pipeline, and a repository several sessions push to at once.** The
-  control placement advice assumes both. The failure shapes are not forge-specific; the field names
+- **A code host with a blocking pipeline, and a repository several sessions push to at once.** The
+  control placement advice assumes both. The failure shapes are not host-specific; the field names
   are.
 - **The domain is stripped on purpose.** These were written in a setting with regulated data and a
   compliance regime, and the specifics of that setting are not here. Rules are expressed generically

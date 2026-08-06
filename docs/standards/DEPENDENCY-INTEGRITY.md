@@ -513,7 +513,7 @@ reader looking for a guarantee their toolchain does not offer.
 | Allowlist what the published artifact contains; gate before upload | Universal |
 | Per-run, workflow-bound publishing credentials | **Registry-specific** -- available on some, absent on others |
 | Registry-served attestation binding filename and digest to a commit | **Registry-specific** |
-| Build provenance from the pipeline; assurance levels from a published framework | Universal in concept, forge-specific in tooling |
+| Build provenance from the pipeline; assurance levels from a published framework | Universal in concept, host-specific in tooling |
 | Signed digest manifest, with documented offline verification | Universal, and the lowest common denominator |
 | Component inventory per release, attached to the release and the archive | Universal (format choice is consumer-driven) |
 | Archive artifact, build inputs and inventory per version | Universal |
