@@ -17,7 +17,7 @@ verifiable, and what has to be true on the day you ship.
 > about the document.
 >
 > Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx).
-> [Every file, both formats](OVERVIEW.md#download-every-file).
+> [Every file, both formats](OVERVIEW.md#the-files).
 
 It is deliberately framework-neutral. It names practices, never certifications. No standards body
 issues a certificate for any of this, and a self-assessment is not one either -- so every claim here

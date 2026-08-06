@@ -127,10 +127,18 @@ class TheWordCopiesStillMatchTheirSource(unittest.TestCase):
         )
 
     def test_the_comparison_can_see_a_drifted_heading(self):
-        """Prove the instrument: a heading absent from the text must be detected as absent."""
+        """Prove the instrument on both sides, without naming a heading that can be renamed.
+
+        An earlier version hardcoded a heading title here and broke the moment that heading was
+        reworded -- a self-test that fails on a legitimate edit trains people to ignore it. Take a
+        real heading from the markdown instead, so the fixture moves with the document.
+        """
         text = docx_text(WORD / "OVERVIEW.docx")
+        headings = HEADING.findall(t.read(STANDARDS / "OVERVIEW.md"))
+        self.assertTrue(headings, "OVERVIEW.md has no level-2 headings; the scan has nothing to check")
+        present = re.sub(r"[`*\[\]]", "", headings[0])
+        self.assertIn(present, text, "a heading that IS in the markdown was not found in the Word copy")
         self.assertNotIn("A Section That Does Not Exist", text)
-        self.assertIn("Download every file", text)
 
 
 if __name__ == "__main__":

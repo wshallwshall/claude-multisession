@@ -15,7 +15,7 @@ They are **starting points you adapt**, not a compliance package. Nothing here i
 audit, or a scored verdict about any codebase, and nothing here installs or enforces anything. Every
 one of them is meant to be edited down to your setting before it is useful.
 
-## Download every file
+## The files
 
 | Document | Read online | Markdown | Word |
 |---|---|---|---|
@@ -28,9 +28,9 @@ one of them is meant to be edited down to your setting before it is useful.
 | This overview | -- | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/OVERVIEW.docx) |
 | A working agreement that adopts them | -- | [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) | -- |
 
-Rows are in [the order worth reading them in](#the-order-to-read-them-in).
+Rows are in the [recommended reading order](#the-order-to-read-them-in).
 
-**Markdown to use them. Word to circulate them.**
+**Markdown is best for sharing with AI. Word is best for sharing with humans.**
 
 The two formats trade off in opposite directions. Markdown is plain text: harder on a human eye,
 with its syntax showing and its tables unaligned, and easier for an AI to work with, because that
@@ -107,7 +107,7 @@ you are currently losing.
 
 ## Fetch the whole set in one command
 
-Individual links are in [Download every file](#download-every-file) at the top. This section is
+Individual links are in [The files](#the-files) at the top. This section is
 only for pulling all of them at once, into a `standards/` directory below wherever you run it:
 
 ```sh

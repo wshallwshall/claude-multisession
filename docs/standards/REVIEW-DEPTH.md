@@ -6,7 +6,7 @@ code, and the one where a wrong answer is expensive in both directions.**
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/REVIEW-DEPTH.md)
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/REVIEW-DEPTH.docx).
-> [Every file, both formats](OVERVIEW.md#download-every-file).
+> [Every file, both formats](OVERVIEW.md#the-files).
 
 ---
 

@@ -19,7 +19,7 @@ you know it contains only what you intended?
 > about the document.
 >
 > Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx).
-> [Every file, both formats](OVERVIEW.md#download-every-file).
+> [Every file, both formats](OVERVIEW.md#the-files).
 
 The two halves share a shape. In both, the honest answer is not "review it harder". It is a small
 number of machine-enforced controls, plus human attention spent at two or three specific moments

@@ -17,7 +17,7 @@ artifact.
 > about the document.
 >
 > Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx).
-> [Every file, both formats](OVERVIEW.md#download-every-file).
+> [Every file, both formats](OVERVIEW.md#the-files).
 
 ---
 

@@ -16,7 +16,7 @@ do, and how to tell whether you actually got it.**
 > about the document.
 >
 > Reading or circulating instead? [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CISO-SUMMARY.docx).
-> [Every file, both formats](OVERVIEW.md#download-every-file).
+> [Every file, both formats](OVERVIEW.md#the-files).
 
 ---
 
