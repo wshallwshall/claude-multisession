@@ -38,6 +38,18 @@ not evidence that nothing reaches you -- see
 The addressee is the most stable fact about a document. Status, trigger and enforcement machinery
 change constantly; the audience almost never does.
 
+**This is about who the sentences bind, not what the document is about.** The two come apart, and
+that is the whole value of the cut. A publication can be entirely about how software gets built and
+still be addressed to an organization that operates systems -- its development controls are written
+to bind an entity with personnel, facilities and an authorization boundary, not to bind a build.
+Sorting by subject matter puts such a document next to a producer framework and invites a producer to
+answer requirements that were never asked of them.
+
+**"Addressed to an assessor" does not mean "what an auditor will ask you for".** It means the
+document tells someone how to conduct an examination -- the procedure, and who may run it. These are
+method manuals for the examiner, not the evidence you hand over. Read the other way, the natural next
+move is to build to them, which manufactures controls nothing ever required.
+
 | Addressed to | What it is describing | The failure when you get it wrong |
 |---|---|---|
 | **A software producer** | How code is built, reviewed, released and evidenced | An operating-environment instrument offered as evidence about a build practice it never examined |
