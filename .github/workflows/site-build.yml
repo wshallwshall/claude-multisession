@@ -1,0 +1,89 @@
+# Build the site and say what happened. IT DOES NOT DEPLOY ANYTHING.
+#
+# WHY THIS FILE EXISTS. GitHub Pages builds this site from `main` `/docs` today, and its only
+# diagnostic is the string "Page build failed." with no line, no file and no log. On 2026-08-06 ten
+# consecutive builds failed that way over three hours while the pushes all looked successful: the
+# repository was green, the commits were correct, and the site silently stopped updating. The cause
+# was a rate limit on the legacy builder, not the content -- but nothing on the machine could tell
+# the difference, because the only instrument reported one bit.
+#
+# A build system whose sole output is "it failed" is the exact defect the documents in this repo are
+# about. This workflow replaces one bit with a log.
+#
+# WHAT IT DOES NOT DO, and this is deliberate for now:
+#   * It does not deploy. `build_type` stays `legacy`, so GitHub still serves what it builds itself.
+#     This runs BESIDE the live path rather than replacing it.
+#   * It therefore cannot break the site. The worst outcome is a red check on a pull request.
+#
+# WHY THAT ORDER. The site depends on plugins that GitHub's safe mode supplies unconditionally. Under
+# a build we control they come from the Gemfile instead, and a plugin that is not declared does not
+# error -- it just does not run, and the symptom is fourteen documents quietly losing their titles or
+# their internal links. So the artifact this uploads exists to be COMPARED against the live pages
+# before anyone changes where the site is served from. See the Gemfile for the full argument.
+
+name: site-build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege. This reads the repository and writes an artifact; it touches no Pages settings
+# and needs no `pages:` or `id-token:` permission precisely because it does not deploy.
+permissions:
+  contents: read
+
+concurrency:
+  group: site-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to a commit, matching gates.yml. A tag is a moving target and this file's whole
+      # purpose is telling you what actually ran.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      # Ruby comes from the Gemfile's own resolution rather than a version pinned here, so there is
+      # one place that decides the toolchain. bundler-cache writes and restores Gemfile.lock, which
+      # is why no lock file is committed yet: the first green run is what produces a trustworthy one.
+      - uses: ruby/setup-ruby@a2bbe5b1b236842c1cb7dd11e8e3b51e0a616acc
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Build the site
+        run: |
+          set -o pipefail
+          bundle exec jekyll build \
+            --source docs \
+            --destination _site \
+            --trace 2>&1 | tee build.log
+
+      # THE POINT OF THE WHOLE FILE. A build that "succeeded" while emitting warnings about missing
+      # plugins or unresolvable links is the failure that looks like success, so the log is surfaced
+      # rather than left in a collapsed step nobody opens.
+      - name: Report warnings, if any
+        if: always()
+        run: |
+          echo "=== warnings and errors in the build log ==="
+          grep -inE "warn|error|deprecat|cannot|missing|invalid" build.log || echo "  none"
+
+      - name: What was actually produced
+        if: always()
+        run: |
+          echo "=== pages generated ==="
+          find _site -name '*.html' | sort | sed 's/^/  /'
+          echo "  total: $(find _site -name '*.html' | wc -l) html files"
+
+      # Uploaded so the output can be DIFFED against the live site before anyone considers changing
+      # where the site is served from. That comparison is the gate on migrating, not this run's colour.
+      - name: Upload the built site
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: site-${{ github.sha }}
+          path: _site
+          retention-days: 7
