@@ -552,6 +552,35 @@ class TheAppKeepsInsideItsBoundary(unittest.TestCase):
             "the case.",
         )
 
+        # THE OTHER HALF OF THE MIRROR, asserted HERE rather than in a case of its own so the two
+        # directions cannot drift apart. `.ssel-empty` ships HIDDEN and the script reveals it;
+        # `.ssel-block-intro` ships VISIBLE and the script hides it. They sit within a few lines of
+        # each other in the include and look symmetric, which is exactly how the next edit breaks
+        # one by making it match the other. Only the empty half was pinned; a reader with
+        # JavaScript off would have silently lost every block's framing.
+        introed = [
+            tag
+            for tag in re.findall(r"<p class=\"ssel-block-intro\"[^>]*>", include)
+            if re.search(r"\shidden(\s|>)", tag)
+        ]
+        self.assertEqual(
+            [],
+            introed,
+            "a block introduction ships hidden:\n  "
+            + "\n  ".join(introed)
+            + "\nIt is the MIRROR of the empty sentence above, not a copy of it. The empty sentence "
+            "ships hidden because an absence is only true once the reader has answered. The "
+            "introduction is unconditionally true, so it ships visible and the script only ever "
+            "HIDES it -- otherwise a reader with JavaScript off loses every block's framing.",
+        )
+        self.assertRegex(
+            include,
+            r"intro\.hidden\s*=",
+            "nothing in the script hides a block introduction any more, so an empty block prints "
+            "its heading, its introduction and its empty sentence -- three lines to say nothing, "
+            "which is what pushed the results below the fold.",
+        )
+
     def test_the_absence_scan_can_see_a_sentence_that_ships_visible(self):
         """Prove the instrument. A pattern that matches nothing passes everything."""
         planted = '<p class="ssel-empty" id="ssel-empty-a">Nothing binds you.</p>'
