@@ -26,8 +26,9 @@ code, and the one where a wrong answer is expensive in both directions.**
 
 ## What this costs you, and where it does not apply
 
-- **It shifts effort rather than removing it.** Deciding the tier takes judgment at the start of
-  each change. The saving is that the deep read lands only where it earns its cost.
+- **It focuses your effort rather than reducing it.** Deciding the tier takes judgment at the start
+  of each change, and that judgment is not free. What you get back is a deep read that lands only
+  where it earns its cost, instead of attention spread evenly over code that does not need it.
 - **It assumes you can tell what a change touches.** If your system has no clear boundary around
   restricted data or authorization, the rule clamps everything to the strictest tier, and that is
   expensive. Fixing the boundary is the cheaper project.
