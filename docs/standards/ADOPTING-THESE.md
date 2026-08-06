@@ -2,10 +2,10 @@
 
 **The rest of this section tells you what to read. This page tells you what to do with it.**
 
-Adoption is five steps, and each one ends in an artifact you can hold up: a marked worksheet, a
-deviations register, a three-item queue, a set of checks with dates against them, and a project
-instruction file that references all four. Those artifacts are the deliverable. Having read the
-documents is not.
+Adoption is five steps, and each one ends in an artifact that either exists or does not: a marked
+worksheet, a deviations register, a three-item queue, a set of checks with dates against them, and a
+project instruction file that references all four. Those artifacts are the deliverable. Having read
+the documents is not.
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/ADOPTING-THESE.md)
@@ -40,12 +40,14 @@ and each usually finds something.
 
 At the end of the afternoon you have a baseline and a register. You do not have a new control, and
 that is the point: a ranking made before the baseline exists cannot be checked by anyone, including
-you. The afternoon is real, and the rest is not a quarter either, because most of what follows is
-upgrading a control you already run into the shape the rule asks for.
+you. Most of what follows is upgrading a control you already run into the shape the rule asks for,
+rather than building one.
 
 **Record which revision of each document you tailored from.** These are edited continuously and are
 meant to be forked, and a baseline taken against a moving source cannot be re-run at step 3's next
-iteration.
+iteration. That instruction is this page's own addition, borrowing a habit the assessment method
+applies to a published standard's text ([Security standard assessment](../ASVS-ASSESSMENT.md), *"Pin
+the corpus, and stamp the version on every number"*).
 
 ---
 
@@ -99,9 +101,9 @@ The pass is read-only. It builds nothing. Two rules make the result honest:
   refuse anything.** [Secure development](SECURE-DEVELOPMENT.md), *"Three additions specific to a
   security posture"*.
 
-Fill in the starter set. Seven rows, which is what an afternoon covers. [The
-worksheet](#the-worksheet) at the end of this page is the backlog you work through over releases,
-not a prerequisite for starting.
+Fill in the starter set. Seven rows. The afternoon list above is how the first of them get filled;
+[the worksheet](#the-worksheet) at the end of this page is the backlog you work through over
+releases, not a prerequisite for starting.
 
 | Control | From | Status | Evidence | Last proven able to fail |
 |---|---|---|---|---|
@@ -111,11 +113,10 @@ not a prerequisite for starting.
 | Dependencies existence-verified and hash-pinned | [Dependency integrity](DEPENDENCY-INTEGRITY.md), *Pin the resolved graph, and enforce the pin at install* | | | |
 | Security scanning that blocks, plus a threat model reviewed before the code | [Secure development](SECURE-DEVELOPMENT.md), *What must block, and may not be waived*; *Threat model each trust boundary before you build it* | | | |
 | Published artifact contains only what was declared | [Dependency integrity](DEPENDENCY-INTEGRITY.md), *The artifact contains only what you declared* | | | |
-| Secret and identifying-content scan before publish | [Secure development](SECURE-DEVELOPMENT.md), *Secrets and repository hygiene* | | | |
+| Secrets and restricted data kept out of the repository and its full history, backed by a fail-closed commit-time content scan | [Secure development](SECURE-DEVELOPMENT.md), *Secrets and repository hygiene*; [the leak gate](../LEAK-GATE.md) | | | |
 
-Two of those seven -- tests that verify behavior, and the threat-model half of the security row --
-are not in the shipped project instruction template, and both carry the verdict. Step 5 returns to
-that.
+Two of those seven -- tests that verify behavior, and the security row entire -- are not in the
+shipped project instruction template, and both carry the verdict. Step 5 returns to that.
 
 Four cheap measurements belong in the same pass, because each commonly finds something the worksheet
 alone would not:
@@ -140,9 +141,15 @@ expected; silent tailoring is not, because a control that quietly left the set i
 in the record from one nobody got to.
 
 **The boundary is already drawn, per document.** Each standard closes with an *"Adapting this to
-your project"* section splitting what you may change freely from what you may not weaken. Touching
-the change-freely list is tailoring and owes no record. Striking something from the do-not-weaken
-list is a deviation and owes all four fields below.
+your project"* section, and the do-not-weaken items live there. Changing something that section
+invites you to change is tailoring and owes no record. Striking a do-not-weaken item is a deviation
+and owes all four fields below. Three of the sections carry two literal lists, *"Change freely"* and
+*"Do not weaken"* -- [Code quality](CODE-QUALITY.md), [Dependency
+integrity](DEPENDENCY-INTEGRITY.md) and [Secure development](SECURE-DEVELOPMENT.md). The other two
+do not, and the difference matters:
+[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) states its first list as *what you must
+change*, so those items are obligations rather than options; [Human review of code](REVIEW-DEPTH.md)
+states no split at all, and calls its do-not-weaken item out inline.
 
 | Field | What it holds | What is lost without it |
 |---|---|---|
@@ -192,11 +199,11 @@ that ends the arrangement.
 
 A capability in your stack can eliminate a whole class of defect. What that changes is *which*
 failures you face, and therefore *how* you satisfy a practice. It does not decide *whether* the
-practice applies. Five shapes of the same failure are named across the set, and all five produce a
-document that survives accuracy review while describing a practice that does not exist: redefining
-the pass bar so "it can be configured" counts; widening a soft grade until it absorbs everything
-ambiguous; writing scope as exclusions that grow to swallow inconvenient cases; transferring an
-obligation and calling the question closed; and counting the unread as done.
+practice applies. At least five shapes of the same failure are named across the set, and each
+produces a document that survives accuracy review while describing a practice that does not exist:
+redefining the pass bar so "it can be configured" counts; widening a soft grade until it absorbs
+everything ambiguous; writing scope as exclusions that grow to swallow inconvenient cases;
+transferring an obligation and calling the question closed; and counting the unread as done.
 
 ---
 
@@ -292,8 +299,8 @@ gate](../LEAK-GATE.md); read them there.
 
 ### What you cannot automate, and must therefore give to a person
 
-Say these out loud in your own record, because a green control plane otherwise implies coverage it
-does not have.
+At least these, and your setting will add more. Say them out loud in your own record, because a
+green control plane otherwise implies coverage it does not have.
 
 - **The risk tier decision.** No detector exists. It is a human checklist whose whole guarantee is
   that it fails closed and leaves a recorded reason.
@@ -317,8 +324,7 @@ aspirational, which is worse than none because the next session acts on it. The 
 mandatory stop are already published: edit the template down to what is true here, delete every rule
 the target does not actually follow, then stop and get section-by-section human confirmation
 ([Here's what to feed to your AI coding assistant](../FEED-THIS-TO-CLAUDE-CODE.md), *"If they decide
-to proceed"*). **It is not a closing section either**, because a closing section reads as a summary,
-and this is where the other four artifacts stop being documents.
+to proceed"*).
 
 The template's control table has exactly three columns and they are the outputs of three of the
 steps: the control name is the worksheet row from step 1, the status is what survived step 2 and
@@ -326,17 +332,20 @@ where it sits in step 3's queue, and *Last proven able to fail* is step 4's rece
 template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template),
 *"The bar this project holds itself to"*.
 
-This is also what separates the page from generic adoption advice, which ends at a roadmap or a
-maturity level. Standing rules here are loaded by the assistant at the start of every session, so a
-rule that is not in that file is not in force for the actor writing most of the code. [The
-overview](OVERVIEW.md) states the consequence as an aside; this page states it as a finish line:
-*"A standard that no such file references is a document, not a practice."*
+Standing rules here are loaded by the assistant at the start of every session, so a rule that is not
+in that file is not in force for the actor writing most of the code. [The overview](OVERVIEW.md)
+states the consequence: *"A standard that no such file references is a document, not a practice."*
 
-**Extend the table past the five rows the template ships with.** Those five are a strict subset of
-the six Tier 1 rows in [Code quality](CODE-QUALITY.md), *"Tier 1 -- durable controls, which carry the
-verdict"*: copy the template verbatim and you inherit a baseline missing *tests verify behavior* and
-the threat-model half of *security scanning plus a threat model*, from the tier that carries the
-verdict. Not-built rows point at their register entry. What could not be automated appears as a
+**Extend the table past the five rows the template ships with.** Four of those five are Tier 1 rows
+from [Code quality](CODE-QUALITY.md), *"Tier 1 -- durable controls, which carry the verdict"*
+(architecture, types, dependencies, published artifact); the fifth, the secret scan, comes from
+[Secure development](SECURE-DEVELOPMENT.md), *"Secrets and repository hygiene"*. So copying the
+template verbatim leaves two of the six verdict-carrying Tier 1 rows out of your table altogether:
+*tests verify behavior*, and *security scanning plus a threat model* in all three of its parts --
+blocking scanners, a written threat model, and a human review step. The secret scan does not stand
+in for the scanner part: secret scanning is one of three checks in the unwaivable blocking set, not
+the whole of it ([Secure development](SECURE-DEVELOPMENT.md), *"What must block, and may not be
+waived"*). Not-built rows point at their register entry. What could not be automated appears as a
 standing rule rather than a table row. Alongside the table, record the revision of each source
 document you tailored from and the release at which the table is next re-read.
 
@@ -352,9 +361,8 @@ aspirational, and it returns you to step 1 with the same worksheet.
 Four rows of one document, through all five steps -- not the whole document, and not the required
 scope of a first pass. [Dependency integrity](DEPENDENCY-INTEGRITY.md) is the example because [the
 overview](OVERVIEW.md) calls its controls the most mechanical of the set and the one most likely to
-be adopted close to whole, so it demonstrates this page's central claim -- you start from partial,
-not from zero -- rather than asserting it, and because it holds both the cleanest Partial in the set
-and a control that can never be automated.
+be adopted close to whole, and because it holds both a clear Partial and a control that can never be
+automated.
 
 ### Step 1 -- the baseline
 
