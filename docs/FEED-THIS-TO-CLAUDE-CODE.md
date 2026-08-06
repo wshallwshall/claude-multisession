@@ -9,17 +9,17 @@ Read https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/doc
 and follow it against this repository. Stop where it tells you to stop.
 ```
 
-That is the whole instruction. Everything below this line is written to the agent, and you do not
-need to read it -- though the one thing worth knowing is that **the agent cannot install this
-tooling**. The installers refuse to run inside an agent session on purpose. The agent will survey
-your repository, hand you a short list of commands with the real paths already filled in, and wait.
-You run them in a normal terminal. Then it verifies what happened.
+That is the whole instruction. Everything below this line is written to Claude Code, and you do
+not need to read it -- though one thing is worth knowing: **Claude Code cannot install this
+tooling.** The installers refuse to run inside a session on purpose. Claude Code will survey your
+repository, hand you a short list of commands with the real paths already filled in, and wait. You
+run them in a normal terminal. Then it verifies what happened.
 
 ---
 
-# Agent brief
+# For Claude Code
 
-Everything from here is addressed to you, the agent.
+Everything from here is addressed to you, Claude Code.
 
 ## What you are being asked to do
 
