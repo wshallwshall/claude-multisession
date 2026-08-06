@@ -1,16 +1,7 @@
 # Standards you can start from
 
 **Starting points you adapt, not a compliance package.** These documents cover creating secure,
-high-quality code using Claude Code:
-
-- what counts as quality
-- what counts as secure
-- how to hold third-party code you will never read
-- how to govern Claude Code, or another AI coding assistant, when it writes much of it
-- how much of the result a human must actually read
-
-Plus [a two-page summary](CISO-SUMMARY.md) for a security executive. It answers a different
-question: not how to adopt any of this, but how to tell whether your teams already do it.
+high-quality code using Claude Code.
 
 **Nothing here certifies anything.** Nothing here is a certificate, an audit, or a scored verdict
 about any codebase, and nothing here installs or enforces anything. Every one of them is meant to be
@@ -33,16 +24,6 @@ edited down to your setting before it is useful.
 | **A `CLAUDE.md` template** -- `CLAUDE.md` is the file Claude Code reads at the start of every session, so it is where a project's standing rules live. This one is a starting point. | -- | [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) | -- |
 
 **Markdown is best for sharing with AI. Word is best for sharing with humans.**
-
-Markdown is plain text: harder on a human eye, with its syntax showing and its tables unaligned. It
-is easier for an AI to work with, because that same plain text is exactly what a coding tool reads
-best. It also drops into a repository and diffs cleanly as you edit it -- which you will, because
-none of these are usable as they stand.
-
-Word is the reverse: comfortable to read, easy to circulate and mark up, and of no use to a coding
-tool. The Word files hold the same content, generated from the same markdown.
-
-**MIT licensed** -- adapt them, publish the result, drop the attribution.
 
 ## The order to read them in
 
