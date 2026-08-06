@@ -28,24 +28,25 @@ one of them is meant to be edited down to your setting before it is useful.
 
 Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 
-**Putting these to work, or passing them around? That decides the format.**
+**Markdown to use them. Word to circulate them.**
 
-- **It is plain text.** It drops into a repository as-is, and it diffs cleanly once you start
-  editing it -- which you will, because none of these are usable unedited.
-- **The four main documents are a base for an agent, not prose to work through.** Most of their
-  content exists to be applied to a repository. So:
-  1. Give Claude Code, or another agent, the markdown.
-  2. Ask it to **summarize the document against your repository**.
-  3. Then ask questions. What already holds? What would have to change? What would each gap cost?
+Markdown is plain text. It drops into a repository, and it diffs cleanly as you edit it -- which you
+will, because none of these are usable as they stand. The Word files hold the same content,
+generated from the same markdown. Take those for people who will read or mark up rather than adopt.
 
-  Those answers are about your code. A careful read of a document about nobody's code in particular
-  is worth less. [The CISO summary](CISO-SUMMARY.md) is the exception: it is written to be read.
-- **The Word files are the same content**, generated from the same markdown. Take those for
-  circulating to people who will read or mark up rather than adopt.
+**Hand the four main documents to an agent.** They are a base to apply, not prose to read through.
 
-The [working agreement template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) is where a project records which of these
-controls it actually built, and when each was last proven able to fail. A standard that no working
-agreement references is a document rather than a practice.
+1. Give Claude Code, or another agent, the markdown.
+2. Ask it to **summarize the document against your repository**.
+3. Then ask questions. What already holds? What would have to change? What would each gap cost?
+
+You learn more from those three answers than from reading the document end to end, because they are
+about your code. [The CISO summary](CISO-SUMMARY.md) is the exception. It is written to be read.
+
+**Then write down what you actually built.** The
+[working agreement template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template)
+carries a table for exactly that: which of these controls exist here, and when each was last proven
+able to fail. A standard that no working agreement references is a document, not a practice.
 
 **MIT licensed** -- adapt them, publish the result, drop the attribution.
 
