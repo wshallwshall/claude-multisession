@@ -99,7 +99,7 @@ The order matters. Reversed, you get a dashboard and no controls.
 | If you need | Read |
 |---|---|
 | The full control set for AI-assisted work | [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) |
-| How much of the code a human must actually read | [Review depth](REVIEW-DEPTH.md) |
+| How much of the code a human must actually read | [Human review of code](REVIEW-DEPTH.md) |
 | How to judge whether code is good, whoever wrote it | [Code quality](CODE-QUALITY.md) |
 | The process a build must satisfy | [Secure development](SECURE-DEVELOPMENT.md) |
 | Trusting what you did not write, and controlling what you ship | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |

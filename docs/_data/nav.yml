@@ -83,7 +83,7 @@
     - label: Dependency integrity
       title: Dependency and artifact integrity
       path: /standards/DEPENDENCY-INTEGRITY.html
-    - label: Review depth
+    - label: Human review of code
       title: How much of this code does a human have to read?
       path: /standards/REVIEW-DEPTH.html
     - label: Code quality
