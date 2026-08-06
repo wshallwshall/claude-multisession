@@ -1,6 +1,6 @@
 # Standards you can start from
 
-Four documents that set a bar for code an agent wrote and a small team has to stand behind:
+A set of documents for creating secure, high-quality code using Claude Code:
 
 - what counts as quality
 - what counts as secure
