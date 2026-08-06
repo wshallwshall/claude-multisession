@@ -2,18 +2,37 @@
 
 ## For the human, in thirty seconds
 
-Open Claude Code in the repository you want governed, and paste this:
+Open Claude Code in the repository you are thinking about, and paste this:
 
 ```text
 Read https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/FEED-THIS-TO-CLAUDE-CODE.md
-and follow it against this repository. Stop where it tells you to stop.
+and use it to advise me about this repository. Stop where it tells you to stop.
 ```
 
-That is the whole instruction. Everything below this line is written to Claude Code, and you do
-not need to read it -- though one thing is worth knowing: **Claude Code cannot install this
-tooling.** The installers refuse to run inside a session on purpose. Claude Code will survey your
-repository, hand you a short list of commands with the real paths already filled in, and wait. You
-run them in a normal terminal. Then it verifies what happened.
+### What that will actually do
+
+Claude Code will read this page and the documents it points at, look at your repository, and then
+**talk to you about it**. Specifically, it will:
+
+- **Tell you what this tooling is for**, and whether your situation is one it helps with. Running
+  one session at a time is a perfectly good answer, and it should say so if that is where you are.
+- **Report what it found** in your repository: what is already there, what would have to change, and
+  anything that would get in the way.
+- **Explain what a setup would involve** -- which pieces, in what order, and what each one costs you
+  in friction. You can stop at any point, or take one piece and ignore the rest.
+- **Answer your questions** about any of it, against your repository rather than in general.
+- **Prepare exact commands, if you decide you want them**, with the real paths already filled in,
+  for you to run yourself in a normal terminal.
+
+### What it will not do
+
+- **It will not install anything.** The installers refuse to run inside a Claude Code session on
+  purpose, and the page tells it not to work around that. Nothing is set up unless you run it.
+- **It will not change your repository** while it is advising you. It reads and reports.
+- **It will not tell you that you need this.** The honest answer for a lot of repositories is that
+  you do not.
+
+You do not need to read anything below this line. It is written to Claude Code.
 
 ---
 
@@ -23,17 +42,28 @@ Everything from here is addressed to you, Claude Code.
 
 ## What you are being asked to do
 
-Set up multi-session coordination tooling in the repository you are sitting in. Your job is
-**survey, prepare, hand off, verify**. It is not install.
+**Advise, do not install.** Somebody is deciding whether this tooling is worth adopting in the
+repository you are sitting in. Your job is to give them a grounded answer about *their* repository,
+and then help them do it only if they choose to.
+
+Work in this order: **understand the tooling, survey the target, explain the options, answer
+questions.** Only if they decide to proceed do you prepare commands for them to run. You never run
+the installers yourself -- see the next section for why that is a wall rather than an obstacle.
+
+**Say so if the answer is no.** This tooling earns its cost when several sessions work one
+repository at once, or when work is regularly lost to sessions colliding. If the person runs one
+session at a time and is not losing work, tell them plainly that they probably do not need it, and
+say which single piece might still be worth having. An honest no is more useful than a setup they
+will abandon.
 
 You are working with two directories and they are not the same:
 
 | Name | What it is |
 |---|---|
 | **tooling** | A clone of `claude-multisession`. Only the source of scripts. Nothing governs it. |
-| **target** | The repository you are in now, which will get the config, the hooks and the gate. |
+| **target** | The repository you are in now, which would get the config, the hooks and the gate. |
 
-If no tooling clone exists yet, the human clones it. Say where you want it and why.
+If no tooling clone exists yet, do not tell them to clone it until they have decided to proceed.
 
 ## What you may run, and what you may not
 
@@ -53,46 +83,65 @@ The four installers test for the literal string `1`. The reason is not fussiness
 can install these controls can remove them.** The refusal is the control. Treat it as a wall, not an
 obstacle.
 
-## Before you propose anything, survey
+## Survey before you say anything
 
-Report what you find. Do not fix anything yet.
+Read the target. Change nothing. Report what you find.
 
 1. **Preconditions.** PowerShell 7.3 or later on `PATH` as `pwsh`; `git`; a real `python` (on
    Windows, `python --version` may resolve to an execution-alias stub that runs nothing -- check the
-   version actually prints). Name any that are missing; without them the install cannot proceed.
+   version actually prints). Name any that are missing; without them a setup could not proceed.
 2. **The target's identity.** Its root, its trunk branch name, whether it already has worktrees, and
    whether `.git/hooks` already contains a `commit-msg` or `pre-push` that belongs to something else.
    If either exists and is not from this tooling, say so loudly -- the installer refuses to overwrite
    a hook it does not own, and that is a decision for the human.
 3. **Existing state.** Is there already a `ccx.config.json` at the target root? A `CLAUDE.md`?
-   Report what is there rather than overwriting it.
-4. **Whether this tooling suits the target at all.** It is Windows-first PowerShell. It runs on
-   PowerShell 7 elsewhere, but Windows is what was exercised. Say so if the target is not Windows.
+   Report what is there. Do not modify either.
+4. **Whether this suits the target at all.** It is Windows-first PowerShell. It runs on PowerShell 7
+   elsewhere, but Windows is what was exercised. Say so if the target is not Windows.
+5. **Whether they have the problem.** Ask how many sessions they run at once, and whether work has
+   been lost to sessions colliding. If the answer is one session and no, say the tooling is probably
+   not worth it here.
 
-## The adoption sequence
+## Explain the options, then wait
 
-Work through it in order. **Stop at every STOP and wait.**
+Give them the shape of a setup before any of it happens, so they can choose a part rather than
+accept a package. Cover, in plain terms:
 
-1. **Write `ccx.config.json` at the target root.** You may do this yourself -- it is a config file,
-   not an installer. It is both the knob file and the opt-in marker: without it, the user-scope hooks
-   stay inert in this repository. Start from the tooling's own `ccx.config.json` and change only what
-   the target needs.
-2. **STOP.** Produce the install commands with real absolute paths substituted, in the order given
-   by [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md), and
-   tell the human to run them **in a plain terminal, not through you**. Ask them to paste back the
-   output rather than summarising it.
-3. **Verify what came back**, using the audit commands you are allowed to run. See below.
-4. **Write `CLAUDE.md`.** Copy
+- **What each piece does and what it costs.** The worktree gate stops sessions building in a shared
+  checkout. The git hooks refuse a claimed-but-unowned commit and a direct push to a protected ref.
+  The coordination hooks add roughly a second per prompt. Each is separable.
+- **What is reversible.** All of it. Every installer has an uninstall path, and nothing rewrites
+  their history.
+- **The smallest useful subset**, if they want one thing rather than everything. For most people
+  that is the worktree gate.
+- **What they would have to run themselves**, and roughly how long it takes.
+
+Then **STOP and let them decide.** Do not produce commands yet.
+
+## If they decide to proceed
+
+Only now, and only for the pieces they chose.
+
+1. **Write `ccx.config.json` at the target root**, if they want it. You may do this yourself -- it is
+   a config file, not an installer. It is both the knob file and the opt-in marker: without it, the
+   user-scope hooks stay inert in this repository. Start from the tooling's own `ccx.config.json`.
+2. **Produce the commands, do not run them.** Substitute the real absolute paths, order them as
+   [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) does, and
+   tell them to run the set **in a plain terminal, not through you**. Ask for the output pasted back
+   rather than summarised.
+3. **STOP** until they have run it and reported back.
+4. **Verify what came back**, using the audit commands you are allowed to run. See below.
+5. **Offer a working agreement.** Copy
    [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template)
    into the target as `CLAUDE.md` and edit it down to what is true here. Delete every rule the target
    does not actually follow. An aspirational working agreement is worse than none, because the next
    session acts on it.
-5. **STOP.** Ask the human to confirm the working agreement matches how they actually work, section
-   by section if it is contentious. You are guessing at their conventions; they are not.
+6. **STOP.** Ask them to confirm it matches how they actually work, section by section if it is
+   contentious. You are guessing at their conventions; they are not.
 
 ## Verifying, with receipts
 
-A green run is not evidence on its own. When you check the install, check what each command
+A green run is not evidence on its own. If they installed something, check what each command
 **examined**, not just that it exited 0:
 
 - `pwsh -NoProfile -File <tooling>/bin/ccx-doctor.ps1 -Repo <target>` is the main instrument. Read
