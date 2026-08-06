@@ -83,6 +83,62 @@ derived, no is prompted-by, and no source at all is unmarked. A mark attaches to
 bolded lead sentence, or the bullet -- never to the prose arguing for it, so the explanation, the
 honest limit and the cost sitting inside a derived rule stay unmarked, because those are ours.
 
+### Full conformance is not on offer, so tailoring is not a compromise
+
+**The SSDF has no conformance criteria, no levels and no assessment procedure. Nothing issues a
+pass.** So the familiar advice -- aim for a tailored, risk-based subset rather than one hundred
+percent conformance -- understates the position. Full conformance is not a thing that exists to be
+aimed at. The framework states outcomes a producer should achieve and leaves the how open, and its
+implementation examples are illustrative rather than required.
+
+What that does **not** license is dropping a practice. Tailoring here happens at the implementation
+layer -- which mechanism satisfies an outcome -- far more than at the practice layer. A practice
+rarely stops applying because of a technology choice. A memory-safe language changes which
+vulnerability classes you face, and therefore how you satisfy the code-analysis and testing
+practices; it does not remove them. Treating a language feature as grounds to skip a practice is the
+specific error this subsection exists to prevent.
+
+**The artifact of tailoring is a written record of what you left out and why.** This document already
+produces one: the `NOT ADDRESSED` rows of the coverage table, each carrying a reason rather than an
+apology. An exclusion nobody wrote down is indistinguishable later from an oversight, and the reason
+is what a reader needs in order to disagree with you.
+
+### The one setting where such a claim is a legal instrument, and its expiry date
+
+There used to be a clean answer to when conformance actually binds a producer: selling software to
+the US federal government. Executive Order 14028 led to OMB Memoranda M-22-18 (2022) and M-23-16
+(2023), which required agencies to obtain a secure-software-development self-attestation from
+producers, on a common form published by CISA in March 2024.
+
+**That government-wide requirement was rescinded on 2026-01-23 by OMB Memorandum M-26-05**, which
+states that M-22-18 and M-23-16 "are hereby rescinded". Agencies "may choose to use" the attestation
+form; none is required to collect it. The SSDF survives in that memo as a resource agencies "can
+reference", not as a mandate, and agencies must still maintain a complete software and hardware
+inventory and set assurance requirements matching their own risk determinations.
+
+Two things follow, and they pull in opposite directions.
+
+- **Advice written before 2026 saying you must sign the common form to sell federally is now wrong**,
+  and that advice is still widely in circulation.
+- **This is not a relaxation.** The memorandum moves the obligation onto each agency head and says
+  there is no one-size-fits-all method. An individual agency may still require an attestation by its
+  own policy or contract. Read as a loosening, it is being read backwards.
+
+The stated reason is worth reading if you are deciding how much rigor to adopt. OMB wrote that the
+prior approach "imposed unproven and burdensome software accounting processes that prioritized
+compliance over genuine security investments" and "diverted agencies from developing tailored
+assurance requirements". That is the argument of the subsection above, made by the party that had
+imposed the mandate.
+
+**What did not change is the exposure on any attestation you do sign.** A signed attestation is a
+representation to a customer, and in the federal setting a false one carries civil fraud exposure
+whether or not anyone required it. The rescission removed a requirement to make the statement. It did
+nothing to the consequences of making a false one.
+
+*Memorandum text read directly and verified 2026-08-06; see the sources table for how this status is
+carried. A compliance fact without a date is a claim with a hidden expiry, and this one replaced a
+four-year-old regime.*
+
 ## What you get
 
 - **A written ownership split.** One table saying what the producing project owns and what the
