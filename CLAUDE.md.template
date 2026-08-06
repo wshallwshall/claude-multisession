@@ -226,6 +226,37 @@ Four verification rules that this tooling exists because of:
 
 ---
 
+## The bar this project holds itself to
+
+<Delete this whole section if you are not using the published standards.>
+
+This project measures itself against the standards at
+<https://wshallwshall.github.io/claude-multisession/standards/OVERVIEW.html>. They are starting
+points, not a compliance package. The copies that matter are the ones in this repository after you
+edited them down to what you actually do.
+
+**Record which gates are real here, and keep it honest.** A standard describes a bar. This table
+says where this project stands against it today. A row you cannot evidence is `not built`. And
+`built` means somebody watched the gate fail on purpose -- a gate nobody has seen refuse anything
+is indistinguishable from one that cannot.
+
+| Control | Status here | Last proven able to fail |
+|---|---|---|
+| Architecture and layer boundaries enforced in CI | `<built / partial / not built>` | `<date, or never>` |
+| Strict type checking, no blanket suppressions | `<...>` | `<...>` |
+| Dependencies existence-verified and hash-pinned | `<...>` | `<...>` |
+| Published artefact contains only what was declared | `<...>` | `<...>` |
+| Secret and identifying-content scan before publish | `<...>` | `<...>` |
+
+Two rules survive whatever you put in that table:
+
+- **Do not upgrade a row because a run went green.** Green is also what a check that examined
+  nothing produces. Upgrade it when somebody has broken the gate on purpose and watched it refuse.
+- **A stale row is worse than a missing one**, because it gets read as current. Re-check the table
+  at each release, in the same pass that re-runs the scorecard.
+
+---
+
 ## What this tooling cannot see
 
 Say these out loud rather than letting a session discover them:

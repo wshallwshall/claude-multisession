@@ -101,6 +101,9 @@
 
 - group: On GitHub
   items:
+    - label: CLAUDE.md template
+      title: A working agreement to copy into your own repository
+      url: https://github.com/wshallwshall/claude-multisession/blob/main/CLAUDE.md.template
     - label: Installing
       title: INSTALL.md, at the repository root
       url: https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md

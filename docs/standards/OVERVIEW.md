@@ -24,6 +24,7 @@ one of them is meant to be edited down to your setting before it is useful.
 | **Code quality** | [page](CODE-QUALITY.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx) |
 | **Secure development** | [page](SECURE-DEVELOPMENT.md) | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/SECURE-DEVELOPMENT.docx) |
 | This overview | -- | [.md](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/OVERVIEW.md) | [.docx](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/OVERVIEW.docx) |
+| A working agreement that adopts them | -- | [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) | -- |
 
 Rows are in [the order worth reading them in](#the-order-to-read-them-in).
 
@@ -41,6 +42,10 @@ Rows are in [the order worth reading them in](#the-order-to-read-them-in).
   is worth less. [The CISO summary](CISO-SUMMARY.md) is the exception: it is written to be read.
 - **The Word files are the same content**, generated from the same markdown. Take those for
   circulating to people who will read or mark up rather than adopt.
+
+The [working agreement template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) is where a project records which of these
+controls it actually built, and when each was last proven able to fail. A standard that no working
+agreement references is a document rather than a practice.
 
 **MIT licensed** -- adapt them, publish the result, drop the attribution.
 

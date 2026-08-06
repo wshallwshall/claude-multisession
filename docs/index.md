@@ -251,6 +251,17 @@ pwsh -NoProfile -File "$tooling/scripts/worktree/install-selfheal.ps1" -ConfigDi
 pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
 ```
 
+### Then give the sessions a working agreement
+
+Copy
+[CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template)
+into the target repository as `CLAUDE.md`, and edit it down to what is true there. Claude Code reads
+it at the start of every session.
+
+The installers above are only half the job. The gates stop what they can see; this file is where you
+write down what they cannot. Keep it short enough that it stays true -- a working agreement nobody
+maintains is worse than none, because the next session acts on it anyway.
+
 ### Prove the repository it governed is the one you meant
 
 The doctor's own default target is the current directory, so a run started in the wrong place
