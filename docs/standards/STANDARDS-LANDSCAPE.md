@@ -7,309 +7,70 @@ encyclopedias that explain what each standard says rather than whether it reache
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/STANDARDS-LANDSCAPE.md)
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/STANDARDS-LANDSCAPE.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
+> The interactive version of this page is at
+> <https://wshallwshall.github.io/claude-multisession/standards/STANDARDS-LANDSCAPE.html>, written
+> out in full because a relative link is dead in a downloaded Word file.
 
----
+**This one file carries three things, in the order a reader needs them.** First the routing below,
+which answers "what reaches me". Then [the reference](#every-document-on-this-map), one row per
+document, for when you already know what you are looking for. Then
+[the explanation](#why-this-page-is-organized-the-way-it-is), last and skippable, which is where the
+cuts and the vocabulary are argued rather than assumed.
+
+**On the served site there is an interactive selector between this paragraph and the routing table.**
+Tick what is true of your business and it hides the rows that cannot reach you. It hides; it never
+computes, and it holds no fact this document does not.
+
+**If you are reading the markdown or the Word copy, you have the answer and not a substitute for
+it.** The selector is a filter over the table below, and the table below is that same routing
+unfiltered -- the form you can print, forward to counsel and mark up. Nothing in this document
+depends on the control existing.
+
+**Two things neither of them will ever do.** They will not tell you that you must comply with
+anything: whether any of this reaches your organization is decided by a clause number, and no legal
+advice is given anywhere on this site. And they will not return a complete list. "At least these" is
+the only claim available, and matching nothing here is not evidence that nothing reaches you --
+[what this page did not assess](#what-this-page-did-not-assess) names the gaps on purpose.
+
+<!--
+  The line below is a sentinel. _layouts/default.html splits the rendered page on it and injects
+  _includes/standards-selector.html at that point, so the interactive selector lands here without
+  this markdown file carrying any HTML or template syntax. It renders as nothing on GitHub and
+  pandoc emits nothing for it, so the markdown and the Word copy are unaffected. If you move it,
+  move the matching string in the layout, and see tests/test_the_selector_matches_the_routing_table.py.
+-->
+
+<!-- STANDARDS-SELECTOR -->
 
 ## If this is your situation
 
-At least twelve situations. Column three points into this page, not out of it. Matching no row here is
-not evidence that nothing reaches you -- see
-[What this page did not assess](#what-this-page-did-not-assess).
+At least twelve situations. Column three points into this page, not out of the site. Matching no row
+here is not evidence that nothing reaches you -- see
+[what this page did not assess](#what-this-page-did-not-assess).
 
-| Your situation | What reaches you, and how it arrives | Read first |
+| Your situation | What reaches you, and how it arrives | Read next |
 |---|---|---|
-| **You sell software, not a hosted service, to a US federal agency** | Since 2026-01-23 there is no government-wide attestation mandate. What reaches you is whatever an individual agency writes into a contract | [Producer items](#addressed-to-a-software-producer) |
-| **You sell a hosted service to a US federal agency** | A government program certification for the offering, as a condition of the sale. It arrives as a procurement rule | [Certification and program regimes](#certification-and-program-regimes) |
-| **You sell to a US state, local, tribal or education buyer** | A separate program with its own statuses and tiers, arriving as a procurement requirement that varies by jurisdiction | [Certification and program regimes](#certification-and-program-regimes) |
-| **You place a product with digital elements on the EU market** | A regulation that binds producers directly, with no customer asking -- the only such item mapped here. Its reporting obligations apply from 2026-09-11, ahead of the rest of it | [Producer items](#addressed-to-a-software-producer) |
+| **You sell software, not a hosted service, to a US federal agency** | Since 2026-01-23 there is no government-wide attestation mandate. What reaches you is whatever an individual agency writes into a contract | [The reference](#every-document-on-this-map), and [why every status carries a date](#why-every-status-carries-a-date) |
+| **You sell a hosted service to a US federal agency** | A government program certification for the offering, as a condition of the sale. It arrives as a procurement rule | [The reference](#every-document-on-this-map) |
+| **You sell to a US state, local, tribal or education buyer** | A separate program with its own statuses and tiers, arriving as a procurement requirement that varies by jurisdiction | [The reference](#every-document-on-this-map) |
+| **You place a product with digital elements on the EU market** | A regulation that binds producers directly, with no customer asking -- the only such item mapped here. Its reporting obligations apply from 2026-09-11, ahead of the rest of it | [How these actually reach you](#how-these-actually-reach-you) |
 | **A prime contractor flowed a security requirement down to you** | A clause, not a publication. Ask which contract and which clause number, and whether a deviation modifies it | [How these actually reach you](#how-these-actually-reach-you) |
-| **A commercial customer requires a certificate or an audit report before signing** | An instrument that does exist, unlike most of this page: a scoped third-party certificate, or an examination report carrying an opinion. What it is worth turns on scope, accreditation, and which criteria were elected | [Certification and program regimes](#certification-and-program-regimes) |
-| **A customer questionnaire asks you for a certificate** | A questionnaire is not a regulator. Most items here issue no certificate, so name what does exist: a scoped certificate for something else, a report, a self-attestation, provenance, or named control correspondences | [What it actually issues](#cut-two-what-does-it-actually-issue) |
-| **A contract clause names a ranking, such as free of OWASP Top 10 issues** | A clause with no completion condition. Convert it into a requirement set while the clause is being agreed, not when the assessment is due | [Rankings and awareness lists](#rankings-and-awareness-lists) |
-| **You operate systems holding data covered by a sector regime** | A regulator's rule on the organization, not on a product. It reaches a supplier as contract text rather than as regulation | [Sector and jurisdiction regimes](#sector-and-jurisdiction-regimes) |
-| **You are in the payment card chain** | An agreement with an acquirer or a brand. The body that writes the standard is not the body that sets your validation requirement | [Certification and program regimes](#certification-and-program-regimes) |
+| **A commercial customer requires a certificate or an audit report before signing** | An instrument that does exist, unlike most of this page. It is evidence about the ORGANIZATION and not about the software, and what it is worth turns on scope, accreditation, and which criteria were elected | [The organization layer is not the software layer](#the-organization-layer-is-not-the-software-layer) |
+| **A customer questionnaire asks you for a certificate** | A questionnaire is not a regulator. Most items here issue no certificate, so name what does exist: a scoped certificate for something else, a report, a self-attestation, provenance, or named control correspondences | [What each one issues](#what-each-one-issues) |
+| **A contract clause names a ranking, such as free of OWASP Top 10 issues** | A clause with no completion condition. Convert it into a requirement set while the clause is being agreed, not when the assessment is due | [The reference](#every-document-on-this-map) |
+| **You operate systems holding data covered by a sector regime** | A regulator's rule on the organization, not on a product. It reaches a supplier as contract text rather than as regulation | [The reference](#every-document-on-this-map) |
+| **You are in the payment card chain** | An agreement with an acquirer or a brand. The body that writes the standard is not the body that sets your validation requirement | [The reference](#every-document-on-this-map) |
 | **You supply software to an organization in scope of a regime, and you are not** | A supplier-risk questionnaire generated by their obligation. The contract text governs what you owe, not the underlying regime | [How these actually reach you](#how-these-actually-reach-you) |
 | **Your developers build with AI coding assistants** | Nothing mapped here governs it. Three documents are routinely offered as though they do, and each is about something else | [Where an AI coding assistant sits](#where-an-ai-coding-assistant-sits-in-all-this) |
-
----
-
-## Cut one: who is it addressed to
-
-The addressee is the most stable fact about a document. Status, trigger and enforcement machinery
-change constantly; the audience almost never does.
-
-**This is about who the sentences bind, not what the document is about.** The two come apart, and
-that is the whole value of the cut. A publication can be entirely about how software gets built and
-still be addressed to an organization that operates systems -- its development controls are written
-to bind an entity with personnel, facilities and an authorization boundary, not to bind a build.
-Sorting by subject matter puts such a document next to a producer framework and invites a producer to
-answer requirements that were never asked of them.
-
-**"Addressed to an assessor" does not mean "what an auditor will ask you for".** It means the
-document tells someone how to conduct an examination -- the procedure, and who may run it. These are
-method manuals for the examiner, not the evidence you hand over. Read the other way, the natural next
-move is to build to them, which manufactures controls nothing ever required.
-
-| Addressed to | What it is describing | The failure when you get it wrong |
-|---|---|---|
-| **A software producer** | How code is built, reviewed, released and evidenced | An operating-environment instrument offered as evidence about a build practice it never examined |
-| **An organization that operates systems** | How an entity runs, governs and secures systems it operates, with personnel, facilities and an authorization boundary | A management-system or program instrument offered as evidence that a product is secure |
-| **An assessor** | How an audit or examination is conducted, and by whom | Assessor rules read as requirements on yourself, producing controls the standard never asked for |
-| **Nobody: infrastructure and vocabulary** | Identifier spaces, formats and vocabularies that nobody conforms to | An identifier read as a severity, or a format's standards-body lineage read as a compliance grade |
-
-**One row, one place.** Every item below appears in exactly one table. An item addressing two
-audiences is placed where the cost of acting lands, and named in the other bucket by bare
-cross-reference only. So the assessment-procedure companions sit with the assessor, though a
-producing team meets them through a customer; the SBOM minimum elements sit with the producer, who
-generates the artifact; the SBOM formats sit in infrastructure, because nobody conforms to a format;
-and the defense CUI chain sits with the operating organization, because it is about systems you
-operate -- the correction most often needed.
-
----
-
-## Cut two: what does it actually issue
-
-| It issues | What that means when somebody asks you for it | Examples on this page |
-|---|---|---|
-| **Nothing** | There is no artifact to obtain. Offer what exists: named control correspondences, your own evidence, a written program | Most items here, including every framework and every control catalog |
-| **A self-attestation you sign yourself** | The signature is the instrument, and the exposure is yours. Nobody independent looked | The federal attestation form; the defense self-assessment score and annual affirmation |
-| **An assessment or examination report** | Usually restricted in use, and there is no pass mark. SOC 2 carries a licensed firm's opinion; a CUI assessment carries findings only | SOC 2; a CUI assessment run to the published procedures |
-| **A third-party certificate from an accredited body** | A certificate for a stated scope. The accreditation is what gives it weight | ISO/IEC 27001; one rung of the defense program |
-| **A government program status or certification** | A status recorded and published by the program, for a named offering rather than for a company | FedRAMP, GovRAMP |
-| **A conformity mark you affix yourself after your own assessment** | You assess, declare and mark. A third body is involved only for some product classes | The EU Cyber Resilience Act |
-| **Identifiers, a score, or a measurement definition** | Data, not a verdict. A measurement definition produces a number only once some tool implements it | CWE, CVE, EPSS, the automated source code measures |
-
----
-
-## Addressed to a software producer
-
-These describe how software is built and released. One of them binds a producer directly; the rest
-arrive only when a customer, a contract or a package ecosystem names them.
-
-### Requirement-shaped and binding items
-
-| What it is | What it issues | What puts you in scope | Status (checked 2026-08-06) |
-|---|---|---|---|
-| **NIST SP 800-218 v1.1 (SSDF)** | Nothing. No conformance criteria, no levels, no assessment procedure | A contract clause, an agency assurance policy, or a questionnaire quoting practice identifiers | Final since 2022-02-03 and not withdrawn. A draft successor, SP 800-218r1 (v1.2), has been open since 2025-12-17 and is not final |
-| **NIST SP 800-218A (SSDF community profile for AI models)** | Nothing | Building or fine-tuning generative AI or dual-use foundation models, when a contract names it | Final 2024-07-26. The executive order that commissioned it was revoked 2025-01-20; the publication itself stands |
-| **CISA Secure Software Development Attestation Form** | A self-attestation signed by an executive, or, on an alternative route the form itself permits, a third-party assessment attached in place of the signature. Not a certificate and not an audit | An individual agency's contract term or request | Still published, with clearance to 2027-03-31. Optional for agencies since the memoranda requiring it were rescinded on 2026-01-23 |
-| **OWASP ASVS 5.0.0** | Nothing. Its own assessment chapter states that OWASP certifies no vendor or software | A customer contract or questionnaire naming a verification level | Released 2025-05-30, superseding 4.0.3 of 2021-10-28. Identifiers were reorganized rather than carried across |
-| **EU Cyber Resilience Act, Regulation (EU) 2024/2847** | A declaration of conformity and a mark you affix yourself; some product classes require a notified body | Placing a product with digital elements on the EU market. The trigger is where the product goes | In force 2024-12-10. Reporting obligations apply from 2026-09-11; the main body of obligations from 2027-12-11 |
-| **SLSA v1.2** | Nothing. Machine-readable provenance the consumer verifies. There is no register of levels | A customer or a package ecosystem asking for build provenance | Approved 2025-11-12, released 2025-11-24. It restored a Source track with four levels; there is still no Build L4 |
-| **CISA 2026 Minimum Elements for an SBOM** | Nothing. It defines fields, states that it creates no new requirements, and places accuracy, coverage and completeness out of its own scope | A contract term requiring an SBOM. In US federal contracting that is now each agency's own choice | Published 2026-07-29, replacing the minimum elements of 2021-07-12 |
-| **ISO/IEC 5055:2021 and OMG ASCQM 1.1** | Nothing. Defined counts of severe structural weaknesses, once a tool implements them | An enterprise or supplier contract specifying automated source code measures | ISO adoption announced 2021-04-07; ASCQM 1.1 formal since July 2022. One measure family in two venues, not two obligations |
-
-Four notes the cells cannot carry. **SLSA provenance is written as an in-toto attestation**, so the
-two are layered rather than rival options; a requirements document offering a choice between them was
-written by someone who had not read either. **Sigstore** issues identity-bound short-lived
-certificates plus a public transparency log entry, which evidence who signed and when and nothing
-about what was signed; its public instances are community-operated with no service level. And
-**a conforming SBOM can still be inaccurate and incomplete** -- the 2026 minimum elements say so
-themselves, and point at a signature, at binary analysis, and at exploitability advisories as
-separate mechanisms. Component inventory and build provenance as controls -- rather than as any named
-framework -- are covered in [Dependency integrity](DEPENDENCY-INTEGRITY.md), which names no baseline
-and claims correspondence with none.
-
-### Rankings and awareness lists
-
-| What it is | What it issues | What puts you in scope | Status (checked 2026-08-06) |
-|---|---|---|---|
-| **OWASP Top 10:2025** | Nothing. OWASP calls it an awareness document | A contract clause or questionnaire saying a product was tested against it, and scanner report headings | The 2025 edition is current on the project's own page, which stamps no final publication date. A release candidate in November 2025 and finalization in January 2026, per secondary coverage. Two categories are new, and an older category was absorbed into another |
-| **OWASP Top 10 for LLM Applications, 2026 edition** | Nothing | An AI feature review, a customer AI questionnaire, or an internal policy naming it | Dated 2026-08-03 on the project's own resource page, with press coverage on 2026-08-04. The prior edition dates from 2024-11-18 |
-| **CWE Top 25, 2025 edition** | Nothing | A policy or questionnaire naming it, and occasionally procurement language asking for coverage | 2025 edition announced 2025-12-11, project page updated 2026-01-29. Any reference to a 2026 edition is unconfirmed |
-
-**A ranking has no completion condition and cannot be discharged as written.** A clause requiring
-software to be free of the issues in an ordered list of categories never says when verification is
-finished, so a program scoped that way finishes when the scanner stops printing. A requirement set is
-verifiable item by item and has a defensible done. Convert a ranking clause into a requirement-set
-clause **while the clause is being agreed**: by assessment time the only remaining options are to
-argue or to over-deliver. That conversation is the cheapest thing on this page.
-
----
-
-## Addressed to an organization that operates systems
-
-None of these certifies a product, and all of them are routinely offered as product evidence. Where
-one reaches a software producer, it reaches them through a contract rather than through the regime.
-
-The chain worth carrying, because it tells you which document a question belongs to: FIPS 199
-categorizes, SP 800-60 Rev. 1 guides the categorizing, FIPS 200 sets a floor, SP 800-53B selects a
-baseline, SP 800-53 supplies the control text, and SP 800-53A assesses it. SP 800-122 sits to the
-side, covering personal data. Most questions arrive attached to the wrong link.
-
-### Certification and program regimes
-
-| What it is | What it issues | What puts you in scope | Status (checked 2026-08-06) |
-|---|---|---|---|
-| **ISO/IEC 27001:2022 (plus Amendment 1:2024)** | A third-party certificate from a certification body, for a stated scope. ISO itself issues nothing | A customer or procurement requirement, most often in vendor onboarding | Published 2022-10; Amendment 1 published 2024-02-23. The 2013-edition transition ended 2025-10-31, per secondary reporting |
-| **ISO/IEC 27002:2022** | Nothing. It explains how to implement the controls the certifiable standard lists | No independent trigger. It arrives beside a certification program, or in error on a questionnaire | Published 2022-02. It received a climate-related amendment in the same 2024 cycle; the designation was not confirmed |
-| **SOC 2 (Type 1 and Type 2)** | An examination report carrying a licensed firm's opinion. Restricted use, no pass mark, no certificate | A customer questionnaire or contract clause, overwhelmingly in US business-to-business sales | Criteria are the 2017 Trust Services Criteria with 2022 revised points of focus, posted 2023-09-30. The governing attestation standard applies to reports dated on or after 2022-06-15 |
-| **FedRAMP** | A program certification for a service offering, listed publicly. An agency's own authorization stays a separate decision | Selling a cloud service to a US federal agency | Founding 2011 memorandum rescinded 2024-07-25. Phase 3 of the replacement model active since 2026-04. Rev5 intake closes 2027-06-11 |
-| **GovRAMP (formerly StateRAMP)** | A verification status granted by the program office and published on a participants list | A US state, local, tribal or education procurement requirement, varying by jurisdiction | Rebranded 2025-02-14. StateRAMP remains the legal entity name, operating as GovRAMP, so both names are legitimately live |
-| **PCI DSS v4.0.1** | A report or a self-assessment questionnaire, plus a signed attestation. No certificate exists | An agreement with an acquirer or a brand, arriving through the payment chain rather than a regulator | v4.0.1 published 2024-06; v4.0 retired 2024-12-31; the future-dated requirements became mandatory 2025-03-31 |
-
-The cloud programs assess a **service offering you operate**, which is why they sit here rather than
-with the producer items even though a software company usually pays for them. They are also fairly
-described as producer-facing, since the trigger is a sale; they sit here because the unit assessed is
-an offering with an authorization boundary. One has begun leveraging an external framework for its
-lightest class only, and the program calls that class transitory: narrow, and not a shortcut.
-
-### Sector and jurisdiction regimes
-
-Six regimes, presented as members of a set. None gets a worked example, and the operational
-vocabulary of each is deliberately absent.
-
-| What it is | What it issues | What puts you in scope | Status (checked 2026-08-06) |
-|---|---|---|---|
-| **HIPAA Security Rule (45 CFR Part 164 Subpart C)** | Nothing. The enforcing agency has stated since 2003 that it recognizes no certification | Being a covered organization, or an agreement flowing the obligation down a contract chain | In force, operative text unchanged. A proposed overhaul published 2025-01-06 is not final; the projected final action has moved to July 2027, per secondary reporting |
-| **FTC Safeguards Rule under GLBA (16 CFR Part 314)** | Nothing. A written program, a named accountable individual, and a reporting duty | Meeting the rule's statutory definition of a covered institution, which reaches wider than self-image | Substantive requirements fully effective 2023-06-09. The breach-reporting amendment became effective 2024-05-13 |
-| **FERPA (20 U.S.C. 1232g; 34 CFR Part 99)** | Nothing. No certificate, no assessor, no registry. Enforcement runs through federal funding | Receiving the covered federal funds, or a contract with an institution that does | Statute in force since 1974; the regulations were substantially amended in 2008. No status change in the last 24 months |
-| **CJIS Security Policy** | No central certificate. An audit by the relevant authority, with the finding landing on the agency | An agreement giving access to the covered data. The policy names contractors within its own scope | v6.0 issued 2024-12-27, v6.1 dated 2026-06-25. Secondary reporting says audits continue against an earlier version; confirm with the auditing authority |
-| **NIS2 Directive ((EU) 2022/2555)** | Nothing at EU level. Obligations, deadlines and penalties come from a member state's transposing law | Sector plus size thresholds under national law, which has to be tested per member state | Transposition was due 2024-10-17 and remains incomplete. The Commission referred four member states to the Court of Justice in 2026 |
-| **SEC cybersecurity disclosure rules (17 CFR Parts 229, 232, 239, 240, 249)** | Nothing. The output is a filing. No assessor and no examination | Being a registrant of the relevant class. Nothing about your stack changes the answer | Adopted 2023-07-26, effective 2023-09-05. A rescission petition was filed 2025-05-22; no adopting release was found as of 2026-08-06 |
-
-One general point, visible here and elsewhere. **A resource guide to a rule is not the rule.** Several
-of the regimes above have a publisher's implementation guide sitting beside them, and the two get
-cited identically. A guide states no requirement and issues nothing, so conformance to one is not a
-thing that exists, and a questionnaire asking a supplier to attest to a guide is asking for something
-no party can supply.
-
-### Control catalogs and operational inputs
-
-| What it is | What it issues | What puts you in scope | Status (checked 2026-08-06) |
-|---|---|---|---|
-| **NIST SP 800-53 Rev. 5 (Release 5.2.0), with SP 800-53B and FIPS 199** | Nothing. A baseline is selected and an authorizing official decides. NIST certifies nobody | A federal contract, a program requirement, or a customer questionnaire mapping its control set onto you | Release 5.2.0 issued 2025-08-27 and added three controls; the baselines were not changed. FIPS 199 unchanged since February 2004 |
-| **NIST SP 800-161 Rev. 1 (upd 1)** | Nothing. Guidance, structured as an overlay on the control catalog | A federal contract flow-down, or a prime pushing supply chain terms down | Revision 1 published May 2022; update 1 issued 2024-11-01. No Revision 2 exists in any form, draft or final |
-| **The US defense CUI chain: SP 800-171 as pinned by contract, the CMMC program, the DFARS clauses** | Depends on the rung: a self-scored assessment, an annual affirmation, a third-party certificate, or a government assessment result | A contracting officer inserting a clause, or a prime flowing it down. Nothing here reaches you on its own | Program rule effective 2024-12-16; acquisition rule effective 2025-11-10; phases beyond the first suspended by policy on 2026-07-13, per secondary reporting |
-| **CISA Known Exploited Vulnerabilities catalog, and BOD 26-04** | Nothing to a private organization. A directive binds only the agencies it names | Being an agency a directive names, a contract flowing it down, or your own policy adopting the catalog | BOD 26-04, issued 2026-06-10, supersedes and revokes the 2021 and 2019 directives. The catalog itself is unchanged |
-| **EPSS** | A daily probability and percentile per published CVE, for exploitation in the wild within thirty days | A remediation policy that consumes it, or a risk model using exploitation likelihood as an input | Version 4 deployed 2025-03-17; a version 5 was announced 2026-05-13. Which model generates the published scores was not confirmed |
-| **OWASP SAMM v2.0** | Nothing. A self-assessed score from 0 to 3 per practice, plus a community Benchmark for comparison | Internal program work, board reporting, or a customer asking how mature your program is | Released February 2020 and still current on 2026-08-06. The Benchmark was first published June 2024 |
-
-Two cautions. **A defense-style obligation begins with a clause number, not a publication** -- ask
-which solicitation, which contract and which clause number, and check whether a deviation modifies
-the clause, because the clause text alone can name the wrong revision. And the release-versus-revision
-trap in the control catalog, with the producer-versus-operator split that decides who owns a control
-at all, sits in [Secure development](SECURE-DEVELOPMENT.md) rather than here.
-
----
-
-## Addressed to an assessor
-
-Three rows and one lesson: these change what an audit looks like and impose nothing on the audited
-organization. An unexplained change in audit shape or duration usually starts here rather than in
-your auditor's temperament.
-
-| What it is | Whose conduct it governs | How it reaches you | Status (checked 2026-08-06) |
-|---|---|---|---|
-| **ISO/IEC 27006-1:2024** | The certification bodies that audit management systems, and the terms of their accreditation | Through changed audit conduct: refined remote-audit rules and a revised audit-time calculation | Published 2024, replacing the 2015 edition. One accreditation body required use for all clients by 2026-03-31; other bodies may differ |
-| **NIST SP 800-53A Rev. 5 (Release 5.2.0)** | Whoever assesses a system against a selected control baseline | As the source of the questions an assessor asks about a deployed instance | Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls |
-| **NIST SP 800-171A Rev. 3 and SP 800-172A Rev. 3** | Whoever runs a CUI assessment, whether third party or government | Through an assessment somebody else scopes and runs | 800-171A Rev. 3 final 2024-05-14; 800-172A Rev. 3 final 2026-05-13. The defense program rule still names the June 2018 and March 2022 versions |
-
----
-
-## Addressed to nobody: infrastructure and vocabulary
-
-You cannot conform to any of these, and knowing that ends several arguments. They are the vocabulary
-the rest of the page is written in.
-
-| What it is | What it actually gives you | Where you meet it | Status (checked 2026-08-06) |
-|---|---|---|---|
-| **CWE 4.20** | An identifier for a class of mistake. Not a severity and not a priority | Tool output, vulnerability records that map to it, and contracts asking for findings with mappings | Version 4.20 released 2026-04-30, on a continuing versioned release cadence |
-| **CVE Program** | Identifiers and records. Not severity, not exploitability, not priority | Every dependency policy and every scanner | Operating. The 2025 contract lapse was averted by an extension, and the program board was told on 2026-01-21 there is no funding cliff in March. Replacement terms are not public |
-| **SBOM formats: SPDX (ISO/IEC 5962:2021) and CycloneDX (ECMA-424, 2nd edition)** | A machine-readable document a parser accepts. No conformance mark exists for either | A customer or a regime asking for an SBOM in a commonly used machine-readable format | ISO/IEC 5962:2021 describes SPDX 2.2.1, which current tooling has moved past; SPDX 3.0 sat at draft stage on 2026-08-06. ECMA-424 2nd edition was adopted December 2025 and defines CycloneDX v1.7 |
-| **ISO/IEC 25010:2023** | A vocabulary of quality characteristics. It states no requirement a product could meet or fail | Requirements documents and procurement specifications that need both parties to mean the same thing | Second edition published November 2023, cancelling and replacing the 2011 edition. Usability and portability no longer exist as top-level names |
-
-Three errors follow from treating these as requirements. **A weakness identifier is not a severity**:
-it says what kind of mistake a finding is, not whether it matters where you run. **No published
-vulnerability identifiers is not a security property**: it can equally mean nobody is looking, or
-that there is no route to publish one. **A format's standards-body lineage is not a compliance
-grade**: the widely quoted ISO number attaches to a 2021-era version of one format, so choosing on
-lineage answers a question nobody in the transaction asked. [Code quality](CODE-QUALITY.md) already
-cites the current edition of the product quality model for its own purposes.
-
----
-
-## How these actually reach you
-
-At least five routes. This is the section that decides where budget and ownership land, because the
-route determines the owner far more reliably than the subject does.
-
-| Route in | What it looks like on the day | What actually governs | Who owns the response internally |
-|---|---|---|---|
-| **Direct binding on a producer** | A market-access rule you satisfy before you ship, with no customer asking | The regulation and the conformity route it sets | Engineering and release, not the compliance function |
-| **A clause in one specific contract, or a flow-down from a prime** | A clause number in a solicitation or an award | The clause text, plus any deviation that modifies it. Not the publication it cites | Contracts, with security supplying the evidence |
-| **A supplier-risk clause inside somebody else's regime (the questionnaire)** | A spreadsheet quoting identifiers drawn from several unrelated documents | Their obligation, not yours. It never binds you; it obliges them to ask | Security with sales, and it is the largest recurring cost in this table |
-| **A procurement or payment-chain agreement** | A program status or a validation requirement as a condition of the deal | The program's or the counterparty's own rules, which may not be the standard author's | The program owner, usually outside security |
-| **Your own risk decision** | Nobody asked. You adopted it | Your own written scope, and nothing else | Whoever proposed it, and that should be written down |
-
----
-
-## Why every status here carries a date
-
-Staleness takes four shapes. Naming them is worth more than any individual fact below, because you
-will meet a fifth.
-
-1. **A mandate rescinded while its artifacts survive.** The instruction goes; the form, the signature
-   and any standing duty attached to it do not.
-2. **A draft cited as though final.** The most common shape and the hardest to see, because a draft
-   and a final look identical once quoted in a policy.
-3. **A published version that is not the version being audited.** The newest file on a publisher's
-   site is not automatically the assessment baseline.
-4. **A rename.** Search stops working, and both names are often legitimately live at once.
-
-The worked example is the federal software attestation story, told as one event when it was two,
-seven months apart. EO 14028 (2021) directed the guidance. OMB M-22-18 and M-23-16 turned it into a
-collection requirement. EO 14144 (January 2025) would have added submission to a repository, central
-verification and referral of failures -- and EO 14306, on 2025-06-06, struck that apparatus. Then OMB
-M-26-05, on 2026-01-23, rescinded the collection mandate itself. Anyone describing a single January
-2026 event has lost the fact that the verification model was already gone in mid-2025. The status of
-the federal repository that received submissions is unknown as of 2026-08-06: not reported running,
-not reported gone. And a signed self-attestation is a different instrument from a certificate --
-rescinding the instruction that prompted a signature is prospective, and unsigns nothing.
-
-The second worked example is shape two: the draft successor to the secure software development
-framework has been cited as the current framework since December 2025, while remaining a draft past
-its own executive-order clock.
-
-**The instrument check.** What binds you is a clause, and a clause pins a dated version. So "use the
-current publication" is frequently the wrong instruction: a regulation citing a publication by date
-keeps citing it after the publisher supersedes it, which is how a rule stays stable rather than an
-error in it. It is also why no identifier here appears without its version, revision, edition or
-release -- a bare identifier resolves differently depending on when and where you look it up. [The
-assessment method page](../ASVS-ASSESSMENT.md) covers pinning a standard's corpus so it cannot shift
-underneath an assessment already in progress.
-
----
-
-## Stale advice, and how to catch it yourself
-
-Each row below is one of the four shapes above. Column three names a check you can run without
-trusting this page.
-
-| If a policy, questionnaire or roadmap still says this | As of 2026-08-06 | The check you can run yourself |
-|---|---|---|
-| **"Sign the federal attestation form to sell software to the US government"** | The memoranda requiring agencies to collect it were rescinded on 2026-01-23. Agencies may still ask; none must | Read the rescinding memorandum at the publisher, then read your own contract's clauses |
-| **"Map controls to the current SSDF, or to SSDF 1.2"** | v1.1 of 2022 is the only final version. The successor has been a draft since 2025-12-17 | The publisher's own publications listing shows Final against one and Draft against the other |
-| **"SP 800-218A is the NIST guidance for developers using AI coding assistants"** | Its declared scope is producing AI models. Its single sentence on assisted code says the practices do not distinguish it from human-written code | Search the publication for that sentence. It is the whole of the coverage |
-| **"Defense work has to move to SP 800-171 Revision 3"** | A class deviation issued 2024-05-02 pins the safeguarding clause to Revision 2 and stands until rescinded, per secondary reporting | Read the clause, then ask whether a deviation modifies it. The clause text alone gives the wrong revision |
-| **"Third-party CMMC certification becomes a condition of award in November 2026"** | Phase 2 and later milestones were suspended by policy on 2026-07-13, per secondary reporting. Neither rule was amended or repealed | Ask the contracting officer which level the solicitation requires, and check the rulemaking index for anything after the acquisition rule |
-| **"Catalog inclusion means a fixed federal patch deadline"** | The directive setting flat due dates was revoked on 2026-06-10 and replaced by a risk model. The catalog is unchanged | The revoked directive's own page is titled as revoked; read the current one for the model that replaced it |
-| **"A 2013-edition ISO/IEC 27001 certificate is on file for this supplier"** | The transition period ended 2025-10-31, per secondary reporting, so a 2013-based certificate is no longer current | Read the certificate's edition, scope and expiry, and check the issuing body's accreditation |
-| **"We are working toward PCI DSS 4.0, and the future-dated requirements are still future"** | v4.0 retired 2024-12-31, leaving v4.0.1. The future-dated requirements became mandatory 2025-03-31 | The council's own document library shows the supported version; your acquirer sets your validation requirement |
-| **"FedRAMP is an authorization not a certification, at low, moderate or high, via the JAB or an agency"** | The program uses certification vocabulary and lettered classes, and the board that granted provisional authorizations no longer does so | The program's own definitions page. Delivering the old correction now makes you the out-of-date party |
-| **"Ask the supplier for their StateRAMP status"** | The program has operated as GovRAMP since 2025-02-14, while StateRAMP remains the legal entity name. Both are live | The program's own site, and the participant listing it publishes |
-| **"Generate SBOMs to the NTIA 2021 minimum elements, and prefer SPDX because it is the ISO standard"** | The 2021 elements were replaced on 2026-07-29. The ISO number attaches to a 2021-era version of that format, not to what current tooling emits | Read the 2026 document, which is freely published, and read the ISO catalog entry for the version it actually names |
-| **"Require SLSA Level 4"** | There is no Build L4. Since v1.2 there is a Source L4, so a bare level number no longer identifies a requirement | The specification's own track pages. Write the track beside the level |
-| **"SP 800-122 was withdrawn, SP 800-161 Revision 2 is out, and ISO 25010 usability is a characteristic"** | SP 800-122 is still Final; its withdrawal exists only as intent inside an unfinished working draft. There is no 800-161 Rev. 2. Usability was replaced in the 2023 edition | Each publication's own record page shows status and date. The 2024-11-01 date people cite is an update to Revision 1 |
 
 ---
 
 ## Where an AI coding assistant sits in all this
 
 **Nothing mapped on this page currently governs a developer using an AI coding assistant.** That is a
-finding about the landscape, stated as an absence rather than as a gap somebody has filled.
-
-Three documents are routinely misfiled as doing so:
+finding about the landscape, stated as an absence rather than as a gap somebody has filled. It is the
+one situation above whose answer will not fit in a table cell, because the answer is a correction to
+three specific documents rather than a list.
 
 - **The SSDF community profile for AI models** addresses producing models: data sourcing, training,
   fine-tuning, evaluation. Its one sentence on the subject says the practices do not distinguish
@@ -321,53 +82,256 @@ Three documents are routinely misfiled as doing so:
 - **The NIST control overlays for securing AI systems** are in development, with no draft overlay
   published as of 2026-08-06, so nothing can be aligned with them today.
 
-No claim is made here that anything published on this site fills that gap.
+All three carry their full rows in [the reference](#every-document-on-this-map). No claim is made
+here that anything published on this site fills that gap: the control set this site does publish for
+AI-assisted work is [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md), and it claims
+correspondence with nothing.
+
+---
+
+## Every document on this map
+
+**One row per document, sorted alphabetically for lookup.** Consult this when you already know what
+you are looking for. Read the "what it issues" column first when somebody asks you for an artifact:
+most of these issue nothing at all, and being asked for a certificate that does not exist is the
+routine case rather than the unusual one. **At least these** -- the list is not complete, and
+[what this page did not assess](#what-this-page-did-not-assess) names what is missing on purpose.
+
+Every status was checked on **2026-08-06**, stated once in the column heading rather than repeated in
+every cell. Where a cell says "the check date", it means that date.
+
+| What it is | Addressed to | What it issues | What triggers it | Status, checked 2026-08-06 | The check you can run yourself |
+|---|---|---|---|---|---|
+| **CISA 2026 Minimum Elements for an SBOM** | A software producer | Nothing. It defines fields, states that it creates no new requirements, and places accuracy, coverage and completeness out of its own scope. | A contract term requiring an SBOM. In US federal contracting that is now each agency's own choice. | Published 2026-07-29, replacing the minimum elements of 2021-07-12. | "Generate SBOMs to the NTIA 2021 minimum elements." Those were replaced on 2026-07-29. Separately, a conforming SBOM can still be inaccurate and incomplete -- the 2026 elements say so themselves and point at a signature, at binary analysis, and at exploitability advisories as separate mechanisms. |
+| **CISA Known Exploited Vulnerabilities catalog, and BOD 26-04** | An organization that operates systems | Nothing to a private organization. A directive binds only the agencies it names. | Being an agency a directive names, a contract flowing it down, or your own policy adopting the catalog. | BOD 26-04, issued 2026-06-10, supersedes and revokes the 2021 and 2019 directives. The catalog itself is unchanged. | "Catalog inclusion means a fixed federal patch deadline." The directive setting flat due dates was revoked on 2026-06-10 and replaced by a risk model. The catalog is unchanged, and the revoked directive's own page is titled as revoked. |
+| **CISA Secure Software Development Attestation Form** | A software producer | A self-attestation signed by an executive, or, on an alternative route the form itself permits, a third-party assessment attached in place of the signature. Not a certificate and not an audit. | An individual agency's contract term or request. | Still published, with clearance to 2027-03-31. Optional for agencies since the memoranda requiring it were rescinded on 2026-01-23. | "Sign the federal attestation form to sell software to the US government." The memoranda requiring agencies to collect it were rescinded on 2026-01-23. Agencies may still ask; none must. Read the rescinding memorandum at the publisher, then read your own contract's clauses. |
+| **CJIS Security Policy** | An organization that operates systems | No central certificate. An audit by the relevant authority, with the finding landing on the agency. | An agreement giving access to the covered data. The policy names contractors within its own scope. | v6.0 issued 2024-12-27, v6.1 dated 2026-06-25. Secondary reporting says audits continue against an earlier version; confirm with the auditing authority. | A central certificate is assumed to exist, and the version being audited is assumed to be the newest published one. Confirm the audit baseline with the authority that will actually audit, on the date it will happen. |
+| **CVE Program** | Nobody: infrastructure and vocabulary | Identifiers and records. Not severity, not exploitability, not priority. | Every dependency policy and every scanner. | Operating. The 2025 contract lapse was averted by an extension, and the program board was told on 2026-01-21 there is no funding cliff in March. Replacement terms are not public. | No published vulnerability identifiers is not a security property: it can equally mean nobody is looking, or that there is no route to publish one. |
+| **CWE 4.20** | Nobody: infrastructure and vocabulary | An identifier for a class of mistake. Not a severity and not a priority. | Tool output, vulnerability records that map to it, and contracts asking for findings with mappings. | Version 4.20 released 2026-04-30, on a continuing versioned release cadence. | A weakness identifier is not a severity: it says what kind of mistake a finding is, not whether it matters where you run. |
+| **CWE Top 25, 2025 edition** | A software producer -- a ranking, not a requirement set | Nothing. | A policy or questionnaire naming it, and occasionally procurement language asking for coverage. | 2025 edition announced 2025-12-11, project page updated 2026-01-29. Any reference to a 2026 edition is unconfirmed. | Same completion-condition problem as any ranking: it cannot be discharged as written. |
+| **EPSS** | An organization that operates systems | A daily probability and percentile per published CVE, for exploitation in the wild within thirty days. | A remediation policy that consumes it, or a risk model using exploitation likelihood as an input. | Version 4 deployed 2025-03-17; a version 5 was announced 2026-05-13. Which model generates the published scores was not confirmed. | Read as a verdict rather than as data. Which model version is actually generating the published scores is not confirmed here -- read the comment line in the published data file, not a blog post. |
+| **EU Cyber Resilience Act, Regulation (EU) 2024/2847** | A software producer | A declaration of conformity and a mark you affix yourself after your own assessment. Some product classes require a notified body. | Placing a product with digital elements on the EU market. The trigger is where the product goes, not who buys it. | In force 2024-12-10. Reporting obligations apply from 2026-09-11, ahead of the rest of it; the main body of obligations from 2027-12-11. | Routinely treated as something a customer asks for. It is a market-access rule you satisfy before you ship, and the owner is engineering and release, not the compliance function. |
+| **FedRAMP** | An organization that operates systems | A program certification for a service offering, listed publicly. An agency's own authorization stays a separate decision. | Selling a cloud service to a US federal agency. | Founding 2011 memorandum rescinded 2024-07-25. Phase 3 of the replacement model active since 2026-04. Rev5 intake closes 2027-06-11. | "It is an authorization not a certification, at low, moderate or high, via the JAB or an agency." The program uses certification vocabulary and lettered classes, and the board that granted provisional authorizations no longer does so. Delivering the old correction now makes you the out-of-date party. Read the program's own definitions page. |
+| **FERPA (20 U.S.C. 1232g; 34 CFR Part 99)** | An organization that operates systems | Nothing. No certificate, no assessor, no registry. Enforcement runs through federal funding. | Receiving the covered federal funds, or a contract with an institution that does. | Statute in force since 1974; the regulations were substantially amended in 2008. No status change in the last 24 months. | Sought as a compliance artifact. There is no assessor and no registry to be listed in. |
+| **FTC Safeguards Rule under GLBA (16 CFR Part 314)** | An organization that operates systems | Nothing. A written program, a named accountable individual, and a reporting duty. | Meeting the rule's statutory definition of a covered institution, which reaches wider than self-image. | Substantive requirements fully effective 2023-06-09. The breach-reporting amendment became effective 2024-05-13. | Organizations that do not think of themselves as financial institutions assume it does not reach them. The definition is statutory, not a matter of self-description. |
+| **GovRAMP (formerly StateRAMP)** | An organization that operates systems | A verification status granted by the program office and published on a participants list. | A US state, local, tribal or education procurement requirement, varying by jurisdiction. | Rebranded 2025-02-14. StateRAMP remains the legal entity name, operating as GovRAMP, so both names are legitimately live. | "Ask the supplier for their StateRAMP status." The program has operated under the new name since 2025-02-14 while the old one remains the legal entity name. A search on one name alone stops working. |
+| **HIPAA Security Rule (45 CFR Part 164 Subpart C)** | An organization that operates systems | Nothing. The enforcing agency has stated since 2003 that it recognizes no certification. | Being a covered organization, or an agreement flowing the obligation down a contract chain. | In force, operative text unchanged. A proposed overhaul published 2025-01-06 is not final; the projected final action has moved to July 2027, per secondary reporting. | Suppliers are asked to produce a certificate against it. None exists, and the enforcing agency has said so for over twenty years. It also binds an organization, not a product. |
+| **HITRUST CSF (e1, i1, r2)** | An organization that operates systems | A validated assessment result for an organization. There is no path by which distributable software is certified; the environment operating it can be. | A customer or procurement requirement naming it. The sources behind this page state no independent trigger, so confirm it in the contract. | Three tiers, and they are not interchangeable: e1 (essentials, one year, foundational controls), i1 (one year, established programs, middle assurance), r2 (highest, tailored and risk-based, for complex environments). The tier detail rests on secondary sources; verify anything more specific than the tier names and the scope-variance point at the publisher. | Which tier, and what was in scope. "We are certified" stated without both tells a reader very little: scope drives control count enormously, and the same highest-tier result can be a few hundred controls for one organization and a few thousand for another. |
+| **in-toto attestations and Sigstore signing** | A software producer | Sigstore issues identity-bound short-lived certificates plus a public transparency log entry. These evidence who signed and when, and nothing about what was signed. Its public instances are community-operated with no service level. | A provenance or signing requirement from a customer or a package ecosystem. | No separate status is recorded here beyond the facts in this row. | Offered as a choice against build provenance. Provenance is written as an in-toto attestation, so the two are layered rather than rival options; a requirements document offering a choice between them was written by someone who had not read either. |
+| **ISO/IEC 5055:2021 and OMG ASCQM 1.1** | A software producer | Nothing. Defined counts of severe structural weaknesses, once a tool implements them. | An enterprise or supplier contract specifying automated source code measures. | ISO adoption announced 2021-04-07; ASCQM 1.1 formal since July 2022. One measure family in two venues, not two obligations. | Read as two separate requirements because it appears under two publisher names. |
+| **ISO/IEC 25010:2023** | Nobody: infrastructure and vocabulary | A vocabulary of quality characteristics. It states no requirement a product could meet or fail. | Requirements documents and procurement specifications that need both parties to mean the same thing. | Second edition published November 2023, cancelling and replacing the 2011 edition. Usability and portability no longer exist as top-level names. | "Usability is a characteristic." It was replaced in the 2023 edition, so a requirements document written against the 2011 names no longer resolves. |
+| **ISO/IEC 27001:2022 (plus Amendment 1:2024)** | An organization that operates systems | A third-party certificate from a certification body, for a stated scope. ISO itself issues nothing. | A customer or procurement requirement, most often in vendor onboarding. | Published 2022-10; Amendment 1 published 2024-02-23. The 2013-edition transition ended 2025-10-31, per secondary reporting. | Read the scope statement on the certificate. A certificate whose scope covers one office or one business unit is common, and is not what the reader assumes. Called "the international SOC 2" universally, and it is a different instrument with a different failure mode: SOC 2 gives you an opinion plus exceptions, this gives you a certificate plus a scope statement. |
+| **ISO/IEC 27002:2022** | An organization that operates systems | Nothing. It explains how to implement the controls the certifiable standard lists. | No independent trigger. It arrives beside a certification program, or in error on a questionnaire. | Published 2022-02. It received a climate-related amendment in the same 2024 cycle; the designation was not confirmed. | Named on a questionnaire as though a supplier could be certified or attest to it. Conformance to a guide is not a thing that exists. |
+| **ISO/IEC 27006-1:2024** | An assessor | Nothing to the audited organization. It governs the auditor. | It reaches you through changed audit conduct: refined remote-audit rules and a revised audit-time calculation. | Published 2024, replacing the 2015 edition. One accreditation body required use for all clients by 2026-03-31; other bodies may differ. Ask your own certification body which date applies to it. | Read as a requirement on yourself, which manufactures controls the standard never asked for. An unexplained change in audit shape or duration usually starts here rather than in your auditor's temperament. |
+| **NIS2 Directive ((EU) 2022/2555)** | An organization that operates systems | Nothing at EU level. Obligations, deadlines and penalties come from a member state's transposing law. | Sector plus size thresholds under national law, which has to be tested per member state. | Transposition was due 2024-10-17 and remains incomplete. The Commission referred four member states to the Court of Justice in 2026. | Read as a single EU-wide obligation with one set of thresholds. It is national law that binds, and transposition is incomplete, so the answer differs by member state and in some cases does not exist yet. |
+| **NIST control overlays for securing AI systems** | An organization that operates systems | Nothing today. | Nothing today. | In development, with no draft overlay published as of the check date, so nothing can be aligned with them today. | Cited in roadmaps as though alignment were possible now. No draft exists to align with. |
+| **NIST SP 800-53 Rev. 5 (Release 5.2.0), with SP 800-53B and FIPS 199** | An organization that operates systems | Nothing. A baseline is selected and an authorizing official decides. NIST certifies nobody. | A federal contract, a program requirement, or a customer questionnaire mapping its control set onto you. | Release 5.2.0 issued 2025-08-27 and added three controls; the baselines were not changed. FIPS 199 unchanged since February 2004. | Questions arrive attached to the wrong link in the chain. The chain worth carrying: FIPS 199 categorizes, SP 800-60 Rev. 1 guides the categorizing, FIPS 200 sets a floor, SP 800-53B selects a baseline, SP 800-53 supplies the control text, and SP 800-53A assesses it. A release is also not a revision. |
+| **NIST SP 800-53A Rev. 5 (Release 5.2.0)** | An assessor | Nothing to the audited organization. | It reaches you as the source of the questions an assessor asks about a deployed instance. | Release 5.2.0 issued 2025-08-27, adding assessment procedures for three controls. | "Addressed to an assessor" does not mean "what an auditor will ask you for". It tells someone how to conduct an examination. Building to it produces controls nothing ever required. |
+| **NIST SP 800-122** | An organization that operates systems | Nothing. Guidance. | No independent trigger. It sits beside the federal control chain, covering personal data. | Still Final. Its withdrawal exists only as intent inside an unfinished working draft. | "SP 800-122 was withdrawn." It is still Final, and the publication's own record page shows status and date. |
+| **NIST SP 800-161 Rev. 1 (upd 1)** | An organization that operates systems | Nothing. Guidance, structured as an overlay on the control catalog. | A federal contract flow-down, or a prime pushing supply chain terms down. | Revision 1 published May 2022; update 1 issued 2024-11-01. No Revision 2 exists in any form, draft or final. | "Revision 2 is out." There is no Revision 2. The 2024-11-01 date people cite is an update to Revision 1, and the publication's own record page shows status and date. |
+| **NIST SP 800-171A Rev. 3 and SP 800-172A Rev. 3** | An assessor | Nothing to the audited organization. A CUI assessment run to these procedures carries findings only, and there is no pass mark. | An assessment somebody else scopes and runs. | 800-171A Rev. 3 final 2024-05-14; 800-172A Rev. 3 final 2026-05-13. The defense program rule still names the June 2018 and March 2022 versions. | The newest published procedure is assumed to be the one being assessed against. The program rule still names earlier versions. |
+| **NIST SP 800-218 v1.1 (SSDF)** | A software producer | Nothing. No conformance criteria, no levels, no assessment procedure. | A contract clause, an agency assurance policy, or a questionnaire quoting practice identifiers. | Final since 2022-02-03 and not withdrawn. A draft successor, SP 800-218r1 (v1.2), has been open since 2025-12-17 and is not final. | "Map controls to the current SSDF, or to SSDF 1.2." v1.1 of 2022 is the only final version. The publisher's own publications listing shows Final against one and Draft against the other. |
+| **NIST SP 800-218A (SSDF community profile for AI models)** | A software producer | Nothing. | Building or fine-tuning generative AI or dual-use foundation models, when a contract names it. | Final 2024-07-26. The executive order that commissioned it was revoked 2025-01-20; the publication itself stands. | Its declared scope is producing AI models. Its single sentence on assisted code says the practices do not distinguish it from human-written code, which is a scoping exclusion rather than guidance. Search the publication for that sentence -- it is the whole of the coverage. |
+| **OWASP ASVS 5.0.0** | A software producer | Nothing. Its own assessment chapter states that OWASP certifies no vendor or software. | A customer contract or questionnaire naming a verification level. | Released 2025-05-30, superseding 4.0.3 of 2021-10-28. Identifiers were reorganized rather than carried across. | Cited as though a level could be certified. Identifiers from the prior edition do not carry across either, so a policy quoting an old identifier resolves to something different or to nothing. |
+| **OWASP SAMM v2.0** | An organization that operates systems | Nothing. A self-assessed score from 0 to 3 per practice, plus a community Benchmark for comparison. | Internal program work, board reporting, or a customer asking how mature your program is. | Released February 2020 and still current on the check date. The Benchmark was first published June 2024. | A self-assessed score is offered as though it were an independent finding. |
+| **OWASP Top 10 for LLM Applications, 2026 edition** | A software producer -- a ranking, not a requirement set | Nothing. | An AI feature review, a customer AI questionnaire, or an internal policy naming it. | Dated 2026-08-03 on the project's own resource page, with press coverage on 2026-08-04. The prior edition dates from 2024-11-18. | Offered as governance for what an AI coding assistant writes for you. It addresses securing an application that calls a language model at run time, which is a different subject, and the two are conflated constantly. |
+| **OWASP Top 10:2025** | A software producer -- a ranking, not a requirement set | Nothing. OWASP calls it an awareness document. | A contract clause or questionnaire saying a product was tested against it, and scanner report headings. | The 2025 edition is current on the project's own page, which stamps no final publication date. A release candidate in November 2025 and finalization in January 2026, per secondary coverage. Two categories are new, and an older category was absorbed into another. | A ranking has no completion condition and cannot be discharged as written. Convert it into a requirement-set clause while the clause is being agreed; by assessment time the only remaining options are to argue or to over-deliver. |
+| **PCI DSS v4.0.1** | An organization that operates systems | A report or a self-assessment questionnaire, plus a signed attestation. No certificate exists. | An agreement with an acquirer or a brand, arriving through the payment chain rather than a regulator. | v4.0.1 published 2024-06; v4.0 retired 2024-12-31; the future-dated requirements became mandatory 2025-03-31. | "We are working toward 4.0, and the future-dated requirements are still future." v4.0 retired 2024-12-31, leaving v4.0.1, and the future-dated requirements became mandatory 2025-03-31. The body that writes the standard is not the body that sets your validation requirement. |
+| **SBOM formats: SPDX (ISO/IEC 5962:2021) and CycloneDX (ECMA-424, 2nd edition)** | Nobody: infrastructure and vocabulary | A machine-readable document a parser accepts. No conformance mark exists for either. | A customer or a regime asking for an SBOM in a commonly used machine-readable format. | ISO/IEC 5962:2021 describes SPDX 2.2.1, which current tooling has moved past; SPDX 3.0 sat at draft stage on the check date. ECMA-424 2nd edition was adopted December 2025 and defines CycloneDX v1.7. | "Prefer SPDX because it is the ISO standard." A format's standards-body lineage is not a compliance grade, and the widely quoted ISO number attaches to a 2021-era version rather than to what current tooling emits. Choosing on lineage answers a question nobody in the transaction asked. |
+| **SEC cybersecurity disclosure rules (17 CFR Parts 229, 232, 239, 240, 249)** | An organization that operates systems | Nothing. The output is a filing. No assessor and no examination. | Being a registrant of the relevant class. Nothing about your stack changes the answer. | Adopted 2023-07-26, effective 2023-09-05. A rescission petition was filed 2025-05-22; no adopting release was found as of the check date. | Treated as a security control requirement that engineering choices can satisfy or avoid. It is a disclosure duty attached to registrant status. Nothing asked here establishes that status, so this is a fact about your organization to go and check, never an inference drawn from your answers. |
+| **SLSA v1.2** | A software producer | Nothing. Machine-readable provenance the consumer verifies. There is no register of levels. | A customer or a package ecosystem asking for build provenance. | Approved 2025-11-12, released 2025-11-24. It restored a Source track with four levels; there is still no Build L4. | "Require SLSA Level 4." There is no Build L4. Since v1.2 there is a Source L4, so a bare level number no longer identifies a requirement. Read the specification's own track pages and write the track beside the level. |
+| **SOC 2 (Type 1 and Type 2)** | An organization that operates systems | An examination report carrying a licensed firm's opinion. Restricted use, no pass mark, no certificate. | A customer questionnaire or contract clause, overwhelmingly in US business-to-business sales. | Criteria are the 2017 Trust Services Criteria with 2022 revised points of focus, posted 2023-09-30. The governing attestation standard applies to reports dated on or after 2022-06-15. | Read the scope statement and the listed exceptions. A report with no exceptions over twelve months is unusual enough to be worth asking about, and the cover page tells you nothing. Type 2 covers operating effectiveness over a period, typically six to twelve months; Type 1 is a point-in-time design opinion only. If what you sell is distributed software rather than a hosted service, the product can sit entirely outside the report's scope boundary. |
+| **The US defense CUI chain: SP 800-171 as pinned by contract, the CMMC program, the DFARS clauses** | An organization that operates systems | Depends on the rung: a self-scored assessment, an annual affirmation, a third-party certificate, or a government assessment result. | A contracting officer inserting a clause, or a prime flowing it down. Nothing here reaches you on its own. | Program rule effective 2024-12-16; acquisition rule effective 2025-11-10; phases beyond the first suspended by policy on 2026-07-13, per secondary reporting. | Two of them. "Defense work has to move to Revision 3": a class deviation issued 2024-05-02 pins the safeguarding clause to Revision 2 and stands until rescinded, per secondary reporting, so the clause text alone gives the wrong revision. And "third-party certification becomes a condition of award in November 2026": Phase 2 and later milestones were suspended by policy on 2026-07-13, per secondary reporting, and neither rule was amended or repealed. Ask the contracting officer which level the solicitation requires, and check the rulemaking index. |
+
+[The reference table](STANDARDS-REFERENCE.md) is these same rows in a file of their own, grouped by
+addressee rather than sorted alphabetically, for anyone who wants the lookup without the guide around
+it. It carries the same statuses and the same check date.
+
+---
+
+## Why this page is organized the way it is
+
+**Skip this section without losing anything above it.** It explains the two cuts the reference uses,
+the routes by which any of this arrives, and the reason every status carries a date. If the routing
+answered your question, you are done.
+
+### Who a document is addressed to
+
+The addressee is the most stable fact about a document. Status, trigger and enforcement machinery
+change constantly; the audience almost never does. That is why the reference sorts on it, and why the
+column sits second rather than last.
+
+**This is about who the sentences bind, not what the document is about.** The two come apart, and
+that is the whole value of the cut. A publication can be entirely about how software gets built and
+still be addressed to an organization that operates systems -- its development controls are written
+to bind an entity with personnel, facilities and an authorization boundary, not to bind a build.
+Sorting by subject matter puts such a document next to a producer framework and invites a producer to
+answer requirements that were never asked of them.
+
+**"Addressed to an assessor" does not mean "what an auditor will ask you for".** It means the
+document tells someone how to conduct an examination -- the procedure, and who may run it. These are
+method manuals for the examiner, not the evidence you hand over. Read the other way, the natural next
+move is to build to them, which manufactures controls nothing ever required. The selector puts every
+such item in its own block, under that label, for exactly this reason.
+
+| Addressed to | What it is describing | The failure when you get it wrong |
+|---|---|---|
+| **A software producer** | How code is built, reviewed, released and evidenced | An operating-environment instrument offered as evidence about a build practice it never examined |
+| **An organization that operates systems** | How an entity runs, governs and secures systems it operates, with personnel, facilities and an authorization boundary | A management-system or program instrument offered as evidence that a product is secure |
+| **An assessor** | How an audit or examination is conducted, and by whom | Assessor rules read as requirements on yourself, producing controls the standard never asked for |
+| **Nobody: infrastructure and vocabulary** | Identifier spaces, formats and vocabularies that nobody conforms to | An identifier read as a severity, or a format's standards-body lineage read as a compliance grade |
+
+**One row, one place.** Every item appears exactly once in the reference. An item addressing two
+audiences is placed where the cost of acting lands.
+
+### The organization layer is not the software layer
+
+**This is the single most useful sentence on the subject.** A buyer asks a software vendor for a
+certificate or an audit report and reads the answer as evidence about the SOFTWARE. Those instruments
+are evidence about the ORGANIZATION. A vendor can hold every one of them and still ship insecure
+code, because none of them looked at the code.
+
+That does not make them worthless. They establish that a company has a functioning security program,
+which is a real thing to know and worth paying for. They simply do not answer "is this product
+secure", and the failure is reading them as though they did.
+
+Three of them below, presented as members of a set alongside the payment-chain validation
+instruments, the two cloud program authorizations, and the law-enforcement-data policy that sit in
+the same layer. Full rows, with statuses and the check date, are in
+[the reference above](#every-document-on-this-map).
+
+| The instrument | What it actually is | The question that makes it useful |
+|---|---|---|
+| **An examination report on a service organization** | A licensed firm's opinion against elected criteria, restricted in use, with no pass mark and no certificate. Type 2 covers operating effectiveness over a period, typically six to twelve months; Type 1 is a point-in-time design opinion only | Read the scope statement and the listed exceptions. A report with no exceptions over twelve months is unusual enough to be worth asking about. The cover page tells you nothing |
+| **A management-system certificate from an accredited body** | A certificate for a stated scope, issued by a certification body rather than by the standards publisher. Universally called "the international" version of the report above, and it is a different instrument with a different failure mode | Read the scope statement on the certificate. A certificate whose scope covers one office or one business unit is common, and is not what the reader assumes |
+| **A validated assessment of an organization's controls and environment** | A third-party validated result at one of several named tiers, which are not interchangeable. Explicitly not a software product certification: there is no path by which distributable software is certified, though the environment operating it can be | Which tier, and what was in scope. Scope drives control count enormously -- the same highest tier can be a few hundred controls for one organization and a few thousand for another |
+
+**If what you sell is distributed software rather than a hosted service, the product can sit entirely
+outside the scope boundary of every row above.** That is not a loophole and not an accusation; it is
+what the scope statement says, and it is why the third column of that table is the column that
+matters.
+
+The cloud program authorizations belong in this layer for the same reason: they assess a service
+offering you operate, which is why they sit with the operating organization even though a software
+company usually pays for them.
+
+### What each one issues
+
+Read this before answering any request for an artifact. The category decides whether the request can
+be satisfied at all.
+
+- **Nothing.** There is no artifact to obtain. Offer what exists instead: named control
+  correspondences, your own evidence, a written program. This covers most items in the reference,
+  including every framework and every control catalog.
+- **A self-attestation you sign yourself.** The signature is the instrument and the exposure is
+  yours. Nobody independent looked.
+- **An assessment or examination report.** Usually restricted in use, and there is no pass mark. One
+  kind carries a licensed firm's opinion; a controlled-information assessment carries findings only.
+- **A third-party certificate from an accredited body.** A certificate for a stated scope. The
+  accreditation is what gives it weight, and the scope statement is what limits it.
+- **A government program status or certification.** Recorded and published by the program, for a
+  named offering rather than for a company.
+- **A conformity mark you affix yourself after your own assessment.** You assess, declare and mark. A
+  third body is involved only for some product classes.
+- **Identifiers, a score, or a measurement definition.** Data, not a verdict. A measurement
+  definition produces a number only once some tool implements it.
+
+### How these actually reach you
+
+At least five routes. This is the part that decides where budget and ownership land, because the
+route determines the owner far more reliably than the subject does.
+
+| Route in | What it looks like on the day | What actually governs | Who owns the response internally |
+|---|---|---|---|
+| **Direct binding on a producer** | A market-access rule you satisfy before you ship, with no customer asking | The regulation and the conformity route it sets | Engineering and release, not the compliance function |
+| **A clause in one specific contract, or a flow-down from a prime** | A clause number in a solicitation or an award | The clause text, plus any deviation that modifies it. Not the publication it cites | Contracts, with security supplying the evidence |
+| **A supplier-risk clause inside somebody else's regime -- the questionnaire** | A spreadsheet quoting identifiers drawn from several unrelated documents | Their obligation, not yours. It never binds you; it obliges them to ask | Security with sales, and it is the largest recurring cost in this table |
+| **A procurement or payment-chain agreement** | A program status or a validation requirement as a condition of the deal | The program's or the counterparty's own rules, which may not be the standard author's | The program owner, usually outside security |
+| **Your own risk decision** | Nobody asked. You adopted it | Your own written scope, and nothing else | Whoever proposed it, and that should be written down |
+
+**Exactly one item in the reference takes the first route.** The market-access regulation reaches a
+producer with nobody asking: placing a product with digital elements on that market is the trigger,
+so where the product goes decides it and who buys it does not. Everything else arrives because
+somebody asked -- a contracting officer inserted a clause, a prime flowed one down, a customer sent a
+questionnaire, an acquirer set a validation requirement, or you adopted it yourself. So the first
+question about any named standard is never "what does it say". It is **who is asking, and in which
+document**.
+
+The routine consequence is a budget in the wrong place. A market-access rule has to be satisfied
+before shipping, so it is owned by engineering and release. Everything else is owned by whoever holds
+the contract, with security supplying evidence. Sorting a program by subject matter puts both in the
+same pile and gives them to the same team.
+
+**A defense-style obligation begins with a clause number, not a publication.** Ask which solicitation,
+which contract and which clause number, and check whether a deviation modifies the clause -- the
+clause text alone can name the wrong revision.
+
+### Why every status carries a date
+
+Staleness takes at least five shapes. Naming them is worth more than any individual fact, because you
+will meet a sixth.
+
+1. **A mandate rescinded while its artifacts survive.** The instruction goes; the form, the signature
+   and any standing duty attached to it do not.
+2. **A draft cited as though final.** The most common shape and the hardest to see, because a draft
+   and a final look identical once quoted in a policy.
+3. **A published version that is not the version being audited.** The newest file on a publisher's
+   site is not automatically the assessment baseline.
+4. **A rename.** Search stops working, and both names are often legitimately live at once.
+5. **A milestone suspended by policy while the rule that set it stands unamended.** The rule text and
+   the operative position then disagree, and only one of them is in the publication. The defense
+   program's phases beyond the first, suspended on 2026-07-13 with neither rule amended nor repealed,
+   are the live example; its row above carries the full correction.
+
+The worked example for the first shape is the federal software attestation story, told as one event
+when it was two, seven months apart. EO 14028 (2021) directed the guidance. OMB M-22-18 and M-23-16
+turned it into a collection requirement. EO 14144 (January 2025) would have added submission to a
+repository, central verification and referral of failures -- and EO 14306, on 2025-06-06, struck that
+apparatus. Then OMB M-26-05, on 2026-01-23, rescinded the collection mandate itself. Anyone
+describing a single January 2026 event has lost the fact that the verification model was already gone
+in mid-2025. The status of the federal repository that received submissions is unknown as of
+2026-08-06: not reported running, not reported gone. And a signed self-attestation is a different
+instrument from a certificate -- rescinding the instruction that prompted a signature is prospective,
+and unsigns nothing.
+
+**The instrument check.** What binds you is a clause, and a clause pins a dated version. So "use the
+current publication" is frequently the wrong instruction: a regulation citing a publication by date
+keeps citing it after the publisher supersedes it, which is how a rule stays stable rather than an
+error in it. It is also why no identifier here appears without its version, revision, edition or
+release -- a bare identifier resolves differently depending on when and where you look it up.
+[The assessment method page](../ASVS-ASSESSMENT.md) covers pinning a standard's corpus so it cannot
+shift underneath an assessment already in progress.
 
 ---
 
 ## What this page did not assess
 
-This page maps at least the items above. It is not a complete map of the security standards landscape
-and does not claim to be.
+This page maps at least the items in [the reference above](#every-document-on-this-map). It is not a
+complete map of the security standards landscape and does not claim to be. The selector carries this
+same list as a permanent card, in every state including a result with nothing in it, because a short
+result is exactly where a reader misreads silence as clearance.
 
-**Part 1 -- what is absent entirely.** Jurisdictions outside the US and the EU. US state privacy
-laws. The rest of the ISO/IEC 27000 series and the AI management-system standards. The NIST
-Cybersecurity Framework and the NIST AI Risk Management Framework. Common Criteria and product
-evaluation schemes. Proprietary assurance schemes and regional cloud programs. Safety-oriented
-standards for industrial and vehicle software. Sector regimes beyond the several named above as a
-set. Also absent: the enforcement and liability exposure that attaches to a signature or a
-representation, which is a question for counsel and not for this page. **If your obligations sit in
-one of these, this page will tell you nothing about it, and you should not read its silence as
-coverage.**
+**What is absent entirely.** Jurisdictions outside the US and the EU. US state privacy laws. The
+rest of the ISO/IEC 27000 series and the AI management-system standards. The NIST Cybersecurity
+Framework and the NIST AI Risk Management Framework. Common Criteria and product evaluation schemes.
+Proprietary assurance schemes and regional cloud programs. Safety-oriented standards for industrial
+and vehicle software. Sector regimes beyond the several named here as a set. Also absent: the
+enforcement and liability exposure that attaches to a signature or a representation, which is a
+question for counsel and not for this page. **If what reaches you sits in one of these, this page will
+tell you nothing about it, and you should not read its silence as coverage.**
 
-**Part 2 -- covered here, but not verified at a primary source.** Each row names the check to run
-instead of trusting this page. One limit covers a whole class and is stated once rather than repeated
-per row: several US regulator and agency sites refused automated requests on the check date, so
-claims sourced to them were read through search results rather than end to end.
+**What is covered but not primary-verified** is listed row by row in
+[the reference file](STANDARDS-REFERENCE.md#what-is-not-primary-verified-here), each with the check to
+run instead of trusting this page. One limit covers a whole class and is stated once rather than
+repeated per row: several US regulator and agency sites refused automated requests on the check date,
+so claims sourced to them were read through search results rather than end to end.
 
-| What is not primary-verified | What to do instead |
-|---|---|
-| The audit baseline version and dates for the law-enforcement-data policy, which rest on secondary reporting that disagrees with itself | Confirm with the authority that will actually audit, on the date it will happen |
-| The primary text of the July 2026 defense phase suspension, which was not readable | Confirm with the contracting officer before acting on it |
-| Whether the class deviation pinning the safeguarding clause to an earlier revision is still standing. It has no stated expiry, but the deviation document itself was not readable | Ask the contracting officer, and check the current consolidated class deviation listing |
-| The model version currently generating the published exploit-probability scores | Read the comment line in the published data file, not a blog post |
-| The field-level changes in the 2026 SBOM minimum elements | Read the document, which is freely published |
-| The ISO catalog entries, and any clause-level ISO content | Nothing to do without buying the text: automated requests are refused and the content is paywalled |
-| Whether any rescission of the securities disclosure rules has been adopted since the petition | The publisher's own site refused automated requests, so no page was read end to end. Check the rulemaking index and the adopting-release listing directly |
-| The final publication date of the current web application ranking | Read the project's own edition page, which carries the edition as current without stamping a date |
-| The audit-transition date for certification bodies, which comes from one accreditation body | Ask your own certification body which date applies to it |
-| Whether any agency has issued replacement software assurance terms since the January 2026 rescission | Ask the agency and read the contract. Nobody has consolidated this publicly, and it is where the practical answer now lives |
-| The discrepancy between one cloud program's claim of recognition by another and that other program's own published outcome | Left open rather than resolved. Read both programs' own notices before repeating either claim |
-
-**Part 3 -- questions this page structurally does not answer.** Whether any of this applies to your
+**Questions this page structurally does not answer.** Whether any of this applies to your
 organization: a clause number decides that, not a web page. Whether you must comply with anything: no
 legal advice is given here. Which tool, scanner, format or assessor to use: none is named. Whether
-anything published on this site conforms to, aligns with or partially satisfies anything named above:
+anything published on this site conforms to, aligns with or partially satisfies anything named here:
 it does not, and no such claim is made. And how much any of it costs, in money, effort or time: not
 assessed.
-
-Where a claim on this page could not be confirmed at a primary source it is listed above rather than
-smoothed over, and the page prefers "at least these" to an enumeration everywhere it can.
 
 ---
 
@@ -388,13 +352,6 @@ A status is authoritative in at least these four places:
 - **The data file's own header**, for a generated score. The published exploit-probability data
   carries a comment line naming the generating model.
 
-**At least these claims rest on secondary analysis rather than a primary source**, each also marked in
-its own cell: the suspension of the defense program phases beyond the first; the standing of the class
-deviation that pins the safeguarding clause to an earlier revision; the audit baseline for the
-law-enforcement-data policy; the certificate transition end date for the 2013 management-system
-edition; the projected date for the pending sector-rule overhaul; the finalization date of the current
-web application ranking; and the model version behind the published exploit-probability scores.
-
 Where a status would otherwise be unverifiable, read the primary document: the
 [January 2026 memorandum that rescinded the federal attestation mandate](https://www.whitehouse.gov/wp-content/uploads/2026/01/M-26-05-Adopting-a-Risk-based-Approach-to-Software-and-Hardware-Security.pdf),
 the [2026 SBOM minimum elements](https://www.cisa.gov/resources-tools/resources/2026-minimum-elements-software-bill-materials-sbom),
@@ -407,6 +364,7 @@ the [SSDF publication listing](https://csrc.nist.gov/Projects/ssdf/publications)
 
 | If you need | Read |
 |---|---|
+| The same rows as a standalone lookup file, grouped by addressee | [The reference table](STANDARDS-REFERENCE.md) |
 | Whether your teams already do this, rather than which standards reach you | [The CISO summary](CISO-SUMMARY.md) |
 | The control set for AI-assisted work | [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) |
 | How much of the code a human must read | [Human review of code](REVIEW-DEPTH.md) |
@@ -420,10 +378,9 @@ the [SSDF publication listing](https://csrc.nist.gov/Projects/ssdf/publications)
 ---
 
 **Every status on this page was checked on 2026-08-06.** This is a snapshot, not a maintained
-register: several of the facts above changed within the twelve months before that date, and some will
+register: several of those facts changed within the twelve months before that date, and some will
 have changed since. Re-check anything you intend to rely on at the four places named in
-[Sources](#sources-and-how-to-re-check-them) -- the publisher's own listing, the program's own
-definitions page, the clause and its deviations, or the data file's own header -- before quoting it.
+[Sources](#sources-and-how-to-re-check-them) before quoting it.
 
 **MIT licensed.** Adapt this, put your own name on it, and delete anything you cannot stand behind.
 Re-date it when you do: a status claim inherits the date it was checked, not the date it was copied.

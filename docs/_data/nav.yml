@@ -47,6 +47,9 @@
     - label: Which standards apply to you
       title: "Which security standards actually apply to you?"
       path: /standards/STANDARDS-LANDSCAPE.html
+    - label: Standards reference
+      title: "Security standards reference: what each one issues, and what triggers it"
+      path: /standards/STANDARDS-REFERENCE.html
     - label: How to adopt these
       title: "How to adopt these"
       path: /standards/ADOPTING-THESE.html
