@@ -655,9 +655,24 @@ answering "do these lines overlap", and the question was "do these changes say t
 
 **A clean merge is the worse outcome of the two.** A conflict stops you and demands a decision; a
 clean merge ships. So the moment you learn a peer touched your file, read the resulting *text* --
-do not accept the exit code as the answer. `git merge-tree <base> <ours> <theirs>` will show you a
-textual conflict before you rebase, but a silent pass from it means only that the lines do not
-collide, never that the changes are not redundant.
+do not accept the exit code as the answer.
+
+**And use the right form of `git merge-tree`, because the obvious one carries no conflict signal at
+all.** This documentation shipped the wrong one once, and it produced a confident "zero conflicts"
+about a branch that has two:
+
+```powershell
+git merge-tree <base> <ours> <theirs>        # OLD 3-arg form: exit 0 REGARDLESS of conflicts
+git merge-tree --write-tree <ours> <theirs>  # exit 1 and names each conflicting path
+```
+
+Measured on `rescue/secdev-readability` against `main`: the three-argument form exited 0 and printed
+no conflict markers; `--write-tree` exited 1 and named `docs/standards/SECURE-DEVELOPMENT.md` and its
+`.docx`. The old form's exit code is not a statement about mergeability. It is the third instrument
+in this file with that property, after `isRunning` and a two-dot diff read as a merge preview.
+
+Even from the correct form, a silent pass means only that the lines do not collide -- never that the
+changes are not redundant.
 
 When it happens, resolve to **one** passage taking what each version had and the other lacked, rather
 than deleting one wholesale. In the case above each version was better on a different axis -- one
