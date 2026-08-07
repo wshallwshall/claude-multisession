@@ -91,6 +91,23 @@ class ScriptCase(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.base = Path(self.tmp.name)
 
+    def outside_any_repo(self) -> Path:
+        """A directory that is genuinely not inside a git repository.
+
+        Skips rather than fails when the machine's TMP is itself inside one: that is a property of the
+        host, and a red test about it would be a test of the harness. Verified rather than assumed --
+        if this probe were wrong, the not-a-repo cases would silently measure something else entirely.
+        """
+        d = self.base / "outside"
+        d.mkdir(exist_ok=True)
+        probe = subprocess.run(
+            ["git", "rev-parse", "--git-dir"],
+            cwd=str(d), capture_output=True, text=True, timeout=TIMEOUT_SECONDS,
+        )
+        if probe.returncode == 0:
+            self.skipTest(f"the temp directory is inside a git repository ({probe.stdout.strip()})")
+        return d
+
     def new_repo(self, name: str = "primary") -> Path:
         repo = self.base / name
         repo.mkdir(parents=True)
@@ -194,6 +211,44 @@ class OverlapStatesItsAllClear(ScriptCase):
             "overlap.ps1 printed an all-clear for a file another worktree is actively changing.",
         )
 
+    def test_an_empty_map_served_from_the_cache_does_not_invent_a_worktree(self):
+        """The cache round-trip used to FABRICATE a peer, which is worse than omitting one.
+
+        A walk with zero rows is AutomationNull, which `@()` unrolls to nothing -- but it serialises
+        to the cache as `"rows": null`, and `@($null)` is a one-element array holding $null. So the
+        zero-rows all-clear never fired and the render loop printed a worktree with a blank name, a
+        blank branch, "dormant", and "1 changed file(s)" -- that last because `@($null).Count` is 1
+        there too.
+
+        Note the shape: the FRESH walk was right and the very next run inside the 60-second cache
+        window was wrong, same repo, same state. A bug that only appears on the second run reads as
+        flakiness rather than as a defect, which is why it survived.
+        """
+        fresh = self.overlap()
+        self.assertIn("No other worktree has changes.", fresh.stdout, fresh.stderr)
+
+        # NO -Refresh: this run must be served from the cache the run above just wrote. If it were
+        # not, this case would pass without ever exercising the round-trip that carries the bug.
+        cached = self.run_script(
+            t.OVERLAP,
+            "-Repo", str(self.repo), "-Trunk", "main",
+            "-ConfigRoot", str(self.roots), "-TasksDir", str(self.roots),
+            cwd=self.repo,
+        )
+        self.assertEqual(0, cached.returncode, cached.stderr)
+        self.assertNotIn(
+            "changed file(s)",
+            cached.stdout,
+            "a cached empty map rendered a PHANTOM WORKTREE -- blank name, blank branch, and a "
+            "changed-file count invented out of $null. This does not fail to report a peer, it "
+            "invents one, and it disagrees with the fresh walk seconds earlier.",
+        )
+        self.assertIn(
+            "No other worktree has changes.",
+            cached.stdout,
+            "the cached run and the fresh run must give the SAME answer about the same repo.",
+        )
+
     def test_the_json_contract_is_unchanged(self):
         """The gate consumes this. An empty answer is `[]` and a hit is a one-row array, as before."""
         clear = self.overlap("-File", "a.txt", "-Json")
@@ -210,6 +265,93 @@ class OverlapStatesItsAllClear(ScriptCase):
         )
 
 
+class OverlapSignalsThatItCouldNotLook(ScriptCase):
+    """No resolvable git repository is not an answer, and the EXIT CODE is how that gets said.
+
+    A stderr receipt alone would not have been a fix here. `collision_gate.ps1` runs overlap with
+    stderr discarded (`2>$null`) and treats `[]` as "resolved, and nobody else is touching it", so a
+    receipt is invisible to the one consumer that acts on the verdict. The exit code is the only
+    channel that reaches it -- which is why the last two cases drive the real gate rather than
+    asserting on overlap's output and calling that proof.
+    """
+
+    def test_outside_a_repository_it_exits_non_zero_with_a_receipt(self):
+        outside = self.outside_any_repo()
+        r = self.run_script(t.OVERLAP, "-File", "a.txt", "-Json", cwd=outside)
+        self.assertNotEqual(
+            0,
+            r.returncode,
+            "overlap exited 0 having resolved no repository. Exit 0 means 'the question was "
+            "answered', and nothing was examined -- no worktree was walked, no git dir was found.",
+        )
+        self.assertEqual(
+            "[]",
+            r.stdout.strip(),
+            "stdout must stay parseable for consumers that only read stdout; the signal is the exit "
+            "code and the receipt, not a change of shape.",
+        )
+        self.assertIn("NOT", r.stderr, "the receipt must say what the empty result does not mean")
+
+    def test_inside_a_repository_a_genuine_all_clear_still_exits_zero(self):
+        """THE NEGATIVE CONTROL. A script that always exits non-zero would pass the case above.
+
+        This is the distinction the whole change rests on: `[]` after a real walk is an ANSWER and
+        must stay exit 0, or the gate reports "could not check" on every ordinary edit and the notice
+        becomes noise people learn to ignore.
+        """
+        repo = self.new_repo()
+        roots = self.base / "roots"
+        roots.mkdir(exist_ok=True)
+        r = self.run_script(
+            t.OVERLAP,
+            "-Repo", str(repo), "-Trunk", "main",
+            "-ConfigRoot", str(roots), "-TasksDir", str(roots),
+            "-File", "a.txt", "-Json", "-Refresh",
+            cwd=repo,
+        )
+        self.assertEqual(0, r.returncode, r.stderr)
+        self.assertEqual("[]", r.stdout.strip(), r.stderr)
+
+    def test_the_gate_reports_it_could_not_check_rather_than_staying_silent(self):
+        """End-to-end, through the consumer, with stderr discarded exactly as in production."""
+        outside = self.outside_any_repo()
+        r = self.run_script(
+            t.COLLISION_GATE,
+            "-PathOverride", str(outside / "a.txt"),
+            "-StateDir", str(self.base / "gate-state"),
+            cwd=outside,
+        )
+        self.assertEqual(0, r.returncode, "a hook must exit 0 and put its decision in the JSON")
+        self.assertTrue(
+            r.stdout.strip(),
+            "the gate said NOTHING for an edit it could not check, because overlap handed it `[]` "
+            "from a run that resolved no repository. Silence from this gate is read as an all-clear.",
+        )
+        context = json.loads(r.stdout)["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("could NOT check", context)
+        self.assertIn(
+            "UNKNOWN",
+            context,
+            "the notice has to name the wrong conclusion, not merely report a fault.",
+        )
+
+    def test_the_gate_stays_silent_when_the_answer_is_a_real_all_clear(self):
+        """THE NEGATIVE CONTROL for the case above. A gate that always warns is uninstalled."""
+        repo = self.new_repo()
+        r = self.run_script(
+            t.COLLISION_GATE,
+            "-PathOverride", str(repo / "a.txt"),
+            "-StateDir", str(self.base / "gate-state-clear"),
+            cwd=repo,
+        )
+        self.assertEqual(0, r.returncode)
+        self.assertEqual(
+            "",
+            r.stdout.strip(),
+            "the gate emitted a notice for an edit it successfully checked and found clear.",
+        )
+
+
 class PresenceEmptyListCarriesAReceipt(ScriptCase):
     """`presence.ps1 -Json` -- stdout stays parseable, stderr says whether anything was measured."""
 
@@ -219,16 +361,9 @@ class PresenceEmptyListCarriesAReceipt(ScriptCase):
         super().setUp()
         self.roots = self.base / "roots"
         (self.roots / "sessions").mkdir(parents=True)
-        self.outside = self.base / "outside"
-        self.outside.mkdir()
-        # The temp root must genuinely be outside a repository, or the "not a git repo" case silently
-        # measures something else. Skip rather than fail: this is a property of the machine's TMP.
-        probe = subprocess.run(
-            ["git", "rev-parse", "--git-dir"],
-            cwd=str(self.outside), capture_output=True, text=True, timeout=TIMEOUT_SECONDS,
-        )
-        if probe.returncode == 0:
-            self.skipTest(f"the temp directory is inside a git repository ({probe.stdout.strip()})")
+        # Shared with the overlap not-a-repo cases: two copies of "is this really outside a repo"
+        # would drift, and the copy that drifts is the one whose cases quietly stop measuring.
+        self.outside = self.outside_any_repo()
 
     def write_record(self, name: str, cwd: Path):
         """A parseable session record. Its cwd is deliberately in no worktree of the fixture repo.
