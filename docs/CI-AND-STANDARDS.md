@@ -34,7 +34,7 @@ measuring a guardrail; [`SEQUENCE-ALLOC.md`](SEQUENCE-ALLOC.md) for shared-numbe
 
 ---
 
-# Part 1: CI for multi-session work
+## Part 1: CI for multi-session work
 
 ## A green local run is not a green pipeline
 
@@ -721,7 +721,7 @@ and announce them. **Never bundle a sweep with a behavioral change.**
 
 ---
 
-# Part 2: standards that survive agent-written code
+## Part 2: standards that survive agent-written code
 
 An agent writes code and, more dangerously, writes **prose about the code**. Confident, well-formed,
 internally consistent prose that a correctness review passes. This part is mostly about that, because
