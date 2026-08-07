@@ -35,7 +35,7 @@ RAISES when it finds nothing rather than returning an empty set for a caller to 
 another empty set. TheScansCanSeeWhatTheyLookFor below proves each extractor on a planted example,
 because a pattern that silently matches nothing passes everything.
 
-Run: python -m pytest tests -q     (or: python -m unittest discover -s tests -v)
+Run: python -m unittest discover -s tests     (pytest is NOT installed and is not needed)
 """
 
 from __future__ import annotations
@@ -181,6 +181,70 @@ def read_option_tokens() -> set[str]:
     return tokens
 
 
+def read_groups() -> list[dict]:
+    """Every result group in the data file, as {id, label, ref}.
+
+    The groups are the selector's own headings -- the words a reader sees above each block of
+    results. They are a THIRD copy of a vocabulary that also lives in the reference page's section
+    headings, and the one copy no case here looked at until now.
+    """
+    lines = t.read(DATA).splitlines()
+    section = None
+    groups: list[dict] = []
+    current: dict | None = None
+
+    for line in lines:
+        if line and not line[0].isspace() and line.rstrip().endswith(":"):
+            section = line.split(":", 1)[0].strip()
+            continue
+        if section != "groups":
+            continue
+        start = re.match(r"^  - id:\s*(\S+)\s*$", line)
+        if start:
+            current = {"id": _unquote(start.group(1))}
+            groups.append(current)
+            continue
+        if current is None:
+            continue
+        field = re.match(r"^    (label|ref):\s*(.*)$", line)
+        if field:
+            current[field.group(1)] = _unquote(field.group(2).strip())
+
+    if not groups:
+        raise AssertionError(
+            f"no result groups parsed out of {DATA.name}. Both cases below would then compare an "
+            "empty list against a populated one and report agreement."
+        )
+    return groups
+
+
+def reference_headings() -> set[str]:
+    """Every heading in the reference page, squashed. Raises rather than returning an empty set."""
+    headings = {
+        squash(m.group(1)) for m in re.finditer(r"^#{1,6}\s+(.+?)\s*$", t.read(REFERENCE), re.M)
+    }
+    if not headings:
+        raise AssertionError(
+            f"no headings parsed out of {REFERENCE.name}. Every label would then be reported as "
+            "drifted, or -- worse, depending on the direction of the comparison -- none would."
+        )
+    return headings
+
+
+def anchor_slug(heading: str) -> str:
+    """The in-page anchor the site generator makes from a heading.
+
+    A REIMPLEMENTATION of the generator's rule, not a reading of it, and narrow on purpose:
+    lowercase, drop everything that is not a letter, digit, space or hyphen, then collapse spaces to
+    hyphens. That covers every heading on this page today, which the self-test below asserts against
+    the real file. If a heading ever arrives carrying punctuation this rule handles differently from
+    kramdown, the case that uses it fails and names the anchor -- which is the right failure, because
+    a link nobody can follow is the thing being checked either way.
+    """
+    lowered = re.sub(r"[^a-z0-9 -]", "", heading.strip().lower())
+    return re.sub(r"\s+", "-", lowered).strip("-")
+
+
 class TheTwoCopiesOfTheFactsAgree(unittest.TestCase):
     def test_every_item_in_the_data_is_named_in_the_reference_table(self):
         reference = squash(t.read(REFERENCE))
@@ -215,6 +279,73 @@ class TheTwoCopiesOfTheFactsAgree(unittest.TestCase):
             + "\nA reader who ran the app and a reader who printed the table would be told "
             "different things, and the app is the one they will trust. Edit both, then regenerate "
             "the Word copy.",
+        )
+
+    def test_every_group_label_uses_the_reference_page_s_own_words(self):
+        """The vocabulary case, and it exists because the drift it catches already shipped.
+
+        THE FAILURE. The reference tables were reworded to "Makes demands of ..." while the
+        selector's own group labels still read "Addressed to ...". Each surface was internally
+        consistent. Every case in this file passed, because they compare item names and status
+        strings and neither of those moved. The contradiction existed only on the rendered page,
+        where one reader sees both -- and a human found it, which is the part worth not repeating.
+
+        WHAT IS PINNED, AND WHY IT IS THE CLAUSE RATHER THAN THE WHOLE LABEL. A label may qualify
+        itself past its audience: "Makes demands of a software producer -- a ranking, not a
+        requirement set" says something the reference page's heading does not, and should be free
+        to. What may NOT drift is the audience clause in front of it, because that is the concept
+        both surfaces name. So the text before the first " -- " must appear verbatim as a heading on
+        the reference page. Rewording one side and not the other goes red.
+
+        WHAT IT DOES NOT PROVE. That the two pages say the same thing about any given standard --
+        the cases above are what cover that. Only that they use one vocabulary for the audience a
+        group is addressed to.
+        """
+        headings = reference_headings()
+        drifted = []
+        for group in read_groups():
+            label = group.get("label")
+            if not label:
+                drifted.append(f"{group['id']}: no label parsed at all")
+                continue
+            clause = squash(label.split(" -- ", 1)[0])
+            if clause not in headings:
+                drifted.append(f"{group['id']}: {clause!r}")
+        self.assertEqual(
+            [],
+            drifted,
+            "these selector group labels use words the reference page does not:\n  "
+            + "\n  ".join(drifted)
+            + f"\nOne concept, two names, on two surfaces a reader sees together. Reword both in "
+            f"the same commit -- and if the heading in {REFERENCE.name} is what moved, its anchor "
+            "moved with it, so check the `ref` of every group that points at it.",
+        )
+
+    def test_every_group_ref_resolves_to_a_heading_that_exists(self):
+        """The other half: the label's words can be right while the link under them is dead.
+
+        Each group carries a `ref` into the reference page. Nothing renders that link during the
+        test suite and nothing fetches it, so a heading renamed on the reference page leaves an
+        anchor that scrolls nowhere, on a page that still looks correct. This is the same shape as
+        the Word copies' link targets -- an address is not visible in the words around it.
+        """
+        slugs = {anchor_slug(h) for h in reference_headings()}
+        broken = []
+        for group in read_groups():
+            ref = group.get("ref", "")
+            if not ref.startswith("#"):
+                broken.append(f"{group['id']}: ref is {ref!r}, which is not an in-page anchor")
+                continue
+            if ref[1:] not in slugs:
+                broken.append(f"{group['id']}: {ref} matches no heading")
+        self.assertEqual(
+            [],
+            broken,
+            "these selector groups link to anchors that do not exist on the reference page:\n  "
+            + "\n  ".join(broken)
+            + f"\nThe link renders and the reader clicks it and nothing happens. Either the heading "
+            f"in {REFERENCE.name} was renamed without its anchor being followed, or the `ref` was "
+            "written by hand and never checked.",
         )
 
     def test_the_routing_page_carries_no_third_copy_of_the_statuses(self):
@@ -702,6 +833,55 @@ class TheScansCanSeeWhatTheyLookFor(unittest.TestCase):
         self.assertIn("role=software", tokens)
         self.assertIn("ai_assist=unknown", tokens)
         self.assertNotIn("role=nonexistent", tokens)
+
+    def test_the_group_reader_finds_real_groups_with_both_fields(self):
+        groups = read_groups()
+        by_id = {g["id"]: g for g in groups}
+        self.assertIn(
+            "infrastructure",
+            by_id,
+            "the group reader lost a known group id. It reads the file's shape, so a reindent "
+            "breaks it silently and both group cases would then run on a fragment.",
+        )
+        self.assertGreaterEqual(
+            len(groups),
+            4,
+            f"only {len(groups)} groups parsed. The selector renders more blocks than that.",
+        )
+        self.assertTrue(
+            all(g.get("label") and g.get("ref") for g in groups),
+            "a group parsed without a label or a ref, so one of the two cases above skipped it.",
+        )
+
+    def test_the_vocabulary_comparison_can_see_a_label_that_is_not_a_heading(self):
+        """Both directions, because only the negative proves the comparison is comparing.
+
+        The positive alone would pass against a heading set that accidentally contained everything.
+        """
+        headings = reference_headings()
+        real = squash(read_groups()[0]["label"].split(" -- ", 1)[0])
+        self.assertIn(real, headings, "a clause that IS a heading was not found; the scan is broken")
+        self.assertNotIn(
+            "Addressed to nobody in particular",
+            headings,
+            "the vocabulary comparison matches wording that is not on the reference page, so it "
+            "would stay green through exactly the drift it exists to catch.",
+        )
+
+    def test_the_anchor_rule_reproduces_the_anchors_actually_in_use(self):
+        """Pin the slug reimplementation against the real file rather than against an example.
+
+        Every `ref` in the data was written to match a heading the site generator slugged. If this
+        rule and that generator disagree, this asserts it here -- next to the rule -- instead of
+        letting `test_every_group_ref_resolves_to_a_heading_that_exists` report a broken anchor
+        that is not broken.
+        """
+        self.assertEqual("makes-demands-of-an-assessor", anchor_slug("Makes demands of an assessor"))
+        self.assertEqual(
+            "input-you-use-not-a-rule-you-meet", anchor_slug("Input you use, not a rule you meet")
+        )
+        self.assertNotEqual("", anchor_slug("A Heading"))
+        self.assertEqual("", anchor_slug("..."), "punctuation-only slugged to something truthy")
 
 
 if __name__ == "__main__":
