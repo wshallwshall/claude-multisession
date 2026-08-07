@@ -13,6 +13,24 @@ number` -- written in a session that renamed eight other headings in the same fi
 have reported it if one of those had moved. A separate session then renamed a `## In short` heading
 across seven pages; that one happened to have no inbound links, which nothing checked either.
 
+THE SITE'S OWN URLS COUNT AS INTERNAL, AND THEY FELL BETWEEN THE TWO CHECKERS. A link written
+`https://wshallwshall.github.io/claude-multisession/standards/STANDARDS-REFERENCE.html#some-heading`
+points at a page in this repository, but it starts with `https://` so this scan skipped it as
+external, and it is neither of the two forms `test_docs_do_not_drift.py` pins -- that file matches
+`github.com/.../blob/main/` and `raw.githubusercontent.com/.../main/`, and this is a third host. So
+nothing checked them at all. There were 19 such anchored links when this branch was added.
+
+They are not a stylistic quirk to be rewritten as relative links. `docs/standards/WHICH-STANDARDS-
+APPLY.md` writes its whole third column this way ON PURPOSE: that page is converted to Word by
+pandoc and handed to a reader who downloaded it, and a relative link is dead in a .docx. The long
+form is the only one that survives the trip, so the links have to stay and something has to check
+them.
+
+Measured rather than argued. Renaming `## Certification and program regimes` in
+`docs/standards/STANDARDS-REFERENCE.md` reports four failures with this branch in place. Exactly one
+of them -- the same-file relative anchor -- was reported before it existed. The other three are
+served URLs on two pages, and they were silent.
+
 CODE FENCES ARE EXCLUDED, AND THAT IS LOAD-BEARING. The first version of this scan reported four
 broken links in `examples/sequence-adr/index-row-format.md`. All four were illustrative table rows
 inside a ```markdown fence -- a document ABOUT the format of a decision-record index, showing what
@@ -59,6 +77,23 @@ EXTERNAL = ("http://", "https://", "mailto:", "tel:")
 
 LINK_BEARING = (".md",)
 
+# The published site's own address. A link in this form is ABSOLUTE, so it is skipped as external by
+# the rule above, and it is not one of the two forms test_docs_do_not_drift pins either -- that file
+# matches `github.com/.../blob/main/` and `raw.githubusercontent.com/.../main/`, neither of which is
+# this host. So these fell between the two checkers and nothing looked at them. See the docstring.
+#
+# `url` + `baseurl` from docs/_config.yml. Both are load-bearing there and pinned by that file's own
+# comments; if either moves, this pattern stops matching and `TheServedUrlScanCanSee` goes red rather
+# than the scan silently going blind.
+SERVED_SITE = re.compile(
+    r"https://wshallwshall\.github\.io/claude-multisession(/[^)\s]*)?"
+)
+
+# docs/ is the Jekyll source root, so a served path maps back onto it directly. No permalink style is
+# configured, so docs/a/b.md builds to /a/b.html -- the one exception being the directory index,
+# which is why this resolves a bare directory to index.md.
+SITE_SOURCE_ROOT = "docs"
+
 
 def anchor_slug(heading: str) -> str:
     """GitHub's heading-to-anchor rule."""
@@ -98,6 +133,25 @@ def resolvable_anchors(slugs: list[str]) -> set[str]:
     return out
 
 
+def served_url_source(target: str) -> Path | None:
+    """The markdown that produces a served-site URL, or None if the URL is not this site's.
+
+    Returns a path whether or not it exists -- "this names no document" is a finding the caller
+    reports, not a reason to say the link was never one of ours. Only `.html` and the directory
+    index are resolved: a served URL naming an asset (a .docx, the stylesheet) is a real link to a
+    real file, but it is not a markdown page and has no headings, so this is not the check for it.
+    """
+    m = SERVED_SITE.fullmatch(target)
+    if not m:
+        return None
+    path = (m.group(1) or "/").lstrip("/")
+    if path == "" or path.endswith("/"):
+        path += "index.html"
+    if not path.endswith(".html"):
+        return None
+    return t.REPO_ROOT / SITE_SOURCE_ROOT / (path[: -len(".html")] + ".md")
+
+
 def tracked_markdown() -> list[Path]:
     """Every markdown file git tracks.
 
@@ -124,11 +178,39 @@ def broken_links(paths: list[Path]) -> list[str]:
     failures: list[str] = []
     checked = 0
 
+    def anchors_of(dest: Path) -> set[str] | None:
+        known = anchors.get(dest)
+        if known is None:
+            if not dest.exists():
+                return None
+            known = resolvable_anchors(parse(t.read(dest))[0])
+        return known
+
     for path in paths:
         _, body = parsed[path]
         rel = path.relative_to(t.REPO_ROOT).as_posix()
         for lineno, line in body:
             for target in INLINE_LINK.findall(line):
+                urlpart, _, url_anchor = target.partition("#")
+                source = served_url_source(urlpart)
+                if source is not None:
+                    # A link to this site's own page, written the long way. It has to resolve for the
+                    # same reason a relative one does -- and it is the form a heading rename breaks
+                    # most quietly, because it renders and clicks correctly all the way to the wrong
+                    # part of the right page.
+                    checked += 1
+                    known = anchors_of(source)
+                    if known is None:
+                        failures.append(
+                            f"{rel}:{lineno} -> {target} (served URL names no page: "
+                            f"{source.relative_to(t.REPO_ROOT).as_posix()} does not exist)"
+                        )
+                    elif url_anchor and anchor_slug(url_anchor) not in known:
+                        failures.append(
+                            f"{rel}:{lineno} -> {target} (no such heading in "
+                            f"{source.relative_to(t.REPO_ROOT).as_posix()})"
+                        )
+                    continue
                 if target.startswith(EXTERNAL) or target.startswith("<"):
                     continue
                 checked += 1
@@ -151,7 +233,10 @@ def broken_links(paths: list[Path]) -> list[str]:
                         failures.append(f"{rel}:{lineno} -> {target} (no such heading in target)")
 
     if not checked:
-        raise AssertionError("the scan found no relative links at all -- the pattern has gone blind")
+        raise AssertionError(
+            "the scan examined no links at all -- neither a relative one nor a served-site URL, so "
+            "one of the patterns has gone blind"
+        )
     return failures
 
 
@@ -164,6 +249,30 @@ class InternalLinksResolve(unittest.TestCase):
             "\n\nThese links do not resolve. A renamed heading or moved file leaves the link\n"
             "rendering normally and landing in the wrong place, so nothing reports it but a\n"
             "reader:\n  " + "\n  ".join(failures),
+        )
+
+    def test_the_served_url_scan_has_something_to_look_at(self):
+        """The served-URL branch above is only worth anything while such links exist.
+
+        It is checked here rather than inside `broken_links`, because that function is also run by
+        the bite cases below against two-file fixtures that legitimately contain none. A blindness
+        guard in the wrong place would fail on a fixture and teach people to weaken it.
+        """
+        anchored = 0
+        for path in tracked_markdown():
+            _, body = parse(t.read(path))
+            for _, line in body:
+                for target in INLINE_LINK.findall(line):
+                    url, _, anchor = target.partition("#")
+                    if anchor and served_url_source(url) is not None:
+                        anchored += 1
+        self.assertGreater(
+            anchored,
+            0,
+            "no anchored links to this site's own served URLs remain in the tracked markdown. "
+            "Either they were all rewritten as relative links -- in which case delete the served-URL "
+            "branch in broken_links rather than leaving it to pass over nothing -- or the pattern "
+            "stopped matching, which is the silent version of the same thing.",
         )
 
 
@@ -207,6 +316,51 @@ class TheScanCanActuallyBite(unittest.TestCase):
         found = self._scan({"a.md": "# A\n\njump to [nowhere](#not-a-heading)\n\n## Real\n"})
         self.assertEqual(1, len(found), found)
         self.assertIn("no such heading in this file", found[0])
+
+    # The served-URL form. These four are the ones that would have caught the gap: before the branch
+    # above existed, every case here came back clean because the link starts with `https://`.
+
+    SERVED = "https://wshallwshall.github.io/claude-multisession/standards/ref.html"
+
+    def test_a_missing_anchor_behind_a_served_url_is_reported(self):
+        found = self._scan(
+            {
+                "a.md": f"# A\n\nsee [the row]({self.SERVED}#gone) for more\n",
+                "docs/standards/ref.md": "# Ref\n\n## Still here\n",
+            }
+        )
+        self.assertEqual(1, len(found), found)
+        self.assertIn("no such heading in docs/standards/ref.md", found[0])
+
+    def test_a_served_url_naming_no_page_is_reported(self):
+        found = self._scan({"a.md": f"# A\n\nsee [the row]({self.SERVED}#anything)\n"})
+        self.assertEqual(1, len(found), found)
+        self.assertIn("served URL names no page", found[0])
+
+    def test_a_good_served_url_anchor_passes(self):
+        """The other half of the instrument: it has to accept a correct link, or it reports noise."""
+        found = self._scan(
+            {
+                "a.md": f"# A\n\nsee [the row]({self.SERVED}#still-here) for more\n",
+                "docs/standards/ref.md": "# Ref\n\n## Still here\n",
+            }
+        )
+        self.assertEqual([], found)
+
+    def test_another_hosts_url_is_still_left_alone(self):
+        """Scoped to THIS site. A real external link has no local file to check it against.
+
+        The same-file anchor is not padding: without a link the scan does examine, the blindness
+        guard fires and this case would pass for having checked nothing, which is the failure it is
+        supposed to be evidence against.
+        """
+        found = self._scan(
+            {
+                "a.md": "# A\n\nsee [elsewhere](https://example.invalid/page.html#whatever)\n\n"
+                "and [here](#a) too\n",
+            }
+        )
+        self.assertEqual([], found)
 
     def test_a_link_inside_a_code_fence_is_not_reported(self):
         """The bug this scan shipped with once: four false positives in an illustrative table.
