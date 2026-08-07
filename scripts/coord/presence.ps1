@@ -41,6 +41,24 @@
     prune-merged.ps1 (which DELETES a worktree, so it must reach the same verdict this roster does).
     This script only labels and renders what that returns.
 
+    EXIT CODES -- PART OF THE CONTRACT, NOT DECORATION
+    --------------------------------------------------
+    0   the roster is COMPLETE. That includes a complete roster listing nobody.
+    2   the roster could not be completed: not inside a repository, or Available is false.
+
+    Note that 2 fires even when rows ARE listed. An incomplete roster that happens to name two peers
+    is still not evidence about a third, and Available is false for ANY unplaceable record precisely
+    because such a record could name any worktree and therefore clears none of them.
+
+    WHY A STDERR RECEIPT WAS NOT ENOUGH, learned from a consumer rather than from re-reading this
+    file: session-context.ps1 -- the SessionStart banner whose entire job is telling a new session who
+    else is live -- reads our STDOUT only. Handed `[]` it found no rows, silently omitted its "LIVE
+    sessions in this repo right now" section, and the reader concluded nobody was there. The receipt
+    was correct, on stderr, and unread. overlap.ps1 hit the identical trap with the collision gate.
+
+    The reachable case is not exotic: a record that will not parse is what a session that launched a
+    second ago looks like, and SessionStart is exactly when this runs.
+
 .EXAMPLE
     pwsh -NoProfile -File scripts/coord/presence.ps1
     pwsh -NoProfile -File scripts/coord/presence.ps1 -All        # include stale/dead entries
@@ -170,7 +188,7 @@ if (-not $occ.RepoFound) {
         Write-Host "Not inside a git repository -- nothing to scope presence to." -ForegroundColor Yellow
         Write-Host "  This is NOT 'nobody is live'. Nothing was examined, so nothing can be concluded." -ForegroundColor Yellow
     }
-    exit 0
+    exit 2
 }
 
 $self = Get-SelfPids $SelfPid
@@ -227,6 +245,21 @@ if ($Json) {
     # double-wraps to [[]].)
     if ($rows.Count -eq 0) { Write-Output "[]" }
     else { ($rows | ConvertTo-Json -Depth 4 -AsArray) | Write-Output }
+    # THE RECEIPT ABOVE WAS NOT ENOUGH, and finding out why took a consumer rather than a re-reading.
+    # session-context.ps1 -- the SessionStart banner whose whole job is telling a new session who else
+    # is live -- takes our STDOUT only. Handed `[]` it finds no rows, silently omits its "LIVE sessions
+    # in this repo right now" section, and the reader concludes nobody is here. The receipt is correct,
+    # sits on stderr, and nobody reads it. Exactly the trap overlap.ps1 hit with the collision gate.
+    #
+    # So the exit code carries it, as it now does there: 0 means the roster is COMPLETE (including a
+    # complete roster with nobody in it), 2 means it could not be completed. Note that this fires even
+    # when rows exist -- an incomplete roster that happens to list two peers is still not evidence
+    # about the third, and `Available` is false for ANY unplaceable record precisely because such a
+    # record could name any worktree and therefore clears none.
+    #
+    # A half-written record is what a session that launched a second ago looks like, and SessionStart
+    # is when this runs, so this is the ordinary case rather than an exotic one.
+    if (-not $occ.Available) { exit 2 }
     exit 0
 }
 
@@ -241,10 +274,19 @@ if ($rows.Count -eq 0) {
         Write-Host "  (fence: $($occ.RootsExamined) config root(s), $($occ.RecordsExamined) record(s) examined.)" -ForegroundColor DarkGray
     }
     Write-Host "(Add -All to include stale/dead registry entries.)" -ForegroundColor DarkGray
+    if (-not $occ.Available) { exit 2 }
     exit 0
 }
 
 Write-Host ""
+# A PARTIAL ROSTER MUST NOT RENDER AS A COMPLETE ONE. This heading was unconditional, so a run that
+# could place only some of the records printed "Live Claude sessions in this repo (2):" and looked
+# exhaustive -- the same conflation as the empty case, which was already handled above, just with a
+# non-empty list. The count is what was FOUND; it is only what EXISTS when the fence was complete.
+if (-not $occ.Available) {
+    Write-Host "Roster INCOMPLETE -- $($occ.Detail)." -ForegroundColor Yellow
+    Write-Host "  What follows is what could be placed. There may be sessions it does not show." -ForegroundColor Yellow
+}
 Write-Host "Live Claude sessions in this repo ($($rows.Count)):"
 foreach ($r in $rows) {
     $me = if ($r.IsSelf) { "  <-- THIS session" } else { "" }
@@ -257,4 +299,5 @@ Write-Host ""
 Write-Host "  See what they are building:  pwsh -NoProfile -File scripts/coord/claim.ps1 -List"
 Write-Host "  See what they are touching:  pwsh -NoProfile -File scripts/coord/overlap.ps1"
 Write-Host ""
+if (-not $occ.Available) { exit 2 }
 exit 0

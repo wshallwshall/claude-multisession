@@ -352,6 +352,63 @@ class OverlapSignalsThatItCouldNotLook(ScriptCase):
         )
 
 
+class TheSessionBannerSaysWhenTheRosterIsIncomplete(ScriptCase):
+    """The consumer half of presence's exit code, driven through the REAL hook.
+
+    `session-context.ps1` takes no parameters -- it resolves its helpers from `$PSScriptRoot`. So the
+    fixture copies the whole `scripts/` tree and replaces ONLY `coord/presence.ps1` with a stub of a
+    chosen exit code. That runs the hook's actual handling code rather than a re-implementation of it,
+    which is the difference between pinning the fix and pinning a copy of the fix.
+    """
+
+    STUB = "param([switch]$Json,[switch]$All,[string[]]$ConfigRoot,[string]$Repo,[int]$SelfPid=0,[int]$StartSkewMinutes=15)\nWrite-Output '[]'\nexit {code}\n"
+
+    def build_tree(self, presence_exit: int) -> tuple[Path, Path]:
+        """A repo with TWO worktrees (part 2 of the banner is gated on that), and a stubbed presence."""
+        tree = self.base / f"tree{presence_exit}"
+        shutil.copytree(t.REPO_ROOT / "scripts", tree / "scripts")
+        (tree / "scripts" / "coord" / "presence.ps1").write_text(
+            self.STUB.format(code=presence_exit), encoding="utf-8"
+        )
+        repo = self.base / f"repo{presence_exit}"
+        repo.mkdir()
+        git("init", "-q", "-b", "main", cwd=repo)
+        (repo / "ccx.config.json").write_text(FIXTURE_CONFIG, encoding="utf-8")
+        (repo / "a.txt").write_text("x\n", encoding="utf-8")
+        git("add", "-A", cwd=repo)
+        git("commit", "-qm", "init", cwd=repo)
+        git("worktree", "add", "-q", str(self.base / f"wt{presence_exit}"), "-b", "sibling", cwd=repo)
+        return tree / "scripts" / "worktree" / "session-context.ps1", repo
+
+    def test_a_roster_that_could_not_be_completed_is_stated_in_the_banner(self):
+        hook, repo = self.build_tree(2)
+        r = self.run_script(hook, cwd=repo)
+        self.assertIn(
+            "COULD NOT BE COMPLETED",
+            r.stdout,
+            "presence exited non-zero -- its roster was incomplete -- and the SessionStart banner said "
+            "nothing at all. Whatever this hook prints IS the chat's starting context, so an omitted "
+            "section is read as 'nobody else is here' by the one reader who most needs the opposite.",
+        )
+        self.assertIn(
+            "UNKNOWN",
+            r.stdout,
+            "the line has to name the wrong conclusion, not just report that something failed.",
+        )
+
+    def test_a_complete_roster_with_nobody_in_it_says_nothing(self):
+        """THE NEGATIVE CONTROL, and the one that matters most here.
+
+        This banner is injected into every single session's starting context. A warning that fires on
+        the ordinary path -- one session, working alone, roster complete and empty -- is noise in front
+        of the model forever, and it would be worse than the silence it replaced.
+        """
+        hook, repo = self.build_tree(0)
+        r = self.run_script(hook, cwd=repo)
+        self.assertNotIn("COULD NOT BE COMPLETED", r.stdout, r.stdout)
+        self.assertNotIn("UNKNOWN", r.stdout, r.stdout)
+
+
 class PresenceEmptyListCarriesAReceipt(ScriptCase):
     """`presence.ps1 -Json` -- stdout stays parseable, stderr says whether anything was measured."""
 
@@ -378,7 +435,15 @@ class PresenceEmptyListCarriesAReceipt(ScriptCase):
 
     def test_outside_a_repository_the_empty_list_carries_a_receipt(self):
         r = self.run_script(t.PRESENCE, "-Json", "-ConfigRoot", str(self.roots), cwd=self.outside)
-        self.assertEqual(0, r.returncode, r.stderr)
+        # NON-ZERO, and this assertion changed deliberately. It pinned 0 when the receipt was thought
+        # sufficient; the receipt sits on stderr and session-context.ps1 reads only stdout, so the
+        # exit code is what actually reaches a consumer. See the class above.
+        self.assertNotEqual(
+            0,
+            r.returncode,
+            "presence exited 0 for a roster it could not scope at all. Exit 0 means the roster is "
+            "COMPLETE, and nothing here was examined.",
+        )
         self.assertEqual(
             "[]",
             r.stdout.strip(),
@@ -424,8 +489,24 @@ class PresenceEmptyListCarriesAReceipt(ScriptCase):
 
     def test_the_human_path_outside_a_repository_says_what_it_does_not_mean(self):
         r = self.run_script(t.PRESENCE, "-ConfigRoot", str(self.roots), cwd=self.outside)
-        self.assertEqual(0, r.returncode, r.stderr)
+        self.assertNotEqual(0, r.returncode, "the exit code carries this on every path, not just -Json")
         self.assertIn("NOT", r.stdout + r.stderr)
+
+    def test_an_incomplete_roster_that_does_list_someone_still_exits_non_zero(self):
+        """Rows found is not the same as the roster being complete.
+
+        `Available` is false for ANY unplaceable record, because such a record could name any worktree
+        and therefore clears none of them. A run that places two sessions and fails to place a third
+        has answered nobody's question about the third, so it must not claim a complete answer.
+        """
+        repo = self.new_repo()
+        # A record that will not parse: the ordinary shape of a session that launched a second ago.
+        (self.roots / "sessions" / "9999.json").write_text('{ "sessionId": "half-writ', encoding="utf-8")
+        r = self.run_script(
+            t.PRESENCE, "-Json", "-Repo", str(repo), "-ConfigRoot", str(self.roots), cwd=repo
+        )
+        self.assertNotEqual(0, r.returncode, r.stdout + r.stderr)
+        self.assertIn(self.UNAVAILABLE, r.stderr)
 
 
 class RemoveActsOnTheBranchTheWorktreeWasOn(ScriptCase):
