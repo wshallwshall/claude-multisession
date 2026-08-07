@@ -268,10 +268,11 @@ resolve against it.
 | **L5 -- measurement** | Mutation on changed code, coverage visibility, duplication, complexity triage | Last, and never a gate on its own -- reversed, you get a dashboard and no controls | [The CISO summary](CISO-SUMMARY.md), *What to fund first*; [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage* |
 
 **Take each document's own adoption list when you reach that document.** [AI-assisted
-development](AI-ASSISTED-DEVELOPMENT.md), [Code quality](CODE-QUALITY.md), [Dependency
-integrity](DEPENDENCY-INTEGRITY.md) and [Secure development](SECURE-DEVELOPMENT.md) each carry a
-*"How to adopt this"* section ordered by its own leverage, and each opens with a measurement rather
-than a build. The layer table is the cross-document order those four lists cannot express.
+development](AI-ASSISTED-DEVELOPMENT.md), [Code quality](CODE-QUALITY.md) and [Dependency
+integrity](DEPENDENCY-INTEGRITY.md) each carry a *"How to adopt this"* section ordered by its own
+leverage, and each opens with a measurement rather than a build. The layer table is the
+cross-document order those three lists cannot express. [Secure development](SECURE-DEVELOPMENT.md)
+no longer carries one; its own opening points at the two sections to start from.
 
 Two sequencing errors are worth naming. Adopting the tier ladder and the control dials before the
 floor is real produces ceremony over a hole ([AI-assisted development](AI-ASSISTED-DEVELOPMENT.md),

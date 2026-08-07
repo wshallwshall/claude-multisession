@@ -13,82 +13,18 @@ This is a starting point for your own secure development standard, not a standar
 and not a compliance attestation: copy it, cut what your project does not have, and publish the
 result under your own name.
 
-- **What it demands.** A named set of checks that blocks every change and cannot be waived by an
-  author, a written threat model per trust boundary reviewed before the code exists, and every
-  requirement you cannot meet written down, dated, signed, and carrying the event that ends it. A
-  verdict is the composite of
-  [two layers](#the-shape-two-layers-and-the-second-is-where-the-defects-are), never one row of
-  either -- no green pipeline is a verdict.
-- **What it costs.** Calendar time where automation does not reach. Controls you must not claim
-  because you do not own them -- the strongest tamper controls belong to whoever runs the software.
-  And two gaps an internally-run pipeline cannot substitute for: third-party source review and
-  [penetration testing](#15-independent-external-verification). No code ships with this -- no
-  workflow, no scanner configuration, no template.
-- **Where it does not apply.** Throwaway work nobody installs, and anything you operate rather than
-  produce. Building to this confers nothing on the product, on you, or on an adopter, and it does
-  not substitute for an adopting organization's own assessment.
-- **Where to start.** The ownership split in
-  [section 1](#1-shared-responsibility-write-the-split-down-first), then the data-class table under
-  it. [Adapting this to your project](#adapting-this-to-your-project) says what you may change
-  freely and the shorter list that stops being a control the moment you weaken it;
-  [How to adopt this](#how-to-adopt-this) sets the order, and [In one table](#in-one-table) is the
-  summary.
-
----
-
-## How to adopt this
-
-Start with the ownership split
-([section 1](#1-shared-responsibility-write-the-split-down-first)). One table, one sitting. It is
-the artifact that makes every later claim scopeable, and most of the arguments it prevents are
-arguments about who was supposed to do something.
-
-Then work in this order:
-
-1. Ownership split, then the data-class table.
-   [Section 1](#1-shared-responsibility-write-the-split-down-first). The second is another table and
-   another sitting, and it is what makes every later rule that says "restricted data" mean something
-   specific.
-2. Threat model one trust boundary -- the riskiest, not all of them.
-   [Section 2](#2-threat-model-each-trust-boundary-before-you-build-it). A single worked
-   boundary teaches the format better than a sweep does.
-3. Make the scanner posture honest.
-   [Section 5](#5-scanner-posture-what-blocks-what-advises-what-may-never-be-waived). Classify every
-   nominally-security job as blocking or advisory before adding any new one. This usually reveals
-   that coverage is narrower than the tool list suggested, at zero engineering cost.
-4. Write the deviations register. [Section 13](#13-deviations-and-risk-acceptance). Start with what
-   you cannot do today. A register written while you are still honest about the gaps is worth more
-   than one written at review time.
-5. Build and release integrity. [Section 10](#10-build-and-release-integrity). Short-lived
-   publishing credentials, an attestation over the artifact digest, and a published digest manifest
-   cover most of what an adopter needs.
-6. The release gate. [Section 16](#16-the-release-gate). Now that you know which checks block, the
-   gate can be written as a list rather than a judgment.
-7. Rehearse vulnerability response. [Section 12](#12-vulnerability-response-exercised). A dry run
-   finds the broken intake channel before a real reporter does.
-8. Set the re-evaluation cadence.
-   [Section 14](#14-re-evaluate-on-a-trigger-and-on-a-short-calendar-for-what-has-no-trigger). Four
-   items, a stated cadence, a dated entry per pass, and the event trigger that sends you back to
-   step 1's table. It is what catches a control that degraded during a stretch where nothing
-   shipped.
-9. The remaining sections as they become relevant to what you build.
-
----
-
-## The shape: two layers, and the second is where the defects are
-
-The machine-enforced layer is blocking analysis and secret-scan gates, secure coding practice,
-dependency and supply-chain integrity, secrets hygiene, secure-by-default configuration,
-machine-to-machine authentication, and tamper-evident audit logging. It is hard to fake, because its
-evidence is a red or green pipeline leg rather than a claim.
-
-The process layer is an exercised vulnerability-response program, an independent external
-challenge, a single honest verdict-of-record, and a release gate. None of it can be discharged by a
-passing scanner. It needs a rehearsal, a signature, or an outside party.
-
-**A green pipeline from a gate you ran on yourself does not substitute for an adversary who did
-not.** Defects concentrate in the second layer, and a perfect first layer does not compensate for an
-empty second one. Say that in the same breath as any claim about your automated coverage.
+- **What it demands.** Checks that block every change and no author can waive. A written threat
+  model per trust boundary, before the code. Every unmet requirement dated, signed, and carrying
+  the event that ends it. No green pipeline is a verdict.
+- **What it costs.** Calendar time, controls you must not claim because you do not own them, and
+  two gaps no internal pipeline closes: third-party source review and
+  [penetration testing](#15-independent-external-verification). No code ships with this.
+- **Where it does not apply.** Throwaway work, and anything you operate rather than produce.
+  Building to this confers nothing on you or on an adopter.
+- **Where to start.** [Section 1](#1-shared-responsibility-write-the-split-down-first), the
+  ownership split, then the data-class table under it.
+  [Adapting this to your project](#adapting-this-to-your-project) says what you may change freely;
+  [In one table](#in-one-table) is the summary.
 
 ---
 
