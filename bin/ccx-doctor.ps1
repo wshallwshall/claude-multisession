@@ -861,15 +861,23 @@ foreach ($g in $optInGuards) {
 
 # -------------------------------------------------------------------------------- the ASCII gate --
 # A repo-local checker rather than an installed hook, so there is no second copy to hash and no
-# matcher to diff: the receipt is that this checkout carries it. Presence proves it EXISTS; the
-# attack below is what proves it can still refuse a character.
+# matcher to diff: the receipt is that this checkout carries it. But carrying it is not enforcement.
+# No shipped installer runs it, so a checker that is merely present refuses nothing until someone
+# invokes it by hand -- and OK is reserved for a control that is installed AND wired. Tagging a file
+# that sits there OK made this command's own status field contradict the blind spot it prints below.
+# OFF is the honest tag: implemented, nothing invokes it. Opt-in by design, so -Required $false and
+# it does not fail the run. The attack below proves it can still refuse a character WHEN run.
 $asciiSrc = Join-Path $RepoSrcRoot 'scripts/quality/check-ascii.ps1'
 $asciiSrcSha = Get-FileSha $asciiSrc
 if ($asciiSrcSha) {
-    Add-Result -Kind control -Id ascii.present -Name 'ASCII gate: present' -Status OK `
-        -Detail "sha $(Get-ShaTag $asciiSrcSha)" -Evidence @($asciiSrc)
+    Add-Result -Kind control -Id ascii.present -Name 'ASCII gate: present, not wired' -Status OFF `
+        -Detail "present (sha $(Get-ShaTag $asciiSrcSha)) but NOTHING invokes it -- opt-in, so the verdict counts it under OFF (opt-in)" `
+        -Required $false `
+        -Evidence @($asciiSrc,
+        'No shipped installer runs it. Wire it into your own pre-commit hook and into CI.',
+        'Until you do this is capability, not enforcement: it sees a file only when someone runs it.')
 } else {
-    Add-Result -Kind control -Id ascii.present -Name 'ASCII gate: present' -Status OFF `
+    Add-Result -Kind control -Id ascii.present -Name 'ASCII gate: not in this checkout' -Status OFF `
         -Detail "NOT PRESENT at $asciiSrc -- nothing in this checkout checks encoding" `
         -Evidence @('On a cp1252 console a non-ASCII character in a printed string is an exception, not a character.')
 }
