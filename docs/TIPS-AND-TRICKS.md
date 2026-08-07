@@ -4,10 +4,6 @@ The "wish I'd known" file. Everything here was paid for once already -- in lost 
 guardrail that turned out to be inert, or in a measurement that answered a question nobody
 asked.
 
-It is organized by **when it bites**: setting up, running two sessions at once, writing a
-guardrail, proving the guardrail works, and cleaning up. Skim the headings; each item states
-what looked right, what was actually true, and the rule that falls out.
-
 Honest scope, up front:
 
 - **PowerShell 7 + Windows-first.** Most of this repo is `pwsh`. The Python gates -- the git-hook
