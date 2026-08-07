@@ -29,6 +29,10 @@ desktop client (see [Limits](#limits-read-before-installing)).
 **Go:** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
 [What ships](#what-ships) - [Full docs](#where-to-go-next)
 
+**Or have Claude Code evaluate it for you.** [Feed it this page](FEED-THIS-TO-CLAUDE-CODE.md) and it
+will read your repository and tell you which of these collisions you actually have -- usually faster
+than deciding from the docs.
+
 ---
 
 ## The problem
@@ -43,6 +47,12 @@ One agent runs an ordinary `git checkout -B <branch> origin/main`. Git allows it
 not checked out anywhere. The shared working tree force-switches, swapping every file under whichever
 session was mid-task and dragging its uncommitted work onto the wrong branch. It is invisible while
 it happens, because each session believes it owns its directory.
+
+That is the loudest collision, not the only one. Six more -- same file, same work in different files,
+same reserved number, same config lock, same shared list, same agent memory -- are tabulated with
+their measurements in the
+[README's collision table](https://github.com/wshallwshall/claude-multisession#what-problem-this-solves),
+which is the place to start if you are still deciding whether you have this problem.
 
 ## What you get
 
@@ -302,15 +312,19 @@ that may only veto, exclusive-create over read-modify-write, no TTLs, the six kn
 `ccx.config.json`) then [Hooks](HOOKS.md) (harness versus git hooks, every control mapped to its
 event and fail-open or fail-closed posture).
 
-**Running sessions,** in the order the work happens: [Worktrees](WORKTREES.md) -
-[Coordination](COORDINATION.md) - [Steering](STEERING.md) -
-[Sequence allocation](SEQUENCE-ALLOC.md) - [PRs and merges](PR-AND-MERGE.md) -
-[Pruning](PRUNING.md).
+**Running sessions:** start at [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) -- it is the
+entry point to the group, and it covers the three things no other page owns (which surface to run
+sessions on, the channels they have for reaching each other, and using one session as a coordinator).
+Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](COORDINATION.md) -
+[Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -
+[PRs and merges](PR-AND-MERGE.md) - [Pruning](PRUNING.md).
 
 **Safety and standards,** in descending order of how much actually ships:
 [Leak gate](LEAK-GATE.md) (a scanner you can run today, plus the blind spot no scanner can close) -
 [CI and standards](CI-AND-STANDARDS.md) (ships no CI configuration) -
-[Usage awareness](USAGE-AWARENESS.md) (a design; ships no hook).
+[Usage awareness](USAGE-AWARENESS.md) (a design; ships no hook) -
+[Session mail](SESSION-MAIL.md) (a design for reaching the peers announce cannot; ships nothing, and
+is most useful as the list of ways the obvious implementations fail).
 
 **In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list) -

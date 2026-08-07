@@ -1,69 +1,52 @@
 # claude-multisession
 
-Coordination tooling for running **several Claude Code sessions at once against one repository**:
-a worktree per session, a shared state root git already gives you, guardrail hooks, a liveness
-fence, atomic claims and locks, cross-session announce, and a worktree reaper that refuses to
-guess.
+**TL;DR --** Run several Claude Code sessions at once on one repository without them overwriting each
+other. Each session gets its own git worktree and branch; hooks refuse the edits, commits and pushes
+that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git` and a `python`.
+PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
-**PowerShell 7 + Windows-first.** Nearly every shipped script is PowerShell; a handful are Python,
-and those are stdlib-only and portable. The PowerShell house rule is a `#Requires -Version 7.3` line
-at the top, and all but a few carry it. The two selfheal scripts ask only for `7`, and a few carry no
-`#Requires` at all. That omission is deliberate in the announce hook's case, because its event has to
-degrade to "stand down and say so" rather than throw at load. An exact file census is not printed
-here on purpose: a count in prose is stale on the next file added. Count it against the tree you
-actually have instead, and note that the scope is the question. `git ls-files 'bin/*.ps1' 'bin/*.py'
-'scripts/*.ps1' 'scripts/*.py'` is the *shipped* set. A bare `git ls-files '*.ps1'
-'*.py'` returns something else: it also sweeps in `examples/` and `tests/`. It runs on PowerShell 7
-for Linux and macOS, but the Windows paths are the ones that were exercised, and two behaviors
-degrade elsewhere (self-marking in the roster, and path case-folding). A bash port is a different
-project.
+> **Every failure mode in this system is byte-identical to success.** That one sentence explains the
+> whole shape of this repository -- most of all why `ccx doctor` exists and why you run it *before*
+> installing anything as well as after. The full statement and what it costs you are at the top of
+> the [documentation site](https://wshallwshall.github.io/claude-multisession/).
 
-MIT licensed. No dependencies beyond `pwsh`, `git`, and -- for the three git-hook checkers and the
-leak gate -- any `python3` on `PATH`.
+**Is this for you?** Yes if you drive two or more Claude Code sessions against one repo and have
+watched them collide -- [the collision table below](#what-problem-this-solves) is the fastest way to
+tell. No if you run one session at a time. Also no if you are CLI-only and wanted cross-session
+announce specifically: that one feature needs the desktop client.
+
+**Go:** [What problem this solves](#what-problem-this-solves) - [Install](INSTALL.md) -
+[Documentation site](https://wshallwshall.github.io/claude-multisession/) -
+[Honest limits](#honest-limits)
+
+Or paste [this page](docs/FEED-THIS-TO-CLAUDE-CODE.md) into Claude Code and have it evaluate your
+repository for you.
+
+---
 
 Nothing here puts a `ccx` executable on your `PATH`. Every command is a plain script you run with
 `pwsh`; where this README says `ccx doctor` it is shorthand for
 `pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`. Every relative path in this file is
-relative to this checkout, which is **not** necessarily the repository being governed -- see the two
-directories named at the top of *Five minutes*.
+relative to this checkout, which is **not** necessarily the repository being governed.
 
 ---
 
-## Read this before you install
+## Three limits worth knowing before you install
 
-Three limits, up front, because each one changes whether this repo is worth your time.
+All three come from one fact: **session discovery rests on a vendor surface this project does not
+own.** Everything answering "who is live, and where" reads `<config-root>/sessions/<pid>.json`, a
+record the *client* writes.
 
-**1. Announce needs a desktop-only MCP server.** Cross-session announce
-(`scripts/hooks/announce-session.ps1`) delivers through the `ccd_session_mgmt` MCP server, which the
-desktop client provides. It is **absent on a plain CLI install**. The hook does not send anything
-itself -- it resolves peers and asks the model to send. So on a host without that MCP the hook still
-fires, still finds peers, and then instructs the model to call tools it does not have. The model
-says so, and nothing is delivered. If you are CLI-only, leave that one hook uninstalled. Nothing
-else here depends on it.
+1. **Announce needs the desktop client.** It delivers through the `ccd_session_mgmt` MCP server,
+   which a plain CLI install does not have. If you are CLI-only, leave that one hook uninstalled --
+   nothing else depends on it.
+2. **The desktop app's own `list_sessions` is incomplete.** It cannot see editor-extension sessions,
+   so it answers who can be *messaged*, never who *exists*.
+3. **A client schema change degrades every fence to "cannot tell"**, never to a confident wrong
+   answer -- and the doctor surfaces it as a record count going to zero.
 
-**2. The liveness fence rests on a vendor contract.** Everything that answers "who is live, and
-where" reads `<config-root>/sessions/<pid>.json` -- a record the *client* writes, with `pid`,
-`startedAt`, `sessionId`, `cwd`, `entrypoint`, `kind`. We do not own its shape, its location, or its
-lifetime. If a future client renames a field or changes `startedAt`'s unit, every fence here
-degrades to "cannot tell" rather than to a confident wrong answer. That is designed for, in
-`scripts/coord/session-registry.ps1`. And `ccx doctor` reports how many records it read and placed,
-so a schema change shows up as a count going to zero instead of as a silent all-clear.
-
-**3. The desktop app's own session list cannot see every session.** Its `list_sessions` tool
-enumerates an in-memory map of the sessions *that app itself spawned*. A session launched by the
-editor extension is never entered into it -- not filtered out, never registered -- so it is invisible
-there and cannot be messaged. Verified directly against a live editor session sharing the default
-config root, so it is not a per-login split. Treat `list_sessions` as authoritative for who can be
-**messaged**, and the on-disk session records as the only registry that answers who **exists**.
-
-And the meta-limit that motivates everything below:
-
-> **Every failure mode in this system is byte-identical to success.** A hook that is wired but
-> resolves nothing exits 0 and prints nothing -- which is exactly what a healthy hook with no peers
-> does. A gate whose helper failed to load allows the edit -- which is exactly what a gate that
-> checked and found nothing does. You cannot detect a difference the producer never encoded. That is
-> why `ccx doctor` exists, why it runs below both before any installer and after all of them, and why it *fires each control on
-> purpose* instead of reading a settings file.
+Full statement, with what each one costs you, on the
+[documentation site](https://wshallwshall.github.io/claude-multisession/#limits-read-before-installing).
 
 ---
 
@@ -97,166 +80,48 @@ developed in, over 30 days:
 
 ---
 
-## Five minutes
+## Platform
 
-**Two directories are involved, and every command below says which one it means.**
+**PowerShell 7 + Windows-first.** Nearly every shipped script is PowerShell; a handful are Python,
+and those are stdlib-only and portable. The PowerShell house rule is a `#Requires -Version 7.3` line
+at the top, and all but a few carry it. The two selfheal scripts ask only for `7`, and a few carry no
+`#Requires` at all. That omission is deliberate in the announce hook's case, because its event has to
+degrade to "stand down and say so" rather than throw at load. An exact file census is not printed
+here on purpose: a count in prose is stale on the next file added. Count it against the tree you
+actually have instead, and note that the scope is the question. `git ls-files 'bin/*.ps1' 'bin/*.py'
+'scripts/*.ps1' 'scripts/*.py'` is the *shipped* set. A bare `git ls-files '*.ps1'
+'*.py'` returns something else: it also sweeps in `examples/` and `tests/`. It runs on PowerShell 7
+for Linux and macOS, but the Windows paths are the ones that were exercised, and two behaviors
+degrade elsewhere (self-marking in the roster, and path case-folding). A bash port is a different
+project.
 
-| Name | What it is |
-|---|---|
-| **tooling** | This checkout. Nothing you install governs *it*; it is only where the scripts are copied from and hashed against. |
-| **target** | The repository you want governed. It gets the config file, the git hooks, and its primary checkout in the gate's allowlist. |
+MIT licensed. No dependencies beyond `pwsh`, `git`, and -- for the three git-hook checkers and the
+leak gate -- any `python3` on `PATH`.
 
-An installer that had to guess between them would get it wrong in exactly the way this repository
-exists to prevent, and then print a receipt for the wrong clone. So **every installer that takes a
-target refuses to guess**: with no explicit flag it governs the clone you are *standing in*, and if
-that is not the clone it ships from, it stops and makes you name one.
+---
 
-**Decide first whether the two are one directory, because it decides how much of this works:**
+## Install
 
-| Layout | What it is | What you get |
-|---|---|---|
-| **Vendored** (recommended) | `scripts/`, `bin/` and `ccx.config.json` copied into the repository they govern, and committed there. tooling **is** target | All four installers, and the only layout in which the doctor can reach **exit 0** |
-| **Separate checkouts** | The tooling stays in its own clone and governs another | The worktree gate, both git hooks and the SessionStart backstop govern the target. The **three coordination hooks will not**: see below |
+Two directories are involved and the installers refuse to guess between them: **tooling** (this
+checkout, which nothing you install governs) and **target** (the repository you want governed). Use
+the **vendored** layout -- copy `scripts/`, `bin/` and `ccx.config.json` into the target and commit
+them, so tooling *is* target. It is the only layout in which the doctor can reach exit 0, because the
+three coordination hooks are shims that resolve their script inside whatever repository the session
+is running in.
 
-The three coordination hooks are shims that locate their script *inside whatever repository the
-session is running in* -- `<that repo>/scripts/worktree/session-context.ps1` and its two siblings.
-That is deliberate (a pull updates every worktree at once, with nothing to fall stale), and it means
-a target that does not carry those files gets three hooks that are wired and resolve nothing. The
-doctor reports each as `RED -- WIRED BUT RESOLVES NOTHING`, which is the correct answer and is still
-exit 1. Vendor the scripts into the target, or run the coordination installer with `-Uninstall` and
-accept that coordination is off there; there is no flag that points those shims at another checkout.
+The seven-step path, with a command you can paste, is on the
+[documentation site](https://wshallwshall.github.io/claude-multisession/#quickstart).
+**[INSTALL.md](INSTALL.md) is the record of record**: every installer, its scope, how to prove it is
+live rather than merely merged, and what the doctor's exit code means when you install only some of
+it.
 
-Run these from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is `1`,
-because a session that can install these controls can remove them. (`-Status` is exempt everywhere it
-exists: auditing is not installing.)
+Two things that catch people out either way:
 
-```powershell
-$tooling = "<path-to-this-checkout>"
-$target  = "<path-to-the-repo-you-want-governed>"
-Set-Location $target      # step 3 reports what it resolves FROM HERE, so stand in the target
-
-# 1. Opt the target in, and -- for the vendored layout -- give it the scripts the coordination
-#    hooks resolve. ccx.config.json at its root is both the knob file and the marker that
-#    user-scope hooks read to answer "is this repo governed?" without running anything.
-Copy-Item "$tooling/ccx.config.json" "$target/ccx.config.json"   # then edit it -- see Configuration
-Copy-Item "$tooling/scripts" $target -Recurse                    # vendored layout only
-Copy-Item "$tooling/bin" $target -Recurse                        # vendored layout only
-# ...then commit them, so every worktree of the target gets them. After vendoring there are two
-# copies of these scripts on disk: install and audit from ONE of them. Installing from one and
-# hashing against the other is exactly the drift the doctor calls STALE, and it would be right.
-
-# 2. Baseline, BEFORE installing anything: it is the only way to tell an installed guardrail from a
-#    decorative one afterwards. Expect a wall of OFF and exit 1. That is the correct baseline.
-pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
-
-# 3. Coordination hooks: session banner, collision gate, announce. This installer takes NO
-#    repository -- it writes ONE settings file, whose hooks resolve their repo per session at run
-#    time. -SettingsPath is the only thing that moves it; pass it once per config root.
-pwsh -NoProfile -File "$tooling/scripts/coord/install-coordination.ps1"
-
-# 4. The commit-msg claim gate and the pre-push guard, into the TARGET clone's shared .git/hooks,
-#    where one copy governs every worktree of that clone at once. The checkers are copied from the
-#    tooling checkout, so the target never has to carry them.
-pwsh -NoProfile -File "$tooling/scripts/coord/install-git-hooks.ps1" -RepoRoot $target
-
-# 5. The worktree gate. -Repo names the PRIMARY checkout to put in the allowlist (several are
-#    allowed: -Repo <path-a>,<path-b>). The allowlist is the kill switch.
-pwsh -NoProfile -File "$tooling/scripts/worktree/install-gate.ps1" -Repo $target
-
-# 6. The SessionStart backstop. ONE config root per run, so run it again for each root step 7
-#    lists under "config roots" -- an unwired root is reported OFF, and OFF is exit 1.
-pwsh -NoProfile -File "$tooling/scripts/worktree/install-selfheal.ps1" -ConfigDir ~/.claude
-
-# 7. Prove it -- and prove it about the right repository.
-pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
-```
-
-### Step 8: prove the repository it governed is the one you meant
-
-The doctor's own default target is the current directory, so a run started in the wrong place
-produces a long, plausible, mostly-green report about the wrong clone. It therefore names both roots
-at the top of every run, and marks the case where they are the same. Read those lines back:
-
-```powershell
-pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target |
-    Select-String 'repo examined|tooling checkout|gate: allowlist|LIVE allowlist'
-```
-
-```text
-  repo examined    : <target>   (-Repo)
-  tooling checkout : <tooling>   (every source hash below is read from here)
-  [OK ] worktree gate: allowlist           1 checkout(s) governed, including this primary
-  [OK ] gate: LIVE allowlist + real primary the installed gate, reading the LIVE allowlist, denies a write to this primary
-```
-
-`repo examined` is the repository the whole report is about. `governed, including this primary` is
-the allowlist actually containing it, and the `LIVE` line is the installed gate being handed a write
-to *that* path and refusing it. If `repo examined` names the tooling checkout, everything below it is
-true about the tooling checkout and says nothing about yours.
-
-### What the exit code means when you install only some of it
-
-The verdict is an accounting over every control the run can see, not over the ones you chose:
-
-- **Any `RED`, or any *required* control `OFF`, is exit 1.** The worktree gate, its allowlist, its
-  wiring, the three coordination rows, both git hooks and the SessionStart backstop are all required,
-  so a partial install of the six steps above **cannot** exit 0. The one you skipped is reported
-  `OFF` -- implemented, invoked by nothing, zero enforcement -- not "not chosen".
-- **Any `??` with no `RED` is exit 2.** A skip is never a pass.
-- **`--` never fails a run.** That tag is for a control that is opt-in by design (the blanket-stage
-  guard, the steering injector) or off by configuration (the sequence gate with no `sequences` key).
-- **An *opt-in* control reported `OFF` never fails a run either**, and is counted and named on its
-  own `OFF (opt-in)` line rather than folded into the `OFF` number. Today that is the sequence gate
-  when `sequences` **is** configured -- a real hole, worth an `OFF` rather than a `--` (numbers are
-  being allocated and nothing at commit time defends them), but not one a shipped installer ever
-  promised to close.
-
-So exit 0 also needs a `python` on `PATH` (the git-hook shims fail open without one), every config
-root the run lists wired, and no kill switch set. The `VERDICT` block names every `RED`, `OFF` and
-`??` it counted, so you never have to infer which one moved the number.
-
-Then create your second session's worktree. These two are not installers and take no target flag:
-they act on the primary of **the repository you are standing in**, wherever the script file itself
-lives -- so keep standing in the target.
-
-```powershell
-pwsh -NoProfile -File "$tooling/scripts/worktree/new.ps1" -Name alerts
-# ...or create it and open an editor window in it:
-pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name alerts
-```
-
-### What the doctor tells you
-
-It never infers. It enumerates every control by receipt: SHA of the *installed* copy against this
-checkout's source, live matchers read out of every config root, wired matchers diffed against the
-rules the installed script actually implements. Then it **fires each control on purpose and requires
-it to refuse**. The attacks are crafted `PreToolUse` JSON at the installed gate, a blanket stage, a
-commit claiming an unclaimed item, a push to a protected ref, and a drifted throwaway primary in
-front of the `SessionStart` backstop. Every attack is paired with a negative control, an ordinary
-action the same control must *allow*, because a script that refuses everything is not a working
-guard either and a probe with no positive control proves nothing. The backstop runs `git checkout`
-on a shared checkout unattended, and is the most privileged control in the set. Its pair is the
-drifted **but dirty** primary it must decline to touch and say why. Repairing a clean tree passes
-whether or not the dirty-tree refusal is still in the code, so only the negative control tests it.
-The allocator is the one check with no allow/deny axis at all; it decides nothing, so what it is
-paired with instead is the property that can be violated -- that its read-only floor inspection
-spends no number and moves no ratchet. All of it runs against throwaway git repositories in the
-temp directory, deleted on the way out; your repository is not touched.
-
-Its status vocabulary is the whole point:
-
-| Tag | Means | Exit |
-|---|---|---|
-| `OK` | Proven: installed, wired, and it refused what it must refuse | -- |
-| `RED` | Proven broken: wired but stale or unloadable, or it allowed what it must deny, or it denied what it must allow | 1 |
-| `OFF` | Implemented, but nothing invokes it -- zero enforcement | 1 (when the control ships an installer) |
-| `??` | Could not be determined | 2 |
-
-**A skip is never a pass**, which is why `??` has its own exit code. The run always prints a `WHAT
-WAS SCANNED` block (config roots, session records read and unplaceable, worktrees, trunk, state
-root, which python, which git, platform) and a `BLIND SPOTS ON THIS RUN` block, pass or fail. If it
-reports `RED` immediately after a clean install, believe it -- that is the case this command was
-built for.
+- **Baseline the doctor BEFORE installing anything.** Expect a wall of `OFF` and exit 1. That is the
+  correct baseline, and it is the only way to tell an installed guardrail from a decorative one
+  afterwards.
+- **Installers refuse to run inside a session** (`$env:CLAUDECODE` is `1`), because a session that
+  can install these controls can remove them. Run them from a plain terminal.
 
 ---
 
@@ -268,48 +133,16 @@ things sit outside it by necessity and are named here rather than discovered: th
 copies and their allowlist, under your client config root; the wiring entries in that root's
 `settings.json`; and a queued steering note, at `<worktree>/.claude/steer.txt`.
 
-### Commands you run
+**The full inventory -- every script, what it does, and which doc owns it -- is on the
+[documentation site](https://wshallwshall.github.io/claude-multisession/#what-ships)**, grouped by
+what you are trying to do: run sessions, clean up, and the controls the harness or git invokes on
+their own. It is one table set rather than two, so it cannot drift from this page.
 
-| Path | Does |
-|---|---|
-| `bin/ccx-doctor.ps1` | Prove every control by receipt and by attack. `-Repo <path>` is the repository the report is about (default: the directory you ran it from -- **not** necessarily the one you meant). Also `-ConfigDir`, `-SettingsPath`, `-Json`, `-SkipAttacks`, `-Verbose` |
-| `scripts/worktree/new.ps1` | Create an isolated worktree on its own branch, off the **fetched remote tip**, serialised against concurrent adds |
-| `scripts/worktree/spawn.ps1` | `new.ps1` plus an editor window (`-Editor`, else `CCX_EDITOR`, else `EDITOR`, else `code`) |
-| `scripts/worktree/rescue.ps1` | Move uncommitted work *out* of the shared primary into a fresh worktree -- the companion to the gate that stops you writing there |
-| `scripts/worktree/restore-primary.ps1` | Re-attach the primary to its home branch after a session left it detached or on the wrong branch. Refuses on a dirty tree |
-| `scripts/worktree/remove.ps1` | Remove one worktree, referencing its tip **before** anything is removed, and writing a keep-ref when `-DeleteBranch` is used |
-| `scripts/worktree/prune-merged.ps1` | The reaper: prune = merged **and** clean **and** unoccupied. Dry-run by default; `-Apply` to act |
-| `scripts/worktree/sessions.ps1` | Find sessions for this repo across every login, including ones a relocation made invisible. `-Rehome` puts a transcript back |
-| `scripts/coord/presence.ps1` | Who is actually live in this repo right now, across every surface. Read-only |
-| `scripts/coord/overlap.ps1` | What everyone else is changing -- files *and* stated work. `-File <path>`, `-Json` |
-| `scripts/coord/claim.ps1` | Take/release/list a claim on a piece of work. `-Take 105`, `-Take dep-advisory-parse` |
-| `scripts/coord/alloc.ps1` | Allocate the next number in a shared sequence, atomically. `-ShowFloor` inspects without spending one |
-| `bin/ccx-steer.ps1` | Queue a steering note from a second terminal, delivered at the session's next tool-call boundary |
-| `scripts/security/scan_forbidden.py` | The leak gate: refuse identifying content before a private repo goes public. `--path DIR`, `--require-tokens`, `--show-context`. Nothing here wires it -- see `docs/LEAK-GATE.md` |
-
-### Controls the harness or git invokes
-
-| Path | Event | Posture |
-|---|---|---|
-| `scripts/hooks/worktree_gate.ps1` | `PreToolUse` | Denies writes whose **target path** is inside a governed primary, dispatch from the primary, and the git verbs that swap or discard its tree. Fails open, but loudly |
-| `scripts/hooks/collision_gate.ps1` | `PreToolUse` (edit tools) | Refuses a file a **live** session is already changing. Fails open -- never silently |
-| `scripts/hooks/block-blanket-git-stage.ps1` | `PreToolUse` (shell) | Denies `git add -A/--all/-u/.` and `git commit -a/-am`. Opt-in. Fails open |
-| `scripts/hooks/announce-session.ps1` | `UserPromptSubmit` | Tells peers you exist and what you intend, on the first prompt at which a messageable peer exists. Always exits 0 |
-| `scripts/worktree/session-context.ps1` | `SessionStart` | Your project's banner plus a live coordination block. Never fails loudly -- its stdout *is* the chat's starting context |
-| `scripts/worktree/worktree-selfheal.ps1` | `SessionStart` | Repairs a primary whose HEAD drifted, when the tree is clean. See `anthropics/claude-code#76590` |
-| `scripts/hooks/steer-inject.ps1` | `PreToolUse` (`*`) | Delivers a queued steering note. Opt-in per worktree |
-| `scripts/hooks/claim_check.py` | `commit-msg` | Refuses a code-touching commit whose subject claims an item this worktree does not hold. Fail-**closed** |
-| `scripts/hooks/push_guard.py` | `pre-push` | Refuses a direct push of a protected ref. That work goes through a pull request |
-| `scripts/hooks/seq_check.py` | `pre-commit` (yours) | Refuses a colliding, unallocated, or unindexed sequence number. `--ci` re-runs against a fresh trunk |
-
-### Installers, and why there are four
-
-| Path | Installs | Writes to | Names its target with |
-|---|---|---|---|
-| `scripts/coord/install-coordination.ps1` | Session banner, collision gate, announce -- as **shims that re-resolve at run time**, so a pull updates every worktree at once | **One** settings file per run: `~/.claude/settings.json` unless moved | `-SettingsPath`. It takes no repository at all -- its shims resolve one per session, at run time |
-| `scripts/worktree/install-gate.ps1` | The worktree gate, as an installed **copy** outside every working tree, plus the allowlist that *is* its kill switch | Every config root it finds, plus one shared `~/.claude/hooks` | `-Repo` (which primaries to govern), `-ConfigDir` (which roots to wire) |
-| `scripts/coord/install-git-hooks.ps1` | `commit-msg` + `pre-push` into the shared `.git/hooks` | One clone, reaching all of its worktrees at once | `-RepoRoot` (which clone), `-HooksDir` (only for a layout `core.hooksPath` does not cover) |
-| `scripts/worktree/install-selfheal.ps1` | The SessionStart backstop, sharing the gate's one allowlist | One config root per run | `-ConfigDir`, which is mandatory. It has no repository of its own: the gate's allowlist is what it governs |
+The shape of it: `bin/ccx-doctor.ps1` proves the rest. `scripts/worktree/` creates, rescues, restores
+and removes worktrees. `scripts/coord/` answers presence, overlap, claims and allocations.
+`scripts/hooks/` holds the gates the harness and git invoke. Four installers wire them, and there are
+four rather than one because they write to genuinely different places -- one settings file, one
+clone's `.git/hooks`, every config root, and one config root respectively.
 
 The two that take a repository **refuse to guess** which one. Unset, `-Repo` and `-RepoRoot` mean
 the clone you are standing in. Both installers stop rather than proceed when that is not the clone
@@ -318,9 +151,9 @@ governing a repository you are not working in.
 
 Three properties, each learned the expensive way:
 
-- **They all refuse to run inside a session.** A session that can install its own gate can uninstall
-  it. On the three that carry a `-Status` mode that mode is exempt, because auditing is not
-  installing; `install-selfheal.ps1` has no status mode -- ask `ccx doctor` instead.
+- **The `-Status` modes are exempt from the refuse-to-run-in-a-session rule above**, because auditing
+  is not installing. Three of the four carry one; `install-selfheal.ps1` does not -- ask
+  `ccx doctor` instead.
 - **The status modes report by receipt, never by reading a settings file.** An entry in
   `settings.json` is a *claim*; a receipt plus a target that actually resolves is *evidence*. An
   announce hook once sat wired-but-resolving-nothing for hours while the settings file looked
@@ -483,8 +316,11 @@ be discovered. Measured on the repo this tooling was developed in:
 
 | Doc | What it covers |
 |---|---|
-| `README.md` | This file: what it is, the platform and MCP caveats, and the five-minute path |
-| `INSTALL.md` | The installers, their scopes, and how to *prove* each one is live rather than merely merged |
+| `README.md` | This file: what it is, which collisions it addresses and what they measured, the platform caveats, the cost, and the honest limits |
+| `docs/index.md` | The [documentation site](https://wshallwshall.github.io/claude-multisession/) front door: the quickstart, the full script inventory, and where every page below fits |
+| `INSTALL.md` | The installers, their scopes, how to *prove* each one is live rather than merely merged, and what the exit code means on a partial install |
+| `docs/FEED-THIS-TO-CLAUDE-CODE.md` | A page to paste into Claude Code so it evaluates *your* repository against this tooling and tells you which parts you need |
+| `docs/RUNNING-MULTIPLE-SESSIONS.md` | The entry point to the running-sessions group: which surface to run sessions on, the channels they have for reaching each other, and using one session as a coordinator |
 | `docs/CONCEPTS.md` | The model: worktree-per-session, the shared state root, the liveness fence, exclusive-create, why there are no TTLs |
 | `docs/HOOKS.md` | The hook-event map, the wiring contract, and the house rules for writing one that cannot fail silently |
 | `docs/WORKTREES.md` | Day to day: create, rescue, restore, remove, and the two layouts that coexist |
@@ -493,6 +329,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/PR-AND-MERGE.md` | Landing work from N branches into one trunk, and the four states that all read as "can't merge" |
 | `docs/SEQUENCE-ALLOC.md` | Allocating a shared sequence git cannot see, with decision-record numbers as the worked example |
 | `docs/STEERING.md` | The two steering scripts: queue a note from a second terminal, deliver it mid-task |
+| `docs/SESSION-MAIL.md` | The async lane for peers the realtime announce cannot reach. Ships nothing -- it is a design note, and most useful as the measured list of ways the obvious implementations fail |
 | `docs/LEAK-GATE.md` | The forbidden-content scanner: what a shape detector catches before a repo goes public, what a token file adds, and the two things no scanner can ever see |
 | `docs/CI-AND-STANDARDS.md` | N parallel branches through one pipeline, and a standard that survives agent-written code. Ships no CI configuration -- the scripts it cites are illustrations of the rules |
 | `docs/CASE-STUDY-drift-audit.md` | A redacted account of auditing a multi-session estate as one system -- the method, not a status snapshot |
