@@ -2,7 +2,7 @@
   THE INTERACTIVE STANDARDS SELECTOR.
 
   Injected by _layouts/default.html at the `<!-- STANDARDS-SELECTOR -->` sentinel in
-  docs/standards/STANDARDS-LANDSCAPE.md. Every fact it renders comes from
+  docs/standards/WHICH-STANDARDS-APPLY.md. Every fact it renders comes from
   docs/_data/standards_selector.yml; there are no facts in this file.
 
   WHY THERE IS SCRIPT ON A SITE THAT SAID IT HAD NONE. docs/assets/style.css refused a
@@ -10,7 +10,7 @@
   more thing that can be wired and inert". That refusal still stands, and this is not an exception
   to it. The nav was refused because script would have been THE ONLY WAY TO REACH THE LINKS. Here
   the answer is complete before any script runs: the item cards below are all present, unfiltered,
-  in the served HTML, and the guide's own routing table sits immediately underneath in the
+  in the served HTML, and the page's own routing table sits immediately underneath in the
   markdown, which is also what the Word copy carries. Script only HIDES cards. Nothing is reachable
   only through it.
 
@@ -1239,8 +1239,9 @@
 
   function writeUrl() {
     /* Query string, never the fragment. The fragment is already spoken for here: the skip link
-       targets #content, the guide's tables link to in-page anchors, and the stylesheet turns on
-       smooth scrolling. State in the fragment would break all three and be broken BY all three.
+       targets #content, this card links to #what-this-page-did-not-assess and the routing table
+       links to the AI-assistant section, and the stylesheet turns on smooth scrolling. State in the
+       fragment would break all three and be broken BY all three.
 
        replaceState rather than pushState, and wrapped, because it throws a SecurityError on file://
        in some browsers -- and the file:// copy has to keep working with the URL simply not syncing. */

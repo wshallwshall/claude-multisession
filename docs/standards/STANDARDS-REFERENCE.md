@@ -1,9 +1,11 @@
 # Security standards reference: what each one issues, and what triggers it
 
-**One row per document. Consult this while working, already knowing what you are looking for.** If
-instead you are trying to work out which of these applies to you at all, read
-[the guide](STANDARDS-LANDSCAPE.md) -- it is the same facts organized around your situation rather
-than around the documents, and it carries an interactive selector on the served site.
+**One row per document, and the reasoning behind the cuts they are sorted on.** Consult this while
+working, already knowing what you are looking for. If instead you are trying to work out which of
+these is even worth your attention, start at
+[which standards apply to you](WHICH-STANDARDS-APPLY.md) -- the same coverage organized around your
+situation rather than around the documents, and carrying an interactive selector on the served site.
+That page routes and holds no rows; this one holds the rows and the argument.
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/STANDARDS-REFERENCE.md)
@@ -16,10 +18,12 @@ maintained register: several of these facts changed within the twelve months bef
 have changed since.
 
 **At least these items.** This is not a complete map of the security standards landscape and does not
-claim to be. [What the guide did not assess](STANDARDS-LANDSCAPE.md#what-this-page-did-not-assess)
-names what is missing on purpose, and you should not read its silence as coverage. Nothing here is
-legal advice, and nothing here says that any of it binds your organization -- a clause number
-decides that, and applying to your situation is not the same thing as binding you.
+claim to be.
+[What the routing page did not assess](https://wshallwshall.github.io/claude-multisession/standards/WHICH-STANDARDS-APPLY.html#what-this-page-did-not-assess)
+names what is missing on purpose, and you should not read its silence as coverage. That link is
+written out in full because a relative one is dead in a downloaded Word file. Nothing here is legal
+advice, and nothing here says that any of it binds your organization -- a clause number decides
+that, and applying to your situation is not the same thing as binding you.
 
 **Sorted by who each document makes demands of**, which is the most stable fact about it: status,
 trigger and enforcement machinery change constantly, and the audience almost never does. The column
@@ -27,9 +31,15 @@ asks whose conduct a document's sentences purport to govern, not whether anythin
 follow them -- that is the trigger column's question, and most of the documents here oblige nobody
 on their own. The last section is the one whose documents govern no one's conduct at all: they
 define the terms other documents are written in, so it is named for what they are used for instead.
-The cut is explained in
-[the guide](STANDARDS-LANDSCAPE.md#who-a-document-is-addressed-to). Every item appears in exactly one
-table.
+Every item appears in exactly one table.
+
+**The tables come first, and everything after them explains the cuts.**
+[Who a document is addressed to](#who-a-document-is-addressed-to),
+[the organization layer is not the software layer](#the-organization-layer-is-not-the-software-layer),
+[how these actually arrive](#how-these-actually-arrive) and
+[why every status carries a date](#why-every-status-carries-a-date) sit below the rows rather than
+above them, so a reader who came here to look one thing up is not made to read an argument first.
+They are the part worth reading once.
 
 ---
 
@@ -76,7 +86,10 @@ would have added submission to a repository, central verification and referral o
 14306 struck that apparatus on 2025-06-06. OMB M-26-05 then rescinded the collection mandate itself
 on 2026-01-23. Anyone describing a single January 2026 event has lost the fact that the verification
 model was already gone in mid-2025. The status of the federal repository that received submissions is
-unknown as of the check date: not reported running, not reported gone.
+unknown as of the check date: not reported running, not reported gone. And a signed self-attestation
+is a different instrument from a certificate -- rescinding the instruction that prompted a signature
+is prospective, and unsigns nothing. This is the worked example for the first shape of staleness in
+[why every status carries a date](#why-every-status-carries-a-date).
 
 Component inventory and build provenance as controls -- rather than as any named framework -- are
 covered in [Dependency integrity](DEPENDENCY-INTEGRITY.md), which names no baseline and claims
@@ -103,8 +116,9 @@ argue or to over-deliver. That conversation is the cheapest thing on this page.
 
 None of these certifies a product, and all of them are routinely offered as product evidence. Where
 one applies to a software producer, it arrives through a contract rather than through the regime.
-Why that distinction is the most useful sentence on the whole subject is in
-[the guide](STANDARDS-LANDSCAPE.md#the-organization-layer-is-not-the-software-layer).
+Why that distinction is the most useful sentence on the whole subject is under
+[the organization layer is not the software layer](#the-organization-layer-is-not-the-software-layer),
+below.
 
 ### Certification and program regimes
 
@@ -165,7 +179,9 @@ wrong link.
 
 **A defense-style obligation begins with a clause number, not a publication.** Ask which
 solicitation, which contract and which clause number, and check whether a deviation modifies the
-clause. The release-versus-revision trap in the control catalog, with the producer-versus-operator
+clause -- the clause text alone can name the wrong revision. The route it arrives by, and who
+therefore owns the response, is in [how these actually arrive](#how-these-actually-arrive) below.
+The release-versus-revision trap in the control catalog, with the producer-versus-operator
 split that decides who owns a control at all, sits in
 [Secure development](SECURE-DEVELOPMENT.md) rather than here.
 
@@ -207,6 +223,147 @@ its own purposes.
 
 ---
 
+## Who a document is addressed to
+
+**The rows are above. This section and the three after it are the argument, and skipping them costs
+you nothing above.** They cover the cut the tables sort on, the layer distinction that decides what
+an instrument is evidence of, the routes by which any of this arrives, and why a status without a
+date is worthless. If you came here to look one thing up, you are done.
+
+The addressee is the most stable fact about a document. Status, trigger and enforcement machinery
+change constantly; the audience almost never does. That is why this page sorts on it, and why the
+question is asked before any of the others. The test it runs is whose conduct a document's sentences
+purport to govern -- not whether the document succeeds in obliging anyone on its own, which most of
+them do not. What obliges you is the clause, the policy or the regime that quotes the document, and
+that is the trigger column's question rather than this one.
+
+**This is about who the sentences bind, not what the document is about.** The two come apart, and
+that is the whole value of the cut. A publication can be entirely about how software gets built and
+still be addressed to an organization, not a product -- its development controls are written
+to bind an entity with personnel, facilities and an authorization boundary, not to bind a build.
+Sorting by subject matter puts such a document next to a producer framework and invites a producer to
+answer requirements that were never asked of them.
+
+**"Makes demands of an assessor" does not mean "what an auditor will ask you for".** It means the
+document tells someone how to conduct an examination -- the procedure, and who may run it. These are
+method manuals for the examiner, not the evidence you hand over. Read the other way, the natural next
+move is to build to them, which manufactures controls nothing ever required. The selector on the
+routing page puts every such item in its own block, under that label, for exactly this reason.
+
+**The fourth label names a use rather than an audience, and that is deliberate.** Nothing in that
+group is written at anybody: its documents define the terms other documents' sentences are written
+in, rather than governing anyone's conduct. That is what separates it from the other three, and it
+is a fact about normative status rather than about importance -- a producer uses every item in the
+group. A dependency policy is written in vulnerability identifiers, a scanner reports in weakness
+identifiers, an SBOM is emitted in one of two formats, and a requirements document borrows the
+quality vocabulary. Labeling the group by the absence invites a reader to skip it, which is the
+wrong move for material their own policies are written in. Where a demand does exist it comes from
+the policy, the contract or the vulnerability management program that quotes the document, never
+from the document, so each row's trigger cell names that source instead.
+
+| Makes demands of | What it is describing | The failure when you get it wrong |
+|---|---|---|
+| **A software producer** | How code is built, reviewed, released and evidenced | An operating-environment instrument offered as evidence about a build practice it never examined |
+| **An organization, not a product** | How an entity runs, governs and secures itself -- its program, people, processes and, where it has them, the systems it operates and its authorization boundary | A management-system or program instrument offered as evidence that a product is secure |
+| **An assessor** | How an audit or examination is conducted, and by whom | Assessor rules read as requirements on yourself, producing controls the standard never asked for |
+| **Input you use, not a rule you meet** | Identifier spaces, formats and vocabularies that policies, scanners and contracts are written in. A producer uses all of them and conforms to none of them | Read as "skip this". Also an identifier read as a severity, or a format's standards-body lineage read as a compliance grade |
+
+**One row, one place.** Every item appears exactly once above. An item addressing two audiences is
+placed where the cost of acting lands.
+
+---
+
+## The organization layer is not the software layer
+
+**This is the single most useful sentence on the subject.** A buyer asks a software vendor for a
+certificate or an audit report and reads the answer as evidence about the SOFTWARE. Those instruments
+are evidence about the ORGANIZATION. A vendor can hold every one of them and still ship insecure
+code, because none of them looked at the code.
+
+That does not make them worthless. They establish that a company has a functioning security program,
+which is a real thing to know and worth paying for. They simply do not answer "is this product
+secure", and the failure is reading them as though they did.
+
+Three of them below, presented as members of a set alongside the payment-chain validation
+instruments, the two cloud program authorizations, and the law-enforcement-data policy that sit in
+the same layer. Full rows, with statuses and the check date, are under
+[certification and program regimes](#certification-and-program-regimes).
+
+| The instrument | What it actually is | The question that makes it useful |
+|---|---|---|
+| **An examination report on a service organization** | A licensed firm's opinion against elected criteria, restricted in use, with no pass mark and no certificate. Type 2 covers operating effectiveness over a period, typically six to twelve months; Type 1 is a point-in-time design opinion only | Read the scope statement and the listed exceptions. A report with no exceptions over twelve months is unusual enough to be worth asking about. The cover page tells you nothing |
+| **A management-system certificate from an accredited body** | A certificate for a stated scope, issued by a certification body rather than by the standards publisher. Universally called "the international" version of the report above, and it is a different instrument with a different failure mode | Read the scope statement on the certificate. A certificate whose scope covers one office or one business unit is common, and is not what the reader assumes |
+| **A validated assessment of an organization's controls and environment** | A third-party validated result at one of several named tiers, which are not interchangeable. Explicitly not a software product certification: there is no path by which distributable software is certified, though the environment operating it can be | Which tier, and what was in scope. Scope drives control count enormously -- the same highest tier can be a few hundred controls for one organization and a few thousand for another |
+
+**If what you sell is distributed software rather than a hosted service, the product can sit entirely
+outside the scope boundary of every row above.** That is not a loophole and not an accusation; it is
+what the scope statement says, and it is why the third column of that table is the column that
+matters.
+
+The cloud program authorizations belong in this layer for the same reason: they assess a service
+offering you operate, which is why they sit with the operating organization even though a software
+company usually pays for them.
+
+---
+
+## How these actually arrive
+
+At least five routes. This is the part that decides where budget and ownership land, because the
+route determines the owner far more reliably than the subject does.
+
+| Route in | What it looks like on the day | What actually governs | Who owns the response internally |
+|---|---|---|---|
+| **Direct binding on a producer** | A market-access rule you satisfy before you ship, with no customer asking | The regulation and the conformity route it sets | Engineering and release, not the compliance function |
+| **A clause in one specific contract, or a flow-down from a prime** | A clause number in a solicitation or an award | The clause text, plus any deviation that modifies it. Not the publication it cites | Contracts, with security supplying the evidence |
+| **A supplier-risk clause inside somebody else's regime -- the questionnaire** | A spreadsheet quoting identifiers drawn from several unrelated documents | Their obligation, not yours. It never binds you; it obliges them to ask | Security with sales, and it is the largest recurring cost in this table |
+| **A procurement or payment-chain agreement** | A program status or a validation requirement as a condition of the deal | The program's or the counterparty's own rules, which may not be the standard author's | The program owner, usually outside security |
+| **Your own risk decision** | Nobody asked. You adopted it | Your own written scope, and nothing else | Whoever proposed it, and that should be written down |
+
+**Exactly one item on this page takes the first route.** The market-access regulation binds a
+producer with nobody asking: placing a product with digital elements on that market is the trigger,
+so where the product goes decides it and who buys it does not. Everything else arrives because
+somebody asked -- a contracting officer inserted a clause, a prime flowed one down, a customer sent a
+questionnaire, an acquirer set a validation requirement, or you adopted it yourself. So the first
+question about any named standard is never "what does it say". It is **who is asking, and in which
+document**.
+
+The routine consequence is a budget in the wrong place. A market-access rule has to be satisfied
+before shipping, so it is owned by engineering and release. Everything else is owned by whoever holds
+the contract, with security supplying evidence. Sorting a program by subject matter puts both in the
+same pile and gives them to the same team.
+
+---
+
+## Why every status carries a date
+
+Staleness takes at least five shapes. Naming them is worth more than any individual fact, because you
+will meet a sixth.
+
+1. **A mandate rescinded while its artifacts survive.** The instruction goes; the form, the signature
+   and any standing duty attached to it do not. The worked example is
+   [the federal attestation chain](#requirement-shaped-items) above: told as one January 2026 event
+   when it was two, seven months apart, which loses the fact that the verification model was already
+   gone in mid-2025.
+2. **A draft cited as though final.** The most common shape and the hardest to see, because a draft
+   and a final look identical once quoted in a policy.
+3. **A published version that is not the version being audited.** The newest file on a publisher's
+   site is not automatically the assessment baseline.
+4. **A rename.** Search stops working, and both names are often legitimately live at once.
+5. **A milestone suspended by policy while the rule that set it stands unamended.** The rule text and
+   the operative position then disagree, and only one of them is in the publication. The defense
+   program's phases beyond the first, suspended on 2026-07-13 with neither rule amended nor repealed,
+   are the live example; its row above carries the full correction.
+
+**The instrument check.** What binds you is a clause, and a clause pins a dated version. So "use the
+current publication" is frequently the wrong instruction: a regulation citing a publication by date
+keeps citing it after the publisher supersedes it, which is how a rule stays stable rather than an
+error in it. It is also why no identifier here appears without its version, revision, edition or
+release -- a bare identifier resolves differently depending on when and where you look it up.
+[The assessment method page](../ASVS-ASSESSMENT.md) covers pinning a standard's corpus so it cannot
+shift underneath an assessment already in progress.
+
+---
+
 ## What is not primary-verified here
 
 Each row names the check to run instead of trusting this page. One limit covers a whole class and is
@@ -242,12 +399,45 @@ smoothed over, and the page prefers "at least these" to an enumeration everywher
 
 ---
 
-## Where to re-check a status
+## Sources, and how to re-check them
 
-A status is authoritative in at least four places, listed with their live examples in
-[the guide](STANDARDS-LANDSCAPE.md#sources-and-how-to-re-check-them): the publisher's own
-publications listing, the program's own definitions page, the clause plus any deviation that modifies
-it, and the data file's own header for a generated score.
+A status is authoritative in at least these four places:
+
+- **The publisher's own publications listing**, which shows Final, Draft, Withdrawn or Superseded
+  against a dated record. For the NIST items that is the
+  [CSRC publication records](https://csrc.nist.gov/publications); for the EU items, the
+  [Commission's own policy pages](https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act);
+  for the US federal memoranda and rules, the issuing office and the
+  [Federal Register](https://www.federalregister.gov/).
+- **The program's own definitions page**, for anything whose vocabulary has moved. The
+  [cloud program's definitions](https://www.fedramp.gov/2026/definitions/) is the live example.
+- **The clause, plus any deviation that modifies it.** A publication database answers a different
+  question from the one your contract asks.
+- **The data file's own header**, for a generated score. The published exploit-probability data
+  carries a comment line naming the generating model.
+
+Where a status would otherwise be unverifiable, read the primary document: the
+[January 2026 memorandum that rescinded the federal attestation mandate](https://www.whitehouse.gov/wp-content/uploads/2026/01/M-26-05-Adopting-a-Risk-based-Approach-to-Software-and-Hardware-Security.pdf),
+the [2026 SBOM minimum elements](https://www.cisa.gov/resources-tools/resources/2026-minimum-elements-software-bill-materials-sbom),
+the [SSDF publication listing](https://csrc.nist.gov/Projects/ssdf/publications), and the
+[build and source track specifications](https://slsa.dev/spec/v1.2/build-requirements).
+
+---
+
+## Related pages on this site
+
+| If you need | Read |
+|---|---|
+| Which of these is even worth your attention, routed by situation | [Which standards apply to you](WHICH-STANDARDS-APPLY.md) |
+| What to require of a vendor you are evaluating, and what each answer proves | [What to ask a software vendor for](DILIGENCE-PACKET.md) |
+| Whether your teams already do this | [The CISO summary](CISO-SUMMARY.md) |
+| The control set for AI-assisted work | [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) |
+| The process a build must satisfy, and who owns which control | [Secure development](SECURE-DEVELOPMENT.md) |
+| Trusting code you did not write, and controlling what you publish | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |
+| Running an assessment against a standard with several hundred requirements | [Use OWASP ASVS 5.0](../ASVS-ASSESSMENT.md) |
+| All of it, and how to adopt | [Overview](OVERVIEW.md) |
+
+---
 
 **MIT licensed.** Adapt this, put your own name on it, and delete anything you cannot stand behind.
 Re-date it when you do: a status claim inherits the date it was checked, not the date it was copied.
