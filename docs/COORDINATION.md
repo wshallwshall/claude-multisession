@@ -159,6 +159,13 @@ stdout stays pure JSON, and an empty roster prints the literal `[]` rather than 
 `@() | ConvertTo-Json -AsArray` emits *nothing at all*, which a consumer cannot distinguish from a
 script that died before answering.
 
+That has to hold on **every** exit, not just the interesting ones. The not-inside-a-repository path
+was the exception that hid: it emitted `[]` and exited 0 with no receipt at all, alone among that
+file's unavailable paths -- the same two bytes a completed fence emits when it has read every config
+root and found nobody. This is the roster other tools gate on, so an empty list read as an all-clear
+is a green light derived from nothing having been measured. **A receipt on the paths you were
+thinking about is not a receipt.**
+
 ### Keep exactly one copy of the fence
 
 `presence.ps1` (a read-only roster), `scripts/worktree/sessions.ps1` (which **moves** a transcript)
