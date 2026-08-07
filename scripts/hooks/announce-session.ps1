@@ -668,7 +668,12 @@ try {
         $lines += '   extension of the primary checkout''s path, so a prefix match resolves a peer in'
         $lines += '   the primary to some arbitrary worktree session. Measured here: the two rosters'
         $lines += '   print byte-identical cwds, so an exact match is expected to succeed.'
-        $lines += '   No exact row, or isRunning is false -> SKIP that peer. Never guess an id.'
+        $lines += '   No exact row -> SKIP that peer. Never guess an id. An exact row is enough:'
+        $lines += '   isRunning is NOT a reachability flag and is NOT a skip condition. It reports'
+        $lines += '   whether the peer is mid-turn right now; a listed session with isRunning false'
+        $lines += '   is idle, not gone, and send_message delivers to it normally -- the message'
+        $lines += '   simply waits as a user turn until that session next runs. Message every peer'
+        $lines += '   that matched a row.'
         $lines += '3. send_message to the sessionId from that row. It MUST start with ''local_''.'
         $lines += '   The 8-character id in this repo''s coordination banners is the REGISTRY id, a'
         $lines += '   different namespace: measured on the repo this was developed in, a registry id'
@@ -684,7 +689,7 @@ try {
         $lines += '     touching: <one line, if you already know>'
         $lines += '   It lands as a USER turn in their session. Ask nothing, expect no answer.'
         $lines += "5. Append one line per peer to $StateDir/sent/$markerKey.tsv :"
-        $lines += '     <iso8601> TAB <peer cwd> TAB <local_ id | NOT_LISTED | NOT_RUNNING> TAB <sent | failed>'
+        $lines += '     <iso8601> TAB <peer cwd> TAB <local_ id | NOT_LISTED> TAB <sent | failed>'
         $lines += '   Nothing else records whether anything was delivered.'
         $lines += ''
         # claims/ is a sibling of announce/ under the state root, whose layout Get-CcxStateRoot

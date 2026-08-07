@@ -442,7 +442,12 @@ Branch does not join them either: the two rosters reported different branches fo
    (case-insensitive). **Do not prefix-match.** Every worktree cwd in a repo is an extension of the
    primary checkout's path, so a prefix match resolves a peer *in the primary* to some arbitrary
    worktree session. Measured: the two rosters print byte-identical cwds, so an exact match is
-   expected to succeed. No exact row, or not running -> **skip that peer**. Never guess an id.
+   expected to succeed. No exact row -> **skip that peer**. Never guess an id. A matched row is
+   enough on its own: **`isRunning` is not a reachability flag.** It reports whether that session is
+   mid-turn at the instant you called `list_sessions`, and most peers are idle most of the time. A
+   listed session with `isRunning: false` is idle, not gone -- `send_message` delivers to it
+   normally, and the message waits as a user turn until that session next runs. Skipping on it
+   silently drops nearly every peer, which is the failure this step exists to prevent.
 3. Send to the `sessionId` from that row. A usable messaging id starts with `local_`.
 4. Message at most the peers you actually reached, one message each.
 
