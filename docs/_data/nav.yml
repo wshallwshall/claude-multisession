@@ -131,6 +131,12 @@
       title: "Case study: auditing a multi-session estate as one system"
       path: /CASE-STUDY-drift-audit.html
 
+- group: Contributing
+  items:
+    - label: House style
+      title: "House style: what a page here has to do"
+      path: /HOUSE-STYLE.html
+
 - group: On GitHub
   items:
     - label: CLAUDE.md template
