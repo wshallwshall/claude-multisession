@@ -34,33 +34,6 @@ Having no second reviewer is a documented deviation with named compensating cont
 condition -- not a clean pass ([when there is no second
 reviewer](#when-there-is-no-second-reviewer)).
 
-## What you get
-
-- **A rigor dial instead of an all-or-nothing process.** Two axes and a four-cell tier ladder resolve
-  any change to exactly one tier, and that tier says which controls are mandatory and which you may
-  skip. A one-line fix carries no release-grade ceremony, in writing, which is what stops a heavy
-  process from being ignored wholesale.
-- **A classification you can do in seconds.** One question decides most changes, and the cheap answer
-  errs strict rather than convenient.
-- **Five named failure modes, each with a named control.** Every rule below traces to one of them, so
-  you can audit your own practice with five questions, and test any proposed new rule by asking which
-  mode it neutralizes. If the answer is none, it is decoration.
-- **A hard line between a control and a wish.** A gate is a deterministic check with an exit code, and
-  the model never certifies its own output. That single rule is what most agent-assisted processes
-  blur.
-- **A defensible posture when there is no second reviewer.** Name the control you cannot meet, the
-  compensating set, and the event that ends the deviation -- instead of overclaiming review coverage
-  or quietly having none.
-- **Wording that survives a reviewer.** An approved-phrasing table sets the overclaim beside each
-  correct near-neighbour, so you can publish what your process buys without accidentally making a
-  compliance claim.
-- **An adversarial verification pass that is actually independent**, written as a technique rather
-  than a product feature: verifiers that did not produce the artifact, told to refute rather than
-  review, given distinct lenses, reporting a counterexample and a command log. Plus the honest cases
-  where the pass is pure waste.
-- **Five habits that raise the quality of what an AI coding assistant returns in the codebase you
-  already have**, and the reason each one works.
-
 ## What this costs you, and where it does not apply
 
 - **This page ships nothing** -- no hooks, no prompts, no configuration, no workflow. It is a standard
