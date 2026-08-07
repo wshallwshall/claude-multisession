@@ -10,102 +10,31 @@
 ## TLDR/BLUF
 
 This is a starting point for your own secure development standard, not a standard to comply with
-and not a compliance attestation. Copy it, cut what your project does not have, and publish the
+and not a compliance attestation: copy it, cut what your project does not have, and publish the
 result under your own name.
-[Adapting this to your project](#adapting-this-to-your-project) is the guide to doing that: what you
-may change freely, and the shorter list that stops being a control the moment you weaken it.
 
-What you are adapting is a finished process rather than an outline -- the process a build has to
-satisfy before you can honestly say it was built securely. It answers who owns what, what gets
-threat modelled, and what a review checks. It also answers which checks may never be waived, how a
-release is signed and verifiable, and what has to be true on the day you ship. The work is editing
-something down to your project, not drafting one from nothing.
-
-Written for a project where much of the code is written by Claude Code, or another AI coding
-assistant, and several sessions push into one trunk. That is not a special case for this material.
-It is the case where the process layer stops being paperwork, because the machine-enforced layer
-gets cheap and the human layer does not.
-
-**What it demands.** Judge a build's security as a composite of two layers. Never on one row of
-either -- [the shape](#the-shape-two-layers-and-the-second-is-where-the-defects-are) says what is in
-each. A named set of checks blocks every change and cannot be waived by an author. Every trust
-boundary gets a written threat model, reviewed before the code exists. Every requirement you cannot
-meet is written down, dated, signed, and carries the event that ends it. No green pipeline is a
-verdict.
-
-**What it costs.** Calendar time where automation does not reach, controls you must not claim
-because you do not own them, and a gap you cannot close by working harder.
-[What this costs you](#what-this-costs-you) is the list, and it is short.
-
-It is deliberately framework-neutral, and it names practices, never certifications. No standards
-body issues a certificate for any of this, and a self-assessment is not one either. So every claim
-here is phrased as something you can evidence rather than something you can be awarded.
-
-Where to start. The ownership split in
-[section 1](#1-shared-responsibility-write-the-split-down-first), then the data-class table under
-it. [How to adopt this](#how-to-adopt-this) sets the rest of the order, and
-[In one table](#in-one-table) is the summary.
-
-For where a rule was borrowed from, and what the bracketed marks on some rules mean, see
-[Where the rules come from](#where-the-rules-come-from).
+- **What it demands.** A named set of checks that blocks every change and cannot be waived by an
+  author, a written threat model per trust boundary reviewed before the code exists, and every
+  requirement you cannot meet written down, dated, signed, and carrying the event that ends it. A
+  verdict is the composite of
+  [two layers](#the-shape-two-layers-and-the-second-is-where-the-defects-are), never one row of
+  either -- no green pipeline is a verdict.
+- **What it costs.** Calendar time where automation does not reach. Controls you must not claim
+  because you do not own them -- the strongest tamper controls belong to whoever runs the software.
+  And two gaps an internally-run pipeline cannot substitute for: third-party source review and
+  [penetration testing](#15-independent-external-verification). No code ships with this -- no
+  workflow, no scanner configuration, no template.
+- **Where it does not apply.** Throwaway work nobody installs, and anything you operate rather than
+  produce. Building to this confers nothing on the product, on you, or on an adopter, and it does
+  not substitute for an adopting organization's own assessment.
+- **Where to start.** The ownership split in
+  [section 1](#1-shared-responsibility-write-the-split-down-first), then the data-class table under
+  it. [Adapting this to your project](#adapting-this-to-your-project) says what you may change
+  freely and the shorter list that stops being a control the moment you weaken it;
+  [How to adopt this](#how-to-adopt-this) sets the order, and [In one table](#in-one-table) is the
+  summary.
 
 ---
-
-## What you get
-
-- A written ownership split. One table saying what the producing project owns and what the
-  operating organization owns, so a control cannot end up unowned because each side assumed the
-  other had it.
-- Review with something to check against. A per-boundary threat model turns "does this change
-  look secure" into "which boundary does this touch, and does its named mitigation still hold". A
-  missing control then shows up as a gap in an enumeration rather than as something nobody thought
-  of.
-- A finite secure-coding list. A reviewer, human or automated, gets a bounded set of questions
-  instead of an unanswerable one.
-- An honest read of your own pipeline. Two layers, weighted differently, with a plain statement
-  of what a green run has and has not established. Effort goes to the layer that is actually
-  missing rather than to a ninth scanner.
-- A release gate that is a checklist, not a debate. Defined pass and fail conditions, so the
-  conditions under which you shipped are recoverable afterwards.
-- Artifacts an adopter can verify without trusting your description of your process -- build
-  provenance, an attestation over the artifact digest, a component inventory, a published digest
-  manifest with the offline verification path documented.
-- A posture you can publish when you cannot meet every requirement. Dated deviations, named
-  compensating controls, and a trigger that ends each one -- instead of either overclaiming or
-  quietly having a gap.
-- Wording that survives a reviewer. Phrases you can use, phrases you cannot, and the reason, so
-  publishing a security page does not accidentally assert a certification that does not exist.
-
-## What this costs you
-
-- Calendar time in two places that resist automation. Threat modeling happens before the build,
-  and vulnerability response has to be rehearsed end to end at least once. Neither can be discharged
-  by a passing check.
-- **Controls you do not own and must not claim.** The strongest tamper controls -- file-integrity
-  monitoring, immutable deployment, least-privilege file ownership, signed-artifact admission
-  control -- belong to whoever runs the software. You can document and recommend them. Claiming them
-  is a defect.
-- A gap you cannot close by working harder. Third-party source review and penetration testing are
-  the two controls an internally-run pipeline cannot substitute for. Developer-run dynamic testing is
-  not one of them -- [section 2](#2-threat-model-each-trust-boundary-before-you-build-it) carries the
-  version that costs runner minutes, and
-  [section 15](#15-independent-external-verification) records
-  why this list once said otherwise. In one project's planning, a single engagement at the highest
-  assurance tier was budgeted in the tens of thousands of currency units.
-  If you cannot fund it, the honest move is to say so and hold the gap under a signed acceptance --
-  not to let a self-assessment read as verification.
-- No code ships with this. No workflow, no scanner configuration, no template. The mechanics
-  below are described so you can build them where you already run checks.
-
-### Where this does not apply
-
-- Throwaway work. A spike nobody installs does not need a threat model or a release gate.
-  Applying the whole of this to code with no consumer is how a process gets abandoned wholesale.
-- Anything you are not the producer of. If you operate software rather than publish it, most of
-  the build and release sections are somebody else's obligation and the hardening sections are
-  yours.
-- As a compliance position. Building to this confers nothing on the product, on you, or on an
-  adopter, and it does not substitute for an adopting organization's own assessment.
 
 ## How to adopt this
 
