@@ -70,8 +70,9 @@ rather than building one.
 **Record which revision of each document you tailored from.** These are edited continuously and are
 meant to be forked, and a baseline taken against a moving source cannot be re-run at step 3's next
 iteration. That instruction is this page's own addition, borrowing a habit the assessment method
-applies to a published standard's text ([Security standard assessment](../ASVS-ASSESSMENT.md), *"Pin
-the corpus, and stamp the version on every number"*).
+applies to a published standard's text
+([Running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md), *"Pin the
+corpus, and stamp the version on every number"*).
 
 ---
 
@@ -656,8 +657,9 @@ lagging its current headings rather than as a complete account of them.
 
 ### If you run a formal assessment against a published standard
 
-From [Security standard assessment](../ASVS-ASSESSMENT.md). These apply only if you assess a codebase
-against a standard with many individually verifiable requirements. Skip the whole table otherwise.
+From [Running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md). These
+apply only if you assess a codebase against a standard with many individually verifiable
+requirements. Skip the whole table otherwise.
 
 | Control | From | Force | Cost | Usually |
 |---|---|---|---|---|

@@ -51,29 +51,9 @@ is worth little without the one above it:
 If you take one rule from this page: **a verdict that does not quote the requirement's own words has
 not been assessed**, however well it reads.
 
-## What you get
+## What one scored cell looks like
 
-- **A verdict vocabulary that cannot be misread** -- six grades, each marked standard-native or
-  local extension, each with the written definition that stops two sessions meaning different things
-  by the same word. Including `unverified`, which exists so that inherited verdicts cannot pass
-  themselves off as fresh ones.
-- **A record shape that does not drift.** Exactly one computed scorecard is the authority, and no
-  prose document states a count -- because a typed number is a second source of truth from the
-  moment it is typed.
-- **The partitioning that survived real concurrency.** One integrator owns every write; workers read
-  the record and emit structured verdict files but never edit it; claims are taken by an atomic
-  filesystem operation rather than by convention, and they do not expire.
-- **The recurring agent failure modes in one table**, ordered by cost, each paired with the forcing
-  function that neutralizes it -- the completeness claim, the control that does nothing but is
-  certified into the record, the citation whose surrounding code now means the opposite.
-- **A review pass with three lenses that pull apart cleanly**, and the measured caveat that
-  reviewers given the same instruction converge on the same defects and leave the rest untouched, no
-  matter how many of them you add.
-- **A closing checklist** to run against a finished assessment before anyone signs it.
-
-### What one scored cell looks like
-
-Everything above is a claim about record-keeping, so here is the shape itself. This is an
+Every forcing function above is a claim about record-keeping, so here is the shape itself. This is an
 illustrative skeleton, not a result -- every value is a placeholder:
 
 ```toml
