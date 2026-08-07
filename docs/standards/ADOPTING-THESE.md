@@ -2,15 +2,41 @@
 
 **The rest of this section tells you what to read. This page tells you what to do with it.**
 
-Adoption is five steps, and each one ends in an artifact that either exists or does not: a marked
-worksheet, a deviations register, a three-item queue, a set of checks with dates against them, and a
-project instruction file that references all four. Those artifacts are the deliverable. Having read
-the documents is not.
-
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/ADOPTING-THESE.md)
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/ADOPTING-THESE.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
+
+---
+
+## In short
+
+**The deliverable is five artifacts, not five documents read.** A marked baseline worksheet, a
+deviations register, a three-item queue, a set of checks each carrying the date somebody last
+watched it refuse something, and a project instruction file that references the other four. Each one
+either exists or it does not, which is what lets somebody other than you check whether adoption
+happened.
+
+**Do not assume you start from zero.** A team that reviews changes, runs a linter, keeps secrets out
+of the repository and pins some dependencies already satisfies parts of four of these documents.
+What you have is usually a weaker form of a named rule, so the opening pass produces a short list of
+upgrades rather than a build plan -- and that pass is read-only. It builds nothing, on purpose.
+
+**Sequence by what enables what, not by risk and ease.** Two people can rank the same two controls
+by risk and neither can be shown wrong, so such a ranking can only be overruled, never reviewed.
+What-enables-what is checkable: you can be shown to have made a check blocking before anything
+recorded what it examined, or to have written a rule about "restricted data" before anything defined
+the term. It is also why instrumentation comes before ranking -- with no receipts, every severity
+ranking is unfalsifiable.
+
+Two things hold at every step. A blocking row nobody has watched refuse anything is
+indistinguishable from one that cannot refuse anything. And tailoring is expected where silent
+tailoring is not, because a control that quietly left the set reads exactly like a control nobody
+got to.
+
+**None of it confers anything** -- no certification and no badge, for you or for anyone adopting
+your software. The deviations register records decisions you made; it is not evidence of compliance
+with anything.
 
 ---
 
