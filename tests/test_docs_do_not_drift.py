@@ -123,6 +123,46 @@ def tracked_files() -> list[str]:
     return [line.strip() for line in out.stdout.splitlines() if line.strip()]
 
 
+class TheTestIndexNamesEveryTest(unittest.TestCase):
+    """`tests/README.md` tabulates what each test file pins. Pin that the table is complete.
+
+    THE FAILURE THIS EXISTS FOR, and it is not hypothetical: the table had fallen to SIX rows for
+    ELEVEN files before anyone noticed. Nothing signalled it. A reader consulting the index to find
+    out what is covered gets a confident answer that silently omits five files, which is worse than
+    no index -- an absent row reads as "no such test" rather than "nobody updated this".
+
+    It is the same shape as every other case in this file: a document that describes the system, kept
+    by hand, with nothing making it keep up. Both directions are checked, because a row naming a file
+    that has since been deleted or renamed is the same defect pointing the other way.
+    """
+
+    INDEX = t.REPO_ROOT / "tests" / "README.md"
+    ROW = re.compile(r"^\| `(test_\w+\.py)`", re.M)
+
+    def test_the_table_names_every_test_file_and_no_others(self):
+        listed = set(self.ROW.findall(t.read(self.INDEX)))
+        self.assertTrue(
+            listed,
+            f"{self.INDEX.name}: no `| `test_*.py`` rows found at all. Either the table was "
+            "reshaped or this pattern stopped matching it -- and an empty set would compare equal "
+            "to an empty expectation and report agreement, so this raises instead.",
+        )
+        present = {p.name for p in (t.REPO_ROOT / "tests").glob("test_*.py")}
+        self.assertEqual(
+            set(),
+            present - listed,
+            f"these test files have no row in {self.INDEX.name}: {sorted(present - listed)}. Add "
+            "one saying what it pins and the failure it exists for, or the index quietly claims "
+            "they do not exist.",
+        )
+        self.assertEqual(
+            set(),
+            listed - present,
+            f"{self.INDEX.name} has rows for files that are gone: {sorted(listed - present)}. A "
+            "row for a deleted test is a coverage claim with nothing behind it.",
+        )
+
+
 class TheInstallProcedureHasOneCopy(unittest.TestCase):
     """docs/index.md owns the procedure; README.md points at it rather than repeating it.
 
