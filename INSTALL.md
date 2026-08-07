@@ -1,8 +1,25 @@
 # Install
 
-Four installers, four scopes, and how to prove each one is actually live.
+## TLDR/BLUF
 
-Read this section first, because it is the reason the rest of the document is shaped the way it is:
+Four installers, four scopes, and how to prove each one is live rather than merely merged.
+
+- **What it demands.** `pwsh` 7.3+, `git`, a `python` on `PATH`, and a `ccx.config.json` at the root
+  of the repository you want governed. That file is the opt-in marker as well as the knob file:
+  without it the user-scope hooks stay inert in that repository, whatever they are wired to.
+- **What it costs.** Everything is written **outside** the repository you are governing, and three
+  of the four installers write at user scope -- so their hooks fire in every repository on the
+  machine, which is what the opt-in marker exists to bound.
+- **Not for you if you are not on Windows.** This is PowerShell 7 and Windows-first. The Python
+  checkers are portable and almost nothing else is, and off Windows path comparison stops
+  case-folding, which the doctor prints as a blind spot rather than working around.
+- **Where to start.** Step 0, opt in. Then the doctor, then what the doctor says it scanned -- that
+  reading is the only thing separating an installed control from a merged file. Expect the ASCII gate
+  to read `OFF` even after a complete install, and the sequence gate to join it once you configure
+  `sequences`; both are counted on an `OFF (opt-in)` line rather than folded into the `OFF` total, and
+  [Controls no installer wires](#controls-no-installer-wires) says why neither is a hole.
+
+---
 
 > **Cloning this repository installs nothing.** Merging a hook does not install one. Every control
 > here runs from a copy or a wiring entry that an installer has to write, and until that happens the
@@ -15,8 +32,6 @@ coordination hook sat wired-but-resolving-nothing for hours while the settings f
 because a similarly-named entry from an unrelated project occupied the slot. Another gate had dozens
 of passing tests, every one of them binding the repository's copy while enforcement ran from a stale
 installed copy.
-
-So: install, then run the doctor, then read what the doctor says it scanned.
 
 ---
 
