@@ -1,4 +1,4 @@
-# Secure development: the process a build must satisfy
+# Secure development: a starting point for your own standard
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/SECURE-DEVELOPMENT.md)
@@ -9,12 +9,17 @@
 
 ## TLDR/BLUF
 
-This is a starting point you adapt, not a compliance attestation. It describes the process a build
-has to satisfy before you can honestly say it was built securely.
+This is a starting point for your own secure development standard, not a standard to comply with
+and not a compliance attestation. Copy it, cut what your project does not have, and publish the
+result under your own name.
+[Adapting this to your project](#adapting-this-to-your-project) is the guide to doing that: what you
+may change freely, and the shorter list that stops being a control the moment you weaken it.
 
-It answers who owns what, what gets threat modelled, and what a review checks. It also answers which
-checks may never be waived, how a release is signed and verifiable, and what has to be true on the
-day you ship.
+What you are adapting is a finished process rather than an outline -- the process a build has to
+satisfy before you can honestly say it was built securely. It answers who owns what, what gets
+threat modelled, and what a review checks. It also answers which checks may never be waived, how a
+release is signed and verifiable, and what has to be true on the day you ship. The work is editing
+something down to your project, not drafting one from nothing.
 
 Written for a project where much of the code is written by Claude Code, or another AI coding
 assistant, and several sessions push into one trunk. That is not a special case for this material.

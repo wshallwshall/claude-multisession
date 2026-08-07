@@ -45,7 +45,7 @@
       title: The CISO summary
       path: /standards/CISO-SUMMARY.html
     - label: Secure development
-      title: "Secure development: the process a build must satisfy"
+      title: "Secure development: a starting point for your own standard"
       path: /standards/SECURE-DEVELOPMENT.html
     - label: Which standards apply to you
       title: "Which security standards actually apply to you?"
