@@ -301,6 +301,23 @@ function Build-Map {
         # squash, rebase and merge-commit alike. Measured on the repository this was developed in: two
         # landed branches claimed 8 and 4 files under three-dot and 0 under the intersection, while
         # every branch with genuinely outstanding work kept its full file set unchanged.
+        #
+        # IT SELF-CLEARS ONLY WHILE NOBODY ELSE EDITS THE SAME FILE, and that condition is not
+        # decoration -- it was measured here after the fact. A worktree whose work had squash-landed,
+        # working tree clean, detached at its pre-squash tip, was STILL credited with tests/README.md:
+        # a later branch touched that same file, so two-dot reports it as differing from the trunk
+        # again and the intersection stops being empty. The landed branch is blamed for somebody
+        # else's edit.
+        #
+        # LEFT AS IT IS, DELIBERATELY. Such a row is DORMANT with MatchedDirty false, so the gate
+        # cannot block on it (it requires Live AND MatchedDirty) and session-context.ps1 filters
+        # dormant rows out entirely -- the cost is one line in a human summary, not a refused edit.
+        # And the precise question, "is this difference MINE or did someone change it after me", is
+        # not one the two-dot form can answer at all; buying it would mean walking history per file
+        # on the hot path of every edit. Over-reporting a dormant row is the safe direction.
+        #
+        # What is NOT safe is reading the self-clearing property as unconditional, which is how it
+        # was written for one release and how a reader will otherwise take it.
         $files = @()
         if ($Trunk) {
             $authored = @(& git -C $w.Path diff --name-only "$Trunk...HEAD" 2>$null)

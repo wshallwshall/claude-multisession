@@ -297,6 +297,21 @@ rebase and merge-commit alike. Measured on the repo this tooling was developed i
 branches claimed 8 and 4 files under three-dot and 0 under the intersection, while every branch with
 genuinely outstanding work kept its full file set.
 
+**It self-clears only while nobody else edits the same file.** That condition was missing from this
+page for a release, and it is not hypothetical -- it was measured here afterwards. A worktree whose
+work had squash-landed, working tree clean, detached at its pre-squash tip, was still credited with
+`tests/README.md`, because a *later* branch touched that same file. Two-dot then reports the file as
+differing from the trunk again, the intersection stops being empty, and the landed branch is blamed
+for somebody else's edit.
+
+That is left in place on purpose. Such a row is **dormant** with `MatchedDirty` false, so the
+collision gate cannot block on it -- it requires `Live` **and** `MatchedDirty` -- and
+`session-context.ps1` filters dormant rows out of the banner entirely. The cost is one line in a human
+summary, not a refused edit. And the precise question, *"is this difference mine, or did someone
+change it after me?"*, is not one the two-dot form can answer; buying it means walking history per
+file on the hot path of every edit. **Over-reporting a dormant row is the safe direction.** Reading
+the self-clearing property as unconditional is not.
+
 ### Read-only means read-only
 
 `overlap.ps1` walks every peer worktree. A plain `git status` **rewrites the index of the repo it
