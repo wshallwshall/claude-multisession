@@ -79,6 +79,18 @@ import _ccxtest as t
 # procedure, and pinning those would fail on a wording change that harms nobody.
 INSTALL_COMMAND = re.compile(r'pwsh -NoProfile -File "\$tooling/[^\n]*')
 
+# The BLUF heading the standards set and both landing pages settled on, and the spellings it
+# replaced. Held as data because two tests read it, and stated as a BAN on the old forms rather than
+# a requirement for the new one -- see TheBlufConventionHasOneSpelling for why that distinction is
+# deliberate. The inline form is matched at the start of a line because that is where it was used;
+# the words "TL;DR" inside a sentence are prose and are nobody's convention.
+BLUF_HEADING = "## TLDR/BLUF"
+SUPERSEDED_BLUF = (
+    r"^##\s+In short\s*$",
+    r"^##\s+TL;?DR\s*$",
+    r"^\*\*TL;DR\b[^*]*\*\*",
+)
+
 # Every outbound link into this repository's own tree, in both forms it is published in: the
 # human-readable blob view, and the raw view the standards hand out for download. Both pin `main`
 # and both rot into a 404 the same way, so both belong in one scan -- a pattern that saw only the
@@ -331,6 +343,84 @@ class TheScansCanSeeWhatTheyLookFor(unittest.TestCase):
         self.assertIsNone(
             CLAUDECODE_LOOSE.search("All four installers refuse when `$env:CLAUDECODE` is `1`,"),
             "the pattern must not fire on the correct wording, or the fix cannot make it green.",
+        )
+
+
+class TheBlufConventionHasOneSpelling(unittest.TestCase):
+    """The convention drifted three times in one evening, and every drift was green.
+
+    THE FAILURE THIS EXISTS FOR, measured rather than imagined. The standards set converged on a
+    BLUF heading. It was spelled `## In short` on some pages and `**TL;DR --**` inline on the two
+    landing pages, and the owner settled it as `## TLDR/BLUF` across all of them. While that rename
+    was in flight, three further pages -- AI-ASSISTED-DEVELOPMENT, CODE-QUALITY and
+    DEPENDENCY-INTEGRITY -- each gained a BLUF from a different session, all three spelled the old
+    way, none of them wrong to do so because nothing recorded that the spelling had moved. Every one
+    passed every gate. The set went from three pages to five to eight in a few hours.
+
+    WHAT IS PINNED, AND WHAT IS DELIBERATELY NOT. This checks only that no page carries a SUPERSEDED
+    spelling. It does NOT require a page to have a BLUF at all.
+
+    That restraint is the point, not an omission. Requiring one would be an editorial rule about
+    what every future standard must contain, and two published pages -- WHICH-STANDARDS-APPLY.md and
+    STANDARDS-REFERENCE.md -- deliberately have no BLUF section today; each opens on a bold lede
+    doing the same job unheaded. Whether they should gain one is a writing decision for whoever owns
+    those pages. A test is the wrong place to make it, and a gate that fails on a legitimate
+    editorial choice is one people delete.
+
+    So: have a BLUF or do not. If you have one, spell it the way the rest of the set does.
+    """
+
+    def test_no_page_carries_a_superseded_bluf_spelling(self):
+        offenders = []
+        for relpath in tracked_files():
+            if not relpath.endswith(".md"):
+                continue
+            text = t.read(t.REPO_ROOT / relpath)
+            for spelling in SUPERSEDED_BLUF:
+                for match in re.finditer(spelling, text, re.M):
+                    line = text.count("\n", 0, match.start()) + 1
+                    offenders.append(f"{relpath}:{line}: {match.group(0).strip()}")
+        self.assertEqual(
+            [],
+            offenders,
+            "these pages spell the BLUF heading a way the set no longer uses:\n  "
+            + "\n  ".join(offenders)
+            + f"\nThe convention is `{BLUF_HEADING}`. Two spellings for one thing is how a reader "
+            "ends up believing the pages disagree about something, and it has already happened "
+            "three times here. Rename it -- and if the page has a Word copy, regenerate that in the "
+            "same commit.",
+        )
+
+    def test_the_canonical_heading_is_actually_in_use(self):
+        """The empty-match guard. A scan for absences passes trivially against an empty corpus.
+
+        If nothing carries the canonical spelling, either the convention was renamed again without
+        this file being told, or `tracked_files` has stopped returning markdown -- and in both cases
+        the case above is asserting nothing while reporting success.
+        """
+        carrying = [
+            relpath
+            for relpath in tracked_files()
+            if relpath.endswith(".md") and BLUF_HEADING in t.read(t.REPO_ROOT / relpath)
+        ]
+        self.assertGreaterEqual(
+            len(carrying),
+            5,
+            f"only {len(carrying)} tracked pages carry {BLUF_HEADING!r}. The absence scan above "
+            "would pass against a corpus where the convention had been renamed out from under it, "
+            "so this number is what makes that scan mean anything.",
+        )
+
+    def test_the_superseded_patterns_match_the_spellings_they_exist_to_catch(self):
+        """Prove each pattern on a planted example, and prove the canonical form is not caught."""
+        for planted in ("## In short", "## TL;DR", "**TL;DR --** run it"):
+            self.assertTrue(
+                any(re.search(p, planted, re.M) for p in SUPERSEDED_BLUF),
+                f"no superseded-spelling pattern fired on {planted!r}; the check is unenforced.",
+            )
+        self.assertFalse(
+            any(re.search(p, BLUF_HEADING, re.M) for p in SUPERSEDED_BLUF),
+            "a pattern fires on the canonical heading itself, so no page could ever be made green.",
         )
 
 
