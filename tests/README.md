@@ -1,17 +1,27 @@
 # Tests
 
 ```
-python -m pytest tests -q
-```
-
-They are plain `unittest` classes, so they also run with no third-party package at all:
-
-```
 python -m unittest discover -s tests -v
 ```
 
-Python 3 standard library only. Nothing is installed, nothing is committed, nothing outside a
-temporary directory is written.
+They are plain `unittest` classes, so no test runner is required. `python -m pytest tests -q` works
+too where pytest is present; both runners were measured against this suite and both report 87
+passing. CI uses the unittest form, run from inside `tests/` as
+`python -m unittest discover -s . -p 'test_*.py'` -- that and `discover -s tests` from the
+repository root find the same set.
+
+**Python 3 standard library, plus one external tool: `pandoc` must be on `PATH`.**
+`test_word_copies_track_the_markdown.py` rebuilds every published Word copy and compares it against
+the committed one, so the converter is a dependency of the suite rather than an optional extra.
+Without it, that file FAILS -- deliberately, and it does not skip, because a skip is printed beside
+the passes and reads as one.
+
+Prefer the pandoc version the committed copies were built with. A different one can report drift
+that is not there, and the fix for that is not to edit the markdown. CI installs **pandoc 3.10**,
+pinned and digest-verified, and the failure message prints the version it used.
+
+Nothing here is installed by the tests, nothing is committed, and nothing outside a temporary
+directory is written.
 
 ---
 
@@ -23,6 +33,7 @@ temporary directory is written.
 | `test_worktree_gate_no_args.py` | the gate, run with **no arguments**, is off with no allowlist, denies a write into a governed root, and allows one outside | the allowlist path is a **parameter default**, and a default is not evaluated when the caller supplies a value. A suite in which every case passed `-ReposFile` explicitly never executed that line once -- and a version shipped whose default died before the script's first line, with the suite green throughout |
 | `test_installers_never_write_pre_commit.py` | no installer this repo ships -- all four are enumerated -- writes, moves or removes `pre-commit`, and the git-hook installer still *reports* on it | two tools cannot both own that file. A hook framework that finds a foreign hook there may rename it and drive it from its own shim; that chain has failed on Windows and blocked every commit in a repository until the shim was removed. The renamed file *existing* did not indicate success -- only a real commit did |
 | `test_installer_copy_lists.py` | each installer carries its control's dependency closure: the module the Python checkers import, the helpers the gate dot-sources | a checker installed without the module it imports raises at import and refuses **every** commit; a gate installed without its helpers exits 0 after a stderr receipt and enforces **nothing**. Both look installed, and both hash correctly |
+| `test_word_copies_track_the_markdown.py` | every published `.docx` is what `pandoc` produces from its markdown **today** -- rebuilt and compared, not scanned for headings | the Word copies are generated and nothing regenerates them, so an edit leaves a stale copy published beside a current markdown one. The scan that lived here compared the title and the H2 headings, so **prose** edited under a heading that did not move stayed green -- which happened, across three documents at once. Text comparison is not enough either: a heading demoted `##` to `###` keeps every word, and a link's target is not in the document body at all |
 
 The requirement is read off the **consumer** wherever possible -- what the checkers actually import,
 what the gate actually dot-sources, where the installer actually writes its allowlist -- rather than
