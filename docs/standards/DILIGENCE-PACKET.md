@@ -13,8 +13,8 @@ proves.**
 
 ## In short
 
-**One mistake accounts for most of the wasted effort in vendor diligence: reading an audit report or
-a certificate as an answer about the product.** Those instruments examine how a company governs
+**The commonest mistake in vendor diligence is reading an audit report or a certificate as an answer
+about the product.** Those instruments examine how a company governs
 itself -- its policies, its access reviews, its change management. They never open the code. A
 vendor can hold a clean report across a full twelve-month period, ship software with an
 authorization flaw in it, and have said nothing false.
@@ -30,7 +30,7 @@ before anything else:
    artifact; for a hosted service it is the runtime production environment. A build-time source
    manifest answers a different question.
 3. **Two dates and a name:** the last dynamic test, the last incident response exercise, and who ran
-   the test. Both dates are trivial to supply if they happened and cannot be produced
+   the test. Both dates are trivial to supply if they happened, and neither can be produced
    retrospectively. The name decides whether you are holding an independent look or the output of
    the vendor's own tooling.
 
@@ -46,9 +46,10 @@ The three groups below are sorted by layer, which is the cut that makes the mist
 - **Software layer** -- evidence about the thing you are buying.
 - **Legal instruments** -- evidence about who pays when it goes wrong.
 
-None of this is a reason to dismiss the organization-layer instruments. That somebody outside the
-company examined how it governs itself, grants access and manages change, and wrote down what they
-found, is worth having; a vendor holding none of them is a different risk entirely. The failure is
+None of this is a reason to dismiss the organization-layer instruments. What they establish -- that
+somebody outside the company examined how it governs itself, grants access and manages change, and
+wrote down what they found -- is worth having, and a vendor holding none of them is a different risk
+entirely. The failure is
 narrower than that: reading a program attestation as an answer to "is this product secure", when no
 part of it asked that question.
 
@@ -62,7 +63,7 @@ layer](STANDARDS-LANDSCAPE.md#the-organization-layer-is-not-the-software-layer).
 
 ## Organization layer: evidence about the company
 
-Procurement already knows how to ask for these, and each is issued by a party other than the vendor
+Procurement already knows how to ask for these, and most are issued by a party other than the vendor
 -- which is where their weight comes from, and none of that weight is about the product. One caveat
 governs the whole group: an examination or a certification has a boundary, and software you install
 and run yourself frequently falls outside it. The boundary appears in the scope statement and
@@ -71,10 +72,10 @@ nowhere else.
 | The item | What it proves | What it does not prove | What to ask |
 |---|---|---|---|
 | **SOC 2 Type I** -- an examination report, point-in-time | A licensed firm's opinion that controls were suitably designed as of one date | That any control ever operated. It observed a design, not a period of behavior, and it looked at the organization rather than the code | Why Type I rather than Type II, and when does the first Type II period end? |
-| **SOC 2 Type II** -- an examination report over a period | A licensed firm's opinion on operating effectiveness across a period, typically six to twelve months, against the Trust Services Criteria the vendor elected | That distributed software was examined; it commonly sits outside the scope boundary. It is an attestation report, not a certificate -- there is no pass mark | What did the scope cover, and what exceptions did the firm list? |
+| **SOC 2 Type II** -- an examination report over a period | A licensed firm's opinion on operating effectiveness across a period, typically six to twelve months, against the Trust Services Criteria the vendor elected | That distributed software was examined; it commonly sits outside the scope boundary. The report is an attestation, not a certificate -- there is no pass mark | What did the scope cover, and what exceptions did the firm list? |
 | **ISO/IEC 27001** -- a management-system certificate | That an accredited certification body certified an information security management system for a stated scope | That a product was certified. It is not "the international SOC 2" -- that instrument is an opinion plus exceptions, this one a certificate plus a scope statement | What scope is printed on the certificate, and who accredited the body that issued it? |
 | **HITRUST CSF** -- a validated assessment of controls and environment | A third-party validated result at one of three named tiers -- e1, i1 and r2 -- which are not interchangeable | That distributable software was assessed. What is assessed is an organization's controls and environment, which can include the environment operating the software | Which tier was assessed, and what did the assessment take in? |
-| **Sector and program instruments** -- a PCI DSS validation document, a FedRAMP or StateRAMP authorization, a CJIS policy audit | That the operating environment for a named offering was assessed against that program's own rules | Anything about software you install and run yourself | Which offering was in scope, and is the offering you are buying the one that was named? |
+| **Sector and program instruments** -- a PCI DSS validation document, a FedRAMP or StateRAMP authorization, a CJIS policy audit | That the operating environment for a named offering was assessed against that program's own rules | Anything about software you install and run yourself. Nor that a third party did the assessing: a PCI DSS self-assessment questionnaire is completed and signed by the vendor | Which offering was in scope, was it independently assessed or self-assessed, and is the offering you are buying the one that was named? |
 
 Three things that trip people up here:
 
@@ -93,12 +94,13 @@ Three things that trip people up here:
 
 ## Software layer: evidence about the thing you are buying
 
-Nothing in the group above examined the code or the build. These four do, and the question is always
-how each one was produced. Three of them the vendor writes about its own system, so their weight
-comes from the discipline behind them rather than from who issued them. Testing evidence is the
-exception and the strongest item in the group -- it is the one software-layer artifact a third party
-issues. Ask for it by name, because a vendor asked for "testing evidence" will usually hand over the
-output of its own tooling.
+Nothing in the group above examined the code or the build. These four are about the code and the
+build, and the question is always how each one was produced. Three of them the vendor writes about
+its own system, so their weight comes from the discipline behind them rather than from who issued
+them. Testing evidence is the exception and the strongest item in the group, but only in one form:
+an external assessment or a penetration test, which is the one software-layer artifact a third party
+issues. Ask for it by those names, because a vendor asked for "testing evidence" will usually hand
+over the output of its own tooling.
 
 | The item | What it proves | What it does not prove | What to ask |
 |---|---|---|---|
