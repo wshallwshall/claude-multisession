@@ -50,16 +50,35 @@ ANCHOR SLUGS follow GitHub's rule: lowercase, drop everything that is not a word
 hyphen, then spaces to hyphens. GitHub disambiguates repeated headings with a `-1`, `-2` suffix, so a
 link to `#the-files-1` is accepted when `the-files` occurs more than once.
 
-THAT ONE RULE IS ENOUGH ONLY BECAUSE THE TWO RENDERERS AGREE, which was verified rather than
-assumed. These documents are read on github.com AND on the published Jekyll site, each of which
-generates heading ids itself. If they disagreed on a heading, a link would be correct on one surface
-and silently broken on the other, and pinning either rule alone would certify the wrong half.
-Checked against the deployed page on 2026-08-07: `## 1. Five failure modes, and the control for
-each` in `docs/standards/AI-ASSISTED-DEVELOPMENT.md` carries
+THAT ONE RULE IS ENOUGH ONLY BECAUSE THE TWO RENDERERS AGREE -- EXCEPT ON ONE HEADING SHAPE, AND
+THAT EXCEPTION IS NOW GATED BELOW. These documents are read on github.com AND on the published
+Jekyll site, each of which generates heading ids itself. If they disagree on a heading, a link is
+correct on one surface and silently broken on the other, and pinning either rule alone certifies the
+wrong half. Checked against the deployed page on 2026-08-07: `## 1. Five failure modes, and the
+control for each` in `docs/standards/AI-ASSISTED-DEVELOPMENT.md` carries
 `id="1-five-failure-modes-and-the-control-for-each"` on the site -- the leading digit kept,
 character-identical to github.com's slugger. Numbered headings are the case most likely to diverge
-and they do not, so one rule serves both. If a renderer's id generation ever changes, this file goes
-on passing while links break on one surface only; nothing local can see that.
+and they do not.
+
+`--` IS THE CASE THAT DOES DIVERGE, and this file was blind to it exactly as its own last paragraph
+once warned. github.com turns each space into a hyphen and keeps the two literal ones, so
+`### A completeness claim is a liability -- prefer "at least"` becomes
+`a-completeness-claim-is-a-liability----prefer-at-least`. Kramdown applies smart typography first,
+folding `--` into an en dash and then dropping it as punctuation, giving
+`a-completeness-claim-is-a-liability--prefer-at-least`. Two hyphens against four.
+
+Measured by building the site and resolving every rendered `href` against the ids the build actually
+emitted: 766 headings compared, 19 disagree, and every one of the 19 is a `--` heading. It had
+already bitten -- eleven anchors written into `docs/standards/ADOPTING-THESE.md` pointed at
+`CODE-QUALITY.md`'s two `### Tier N -- ...` headings, resolved perfectly on github.com, and landed
+at the top of the page on the site. `anchor_slug` below computes github's rule against the markdown,
+so every one of them passed here.
+
+THE FIX IS A BAN, NOT A SECOND SLUG RULE. Modelling kramdown's rule too would mean this file has to
+track a second renderer's internals forever, and a link that resolves under both rules still has to
+be written twice to be checked twice. Refusing the shape costs one rule and cannot rot: a citation
+into a `--` heading takes the by-name form that `test_heading_citations_resolve.py` gates, which
+compares TEXT and is renderer-independent. `TheTwoRenderersAgreeOnEveryAnchorWritten` enforces it.
 """
 
 from __future__ import annotations
@@ -289,6 +308,96 @@ class InternalLinksResolve(unittest.TestCase):
         )
 
 
+def split_headings(paths: list[Path]) -> dict[Path, set[str]]:
+    """Per file, the github slugs of headings the two renderers disagree about.
+
+    Keyed on the heading TEXT containing `--`, which is the whole of the measured disagreement --
+    not on a property of the slug, because the two rules produce different slugs and a test that
+    asked "do these differ" would need the second rule this deliberately refuses to model.
+    """
+    out: dict[Path, set[str]] = {}
+    for path in paths:
+        fenced = False
+        bad = set()
+        for line in t.read(path).split("\n"):
+            if FENCE.match(line):
+                fenced = not fenced
+                continue
+            if fenced:
+                continue
+            m = ATX_HEADING.match(line)
+            if m and "--" in m.group(2):
+                bad.add(anchor_slug(m.group(2)))
+        out[path] = bad
+    return out
+
+
+def anchors_into_split_headings(paths: list[Path]) -> list[str]:
+    """Every link whose anchor names a heading the two renderers slug differently."""
+    split = split_headings(paths)
+    failures: list[str] = []
+
+    for path in paths:
+        _, body = parse(t.read(path))
+        rel = path.relative_to(t.REPO_ROOT).as_posix()
+        for lineno, line in body:
+            for target in INLINE_LINK.findall(line):
+                urlpart, _, anchor = target.partition("#")
+                if not anchor:
+                    continue
+                source = served_url_source(urlpart)
+                if source is None:
+                    if urlpart.startswith(EXTERNAL) or urlpart.startswith("<"):
+                        continue
+                    source = (path.parent / urlpart).resolve() if urlpart else path
+                known = split.get(source)
+                if known is None:
+                    if not source.exists() or source.suffix not in LINK_BEARING:
+                        continue
+                    known = split_headings([source])[source]
+                if anchor_slug(anchor) in known:
+                    failures.append(f"{rel}:{lineno} -> {target}")
+    return failures
+
+
+class TheTwoRenderersAgreeOnEveryAnchorWritten(unittest.TestCase):
+    """No anchor may name a heading containing `--`. See the docstring for the measurement.
+
+    This is the one shape where github.com and the published site generate different ids, so such a
+    link is correct on exactly one surface and silently wrong on the other -- which is worse than
+    the by-name citation it would replace, because that at least reads the same everywhere.
+    """
+
+    def test_no_link_anchors_into_a_double_dash_heading(self):
+        failures = anchors_into_split_headings(tracked_markdown())
+        self.assertEqual(
+            [],
+            failures,
+            "\n\nThese anchors name a heading whose text contains `--`. github.com keeps both\n"
+            "literal hyphens and turns the spaces around them into two more; kramdown folds `--`\n"
+            "into an en dash and drops it. The link therefore resolves on one surface and lands at\n"
+            "the top of the page on the other, with no error on either:\n  "
+            + "\n  ".join(failures)
+            + "\n\nCite it by name instead -- `[Doc](DOC.md), *\"The heading\"*` -- which\n"
+            "test_heading_citations_resolve.py gates by comparing text rather than a URL.",
+        )
+
+    def test_the_corpus_still_contains_headings_this_could_fire_on(self):
+        """Without one, the ban above passes by having nothing to refuse.
+
+        `--` is this repository's only legal dash: check-ascii.ps1 forbids the em dash absolutely.
+        So the shape is not going away, and a corpus with none of it means the scan went blind.
+        """
+        total = sum(len(v) for v in split_headings(tracked_markdown()).values())
+        self.assertGreater(
+            total,
+            0,
+            "no heading in the corpus contains `--`, so the ban above refuses nothing. Either the "
+            "house dash changed -- in which case re-measure which shapes the two renderers still "
+            "disagree about before deleting this -- or the heading scan stopped matching.",
+        )
+
+
 class TheScanCanActuallyBite(unittest.TestCase):
     """A checker that cannot fail is not a control. Each case plants a defect and demands a report."""
 
@@ -435,6 +544,66 @@ class TheScanCanActuallyBite(unittest.TestCase):
     def test_an_empty_corpus_raises_rather_than_passing(self):
         with self.assertRaises(AssertionError):
             broken_links([])
+
+    # The renderer-split ban. These two run against the same fixture from both sides, because the
+    # defect is invisible to every other case in this file -- `broken_links` resolves the anchor
+    # happily, since github's rule is the one it computes.
+
+    def _split_scan(self, files: dict[str, str]) -> list[str]:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            written = []
+            for name, text in files.items():
+                p = root / name
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text, encoding="utf-8")
+                written.append(p)
+            real = t.REPO_ROOT
+            try:
+                t.REPO_ROOT = root
+                return anchors_into_split_headings(written)
+            finally:
+                t.REPO_ROOT = real
+
+    def test_an_anchor_into_a_double_dash_heading_is_reported(self):
+        found = self._split_scan(
+            {
+                "a.md": "# A\n\nsee [the tier](b.md#tier-1----durable-controls)\n",
+                "b.md": "# B\n\n## Tier 1 -- durable controls\n",
+            }
+        )
+        self.assertEqual(1, len(found), found)
+
+    def test_the_same_citation_written_by_name_is_not_reported(self):
+        """The form the ban pushes people to. If this fired there would be nowhere left to go."""
+        found = self._split_scan(
+            {
+                "a.md": '# A\n\nsee [B](b.md), *"Tier 1 -- durable controls"*\n',
+                "b.md": "# B\n\n## Tier 1 -- durable controls\n",
+            }
+        )
+        self.assertEqual([], found)
+
+    def test_an_anchor_into_an_ordinary_heading_is_not_reported(self):
+        found = self._split_scan(
+            {
+                "a.md": "# A\n\nsee [the part](b.md#the-part)\n",
+                "b.md": "# B\n\n## The part\n",
+            }
+        )
+        self.assertEqual([], found)
+
+    def test_a_double_dash_heading_inside_a_fence_does_not_arm_the_ban(self):
+        """A fenced example is not a heading, so an anchor is not banned on account of one."""
+        found = self._split_scan(
+            {
+                "a.md": "# A\n\nsee [the part](b.md#the-part)\n",
+                "b.md": "# B\n\n## The part\n\n```markdown\n## Tier 1 -- durable controls\n```\n",
+            }
+        )
+        self.assertEqual([], found)
 
 
 if __name__ == "__main__":

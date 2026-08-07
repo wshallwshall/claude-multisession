@@ -91,8 +91,8 @@ the corpus, and stamp the version on every number"*).
 - **Nothing here ships from this repository.** Where a document names a control, it is describing
   something you would build.
 
-For what to read and in what order, [the overview](OVERVIEW.md) owns that question under *"The order
-to read them in"*. That section tells you what to read; this page tells you what to do with it.
+For what to read and in what order, [the overview](OVERVIEW.md) owns that question under [*"The order
+to read them in"*](OVERVIEW.md#the-order-to-read-them-in). That section tells you what to read; this page tells you what to do with it.
 
 ---
 
@@ -261,13 +261,14 @@ resolve against it.
 | **L1 -- enumerations** | Every dependency manifest, every trust boundary, the required-check set | An enumeration converts a habit into a checkable list, and it is what makes a coverage claim quantified over something | [Dependency integrity](DEPENDENCY-INTEGRITY.md), *Every manifest in the repository needs its own audit net*; [CI and standards](../CI-AND-STANDARDS.md), *The required-check set* |
 | **L2 -- baselines** | A clean lint baseline with per-line suppressions naming their rule, and a lock that records digests rather than versions | A baseline is a start condition for red-on-regression enforcement, not a result | [CI and standards](../CI-AND-STANDARDS.md), *Grandfather to a clean baseline, then ratchet*; [Dependency integrity](DEPENDENCY-INTEGRITY.md), *Pin the resolved graph, and enforce the pin at install* |
 | **L3 -- enforcement** | Install-time pin enforcement, the unwaivable blocking set, branch protection, the allowlist gate placed before the irreversible upload | Nothing here can be built before the thing it enforces exists to be enforced against | [Secure development](SECURE-DEVELOPMENT.md), SD-5.2 to SD-5.5; [CI and standards](../CI-AND-STANDARDS.md), *Package manifests are allowlists, not sweeps* |
-| **L4 -- receipts and proof of failure** | Units examined printed on every run, zero-units-examined exiting non-zero, and a date somebody watched each gate refuse something | Ranking is unfalsifiable until this exists, which is why it precedes the measurement layer rather than following it | [CI and standards](../CI-AND-STANDARDS.md), *Receipts: count what the check examined, never what it found*; *Attack the control with the failure class it was built to catch* |
+| **L4 -- receipts and proof of failure** | Units examined printed on every run, zero-units-examined exiting non-zero, and a date somebody watched each gate refuse something | Ranking is unfalsifiable until this exists, which is why it precedes the measurement layer rather than following it | [CI and standards](../CI-AND-STANDARDS.md), *Receipts: count what the check examined, never what it found*; [*Attack the control with the failure class it was built to catch*](../CI-AND-STANDARDS.md#attack-the-control-with-the-failure-class-it-was-built-to-catch) |
 | **L5 -- measurement** | Mutation on changed code, coverage visibility, duplication, complexity triage | Last, and never a gate on its own -- reversed, you get a dashboard and no controls | [The CISO summary](CISO-SUMMARY.md), *What to fund first*; [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage* |
 
 **Take each document's own adoption list when you reach that document.** [AI-assisted
-development](AI-ASSISTED-DEVELOPMENT.md), [Code quality](CODE-QUALITY.md) and [Dependency
-integrity](DEPENDENCY-INTEGRITY.md) each carry a *"How to adopt this"* section ordered by its own
-leverage, and each opens with a measurement rather than a build. The layer table is the
+development](AI-ASSISTED-DEVELOPMENT.md#how-to-adopt-this), [Code
+quality](CODE-QUALITY.md#how-to-adopt-this) and [Dependency
+integrity](DEPENDENCY-INTEGRITY.md#how-to-adopt-this) each carry a *"How to adopt this"* section
+ordered by its own leverage, and each opens with a measurement rather than a build. The layer table is the
 cross-document order those three lists cannot express. [Secure development](SECURE-DEVELOPMENT.md)
 no longer carries one; its own opening points at the two sections to start from.
 
@@ -392,10 +393,10 @@ automated.
 
 | Control | From | Status | Evidence | Last proven able to fail |
 |---|---|---|---|---|
-| Every manifest has an audit | *Every manifest in the repository needs its own audit net* | **absent** | Enumeration found a second manifest -- a build tool with its own dependencies -- with no audit | never |
-| The pin is enforced at install | *Pin the resolved graph, and enforce the pin at install* | **partial** | Lock records versions, not digests; install does not refuse an unpinned artifact | never |
-| A blocking dependency audit | *What must block, and may not be waived* | **partial** | Audit job exists on the primary manifest and does not block | never |
-| Any of the above proven able to fail | *Attack the control with the failure class it was built to catch* | **unverified** | Nobody has watched any of them refuse anything | never |
+| Every manifest has an audit | [*Every manifest in the repository needs its own audit net*](DEPENDENCY-INTEGRITY.md#every-manifest-in-the-repository-needs-its-own-audit-net) | **absent** | Enumeration found a second manifest -- a build tool with its own dependencies -- with no audit | never |
+| The pin is enforced at install | [*Pin the resolved graph, and enforce the pin at install*](DEPENDENCY-INTEGRITY.md#pin-the-resolved-graph-and-enforce-the-pin-at-install) | **partial** | Lock records versions, not digests; install does not refuse an unpinned artifact | never |
+| A blocking dependency audit | [*What must block, and may not be waived*](SECURE-DEVELOPMENT.md#what-must-block-and-may-not-be-waived) | **partial** | Audit job exists on the primary manifest and does not block | never |
+| Any of the above proven able to fail | [*Attack the control with the failure class it was built to catch*](../CI-AND-STANDARDS.md#attack-the-control-with-the-failure-class-it-was-built-to-catch) | **unverified** | Nobody has watched any of them refuse anything | never |
 
 The second manifest was invisible before the enumeration, because the dashboard reported the
 repository as covered. The pin row is the point of the whole step: the question is not "do you pin"
@@ -437,11 +438,11 @@ things here -- which manifest to fix first, and whether the lock work happens th
 ### Step 4 -- automate
 
 - **One deterministic parity check over all instances**, failing when a manifest exists with no
-  corresponding audit entry, rather than a recurring manual sweep. *Every manifest in the repository
-  needs its own audit net*.
+  corresponding audit entry, rather than a recurring manual sweep. [*Every manifest in the repository
+  needs its own audit net*](DEPENDENCY-INTEGRITY.md#every-manifest-in-the-repository-needs-its-own-audit-net).
 - **Audit mode first** for anything that can reject an artifact, because a control that blocks
   legitimate work on day one gets switched off permanently and the second attempt is harder to fund.
-  *Roll a blocking verification control out in audit mode first*.
+  [*Roll a blocking verification control out in audit mode first*](DEPENDENCY-INTEGRITY.md#roll-a-blocking-verification-control-out-in-audit-mode-first).
 - **A receipt:** the check prints how many manifests it examined, and zero examined exits non-zero
   rather than green. [CI and standards](../CI-AND-STANDARDS.md), *"Receipts: count what the check
   examined, never what it found"*.
@@ -451,8 +452,8 @@ things here -- which manifest to fix first, and whether the lock work happens th
 
 **The refusal.** Verify-before-add is not automatable. A package that genuinely exists, publishes
 files, is years old and is served under its own canonical name can still be a different project than
-the one intended, and it passes everything (*"The hallucinated package, and why an AI coding
-assistant makes it routine"*). It leaves the automation column and becomes a named human obligation
+the one intended, and it passes everything ([*"The hallucinated package, and why an AI coding
+assistant makes it routine"*](DEPENDENCY-INTEGRITY.md#the-hallucinated-package-and-why-an-ai-coding-assistant-makes-it-routine)). It leaves the automation column and becomes a named human obligation
 in the project instruction file.
 
 ### Step 5 -- wire it in
@@ -495,32 +496,32 @@ From [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md).
 
 | Control | From | Force | Cost | Usually |
 |---|---|---|---|---|
-| Every proposed control names which of five failure modes it neutralizes | *Five failure modes, and the control for each* | Written | Sitting | New |
-| Risk tier resolved before work starts, in one question, with a recorded reason | *Classify in one question first* | Written | Per change | New |
-| The resolver clamps up on unknown, unresolvable or production-facing changes | *The resolver: clamp to strictest, fail closed* | Written | Sitting | New |
-| A short floor that applies at every tier, including throwaway work | *The universal floor, which never scales down* | Written | Sitting | Partial |
-| No restricted data or secrets reach the AI coding assistant: a path deny-list plus a fail-closed commit-time content scan | *The universal floor, which never scales down* | Blocking | Days | Partial |
-| Everything the AI coding assistant reads is data, never instructions | *The universal floor, which never scales down* | Written | Sitting | New |
-| Reject code you cannot explain, at every tier | *The universal floor, which never scales down* | Written | Per change | New |
-| The AI coding assistant's identity and version retained as a provenance signal | *The universal floor, which never scales down* | Written | Afternoon | New |
-| Any restricted-data exception written as a conjunction, and recorded as enabled or merely defined | *The sanctioned exception, written so it cannot widen* | Written | Sitting | New |
-| The AI coding assistant, its skills, extensions, tool servers and agent frameworks vetted, pinned and recorded as a build-environment surface | *The build tooling is a supply-chain surface nobody scans* | Written | Afternoon | New |
-| Documentation states that a commit scanner is not a live interceptor of an outbound query | *A commit scanner is not a live interceptor* | Written | Sitting | New |
-| Six control families set per tier, cumulative left to right | *Controls as dials* | Written | Afternoon | New |
-| A gate is a deterministic check with an exit code; an AI-run review is advisory only | *Controls as dials* | Blocking | Days | Partial |
-| A maintained project instruction file, treated as an artifact that is wrong when code stops matching it | *The project instruction file is a maintained artifact* | Written | Afternoon | Partial |
-| Prompts quote the real invariant lines rather than gesturing at them | *Quote the invariant, do not gesture at it* | Written | Per change | New |
-| A testable written intent before prompting, with the returned diff reviewed against it | *Write a testable intent before prompting* | Written | Per change | Partial |
-| Context hygiene: memory holds facts and never values, compaction targets interface shape and decisions, and degradation has a recovery procedure | *Memory holds facts, never values*; *Compaction is a choice about what to keep*; *Recovering from context degradation* | Written | Sitting | New |
-| Sibling paths enumerated when a control is added or changed, encoded as one deterministic check where feasible | *Control parity is a review gate* | Blocking | Days | New |
-| A provenance convention counted in the actual history before being cited as a built control | *Provenance: record it, and count it before you cite it* | Written | Afternoon | New |
-| No second reviewer recorded as a deviation with a named compensating set and an end condition | *When there is no second reviewer* | Written | Sitting | New |
-| A deviations register with four fields, dated and signed | *The deviations register* | Written | Afternoon | New |
-| A claims register holding the exact approved wording next to its evidence | *Claims and wording* | Written | Afternoon | New |
-| The attestation posture stated structurally near the top of whatever you publish, not as a footnote | *The attestation posture* | Written | Sitting | New |
-| An adversarial verification pass whose verifiers did not produce the artifact and are told to refute | *The adversarial verification pass*; *The shape that keeps a pass independent* | Advisory | Days | New |
-| Agent-surfaced findings reported as candidates until confirmed, separately from confirmed ones | *Findings from a sweep are candidates, not findings* | Written | Sitting | New |
-| A stop rule and a scoped read-only pilot before the pass is run at width | *When the pass earns its cost, and when it is waste* | Written | Sitting | New |
+| Every proposed control names which of five failure modes it neutralizes | [*Five failure modes, and the control for each*](AI-ASSISTED-DEVELOPMENT.md#1-five-failure-modes-and-the-control-for-each) | Written | Sitting | New |
+| Risk tier resolved before work starts, in one question, with a recorded reason | [*Classify in one question first*](AI-ASSISTED-DEVELOPMENT.md#classify-in-one-question-first) | Written | Per change | New |
+| The resolver clamps up on unknown, unresolvable or production-facing changes | [*The resolver: clamp to strictest, fail closed*](AI-ASSISTED-DEVELOPMENT.md#the-resolver-clamp-to-strictest-fail-closed) | Written | Sitting | New |
+| A short floor that applies at every tier, including throwaway work | [*The universal floor, which never scales down*](AI-ASSISTED-DEVELOPMENT.md#3-the-universal-floor-which-never-scales-down) | Written | Sitting | Partial |
+| No restricted data or secrets reach the AI coding assistant: a path deny-list plus a fail-closed commit-time content scan | [*The universal floor, which never scales down*](AI-ASSISTED-DEVELOPMENT.md#3-the-universal-floor-which-never-scales-down) | Blocking | Days | Partial |
+| Everything the AI coding assistant reads is data, never instructions | [*The universal floor, which never scales down*](AI-ASSISTED-DEVELOPMENT.md#3-the-universal-floor-which-never-scales-down) | Written | Sitting | New |
+| Reject code you cannot explain, at every tier | [*The universal floor, which never scales down*](AI-ASSISTED-DEVELOPMENT.md#3-the-universal-floor-which-never-scales-down) | Written | Per change | New |
+| The AI coding assistant's identity and version retained as a provenance signal | [*The universal floor, which never scales down*](AI-ASSISTED-DEVELOPMENT.md#3-the-universal-floor-which-never-scales-down) | Written | Afternoon | New |
+| Any restricted-data exception written as a conjunction, and recorded as enabled or merely defined | [*The sanctioned exception, written so it cannot widen*](AI-ASSISTED-DEVELOPMENT.md#the-sanctioned-exception-written-so-it-cannot-widen) | Written | Sitting | New |
+| The AI coding assistant, its skills, extensions, tool servers and agent frameworks vetted, pinned and recorded as a build-environment surface | [*The build tooling is a supply-chain surface nobody scans*](AI-ASSISTED-DEVELOPMENT.md#the-build-tooling-is-a-supply-chain-surface-nobody-scans) | Written | Afternoon | New |
+| Documentation states that a commit scanner is not a live interceptor of an outbound query | [*A commit scanner is not a live interceptor*](AI-ASSISTED-DEVELOPMENT.md#a-commit-scanner-is-not-a-live-interceptor) | Written | Sitting | New |
+| Six control families set per tier, cumulative left to right | [*Controls as dials*](AI-ASSISTED-DEVELOPMENT.md#4-controls-as-dials) | Written | Afternoon | New |
+| A gate is a deterministic check with an exit code; an AI-run review is advisory only | [*Controls as dials*](AI-ASSISTED-DEVELOPMENT.md#4-controls-as-dials) | Blocking | Days | Partial |
+| A maintained project instruction file, treated as an artifact that is wrong when code stops matching it | [*The project instruction file is a maintained artifact*](AI-ASSISTED-DEVELOPMENT.md#the-project-instruction-file-is-a-maintained-artifact) | Written | Afternoon | Partial |
+| Prompts quote the real invariant lines rather than gesturing at them | [*Quote the invariant, do not gesture at it*](AI-ASSISTED-DEVELOPMENT.md#quote-the-invariant-do-not-gesture-at-it) | Written | Per change | New |
+| A testable written intent before prompting, with the returned diff reviewed against it | [*Write a testable intent before prompting*](AI-ASSISTED-DEVELOPMENT.md#write-a-testable-intent-before-prompting) | Written | Per change | Partial |
+| Context hygiene: memory holds facts and never values, compaction targets interface shape and decisions, and degradation has a recovery procedure | [*Memory holds facts, never values*](AI-ASSISTED-DEVELOPMENT.md#memory-holds-facts-never-values); [*Compaction is a choice about what to keep*](AI-ASSISTED-DEVELOPMENT.md#compaction-is-a-choice-about-what-to-keep); [*Recovering from context degradation*](AI-ASSISTED-DEVELOPMENT.md#recovering-from-context-degradation) | Written | Sitting | New |
+| Sibling paths enumerated when a control is added or changed, encoded as one deterministic check where feasible | [*Control parity is a review gate*](AI-ASSISTED-DEVELOPMENT.md#control-parity-is-a-review-gate) | Blocking | Days | New |
+| A provenance convention counted in the actual history before being cited as a built control | [*Provenance: record it, and count it before you cite it*](AI-ASSISTED-DEVELOPMENT.md#provenance-record-it-and-count-it-before-you-cite-it) | Written | Afternoon | New |
+| No second reviewer recorded as a deviation with a named compensating set and an end condition | [*When there is no second reviewer*](AI-ASSISTED-DEVELOPMENT.md#when-there-is-no-second-reviewer) | Written | Sitting | New |
+| A deviations register with four fields, dated and signed | [*The deviations register*](AI-ASSISTED-DEVELOPMENT.md#the-deviations-register) | Written | Afternoon | New |
+| A claims register holding the exact approved wording next to its evidence | [*Claims and wording*](AI-ASSISTED-DEVELOPMENT.md#claims-and-wording) | Written | Afternoon | New |
+| The attestation posture stated structurally near the top of whatever you publish, not as a footnote | [*The attestation posture*](AI-ASSISTED-DEVELOPMENT.md#the-attestation-posture) | Written | Sitting | New |
+| An adversarial verification pass whose verifiers did not produce the artifact and are told to refute | [*The adversarial verification pass*](AI-ASSISTED-DEVELOPMENT.md#7-the-adversarial-verification-pass); [*The shape that keeps a pass independent*](AI-ASSISTED-DEVELOPMENT.md#the-shape-that-keeps-a-pass-independent) | Advisory | Days | New |
+| Agent-surfaced findings reported as candidates until confirmed, separately from confirmed ones | [*Findings from a sweep are candidates, not findings*](AI-ASSISTED-DEVELOPMENT.md#findings-from-a-sweep-are-candidates-not-findings) | Written | Sitting | New |
+| A stop rule and a scoped read-only pilot before the pass is run at width | [*When the pass earns its cost, and when it is waste*](AI-ASSISTED-DEVELOPMENT.md#when-the-pass-earns-its-cost-and-when-it-is-waste) | Written | Sitting | New |
 
 ### Human review of code
 
@@ -528,12 +529,12 @@ From [Human review of code](REVIEW-DEPTH.md).
 
 | Control | From | Force | Cost | Usually |
 |---|---|---|---|---|
-| Review depth resolved per change by tier, before work starts | *Human review depth follows risk and is decided per change* | Written | Per change | Partial |
-| The sensitive-data ratchet dominates size, and unknown clamps up | *Human review depth follows risk and is decided per change* | Written | Sitting | New |
-| Two conditions that force a full line-by-line read regardless of tier | *Two conditions that force a full read regardless of tier* | Written | Per change | New |
-| The explain-it floor, which never turns off | *The floor: reject code you cannot explain* | Written | Per change | New |
-| A written, organization-wide choice on whether assisted explanation satisfies the floor, plus a record of where the looser reading was taken | *AI-assisted explanation is contested, and accepted here with guardrails* | Written | Sitting | New |
-| A question set for telling a real review practice from a described one | *What to ask a team, and what a good answer sounds like* | Advisory | Sitting | New |
+| Review depth resolved per change by tier, before work starts | [*Human review depth follows risk and is decided per change*](REVIEW-DEPTH.md#human-review-depth-follows-risk-and-is-decided-per-change) | Written | Per change | Partial |
+| The sensitive-data ratchet dominates size, and unknown clamps up | [*Human review depth follows risk and is decided per change*](REVIEW-DEPTH.md#human-review-depth-follows-risk-and-is-decided-per-change) | Written | Sitting | New |
+| Two conditions that force a full line-by-line read regardless of tier | [*Two conditions that force a full read regardless of tier*](REVIEW-DEPTH.md#two-conditions-that-force-a-full-read-regardless-of-tier) | Written | Per change | New |
+| The explain-it floor, which never turns off | [*The floor: reject code you cannot explain*](REVIEW-DEPTH.md#the-floor-reject-code-you-cannot-explain) | Written | Per change | New |
+| A written, organization-wide choice on whether assisted explanation satisfies the floor, plus a record of where the looser reading was taken | [*AI-assisted explanation is contested, and accepted here with guardrails*](REVIEW-DEPTH.md#ai-assisted-explanation-is-contested-and-accepted-here-with-guardrails) | Written | Sitting | New |
+| A question set for telling a real review practice from a described one | [*What to ask a team, and what a good answer sounds like*](REVIEW-DEPTH.md#what-to-ask-a-team-and-what-a-good-answer-sounds-like) | Advisory | Sitting | New |
 
 ### Code quality
 
@@ -541,32 +542,32 @@ From [Code quality](CODE-QUALITY.md). The first six rows are the tier that carri
 
 | Control | From | Force | Cost | Usually |
 |---|---|---|---|---|
-| Module and layer boundaries machine-checked in the pipeline, not documented | *Tier 1 -- durable controls, which carry the verdict* | Blocking | Days | New |
-| Strictest available type checking, no blanket suppressions, every suppression carrying its error code | *Tier 1 -- durable controls, which carry the verdict* | Blocking | Weeks | Partial |
-| Tests assert real values and failure paths rather than mock choreography | *Tier 1 -- durable controls, which carry the verdict* | Blocking | Weeks | Partial |
-| Dependency integrity present: existence-verified, hash-locked, new imports audited | *Tier 1 -- durable controls, which carry the verdict* | Blocking | Days | Partial |
-| Security scanners blocking, plus a written threat model and a human review step | *Tier 1 -- durable controls, which carry the verdict* | Blocking and advisory | Days | Partial |
-| A released package ships only intended content, gated before the irreversible upload | *Tier 1 -- durable controls, which carry the verdict* | Blocking | Days | New |
-| Mutation on changed code, surfacing tests that assert little | *Tier 2 -- the measurement layer, which is guidance and triage* | Advisory | Days | New |
-| Coverage reported on changed lines, never as a repository percentage gate | *Tier 2 -- the measurement layer, which is guidance and triage* | Advisory | Afternoon | Partial |
-| New copy-paste flagged on the diff, with deliberate parity whitelisted | *Tier 2 -- the measurement layer, which is guidance and triage*; *Tell an applying tool which duplication is deliberate* | Advisory | Afternoon | New |
-| A broad static-analysis ruleset enforced, widened from a clean baseline | *Tier 2 -- the measurement layer, which is guidance and triage*; *Widen a blocking lint ruleset from a clean baseline* | Blocking | Afternoon | Common |
-| Genuinely large units surfaced for a human, never gated on | *Tier 2 -- the measurement layer, which is guidance and triage* | Advisory | Afternoon | Partial |
-| No single gameable number certifies quality or fails a build | *The anti-metric rule (hard)* | Written | Sitting | New |
-| Every control names the failure mode it neutralizes and the document that owns it | *Failure mode, control, owner* | Written | Afternoon | New |
-| Gate placement by cost: cheap gates in both places, expensive ones pipeline-first but locally invocable | *Where each gate belongs: the local loop, the pipeline, or both* | Written | Afternoon | Partial |
-| A tool that applies fixes runs before the local check quartet, never after | *Run an applying tool before the local check quartet, never after* | Written | Sitting | New |
-| An applying tool is not a control and may not be scored as one | *An applying tool is not a control, and it may not be scored* | Written | Sitting | New |
-| Gate placement re-derived from scratch after any repair to the gate | *Re-derive placement after any repair to the gate* | Written | Sitting | New |
-| No row recorded as built without a receipt proving the check examined something | *Never record a row as built without a proof-of-execution receipt* | Written | Afternoon | New |
-| Advisory findings computed as a delta against the merge base and annotated where the reviewer already is | *Make an advisory finding a delta against the merge base*; *Put advisory findings where the reviewer already is* | Advisory | Days | Partial |
-| Gate tooling installed from a digest-recording lock, inside the same export machinery as the runtime locks | *Install the gate's own tooling from a checked-in lock* | Blocking | Days | New |
-| Volatile counts kept out of narrative text | *Keep volatile counts out of the narrative* | Written | Sitting | New |
-| Every file classified into a review depth tier, with the classification published and a line count per tier | *Reviewing the code: depth tiers* | Written | Per change | New |
-| Review records anchored to a symbol name rather than a line number | *Anchor a review record to a stable name, not a line number* | Written | Sitting | New |
-| Trust boundaries reviewed against a fixed question set rather than by reading the body | *Reviewing a trust boundary* | Written | Per boundary | New |
-| The control plane confirmed -- present, blocking, green on the released commit -- before any code is read | *Confirming the control plane* | Written | Afternoon | New |
-| Where review is self-review, the deviation recorded and the compensating control named | *When review is self-review* | Written | Sitting | New |
+| Module and layer boundaries machine-checked in the pipeline, not documented | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | Blocking | Days | New |
+| Strictest available type checking, no blanket suppressions, every suppression carrying its error code | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | Blocking | Weeks | Partial |
+| Tests assert real values and failure paths rather than mock choreography | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | Blocking | Weeks | Partial |
+| Dependency integrity present: existence-verified, hash-locked, new imports audited | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | Blocking | Days | Partial |
+| Security scanners blocking, plus a written threat model and a human review step | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | Blocking and advisory | Days | Partial |
+| A released package ships only intended content, gated before the irreversible upload | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | Blocking | Days | New |
+| Mutation on changed code, surfacing tests that assert little | [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage* | Advisory | Days | New |
+| Coverage reported on changed lines, never as a repository percentage gate | [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage* | Advisory | Afternoon | Partial |
+| New copy-paste flagged on the diff, with deliberate parity whitelisted | [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage*; [*Tell an applying tool which duplication is deliberate*](CODE-QUALITY.md#tell-an-applying-tool-which-duplication-is-deliberate) | Advisory | Afternoon | New |
+| A broad static-analysis ruleset enforced, widened from a clean baseline | [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage*; [*Widen a blocking lint ruleset from a clean baseline*](CODE-QUALITY.md#widen-a-blocking-lint-ruleset-from-a-clean-baseline) | Blocking | Afternoon | Common |
+| Genuinely large units surfaced for a human, never gated on | [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage* | Advisory | Afternoon | Partial |
+| No single gameable number certifies quality or fails a build | [*The anti-metric rule (hard)*](CODE-QUALITY.md#the-anti-metric-rule-hard) | Written | Sitting | New |
+| Every control names the failure mode it neutralizes and the document that owns it | [*Failure mode, control, owner*](CODE-QUALITY.md#failure-mode-control-owner) | Written | Afternoon | New |
+| Gate placement by cost: cheap gates in both places, expensive ones pipeline-first but locally invocable | [*Where each gate belongs: the local loop, the pipeline, or both*](CODE-QUALITY.md#where-each-gate-belongs-the-local-loop-the-pipeline-or-both) | Written | Afternoon | Partial |
+| A tool that applies fixes runs before the local check quartet, never after | [*Run an applying tool before the local check quartet, never after*](CODE-QUALITY.md#run-an-applying-tool-before-the-local-check-quartet-never-after) | Written | Sitting | New |
+| An applying tool is not a control and may not be scored as one | [*An applying tool is not a control, and it may not be scored*](CODE-QUALITY.md#an-applying-tool-is-not-a-control-and-it-may-not-be-scored) | Written | Sitting | New |
+| Gate placement re-derived from scratch after any repair to the gate | [*Re-derive placement after any repair to the gate*](CODE-QUALITY.md#re-derive-placement-after-any-repair-to-the-gate) | Written | Sitting | New |
+| No row recorded as built without a receipt proving the check examined something | [*Never record a row as built without a proof-of-execution receipt*](CODE-QUALITY.md#never-record-a-row-as-built-without-a-proof-of-execution-receipt) | Written | Afternoon | New |
+| Advisory findings computed as a delta against the merge base and annotated where the reviewer already is | [*Make an advisory finding a delta against the merge base*](CODE-QUALITY.md#make-an-advisory-finding-a-delta-against-the-merge-base); [*Put advisory findings where the reviewer already is*](CODE-QUALITY.md#put-advisory-findings-where-the-reviewer-already-is) | Advisory | Days | Partial |
+| Gate tooling installed from a digest-recording lock, inside the same export machinery as the runtime locks | [*Install the gate's own tooling from a checked-in lock*](CODE-QUALITY.md#install-the-gates-own-tooling-from-a-checked-in-lock) | Blocking | Days | New |
+| Volatile counts kept out of narrative text | [*Keep volatile counts out of the narrative*](CODE-QUALITY.md#keep-volatile-counts-out-of-the-narrative) | Written | Sitting | New |
+| Every file classified into a review depth tier, with the classification published and a line count per tier | [*Reviewing the code: depth tiers*](CODE-QUALITY.md#reviewing-the-code-depth-tiers) | Written | Per change | New |
+| Review records anchored to a symbol name rather than a line number | [*Anchor a review record to a stable name, not a line number*](CODE-QUALITY.md#anchor-a-review-record-to-a-stable-name-not-a-line-number) | Written | Sitting | New |
+| Trust boundaries reviewed against a fixed question set rather than by reading the body | [*Reviewing a trust boundary*](CODE-QUALITY.md#reviewing-a-trust-boundary) | Written | Per boundary | New |
+| The control plane confirmed -- present, blocking, green on the released commit -- before any code is read | [*Confirming the control plane*](CODE-QUALITY.md#confirming-the-control-plane) | Written | Afternoon | New |
+| Where review is self-review, the deviation recorded and the compensating control named | [*When review is self-review*](CODE-QUALITY.md#when-review-is-self-review) | Written | Sitting | New |
 
 ### Dependency integrity
 
@@ -575,30 +576,30 @@ set, and the ones most likely to be adopted close to whole.
 
 | Control | From | Force | Cost | Usually |
 |---|---|---|---|---|
-| Third-party code managed as a black box, with human effort concentrated at adoption and at each bump | *Third-party code is code of unknown provenance, and the discipline says so* | Written | Sitting | Partial |
-| Behavior you depend on tested at your own integration boundary | *Third-party code is code of unknown provenance, and the discipline says so* | Blocking | Days | Partial |
+| Third-party code managed as a black box, with human effort concentrated at adoption and at each bump | [*Third-party code is code of unknown provenance, and the discipline says so*](DEPENDENCY-INTEGRITY.md#third-party-code-is-code-of-unknown-provenance-and-the-discipline-says-so) | Written | Sitting | Partial |
+| Behavior you depend on tested at your own integration boundary | [*Third-party code is code of unknown provenance, and the discipline says so*](DEPENDENCY-INTEGRITY.md#third-party-code-is-code-of-unknown-provenance-and-the-discipline-says-so) | Blocking | Days | Partial |
 | On a security-critical seam, the widely reviewed library chosen as the mitigation, with the reason recorded | *Choosing a widely reviewed library is the mitigation for not reading it* | Written | Per dependency | Common |
-| Verify before add: a real package rather than a near-miss, maintained, acceptably licensed, actually used -- with a dated vet note | *The hallucinated package, and why an AI coding assistant makes it routine* | Written | Per dependency | Partial |
-| Explaining code and reading dependencies held as different obligations | *Explaining code and reading dependencies are different obligations* | Written | Sitting | New |
-| Vendored code held to first-party gates in the same change: behavior tests, a mirrors-what header, analysis scope extended | *Vendored code is owned code, not a dependency* | Blocking | Days | New |
-| Every manifest enumerated, each with scheduled surveillance and a blocking install-free audit | *Every manifest in the repository needs its own audit net* | Blocking | Days | Partial |
-| Build-time-only trees surveilled and triaged as a different impact class, not exempted | *Every manifest in the repository needs its own audit net* | Written | Sitting | New |
-| The resolved graph pinned by digest, and the pin enforced at install rather than only at resolution | *Pin the resolved graph, and enforce the pin at install* | Blocking | Days | Partial |
-| Each version bump a bounded review: changelog and lock delta, with the pipeline re-auditing and re-testing | *The version bump is a bounded review* | Written | Per bump | Partial |
-| A least-privilege runtime bounding the blast radius of code nobody reviewed | *Contain what you cannot vouch for* | Written | Weeks | Partial |
-| An allowlist of what the published artifact contains, gated before upload, with the published artifact verified once after release | *The artifact contains only what you declared* | Blocking | Days | New |
-| Publishing credentials minted per run and workflow-bound, the trigger restricted, the publish action pinned | *Publishing credentials should be minted per run, not stored* | Blocking | Days | New |
-| An attestation binding the distributed filename and its digest to the repository, workflow and commit | *Publishing identity does not cover the artifact* | Written | Days | New |
-| Signature coverage and verifiability both measured before a signing control is credited | *A signing scheme nobody can verify is not a control* | Written | Afternoon | New |
-| Build provenance, plus a signed digest manifest with a documented offline verification path | *Build provenance, and the lowest-tech verification path* | Written | Days | New |
-| A component inventory per release, described as answering "do we ship X" and never as tamper detection | *A component inventory is not tamper detection, and saying so matters* | Written | Days | Partial |
-| Each release archived with its build inputs and its inventory together | *Archive each release with its build inputs and its inventory* | Written | Days | New |
-| A self-integrity check shipped with its bootstrap-trust limit stated in the same paragraph | *The self-integrity check, and the bootstrap-trust problem* | Written | Days | New |
-| Operator-side hardening documented and recommended, never claimed as a control you provide | *Operator-owned hardening: document and recommend, never claim* | Written | Days | New |
-| Any blocking verification control rolled out in audit mode first | *Roll a blocking verification control out in audit mode first* | Written | Sitting | New |
-| The objective stated as detection rather than prevention | *State the objective honestly: detection, not prevention* | Written | Sitting | New |
-| Obfuscation not counted as the integrity story for source you publish | *Obfuscation is not the integrity story for source-available code* | Written | Sitting | New |
-| Ecosystem-specific mechanics separated from the universal rules when you adapt | *Which rules are universal, and which are one ecosystem's mechanics* | Written | Sitting | New |
+| Verify before add: a real package rather than a near-miss, maintained, acceptably licensed, actually used -- with a dated vet note | [*The hallucinated package, and why an AI coding assistant makes it routine*](DEPENDENCY-INTEGRITY.md#the-hallucinated-package-and-why-an-ai-coding-assistant-makes-it-routine) | Written | Per dependency | Partial |
+| Explaining code and reading dependencies held as different obligations | [*Explaining code and reading dependencies are different obligations*](DEPENDENCY-INTEGRITY.md#explaining-code-and-reading-dependencies-are-different-obligations) | Written | Sitting | New |
+| Vendored code held to first-party gates in the same change: behavior tests, a mirrors-what header, analysis scope extended | [*Vendored code is owned code, not a dependency*](DEPENDENCY-INTEGRITY.md#vendored-code-is-owned-code-not-a-dependency) | Blocking | Days | New |
+| Every manifest enumerated, each with scheduled surveillance and a blocking install-free audit | [*Every manifest in the repository needs its own audit net*](DEPENDENCY-INTEGRITY.md#every-manifest-in-the-repository-needs-its-own-audit-net) | Blocking | Days | Partial |
+| Build-time-only trees surveilled and triaged as a different impact class, not exempted | [*Every manifest in the repository needs its own audit net*](DEPENDENCY-INTEGRITY.md#every-manifest-in-the-repository-needs-its-own-audit-net) | Written | Sitting | New |
+| The resolved graph pinned by digest, and the pin enforced at install rather than only at resolution | [*Pin the resolved graph, and enforce the pin at install*](DEPENDENCY-INTEGRITY.md#pin-the-resolved-graph-and-enforce-the-pin-at-install) | Blocking | Days | Partial |
+| Each version bump a bounded review: changelog and lock delta, with the pipeline re-auditing and re-testing | [*The version bump is a bounded review*](DEPENDENCY-INTEGRITY.md#the-version-bump-is-a-bounded-review) | Written | Per bump | Partial |
+| A least-privilege runtime bounding the blast radius of code nobody reviewed | [*Contain what you cannot vouch for*](DEPENDENCY-INTEGRITY.md#contain-what-you-cannot-vouch-for) | Written | Weeks | Partial |
+| An allowlist of what the published artifact contains, gated before upload, with the published artifact verified once after release | [*The artifact contains only what you declared*](DEPENDENCY-INTEGRITY.md#the-artifact-contains-only-what-you-declared) | Blocking | Days | New |
+| Publishing credentials minted per run and workflow-bound, the trigger restricted, the publish action pinned | [*Publishing credentials should be minted per run, not stored*](DEPENDENCY-INTEGRITY.md#publishing-credentials-should-be-minted-per-run-not-stored) | Blocking | Days | New |
+| An attestation binding the distributed filename and its digest to the repository, workflow and commit | [*Publishing identity does not cover the artifact*](DEPENDENCY-INTEGRITY.md#publishing-identity-does-not-cover-the-artifact) | Written | Days | New |
+| Signature coverage and verifiability both measured before a signing control is credited | [*A signing scheme nobody can verify is not a control*](DEPENDENCY-INTEGRITY.md#a-signing-scheme-nobody-can-verify-is-not-a-control) | Written | Afternoon | New |
+| Build provenance, plus a signed digest manifest with a documented offline verification path | [*Build provenance, and the lowest-tech verification path*](DEPENDENCY-INTEGRITY.md#build-provenance-and-the-lowest-tech-verification-path) | Written | Days | New |
+| A component inventory per release, described as answering "do we ship X" and never as tamper detection | [*A component inventory is not tamper detection, and saying so matters*](DEPENDENCY-INTEGRITY.md#a-component-inventory-is-not-tamper-detection-and-saying-so-matters) | Written | Days | Partial |
+| Each release archived with its build inputs and its inventory together | [*Archive each release with its build inputs and its inventory*](DEPENDENCY-INTEGRITY.md#archive-each-release-with-its-build-inputs-and-its-inventory) | Written | Days | New |
+| A self-integrity check shipped with its bootstrap-trust limit stated in the same paragraph | [*The self-integrity check, and the bootstrap-trust problem*](DEPENDENCY-INTEGRITY.md#the-self-integrity-check-and-the-bootstrap-trust-problem) | Written | Days | New |
+| Operator-side hardening documented and recommended, never claimed as a control you provide | [*Operator-owned hardening: document and recommend, never claim*](DEPENDENCY-INTEGRITY.md#operator-owned-hardening-document-and-recommend-never-claim) | Written | Days | New |
+| Any blocking verification control rolled out in audit mode first | [*Roll a blocking verification control out in audit mode first*](DEPENDENCY-INTEGRITY.md#roll-a-blocking-verification-control-out-in-audit-mode-first) | Written | Sitting | New |
+| The objective stated as detection rather than prevention | [*State the objective honestly: detection, not prevention*](DEPENDENCY-INTEGRITY.md#state-the-objective-honestly-detection-not-prevention) | Written | Sitting | New |
+| Obfuscation not counted as the integrity story for source you publish | [*Obfuscation is not the integrity story for source-available code*](DEPENDENCY-INTEGRITY.md#obfuscation-is-not-the-integrity-story-for-source-available-code) | Written | Sitting | New |
+| Ecosystem-specific mechanics separated from the universal rules when you adapt | [*Which rules are universal, and which are one ecosystem's mechanics*](DEPENDENCY-INTEGRITY.md#which-rules-are-universal-and-which-are-one-ecosystems-mechanics) | Written | Sitting | New |
 
 ### Secure development
 
@@ -608,47 +609,47 @@ lagging its current headings rather than as a complete account of them.
 
 | Control | From | Force | Cost | Usually |
 |---|---|---|---|---|
-| A producer-versus-operator responsibility split, written before any control is claimed | *Shared responsibility: write the split down first* | Written | Sitting | New |
-| The services neither column owns, listed, with what fails if one goes away | *The third participant: services neither column owns* | Written | Sitting | New |
-| One data-class table: class, the boundary it enters on, every place it rests, the protection at each, and how long it is kept | *What "restricted data" means here, exactly once* | Written | Afternoon | New |
-| Each class rated against three security objectives at three impact levels | *What "restricted data" means here, exactly once* | Written | Sitting | New |
-| A written threat model per trust boundary, reviewed before the code exists | *Threat model each trust boundary before you build it* | Advisory | Days | Partial |
-| A named bound on resource consumption for every boundary: payload size, request rate, concurrency, total time | *Threat model each trust boundary before you build it* | Written | Afternoon | New |
-| A scheduled malformed-input harness behind every ingress, classified advisory, with each crash turned into a regression test | *Threat model each trust boundary before you build it* | Advisory | Days | New |
-| A longer question set applied wherever content becomes executable | *Execution boundaries need the longest look* | Written | Per boundary | New |
-| A finite secure-coding list a reviewer can actually check | *Secure coding: the finite list a review can check* | Written | Sitting | Partial |
-| Every change peer-reviewed against the acceptance criteria of whatever specified it | *Review, and what to do when there is no second reviewer* | Written | Per change | Common |
-| Self-review recorded as a documented deviation rather than a satisfied control | *Self-review is a documented deviation, not a satisfied control* | Written | Sitting | New |
-| A comprehension bar the reviewer must meet | *The comprehension bar, and two additions to it* | Written | Per change | Partial |
-| Every nominally-security job classified blocking or advisory, and the classification written down | *Scanner posture: what blocks, what advises, what may never be waived* | Written | Sitting | New |
-| An unwaivable blocking set: static analysis, dependency vulnerability analysis, and secret scanning over the full history | *What must block, and may not be waived* | Blocking | Days | Partial |
-| Each gate fired with the failure class it exists to catch, and watched going red, before its green is credited | *Three additions specific to a security posture* | Written | Afternoon per gate | New |
-| Rigor and scope recorded as two separate values against each blocking check | *Three additions specific to a security posture* | Written | Sitting | New |
-| The security anti-metrics kept out of any pass-or-fail decision | *The security anti-metrics* | Written | Sitting | New |
-| No secrets, keys, credentials or restricted data in the repository, with the full history clean and not only the current tree | *Secrets and repository hygiene* | Blocking | Days | Partial |
-| Secure by default, with every insecure posture a named, documented, audited, fail-closed opt-in | *Secure defaults, and the opt-in that must be explicit* | Written | Weeks | Partial |
-| Off-by-default and fail-closed scored and described as different states | *Secure defaults, and the opt-in that must be explicit* | Written | Sitting | New |
-| Synthetic data everywhere that is not production, with any live data approved, dated and in the register | *Synthetic data by default in anything that is not production* | Written | Days | Partial |
-| A collection rated by the highest class it holds, never the average and never per entry | *Rate a collection by the highest class it holds* | Written | Sitting | New |
-| Machine-to-machine authentication at the strongest mechanism the peer supports, recorded per connection with weak ones as a short explicit list | *Machine-to-machine authentication* | Written | Weeks | Partial |
-| No long-lived secret in a file for a service account, and no cleartext directory bind | *Service accounts: no long-lived secret in a file* | Written | Days | Partial |
-| An append-only, timestamped, actor-attributed audit log with a hash chain, reads gated, and restricted data kept out of it | *Tamper-evident audit logging* | Written | Weeks | New |
-| Publishing controls each carrying the limit that travels with it | *Publishing controls, and the limit each one carries* | Written | Days | New |
-| A verification path an adopter can run without contacting you | *What an adopter can verify without contacting you* | Written | Days | New |
-| Obfuscation not treated as a security control | *Obfuscation is not the control you are looking for* | Written | Sitting | New |
-| Runtime integrity checking shipped as defense in depth, with the bootstrap-trust limit documented in the same paragraph | *Runtime tamper resistance, and the bootstrap-trust limit* | Written | Days | New |
-| Operator-side hardening documented and recommended, with a concrete day-one list, never claimed | *Operator-owned hardening: document and recommend, never claim* | Written | Days | New |
-| Any blocking verification control started in audit mode | *Roll out a blocking verification control in audit mode first* | Written | Sitting | New |
-| A vulnerability response program with a private intake channel, banded windows, root-cause review and coordinated disclosure -- exercised end to end at least once | *Vulnerability response, exercised* | Written | Days | Partial |
-| The clock start stated next to each remediation window, per finding class | *Vulnerability response, exercised* | Written | Sitting | New |
-| A deviations and risk-acceptance register, dated and signed, whose rule is published and whose inventory is not | *Deviations and risk acceptance* | Written | Afternoon | New |
-| Added practices marked as recommended, stating that they add no blocking gate and weaken nothing above them | *Deviations and risk acceptance* | Written | Sitting | New |
-| Independent external verification status recorded plainly, with cost context, and not gating an adopter's rollout | *Independent external verification* | Written | Sitting | New |
-| A release gate written as an explicit pass-or-fail list, leaning on no unsigned acceptance, with no single row as the gate | *The release gate* | Blocking | Days | Partial |
-| The control plane confirmed before any code is read, and the suppression list reviewed rather than accepted | *Confirm the control plane before reading any code* | Written | Afternoon | New |
-| A claim vocabulary: built to, aligned with, self-assessed against -- never certified, verified or compliant | *What you may claim* | Written | Sitting | New |
-| Another document's target or score never restated; the record of record named and linked | *What you may claim* | Written | Sitting | New |
-| Every borrowed source named with its release and the date its status was last checked | *Where the rules come from* | Written | Sitting | New |
+| A producer-versus-operator responsibility split, written before any control is claimed | [*Shared responsibility: write the split down first*](SECURE-DEVELOPMENT.md#1-shared-responsibility-write-the-split-down-first) | Written | Sitting | New |
+| The services neither column owns, listed, with what fails if one goes away | [*The third participant: services neither column owns*](SECURE-DEVELOPMENT.md#the-third-participant-services-neither-column-owns) | Written | Sitting | New |
+| One data-class table: class, the boundary it enters on, every place it rests, the protection at each, and how long it is kept | [*What "restricted data" means here, exactly once*](SECURE-DEVELOPMENT.md#what-restricted-data-means-here-exactly-once) | Written | Afternoon | New |
+| Each class rated against three security objectives at three impact levels | [*What "restricted data" means here, exactly once*](SECURE-DEVELOPMENT.md#what-restricted-data-means-here-exactly-once) | Written | Sitting | New |
+| A written threat model per trust boundary, reviewed before the code exists | [*Threat model each trust boundary before you build it*](SECURE-DEVELOPMENT.md#2-threat-model-each-trust-boundary-before-you-build-it) | Advisory | Days | Partial |
+| A named bound on resource consumption for every boundary: payload size, request rate, concurrency, total time | [*Threat model each trust boundary before you build it*](SECURE-DEVELOPMENT.md#2-threat-model-each-trust-boundary-before-you-build-it) | Written | Afternoon | New |
+| A scheduled malformed-input harness behind every ingress, classified advisory, with each crash turned into a regression test | [*Threat model each trust boundary before you build it*](SECURE-DEVELOPMENT.md#2-threat-model-each-trust-boundary-before-you-build-it) | Advisory | Days | New |
+| A longer question set applied wherever content becomes executable | [*Execution boundaries need the longest look*](SECURE-DEVELOPMENT.md#execution-boundaries-need-the-longest-look) | Written | Per boundary | New |
+| A finite secure-coding list a reviewer can actually check | [*Secure coding: the finite list a review can check*](SECURE-DEVELOPMENT.md#3-secure-coding-the-finite-list-a-review-can-check) | Written | Sitting | Partial |
+| Every change peer-reviewed against the acceptance criteria of whatever specified it | [*Review, and what to do when there is no second reviewer*](SECURE-DEVELOPMENT.md#4-review-and-what-to-do-when-there-is-no-second-reviewer) | Written | Per change | Common |
+| Self-review recorded as a documented deviation rather than a satisfied control | [*Self-review is a documented deviation, not a satisfied control*](SECURE-DEVELOPMENT.md#self-review-is-a-documented-deviation-not-a-satisfied-control) | Written | Sitting | New |
+| A comprehension bar the reviewer must meet | [*The comprehension bar, and two additions to it*](SECURE-DEVELOPMENT.md#the-comprehension-bar-and-two-additions-to-it) | Written | Per change | Partial |
+| Every nominally-security job classified blocking or advisory, and the classification written down | [*Scanner posture: what blocks, what advises, what may never be waived*](SECURE-DEVELOPMENT.md#5-scanner-posture-what-blocks-what-advises-what-may-never-be-waived) | Written | Sitting | New |
+| An unwaivable blocking set: static analysis, dependency vulnerability analysis, and secret scanning over the full history | [*What must block, and may not be waived*](SECURE-DEVELOPMENT.md#what-must-block-and-may-not-be-waived) | Blocking | Days | Partial |
+| Each gate fired with the failure class it exists to catch, and watched going red, before its green is credited | [*Three additions specific to a security posture*](SECURE-DEVELOPMENT.md#three-additions-specific-to-a-security-posture) | Written | Afternoon per gate | New |
+| Rigor and scope recorded as two separate values against each blocking check | [*Three additions specific to a security posture*](SECURE-DEVELOPMENT.md#three-additions-specific-to-a-security-posture) | Written | Sitting | New |
+| The security anti-metrics kept out of any pass-or-fail decision | [*The security anti-metrics*](SECURE-DEVELOPMENT.md#the-security-anti-metrics) | Written | Sitting | New |
+| No secrets, keys, credentials or restricted data in the repository, with the full history clean and not only the current tree | [*Secrets and repository hygiene*](SECURE-DEVELOPMENT.md#6-secrets-and-repository-hygiene) | Blocking | Days | Partial |
+| Secure by default, with every insecure posture a named, documented, audited, fail-closed opt-in | [*Secure defaults, and the opt-in that must be explicit*](SECURE-DEVELOPMENT.md#7-secure-defaults-and-the-opt-in-that-must-be-explicit) | Written | Weeks | Partial |
+| Off-by-default and fail-closed scored and described as different states | [*Secure defaults, and the opt-in that must be explicit*](SECURE-DEVELOPMENT.md#7-secure-defaults-and-the-opt-in-that-must-be-explicit) | Written | Sitting | New |
+| Synthetic data everywhere that is not production, with any live data approved, dated and in the register | [*Synthetic data by default in anything that is not production*](SECURE-DEVELOPMENT.md#synthetic-data-by-default-in-anything-that-is-not-production) | Written | Days | Partial |
+| A collection rated by the highest class it holds, never the average and never per entry | [*Rate a collection by the highest class it holds*](SECURE-DEVELOPMENT.md#rate-a-collection-by-the-highest-class-it-holds) | Written | Sitting | New |
+| Machine-to-machine authentication at the strongest mechanism the peer supports, recorded per connection with weak ones as a short explicit list | [*Machine-to-machine authentication*](SECURE-DEVELOPMENT.md#8-machine-to-machine-authentication) | Written | Weeks | Partial |
+| No long-lived secret in a file for a service account, and no cleartext directory bind | [*Service accounts: no long-lived secret in a file*](SECURE-DEVELOPMENT.md#service-accounts-no-long-lived-secret-in-a-file) | Written | Days | Partial |
+| An append-only, timestamped, actor-attributed audit log with a hash chain, reads gated, and restricted data kept out of it | [*Tamper-evident audit logging*](SECURE-DEVELOPMENT.md#9-tamper-evident-audit-logging) | Written | Weeks | New |
+| Publishing controls each carrying the limit that travels with it | [*Publishing controls, and the limit each one carries*](SECURE-DEVELOPMENT.md#publishing-controls-and-the-limit-each-one-carries) | Written | Days | New |
+| A verification path an adopter can run without contacting you | [*What an adopter can verify without contacting you*](SECURE-DEVELOPMENT.md#what-an-adopter-can-verify-without-contacting-you) | Written | Days | New |
+| Obfuscation not treated as a security control | [*Obfuscation is not the control you are looking for*](SECURE-DEVELOPMENT.md#obfuscation-is-not-the-control-you-are-looking-for) | Written | Sitting | New |
+| Runtime integrity checking shipped as defense in depth, with the bootstrap-trust limit documented in the same paragraph | [*Runtime tamper resistance, and the bootstrap-trust limit*](SECURE-DEVELOPMENT.md#11-runtime-tamper-resistance-and-the-bootstrap-trust-limit) | Written | Days | New |
+| Operator-side hardening documented and recommended, with a concrete day-one list, never claimed | [*Operator-owned hardening: document and recommend, never claim*](SECURE-DEVELOPMENT.md#operator-owned-hardening-document-and-recommend-never-claim) | Written | Days | New |
+| Any blocking verification control started in audit mode | [*Roll out a blocking verification control in audit mode first*](SECURE-DEVELOPMENT.md#roll-out-a-blocking-verification-control-in-audit-mode-first) | Written | Sitting | New |
+| A vulnerability response program with a private intake channel, banded windows, root-cause review and coordinated disclosure -- exercised end to end at least once | [*Vulnerability response, exercised*](SECURE-DEVELOPMENT.md#12-vulnerability-response-exercised) | Written | Days | Partial |
+| The clock start stated next to each remediation window, per finding class | [*Vulnerability response, exercised*](SECURE-DEVELOPMENT.md#12-vulnerability-response-exercised) | Written | Sitting | New |
+| A deviations and risk-acceptance register, dated and signed, whose rule is published and whose inventory is not | [*Deviations and risk acceptance*](SECURE-DEVELOPMENT.md#13-deviations-and-risk-acceptance) | Written | Afternoon | New |
+| Added practices marked as recommended, stating that they add no blocking gate and weaken nothing above them | [*Deviations and risk acceptance*](SECURE-DEVELOPMENT.md#13-deviations-and-risk-acceptance) | Written | Sitting | New |
+| Independent external verification status recorded plainly, with cost context, and not gating an adopter's rollout | [*Independent external verification*](SECURE-DEVELOPMENT.md#15-independent-external-verification) | Written | Sitting | New |
+| A release gate written as an explicit pass-or-fail list, leaning on no unsigned acceptance, with no single row as the gate | [*The release gate*](SECURE-DEVELOPMENT.md#16-the-release-gate) | Blocking | Days | Partial |
+| The control plane confirmed before any code is read, and the suppression list reviewed rather than accepted | [*Confirm the control plane before reading any code*](SECURE-DEVELOPMENT.md#confirm-the-control-plane-before-reading-any-code) | Written | Afternoon | New |
+| A claim vocabulary: built to, aligned with, self-assessed against -- never certified, verified or compliant | [*What you may claim*](SECURE-DEVELOPMENT.md#17-what-you-may-claim) | Written | Sitting | New |
+| Another document's target or score never restated; the record of record named and linked | [*What you may claim*](SECURE-DEVELOPMENT.md#17-what-you-may-claim) | Written | Sitting | New |
+| Every borrowed source named with its release and the date its status was last checked | [*Where the rules come from*](SECURE-DEVELOPMENT.md#where-the-rules-come-from) | Written | Sitting | New |
 
 ### If you run a formal assessment against a published standard
 
@@ -657,20 +658,20 @@ against a standard with many individually verifiable requirements. Skip the whol
 
 | Control | From | Force | Cost | Usually |
 |---|---|---|---|---|
-| The standard's own text held locally, fetched from a tagged release asset and pinned by digest | *Hold the standard's own text locally, pinned by version*; *Pin the corpus, and stamp the version on every number* | Written | Afternoon | New |
-| One computed record as the authority, with the scorecard existing as data rather than prose | *One computed record is the authority* | Written | Days | New |
-| A published verdict vocabulary in which unverified can never read as a pass | *A verdict vocabulary that cannot be misread*; *`unverified` must never look like a pass* | Written | Sitting | New |
-| An ordered decision procedure, first match wins | *The decision procedure: ordered, first match wins* | Written | Afternoon | New |
-| Scope declared positively, with one requirement scored against one declared configuration | *Declare scope positively*; *One requirement x one declared configuration is the reviewable unit* | Written | Sitting | New |
-| Not applicable argued rather than assumed, and the strength of each such verdict graded | *Not applicable must be argued, never assumed* | Written | Per cell | New |
-| Evidence anchored to a token a machine can re-check, with the anchor verifier running in the pipeline and watched failing on purpose | *Evidence: an anchor a machine can re-check*; *Anchor to a token, not to a line number* | Blocking | Days | New |
-| No absence claim without a live positive control | *An absence claim without a live positive control is void* | Written | Per claim | New |
-| Never score against a paraphrase of the requirement | *Never score against a paraphrase* | Written | Per cell | New |
-| Any movement in a score reported with its cause named, and zero movement stated as a result | *How to read a movement in the numbers* | Written | Sitting | New |
-| Reviewers execute the citation rather than reading it, with distinct lenses | *Make the reviewer execute the citation, not read it* | Written | Days | New |
-| Impact sentences for software nobody has deployed written in the conditional tense, with no score altered | *Deployment-time controls in software nobody has deployed* | Written | Sitting | New |
-| Atomic cell claims, one integrator owning every write, and a collision detector at integration | *Partitioning the work across agents* | Written | Days | New |
-| The findings themselves kept private | *Checklist* | Written | Sitting | New |
+| The standard's own text held locally, fetched from a tagged release asset and pinned by digest | [*Hold the standard's own text locally, pinned by version*](../ASVS-ASSESSMENT.md#hold-the-standards-own-text-locally-pinned-by-version); [*Pin the corpus, and stamp the version on every number*](../ASVS-ASSESSMENT.md#pin-the-corpus-and-stamp-the-version-on-every-number) | Written | Afternoon | New |
+| One computed record as the authority, with the scorecard existing as data rather than prose | [*One computed record is the authority*](../ASVS-ASSESSMENT.md#one-computed-record-is-the-authority) | Written | Days | New |
+| A published verdict vocabulary in which unverified can never read as a pass | [*A verdict vocabulary that cannot be misread*](../ASVS-ASSESSMENT.md#a-verdict-vocabulary-that-cannot-be-misread); *`unverified` must never look like a pass* | Written | Sitting | New |
+| An ordered decision procedure, first match wins | [*The decision procedure: ordered, first match wins*](../ASVS-ASSESSMENT.md#the-decision-procedure-ordered-first-match-wins) | Written | Afternoon | New |
+| Scope declared positively, with one requirement scored against one declared configuration | [*Declare scope positively*](../ASVS-ASSESSMENT.md#declare-scope-positively); [*One requirement x one declared configuration is the reviewable unit*](../ASVS-ASSESSMENT.md#one-requirement-x-one-declared-configuration-is-the-reviewable-unit) | Written | Sitting | New |
+| Not applicable argued rather than assumed, and the strength of each such verdict graded | [*Not applicable must be argued, never assumed*](../ASVS-ASSESSMENT.md#not-applicable-must-be-argued-never-assumed) | Written | Per cell | New |
+| Evidence anchored to a token a machine can re-check, with the anchor verifier running in the pipeline and watched failing on purpose | [*Evidence: an anchor a machine can re-check*](../ASVS-ASSESSMENT.md#evidence-an-anchor-a-machine-can-re-check); [*Anchor to a token, not to a line number*](../ASVS-ASSESSMENT.md#anchor-to-a-token-not-to-a-line-number) | Blocking | Days | New |
+| No absence claim without a live positive control | [*An absence claim without a live positive control is void*](../ASVS-ASSESSMENT.md#an-absence-claim-without-a-live-positive-control-is-void) | Written | Per claim | New |
+| Never score against a paraphrase of the requirement | [*Never score against a paraphrase*](../ASVS-ASSESSMENT.md#never-score-against-a-paraphrase) | Written | Per cell | New |
+| Any movement in a score reported with its cause named, and zero movement stated as a result | [*How to read a movement in the numbers*](../ASVS-ASSESSMENT.md#how-to-read-a-movement-in-the-numbers) | Written | Sitting | New |
+| Reviewers execute the citation rather than reading it, with distinct lenses | [*Make the reviewer execute the citation, not read it*](../ASVS-ASSESSMENT.md#make-the-reviewer-execute-the-citation-not-read-it) | Written | Days | New |
+| Impact sentences for software nobody has deployed written in the conditional tense, with no score altered | [*Deployment-time controls in software nobody has deployed*](../ASVS-ASSESSMENT.md#deployment-time-controls-in-software-nobody-has-deployed) | Written | Sitting | New |
+| Atomic cell claims, one integrator owning every write, and a collision detector at integration | [*Partitioning the work across agents*](../ASVS-ASSESSMENT.md#partitioning-the-work-across-agents) | Written | Days | New |
+| The findings themselves kept private | [*Checklist*](../ASVS-ASSESSMENT.md#checklist) | Written | Sitting | New |
 
 ---
 

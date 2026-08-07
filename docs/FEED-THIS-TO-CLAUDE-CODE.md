@@ -36,7 +36,7 @@ You do not need to read anything below this line. It is written to Claude Code.
 
 ---
 
-# For Claude Code
+## For Claude Code
 
 Everything from here is addressed to you, Claude Code.
 

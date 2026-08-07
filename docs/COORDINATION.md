@@ -521,7 +521,7 @@ Nothing here is worth that -- which is also why the file carries no `#Requires` 
 failure is raised *before* the body runs and exits non-zero, precisely the outcome the rest of the
 file is built to avoid.
 
-### The id rules -- the most valuable part of the hook
+### The id rules: the most valuable part of the hook
 
 There are **two id namespaces in play and they share no characters.**
 
@@ -797,7 +797,7 @@ quoted the target document's heading verbatim, the other carried the framing tha
 surrounding paragraph and the concrete consequence for a reader -- and picking a winner would have
 thrown away half the work.
 
-This is the same shape as [`isRunning`](#the-id-rules----the-most-valuable-part-of-the-hook): an
+This is the same shape as [`isRunning`](#the-id-rules-the-most-valuable-part-of-the-hook): an
 instrument answering a narrower question than the one being asked of it, and reporting success while
 it does.
 
