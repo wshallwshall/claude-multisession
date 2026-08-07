@@ -9,7 +9,7 @@
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **The deliverable is five artifacts, not five documents read.** A marked baseline worksheet, a
 deviations register, a three-item queue, a set of checks each carrying the date somebody last
