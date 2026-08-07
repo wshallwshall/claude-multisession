@@ -1,14 +1,38 @@
 # AI-assisted development: keeping the result trustworthy
 
-A standard for building software with an AI coding assistant. What can go wrong that looks like nothing
-going wrong, and which control neutralizes each one. How much rigor a given change actually needs.
-And when to spend real money on an adversarial verification pass instead of a second opinion that is
-worth almost nothing.
+**A standard for building software with an AI coding assistant: what goes wrong in ways that look
+like nothing going wrong, which control neutralizes each one, and how much rigor a given change
+actually needs.**
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/AI-ASSISTED-DEVELOPMENT.md)
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
+
+## In short
+
+**Nothing here is always-on except a short floor. Everything else is a dial that the change's risk
+tier sets.** That is what keeps a heavy process from being ignored wholesale: a one-line fix carries
+no release-grade ceremony, and the standard says so in writing rather than leaving people to decide
+it informally.
+
+One question classifies most changes. Does any code path in it touch -- or protect -- regulated or
+otherwise restricted data in production, and if you cannot yet prove it never will, the answer is
+yes. That resolves to the strictest tier on its own. Blast radius only breaks ties below it.
+
+Under every tier sits a floor that never scales down, because each item's reason has nothing to do
+with blast radius: no restricted data and no secrets reach the assistant, everything it reads is
+data rather than instructions, code nobody can explain is discarded, and the tooling itself is
+vetted -- it is a supply-chain surface that no dependency gate inspects.
+
+One line is the one not to blur. **A gate is a deterministic check with an exit code, and the model
+never certifies its own output.** An AI-run review is advisory input that a human arbitrates. Most
+agent-assisted processes lose exactly here, and the moment an AI review counts as a gate, the rest
+of the structure is decorative.
+
+Having no second reviewer is a documented deviation with named compensating controls and an end
+condition -- not a clean pass ([when there is no second
+reviewer](#when-there-is-no-second-reviewer)).
 
 ## What you get
 
