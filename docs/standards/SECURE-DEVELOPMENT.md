@@ -47,6 +47,14 @@ Capitals carry that meaning; the same words in lowercase prose do not. Rules are
 Everything else on the page is the reason for one, and **Limit:** lines are where a control stops
 working -- both are as binding on what you may claim as the rules themselves.
 
+**An identifier is a permanent name, never a position.** A new rule takes the next free number in
+its section and is appended, so document order and identifier order are independent -- inserting a
+rule must never renumber the ones after it, because a citation written against the old number would
+then silently resolve to a different requirement. Reword a rule freely under the same identifier.
+Change what it demands and you retire the identifier and allocate a new one.
+[Retired rules](#retired-rules) keeps the tombstones, so a citation that outlives its rule lands on
+a record of what happened rather than on somebody else's requirement.
+
 Marks record where a rule was borrowed. An unmarked rule is this document's own.
 **[derived: `<code>`]** restates a published requirement; **[prompted by: `<code>`]** means the
 source raised the topic and the rule is ours; **[external]** is empirical evidence. The test:
@@ -929,6 +937,18 @@ the sections carry rules this table does not.
 | Claiming | Built to, aligned with a named control, self-assessed against -- never certified | SD-17.1, SD-17.2 |
 | Claiming | Never align with a publication as a whole, only with a named control | SD-17.3 |
 | Claiming | Never restate another document's target or score; link to the record of record | SD-17.7 |
+
+---
+
+## Retired rules
+
+A rule that goes away gets a row here rather than being deleted, and its identifier is never issued
+again. Retiring costs one row; reusing an identifier silently repoints every citation written
+against it, including ones in registers you do not control.
+
+| Retired | Date | Why, and what replaced it |
+|---|---|---|
+| -- | -- | No rule has been retired yet. This table is the format, waiting for the first one |
 
 ---
 

@@ -41,7 +41,16 @@ jobs:
     steps:
       # Pinned by commit SHA, not by tag: a tag is mutable and this repo's dependency standard says
       # to pin what you cannot audit. actions/checkout v4.
+      #
+      # fetch-depth: 0 is LOAD-BEARING, not a default anyone forgot to trim. The default is 1, and
+      # `test_rule_ids_are_stable.py` derives "which rule identifiers have ever existed" from the
+      # history of one file -- that is what stops a retired identifier being silently reissued to a
+      # different rule. On a shallow clone that check reads one revision, so it raises rather than
+      # passing quietly. Trimming this back turns the whole suite red with an explanation, which is
+      # the correct failure and not a puzzle.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
 
       - name: Versions actually used
         shell: pwsh

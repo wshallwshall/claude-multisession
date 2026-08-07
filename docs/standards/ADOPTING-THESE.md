@@ -48,11 +48,9 @@ and each usually finds something.
 1. **Classify every nominally-security job you already run as blocking or advisory**, and write the
    classification down. Zero engineering, and it narrows believed coverage on the spot, because an
    advisory job and a blocking one are indistinguishable from a green badge. [Secure
-   development](SECURE-DEVELOPMENT.md), *"Scanner posture: what blocks, what advises, what may never
-   be waived"*, and its subheading *"What must block, and may not be waived"*.
+   development](SECURE-DEVELOPMENT.md), SD-5.1, and the unwaivable set in SD-5.2 to SD-5.5.
 2. **Write the producer-versus-operator ownership split.** One table, one sitting. It is what makes
-   every later claim scopeable. [Secure development](SECURE-DEVELOPMENT.md), *"Shared
-   responsibility: write the split down first"*.
+   every later claim scopeable. [Secure development](SECURE-DEVELOPMENT.md), SD-1.1.
 3. **Enumerate every dependency manifest in the repository** and note which of them has an audit.
    Ten minutes. A repository that grew a second language usually grew an unwatched dependency tree
    with it. [Dependency integrity](DEPENDENCY-INTEGRITY.md), *"Every manifest in the repository needs
@@ -124,8 +122,7 @@ The pass is read-only. It builds nothing. Two rules make the result honest:
 - **A row you did not check is unverified, and unverified is not a pass.** An unscored row is an
   open question, not a quiet yes. [Code quality](CODE-QUALITY.md), *"Adapting this to your project"*.
 - **A blocking row nobody has watched refuse anything is indistinguishable from one that cannot
-  refuse anything.** [Secure development](SECURE-DEVELOPMENT.md), *"Three additions specific to a
-  security posture"*.
+  refuse anything.** [Secure development](SECURE-DEVELOPMENT.md), SD-5.10.
 
 Fill in the starter set. Seven rows. The afternoon list above is how the first of them get filled;
 [the worksheet](#the-worksheet) at the end of this page is the backlog you work through over
@@ -137,9 +134,9 @@ releases, not a prerequisite for starting.
 | Strict type checking, no blanket suppressions | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | | | |
 | Tests verify behavior rather than mock choreography | [Code quality](CODE-QUALITY.md), *Tier 1 -- durable controls, which carry the verdict* | | | |
 | Dependencies existence-verified and hash-pinned | [Dependency integrity](DEPENDENCY-INTEGRITY.md), *Pin the resolved graph, and enforce the pin at install* | | | |
-| Security scanning that blocks, plus a threat model reviewed before the code | [Secure development](SECURE-DEVELOPMENT.md), *What must block, and may not be waived*; *Threat model each trust boundary before you build it* | | | |
+| Security scanning that blocks, plus a threat model reviewed before the code | [Secure development](SECURE-DEVELOPMENT.md), SD-5.2 to SD-5.5; SD-2.1 | | | |
 | Published artifact contains only what was declared | [Dependency integrity](DEPENDENCY-INTEGRITY.md), *The artifact contains only what you declared* | | | |
-| Secrets and restricted data kept out of the repository and its full history, backed by a fail-closed commit-time content scan | [Secure development](SECURE-DEVELOPMENT.md), *Secrets and repository hygiene*; [the leak gate](../LEAK-GATE.md) | | | |
+| Secrets and restricted data kept out of the repository and its full history, backed by a fail-closed commit-time content scan | [Secure development](SECURE-DEVELOPMENT.md), SD-6.1 and SD-6.2; [the leak gate](../LEAK-GATE.md) | | | |
 
 Two of those seven -- tests that verify behavior, and the security row entire -- are not in the
 shipped project instruction template, and both carry the verdict. Step 5 returns to that.
@@ -260,10 +257,10 @@ resolve against it.
 
 | Layer | What it is | Why it comes before the next | Where that is written |
 |---|---|---|---|
-| **L0 -- definitions and records** | The producer-versus-operator split, the data-class table, the blocking-versus-advisory classification, the deviations register opened. Written records, no engineering | The data-class table has the highest fan-out in the set: several later rules resolve against it, and a rule that says "restricted data" over a table with no matching row has a missing row, not a satisfied control | [Secure development](SECURE-DEVELOPMENT.md), *Shared responsibility: write the split down first*; *What "restricted data" means here, exactly once* |
+| **L0 -- definitions and records** | The producer-versus-operator split, the data-class table, the blocking-versus-advisory classification, the deviations register opened. Written records, no engineering | The data-class table has the highest fan-out in the set: several later rules resolve against it, and a rule that says "restricted data" over a table with no matching row has a missing row, not a satisfied control | [Secure development](SECURE-DEVELOPMENT.md), SD-1.1; SD-1.6 |
 | **L1 -- enumerations** | Every dependency manifest, every trust boundary, the required-check set | An enumeration converts a habit into a checkable list, and it is what makes a coverage claim quantified over something | [Dependency integrity](DEPENDENCY-INTEGRITY.md), *Every manifest in the repository needs its own audit net*; [CI and standards](../CI-AND-STANDARDS.md), *The required-check set* |
 | **L2 -- baselines** | A clean lint baseline with per-line suppressions naming their rule, and a lock that records digests rather than versions | A baseline is a start condition for red-on-regression enforcement, not a result | [CI and standards](../CI-AND-STANDARDS.md), *Grandfather to a clean baseline, then ratchet*; [Dependency integrity](DEPENDENCY-INTEGRITY.md), *Pin the resolved graph, and enforce the pin at install* |
-| **L3 -- enforcement** | Install-time pin enforcement, the unwaivable blocking set, branch protection, the allowlist gate placed before the irreversible upload | Nothing here can be built before the thing it enforces exists to be enforced against | [Secure development](SECURE-DEVELOPMENT.md), *What must block, and may not be waived*; [CI and standards](../CI-AND-STANDARDS.md), *Package manifests are allowlists, not sweeps* |
+| **L3 -- enforcement** | Install-time pin enforcement, the unwaivable blocking set, branch protection, the allowlist gate placed before the irreversible upload | Nothing here can be built before the thing it enforces exists to be enforced against | [Secure development](SECURE-DEVELOPMENT.md), SD-5.2 to SD-5.5; [CI and standards](../CI-AND-STANDARDS.md), *Package manifests are allowlists, not sweeps* |
 | **L4 -- receipts and proof of failure** | Units examined printed on every run, zero-units-examined exiting non-zero, and a date somebody watched each gate refuse something | Ranking is unfalsifiable until this exists, which is why it precedes the measurement layer rather than following it | [CI and standards](../CI-AND-STANDARDS.md), *Receipts: count what the check examined, never what it found*; *Attack the control with the failure class it was built to catch* |
 | **L5 -- measurement** | Mutation on changed code, coverage visibility, duplication, complexity triage | Last, and never a gate on its own -- reversed, you get a dashboard and no controls | [The CISO summary](CISO-SUMMARY.md), *What to fund first*; [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage* |
 
@@ -281,7 +278,7 @@ placement is a derived value and must be re-derived after any repair ([CI and
 standards](../CI-AND-STANDARDS.md), *"A cost model built on a broken gate is fiction"*).
 
 **Do not report adoption as a count of controls marked built.** It is named as a non-verdict in
-[Secure development](SECURE-DEVELOPMENT.md), *"The security anti-metrics"*. The queue is three deep
+[Secure development](SECURE-DEVELOPMENT.md#the-security-anti-metrics). The queue is three deep
 because a longer list is a schedule, a schedule invites a date, and the number a date would be
 reported against is the one just forbidden. Everything below the top three sits in the worksheet as
 an unordered backlog.
@@ -366,13 +363,13 @@ states the consequence: *"A standard that no such file references is a document,
 **Extend the table past the five rows the template ships with.** Four of those five are Tier 1 rows
 from [Code quality](CODE-QUALITY.md), *"Tier 1 -- durable controls, which carry the verdict"*
 (architecture, types, dependencies, published artifact); the fifth, the secret scan, comes from
-[Secure development](SECURE-DEVELOPMENT.md), *"Secrets and repository hygiene"*. So copying the
+[Secure development](SECURE-DEVELOPMENT.md), SD-6.1. So copying the
 template verbatim leaves two of the six verdict-carrying Tier 1 rows out of your table altogether:
 *tests verify behavior*, and *security scanning plus a threat model* in all three of its parts --
 blocking scanners, a written threat model, and a human review step. The secret scan does not stand
 in for the scanner part: secret scanning is one of three checks in the unwaivable blocking set, not
-the whole of it ([Secure development](SECURE-DEVELOPMENT.md), *"What must block, and may not be
-waived"*). Not-built rows point at their register entry. What could not be automated appears as a
+the whole of it ([Secure development](SECURE-DEVELOPMENT.md), SD-5.2 to SD-5.5). Not-built rows
+point at their register entry. What could not be automated appears as a
 standing rule rather than a table row. Alongside the table, record the revision of each source
 document you tailored from and the release at which the table is next re-read.
 
