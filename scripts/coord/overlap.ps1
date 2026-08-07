@@ -378,6 +378,26 @@ if ($File) {
     # failure. (-InputObject is not the fix: with -AsArray it double-wraps to [[]].) Verified against
     # the real script, not against a stub.
     if ($Json) { (Write-JsonArray $hits); exit 0 }
+    # THE HUMAN PATH NEEDED THE SAME FIX AND DID NOT GET IT. The line above was written to stop an
+    # empty -Json answer printing nothing; the loop below was left as the entire human output, so a
+    # query with no hits printed NOTHING and exited 0 -- the identical failure, one branch over.
+    #
+    # This is the worse of the two, because of who reads it. The -Json consumer is the collision gate,
+    # which has its own can't-tell path; the human consumer is a person running the command this repo
+    # documents as the thing to do BEFORE starting a chunk of work. For them, "nobody else is changing
+    # this file" was byte-identical to "this script died before it could answer", and both read as a
+    # green light. So state the all-clear, and state what it was computed from: an all-clear that names
+    # its evidence can be disbelieved when the evidence turns out to be thin (zero worktrees examined
+    # is a very different all-clear from eleven).
+    #
+    # The null filter is the one Write-JsonArray needs, for the same reason: a cached walk with zero
+    # rows round-trips through JSON as `"rows": null`, `@($c.rows)` rebuilds that as a one-element
+    # array holding $null, and an unfiltered count would then claim a peer worktree was examined when
+    # none was. Measured, not assumed.
+    $examined = @($map | Where-Object { $null -ne $_ }).Count
+    if ($hits.Count -eq 0) {
+        Write-Host "  $File -- no other worktree is changing it ($examined peer worktree(s) with changes or a live session examined)."
+    }
     foreach ($h in $hits) {
         $state = if ($h.Live) { "LIVE $($h.Surface) session $($h.Short)" } else { "dormant worktree" }
         Write-Host "  $File is also changed by $state in $($h.Worktree) [$($h.Branch)]"

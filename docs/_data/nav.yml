@@ -35,6 +35,14 @@
     - label: Concepts
       title: Concepts
       path: /CONCEPTS.html
+    # Installing sat in the "On GitHub" group, row 32 of 33, which filed the one page an installer
+    # needs behind everything they would read afterwards. It is still an off-site `url` entry -- the
+    # file is at the repository root, outside the Jekyll source, so the site cannot serve it -- but a
+    # reader looking for how to install now finds it where they look. The label says the task rather
+    # than the filename.
+    - label: Installing
+      title: "INSTALL.md: four installers, four scopes, and how to prove each is live"
+      url: https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md
 
 - group: Standards
   items:
@@ -131,14 +139,17 @@
       title: "Case study: auditing a multi-session estate as one system"
       path: /CASE-STUDY-drift-audit.html
 
+- group: Contributing
+  items:
+    - label: House style
+      title: "House style: what a page here has to do"
+      path: /HOUSE-STYLE.html
+
 - group: On GitHub
   items:
     - label: CLAUDE.md template
       title: A working agreement to copy into your own repository
       url: https://github.com/wshallwshall/claude-multisession/blob/main/CLAUDE.md.template
-    - label: Installing
-      title: INSTALL.md, at the repository root
-      url: https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md
     - label: Source repository
       title: claude-multisession on GitHub
       url: https://github.com/wshallwshall/claude-multisession
