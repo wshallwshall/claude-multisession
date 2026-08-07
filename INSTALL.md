@@ -169,7 +169,8 @@ protocol is exactly the drift the shared liveness fence exists to prevent. The c
 kept only as a fallback.
 
 Both candidates are inside the session's **own** repository, which is what makes the vendored layout
-the one where these three rows can be `OK`. See *Five minutes* in `README.md` for the layout choice,
+the one where these three rows can be `OK`. See
+[Quickstart](https://wshallwshall.github.io/claude-multisession/#quickstart) for the layout choice,
 and for what a target that does not carry these scripts gets instead.
 
 ### Prove it
@@ -579,6 +580,28 @@ directory, which are deleted on the way out; nothing in your repository is modif
 | 0 | Every required control is installed and wired, and every attack was refused |
 | 1 | At least one control is broken or absent -- the guardrails you appear to have are not all there |
 | 2 | At least one check could not be determined. Not a pass. This command refuses to guess |
+
+### The verdict counts every control it can see, not the ones you chose
+
+This catches people out on a deliberate partial install, so it is worth stating plainly: the exit
+code is an accounting over the whole control set.
+
+- **Any `RED`, or any *required* control `OFF`, is exit 1.** The worktree gate, its allowlist, its
+  wiring, the three coordination rows, both git hooks and the SessionStart backstop are all required,
+  so **a partial install of the installers above cannot exit 0**. The one you skipped is reported
+  `OFF` -- implemented, invoked by nothing, zero enforcement -- not "not chosen".
+- **Any `??` with no `RED` is exit 2.** A skip is never a pass.
+- **`--` never fails a run.** That tag is for a control that is opt-in by design (the blanket-stage
+  guard, the steering injector) or off by configuration (the sequence gate with no `sequences` key).
+- **An *opt-in* control reported `OFF` never fails a run either**, and is counted on its own
+  `OFF (opt-in)` line rather than folded into the `OFF` number. Today that is the sequence gate when
+  `sequences` **is** configured -- a real hole worth an `OFF` rather than a `--`, since numbers are
+  being allocated and nothing at commit time defends them, but not one a shipped installer ever
+  promised to close.
+
+So exit 0 also needs a `python` on `PATH` (the git-hook shims fail open without one), every config
+root the run lists wired, and no kill switch set. The `VERDICT` block names every `RED`, `OFF` and
+`??` it counted, so you never have to infer which one moved the number.
 
 `-SkipAttacks` makes every attack `??`, so the run cannot exit 0 -- it is 2, or 1 if something was
 also proven broken or absent -- because a control that was not tested is not a control that passed. `-Json` emits a machine-readable report whose `scanned` block carries the

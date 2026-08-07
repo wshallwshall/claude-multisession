@@ -12,18 +12,21 @@ and how to tell whether you got it.**
 
 ## In short
 
-Assisted code fails in the ways code has always failed. Injection, weak authorization, bad
-dependencies, leaked secrets -- the categories have not moved. What moved is the volume arriving for
-review, the speed it arrives at, and how finished it looks before anyone has checked it.
+**Nothing new is going wrong with your code. There is just far more of it, arriving faster, and
+looking finished before anyone has checked it.** Injection, weak authorization, bad dependencies,
+leaked secrets -- the categories have not moved.
 
-That points at a particular kind of control: one that does not read the code's confidence.
-Structural checks, applied to every change, that a person cannot talk past. And one question sorts a
-real control from a decorative one -- **when did you last prove this control can fail?** A gate
-nobody has ever watched go red is not evidence of anything.
+Reviewing more code is not the answer: review effort scales with the volume, and the volume is what
+moved. Three moves instead, in this order:
 
-Fund structural controls first, a human arbiter who cannot be skipped second, and measurement last.
-The rest of this page is the five failure modes worth designing against, the five questions to ask,
-and what a usable answer to each sounds like.
+1. **Fund structural controls** -- checks that run on every change and whose verdict does not change
+   because the output looks finished. What counts as one is listed below.
+2. **Put a human arbiter where it cannot be skipped** -- above all where a change touches restricted
+   data or an authorization path.
+3. **Measure last, and never gate on measurement alone.**
+
+Then ask each control owner one question: **when did you last prove this can fail?** A gate nobody
+has ever watched go red is not evidence of anything.
 
 **None of this certifies anything.** These documents are a bar to set. No badge comes with them.
 
@@ -106,7 +109,7 @@ The order matters. Reversed, you get a dashboard and no controls.
 | How to judge whether code is good, whoever wrote it | [Code quality](CODE-QUALITY.md) |
 | The process a build must satisfy | [Secure development](SECURE-DEVELOPMENT.md) |
 | Trusting what you did not write, and controlling what you ship | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |
-| What a buyer will ask you to produce | [The diligence packet](DILIGENCE-PACKET.md) |
+| What to require of a vendor you are evaluating | [What to ask a software vendor for](DILIGENCE-PACKET.md) |
 | All of it, and how to adopt | [Overview](OVERVIEW.md) |
 
 **MIT licensed.** Adapt this, put your own name on it, and delete anything you cannot stand behind.

@@ -29,6 +29,10 @@ desktop client (see [Limits](#limits-read-before-installing)).
 **Go:** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
 [What ships](#what-ships) - [Full docs](#where-to-go-next)
 
+**Or have Claude Code evaluate it for you.** [Feed it this page](FEED-THIS-TO-CLAUDE-CODE.md) and it
+will read your repository and tell you which of these collisions you actually have -- usually faster
+than deciding from the docs.
+
 ---
 
 ## The problem
@@ -43,6 +47,12 @@ One agent runs an ordinary `git checkout -B <branch> origin/main`. Git allows it
 not checked out anywhere. The shared working tree force-switches, swapping every file under whichever
 session was mid-task and dragging its uncommitted work onto the wrong branch. It is invisible while
 it happens, because each session believes it owns its directory.
+
+That is the loudest collision, not the only one. Six more -- same file, same work in different files,
+same reserved number, same config lock, same shared list, same agent memory -- are tabulated with
+their measurements in the
+[README's collision table](https://github.com/wshallwshall/claude-multisession#what-problem-this-solves),
+which is the place to start if you are still deciding whether you have this problem.
 
 ## What you get
 
@@ -72,7 +82,11 @@ tell which of those a worktree is. [Pruning](PRUNING.md)
 
 **Work too large for one context.** A coordinated set of sessions can cover a codebase at once, which
 extends to compliance work -- an OWASP ASVS 5.0 assessment runs to several hundred requirements, more
-than one session can hold. [Running a large assessment](ASVS-ASSESSMENT.md)
+than one session can hold. The write-up is candid that the obvious split is the wrong one: a session
+per chapter is a scheduling answer, and the collision that actually costs you is not two agents
+editing the same row but **two agents applying different unwritten rules**, producing verdicts that
+cannot be reconciled afterwards because neither recorded which rule it applied.
+[Running a large assessment](ASVS-ASSESSMENT.md)
 
 ### Which part defends against #76590
 
@@ -80,7 +94,7 @@ Three mechanisms touch that failure. Only the first prevents it:
 
 | | Script | What it does |
 |---|---|---|
-| **Prevention** | `scripts/hooks/worktree_gate.ps1` | A `PreToolUse` hook. Refuses an agent's `git checkout`/`git switch` that would move a *linked* worktree onto a branch another session is building on. The tool call does not run. |
+| **Prevention** | `scripts/hooks/worktree_gate.ps1` | A `PreToolUse` hook. Refuses the git verbs that would swap or discard the shared **primary** checkout's tree -- that is the tree #76590 flips, and the rule that stops it. A separate rule refuses a `git checkout`/`git switch` that would hijack another session's *linked* worktree. Either way the tool call does not run. |
 | **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the shared *primary* checkout when its HEAD has drifted and the tree is clean. On a dirty tree it declines, says so, and touches nothing. |
 | **Detection** | the home-branch record | Recorded in each worktree's private git directory, where a checkout cannot move it. A later session finding the worktree elsewhere warns and offers the restore command. Warn-only; it is [wrong by design](WORKTREES.md#the-sidecar-home-branch-record-is-wrong-by-design), so treat a warning as a prompt to read the reflog, not as proof. |
 
@@ -302,26 +316,31 @@ that may only veto, exclusive-create over read-modify-write, no TTLs, the six kn
 `ccx.config.json`) then [Hooks](HOOKS.md) (harness versus git hooks, every control mapped to its
 event and fail-open or fail-closed posture).
 
-**Running sessions,** in the order the work happens: [Worktrees](WORKTREES.md) -
-[Coordination](COORDINATION.md) - [Steering](STEERING.md) -
-[Sequence allocation](SEQUENCE-ALLOC.md) - [PRs and merges](PR-AND-MERGE.md) -
-[Pruning](PRUNING.md).
+**Running sessions:** start at [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) -- it is the
+entry point to the group, and it covers the three things no other page owns (which surface to run
+sessions on, the channels they have for reaching each other, and using one session as a coordinator).
+Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](COORDINATION.md) -
+[Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -
+[PRs and merges](PR-AND-MERGE.md) - [Pruning](PRUNING.md).
 
 **Safety and standards,** in descending order of how much actually ships:
 [Leak gate](LEAK-GATE.md) (a scanner you can run today, plus the blind spot no scanner can close) -
 [CI and standards](CI-AND-STANDARDS.md) (ships no CI configuration) -
-[Usage awareness](USAGE-AWARENESS.md) (a design; ships no hook).
+[Usage awareness](USAGE-AWARENESS.md) (a design; ships no hook) -
+[Session mail](SESSION-MAIL.md) (a design for reaching the peers announce cannot; ships nothing, and
+is most useful as the list of ways the obvious implementations fail).
 
 **In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list) -
 [Use OWASP ASVS 5.0](ASVS-ASSESSMENT.md) (publishes no results, deliberately).
 
-**[Standards to adapt](standards/OVERVIEW.md)** -- four documents setting a bar for code an agent
-wrote and a small team has to stand behind: [AI-assisted development](standards/AI-ASSISTED-DEVELOPMENT.md),
-[Dependency integrity](standards/DEPENDENCY-INTEGRITY.md), [Code quality](standards/CODE-QUALITY.md),
-[Secure development](standards/SECURE-DEVELOPMENT.md). They ship no code and confer no certification;
-they came out of one working codebase and carry its assumptions. Read the index first -- it says what
-each one buys you and which rules the pages above already own.
+**[Standards to adapt](standards/OVERVIEW.md)** -- a set of documents setting a bar for code an agent
+wrote and a small team has to stand behind. Start with
+[the CISO summary](standards/CISO-SUMMARY.md) if you are deciding whether to adopt them, or
+[How to adopt these](standards/ADOPTING-THESE.md) if you already have. They ship no code and confer
+no certification; they came out of one working codebase and carry its assumptions.
+[The index](standards/OVERVIEW.md) enumerates the set and says what each one buys you -- deliberately
+not repeated here, because a count in prose goes stale the day the set grows and nothing tests it.
 
 **At the repository root:**
 [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) (record of

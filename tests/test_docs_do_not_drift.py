@@ -3,12 +3,20 @@
 THE FAILURE THIS EXISTS FOR. Publishing docs/ as a site turned two of these from theory into
 something that already happened once.
 
-  1. THE INSTALL PROCEDURE EXISTS IN THREE COPIES. README.md is the front door on github.com,
-     docs/index.md is the front door on the served site, and INSTALL.md is the annotated long
-     form. A reader follows exactly one of them. Nothing makes the commands agree, and the first
-     divergence was not caught by review: docs/index.md said the installers refuse when
-     `$env:CLAUDECODE` is `1` (what all four actually test) while README.md still said "is set"
-     (which is looser than the code, and wrong for CLAUDECODE=0).
+  1. THE INSTALL PROCEDURE CAN EXIST IN MORE THAN ONE COPY. README.md is the front door on
+     github.com, docs/index.md is the front door on the served site, and INSTALL.md is the
+     annotated long form. A reader follows exactly one of them. When two of them carried the
+     commands, nothing made them agree, and the first divergence was not caught by review:
+     docs/index.md said the installers refuse when `$env:CLAUDECODE` is `1` (what all four
+     actually test) while README.md still said "is set" (which is looser than the code, and wrong
+     for CLAUDECODE=0).
+
+     The two landing pages have since been de-duplicated: docs/index.md carries the procedure and
+     README.md points at it. So the case below no longer compares two copies -- it pins that the
+     one copy still exists where the pattern can see it, and that README does not grow a second
+     copy that disagrees. INSTALL.md was never in this scan despite the docstring's original
+     "three copies": it writes `<tooling>` as a placeholder rather than `"$tooling/`, so
+     INSTALL_COMMAND has never matched a line in it.
   2. LINKS THAT LEAVE THE SITE ARE PINNED TO `main`. Serving from /docs makes docs/ the site
      root, so a `../scripts/...` target resolves above the root and 404s. The fix was to rewrite
      those to absolute blob/main URLs -- which is correct, and which converts an in-repo
@@ -16,12 +24,13 @@ something that already happened once.
   3. A DOC CLAIM ABOUT A CONTROL CAN OUTLIVE THE CONTROL. The CLAUDECODE case is the live
      example: the sentence was not wrong when written, it was wrong about what the code tests.
 
-WHAT THIS PROVES, AND WHAT IT DOES NOT. These cases read source. They prove the two copies of the
-install block are character-identical, that every blob/main URL names a path git is tracking, and
-that no copy describes the installer refusal more loosely than the installers implement it. They
-do NOT fetch anything: a URL whose path exists here still 404s on github.com if the branch is
-renamed or the file is not pushed, and nothing local can see that. They also do not check
-INSTALL.md's prose against the other two -- it is the long form and is expected to differ.
+WHAT THIS PROVES, AND WHAT IT DOES NOT. These cases read source. They prove the install block still
+exists where the pattern can see it and that README does not carry a second copy that disagrees,
+that every blob/main URL names a path git is tracking, and that no copy describes the installer
+refusal more loosely than the installers implement it. They do NOT fetch anything: a URL whose path
+exists here still 404s on github.com if the branch is renamed or the file is not pushed, and nothing
+local can see that. They also do not check INSTALL.md's prose against the landing page -- it is the
+long form and is expected to differ.
 
 Run: python -m pytest tests -q     (or: python -m unittest discover -s tests -v)
 """
@@ -72,26 +81,119 @@ def tracked_files() -> list[str]:
     return [line.strip() for line in out.stdout.splitlines() if line.strip()]
 
 
-class TheInstallCopiesAgree(unittest.TestCase):
-    def test_the_readme_and_the_landing_page_carry_the_same_commands(self):
+class TheInstallProcedureHasOneCopy(unittest.TestCase):
+    """docs/index.md owns the procedure; README.md points at it rather than repeating it.
+
+    This replaced a case that pinned the two files to identical blocks, which was the right shape
+    while both carried the commands. De-duplicating the landing pages left README with no block,
+    and that case's own empty-match guard fired rather than passing on an empty comparison. The
+    guard is kept below, moved onto the file that now owns the procedure -- which is the only file
+    it can defend, since a guard on the pointing file would fail the moment the pointing worked.
+    """
+
+    def test_the_landing_page_still_carries_the_procedure(self):
+        landing = INSTALL_COMMAND.findall(t.read(LANDING))
+        self.assertNotEqual(
+            [],
+            landing,
+            "no install commands found in docs/index.md, which is the one copy of the procedure. "
+            "Either the block moved or its shape changed; a pattern that matches nothing passes "
+            "everything, so fix the pattern -- or this file's premise about where the procedure "
+            "lives -- before trusting a green run here.",
+        )
+
+    def test_the_readme_carries_no_second_copy_that_disagrees(self):
         readme = INSTALL_COMMAND.findall(t.read(README))
         landing = INSTALL_COMMAND.findall(t.read(LANDING))
 
+        # Either README points (no commands) or it repeats the landing page exactly. Anything else
+        # is the divergence this file exists for. Stated as one membership test rather than a
+        # branch, so the empty case cannot slip through as an early return that reads as a pass.
+        # Its vacuous case -- both empty -- is what the sibling case above rules out.
+        self.assertIn(
+            readme,
+            ([], landing),
+            "README.md carries install commands that do not match docs/index.md.\n"
+            "README.md:\n  " + "\n  ".join(readme) + "\n"
+            "docs/index.md:\n  " + "\n  ".join(landing) + "\n"
+            "A reader follows exactly one of these. Either drop the block from README.md and point "
+            "at the landing page, or make the two character-identical in this same commit.",
+        )
+
+
+class EveryStandardIsReachable(unittest.TestCase):
+    """No prose may claim a total for a set another file enumerates.
+
+    THE FAILURE THIS EXISTS FOR, caught in the wild. docs/index.md said the standards set was "four
+    documents" and named four. docs/standards/ held eleven. The sentence was true when written; the
+    set grew and the sentence did not, and nothing compared them. Renumbering it to eleven would
+    have staged the identical failure for document twelve, so the fix was to delete the count and
+    route through the index -- and this case is what keeps it deleted.
+
+    That is this repository's own published rule failing on its own site: a completeness claim is a
+    liability, prefer "at least" to an enumeration. A count in prose is the shape that goes stale
+    silently, because nothing errors when the world moves.
+
+    SCOPE, stated because the first attempt at this measurement got it wrong. This checks the LINK
+    GRAPH, not the landing page's prose. Every standard is in docs/_data/nav.yml, which
+    _layouts/default.html renders as a sidebar on every page of the served site, so a standard
+    absent from index.md's prose is still one click away. The defect was never that a reader could
+    not reach these -- it was that the prose asserted a size for a set it did not enumerate.
+    """
+
+    STANDARDS_DIR = t.REPO_ROOT / "docs" / "standards"
+
+    # A bare integer word in front of "document"/"standard" is the construction that rotted. The
+    # set's size belongs in OVERVIEW.md, which enumerates it, and nowhere else.
+    COUNTED_CLAIM = re.compile(
+        r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+"
+        r"(?:\w+\s+){0,2}(documents?|standards)\b",
+        re.IGNORECASE,
+    )
+
+    def _standards(self) -> list[str]:
+        return sorted(
+            p.name for p in self.STANDARDS_DIR.glob("*.md") if p.name != "OVERVIEW.md"
+        )
+
+    def test_the_overview_still_enumerates_every_standard(self):
+        standards = self._standards()
         self.assertNotEqual(
             [],
-            readme,
-            "no install commands found in README.md. Either the block moved or the shape changed; "
-            "a pattern that matches nothing passes everything, so fix the pattern before trusting "
-            "a green run here.",
+            standards,
+            "no standards found in docs/standards/. Either the section moved or this test's "
+            "premise is stale; a scan that finds nothing passes everything, so fix the scan "
+            "before trusting a green run here.",
         )
+
+        overview = t.read(self.STANDARDS_DIR / "OVERVIEW.md")
+        missing = [name for name in standards if name not in overview]
         self.assertEqual(
-            readme,
-            landing,
-            "the install commands in README.md and docs/index.md have diverged.\n"
-            f"README.md:\n  " + "\n  ".join(readme) + "\n"
-            f"docs/index.md:\n  " + "\n  ".join(landing) + "\n"
-            "A reader follows exactly one of these. Update both in the same commit, or move the "
-            "procedure to INSTALL.md and have both point at it.",
+            [],
+            missing,
+            "docs/standards/OVERVIEW.md is the index and does not link every standard beside it: "
+            f"{', '.join(missing)}.\n"
+            "The landing pages delegate the enumeration to OVERVIEW.md precisely so there is one "
+            "list to maintain. If OVERVIEW is not that list, nothing is.",
+        )
+
+    def test_no_landing_page_asserts_a_total_for_the_set(self):
+        offenders = []
+        for path, label in ((LANDING, "docs/index.md"), (README, "README.md")):
+            for line in t.read(path).splitlines():
+                if "standards/" not in line and "docs/standards" not in line:
+                    continue
+                for match in self.COUNTED_CLAIM.finditer(line):
+                    offenders.append(f"{label}: {match.group(0)!r} in: {line.strip()[:120]}")
+
+        self.assertEqual(
+            [],
+            offenders,
+            "a landing page states a count for the standards set:\n  "
+            + "\n  ".join(offenders)
+            + "\nDo not correct the number -- that stages the same failure for the next document "
+            "added. Drop the count and let docs/standards/OVERVIEW.md enumerate the set, which is "
+            "the only file that has to change when it grows.",
         )
 
 
