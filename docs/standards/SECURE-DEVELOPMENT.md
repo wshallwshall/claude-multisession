@@ -21,16 +21,16 @@ assistant, and several sessions push into one trunk. That is not a special case 
 It is the case where the process layer stops being paperwork, because the machine-enforced layer
 gets cheap and the human layer does not.
 
-**What it demands.** Judge a build as a composite of two layers, and never on one row of either. A
-named set of checks blocks every change and cannot be waived by an author. Every trust
+**What it demands.** Judge a build's security as a composite of two layers. Never on one row of
+either -- [the shape](#the-shape-two-layers-and-the-second-is-where-the-defects-are) says what is in
+each. A named set of checks blocks every change and cannot be waived by an author. Every trust
 boundary gets a written threat model, reviewed before the code exists. Every requirement you cannot
 meet is written down, dated, signed, and carries the event that ends it. No green pipeline is a
 verdict.
 
-**What it costs.** Calendar time in the two places that resist automation: threat modeling before
-the build, and vulnerability response rehearsed end to end. Controls you do not own and must not
-claim, because they belong to whoever runs the software. And a gap you cannot close by working
-harder, held under a signed acceptance rather than argued away.
+**What it costs.** Calendar time where automation does not reach, controls you must not claim
+because you do not own them, and a gap you cannot close by working harder.
+[What this costs you](#what-this-costs-you) is the list, and it is short.
 
 It is deliberately framework-neutral, and it names practices, never certifications. No standards
 body issues a certificate for any of this, and a self-assessment is not one either. So every claim
@@ -171,8 +171,6 @@ Then work in this order:
 ---
 
 ## The shape: two layers, and the second is where the defects are
-
-Judge a build's security as a composite of two layers. Never on one row of either.
 
 The machine-enforced layer is blocking analysis and secret-scan gates, secure coding practice,
 dependency and supply-chain integrity, secrets hygiene, secure-by-default configuration,
