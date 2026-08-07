@@ -265,10 +265,8 @@ somewhere git never looks -- which is the exact shape of failure this script exi
    every existing install, after which this script correctly refuses to touch the old file as
    foreign. Rename once, in one commit, or not at all.
 2. **It never writes `pre-commit` -- not to install, not to patch, not to migrate.** Two tools cannot
-   both own that file. A hook framework that finds a foreign hook there may rename it and invoke it
-   from its own shim, and that chain has failed on Windows and blocked every commit in a repository
-   until the shim was removed. Note that the renamed file *existing* did not indicate success; only a
-   real commit did.
+   both own that file. What happens when they try, and why the sequence gate therefore ships unwired,
+   is at [the git-hook contract](docs/HOOKS.md#the-git-hook-contract).
 
 **Fail-open, declared.** The installed hooks are `/bin/sh` shims that locate a python and exec the
 checker. With no interpreter they write to stderr and exit 0 -- the gate is OFF for that commit, and

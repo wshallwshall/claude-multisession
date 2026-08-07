@@ -67,13 +67,10 @@ installed copy, the settings matcher and the source can all disagree with one an
 them decides anything.
 
 **A control that cannot distinguish "ran and resolved" from "ran and found nothing" is not installed,
-however it looks.** One hook in this corpus fired on every prompt, printed a status message, resolved
-nothing and exited 0 -- for weeks. It outlived every other silent defect found the same day *precisely
-because it printed something*: a status message is more convincing than silence. Every receipt it would
-have written lived inside the script its shim failed to find, so every possible check was strictly
-downstream of the failure it existed to detect. Looking was not neglected; it was impossible. When you
-add a control, ask which surface still reports when the control itself fails to *load*, and put at
-least one signal outside the component being audited.
+however it looks.** The hook that established this ran for weeks while printing a status message, and
+outlasted every other silent defect found the same day precisely because it printed something. The
+account, and the rule that falls out of it, are at
+[put at least one signal outside the component being audited](TIPS-AND-TRICKS.md#put-at-least-one-signal-outside-the-component-being-audited).
 
 ---
 

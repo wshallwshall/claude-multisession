@@ -3,11 +3,9 @@
 More than one Claude Code session in one repository at the same time buys real parallelism and
 creates a specific set of failures, nearly all of which are invisible while they happen.
 
-This page is the entry point to the group. It names each problem, says which page owns the fix, and
-covers the three things no page below owns: **which surface to run the sessions on**, **the channels
-sessions have for reaching each other**, and **using one session as a coordinator**. It explains no
-mechanism another page owns -- the owning page stays correct when the code changes, and a second copy
-here would go wrong first, and silently.
+Three things live here and nowhere else: **which surface to run the sessions on**, **the channels
+sessions have for reaching each other**, and **using one session as a coordinator**. Everything else
+names the problem and links to the page that owns the fix.
 
 Read [Concepts](CONCEPTS.md) first. A worktree per session, one shared state root every worktree of a
 clone resolves identically, and a liveness fence that may only veto: every page below applies those
