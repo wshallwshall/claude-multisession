@@ -229,7 +229,10 @@ provide.
 ### The third participant: services neither column owns
 
 List the services the build depends on, what each is trusted to do, and what fails if it is
-compromised or simply goes away. **[prompted by: 800-53 SA-9]** The two columns above have no room
+compromised or simply goes away. **[prompted by: 800-53 SA-9]** (The first of the bracketed marks:
+the source raised the topic, and the rule as written is ours.
+[Where the rules come from](#where-the-rules-come-from) defines this one and the other two.) The two
+columns above have no room
 for the CI provider, the source host, the package registry, the transparency log or the artifact
 store, so every control those hold gets filed under a column where it does not fit. Give them a table
 of their own. Five to eight rows is the whole of it.
