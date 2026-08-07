@@ -398,12 +398,9 @@ exits 0 too. `ccx-doctor.ps1` builds this in -- every attack is paired with a ne
 same guard must allow, because a script that refuses everything is not a working guard either,
 and a probe with no positive control cannot tell "failed" from "not surfaced".
 
-There is a harness-level version of the same trap. The doctor's first attack payloads passed the
-tool input under a parameter name that **bound to nothing, with no error**, so several attacks
-fired JSON with no `tool_input` at all. Every path-keyed rule correctly allowed them, and the
-doctor reported the gate broken. The gate was fine; the probe was broken. The payload builder now
-throws on an empty `tool_input`, and an aborted attack block records `??` rather than letting a
-canceled sequence read as a silent pass.
+There is a harness-level version of the same trap, where the gate was fine and the probe was broken.
+The account, and the four rules that came out of it, are at
+[establishing what a hook actually does](HOOKS.md#establishing-what-a-hook-actually-does).
 
 ### A gate cannot see a policy judgment
 
