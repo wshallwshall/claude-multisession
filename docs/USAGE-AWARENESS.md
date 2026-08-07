@@ -1,10 +1,10 @@
 # Usage awareness: knowing when to stop, without lying about it
 
-This document is about a hook that warns a session when the plan pool it bills is running out, and
-about why that hook is much harder to get right than it looks. No such hook ships in this repo -- the
-mechanism depends on client internals that are undocumented and can change without notice, so
-shipping one would be shipping a control that breaks silently. What ships is the design, the failure
-modes, and the rules, because those transfer and the code does not.
+A hook that warns a session when the plan pool it bills is running out is much harder to get right
+than it looks. **No such hook ships in this repo** -- the mechanism depends on client internals that
+are undocumented and can change without notice, so shipping one would be shipping a control that
+breaks silently. What ships is the design, the failure modes, and the rules, because those transfer
+and the code does not.
 
 The lessons here are the sharpest instance in this repo of its recurring theme: **an instrument that
 answers a narrower question than the one you asked, while looking completely healthy.**

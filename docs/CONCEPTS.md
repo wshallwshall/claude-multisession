@@ -277,13 +277,10 @@ already correct.
 
 Two further blind spots belong to the *tooling around* the fence rather than to the fence itself:
 
-- **The desktop client's `list_sessions` cannot see every session kind.** It enumerates an in-memory
-  map of sessions that client itself spawned; a session launched by an editor extension is never
-  entered into it, not filtered out, never registered, so it is invisible there and cannot be
-  messaged. Verified against a live editor-extension session sharing the *default* config root, so it
-  is not a per-login split. `<config-root>/sessions/<pid>.json` is the only registry carrying every
-  surface; read that to answer "who exists", and treat `list_sessions` as authoritative only for who
-  can be **messaged**.
+- **The desktop client's `list_sessions` cannot see every session kind**, so it answers "who can be
+  messaged" and never "who exists". `<config-root>/sessions/<pid>.json` is the only registry carrying
+  every surface. The measurement, and what to do when the two rosters disagree, are at
+  [the two rosters answer different questions](COORDINATION.md#presence-who-is-here).
 - **Transcript mtime is not liveness.** A session running a long multi-agent workflow files its
   output under a subdirectory and barely touches its own transcript; one verifiably-live session sat
   idle by mtime for three times the threshold that was supposed to protect it. Consult the registry
