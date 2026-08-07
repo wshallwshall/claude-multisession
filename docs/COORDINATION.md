@@ -678,6 +678,28 @@ and the edit never happened. Announce tells peers what you intend; overlap tells
 touched; both inform. The gate is the only one that stops you, and it is worth keeping loud for that
 reason alone.
 
+**It happened three times in one evening, and it got bigger each time.** First a sentence: a landing
+page paraphrased a claim its source ruled out. Then the paragraph above. Then two sessions
+independently wrote *the same test* -- a relative-link and anchor checker, neither aware of the
+other, both landed, deduplicated in `4084ef2` by deleting 224 lines of the loser. The gate never
+fired for the third one, and could not have: the two implementations were in **different files**, so
+nothing about them collided.
+
+**That is what the WORK signal is for, and nobody ran it.** `overlap.ps1` reports two things, and the
+distinction is exactly this failure: FILES catches concurrent edits to the same path, WORK catches
+duplicate *effort* on different paths. Every session involved in all three episodes checked the first
+or nothing at all. A duplicate test in a new file is invisible to every mechanism here except WORK,
+and WORK only helps if you run it **before you start building**, not when you go to commit:
+
+```powershell
+pwsh -NoProfile -File scripts/coord/overlap.ps1        # both signals, before you begin
+```
+
+The honest summary is that the gates are strong on *editing the same thing* and weak on *building the
+same thing*, the second is the more expensive of the two, and the one tool aimed at it is the one
+everybody skips -- which is precisely the decay the WORK signal was designed to resist by needing no
+opt-in. Reading it is still a step you have to remember.
+
 ## Proving any of this is live
 
 Every failure mode in this system is byte-identical to success. A wired hook that resolves nothing

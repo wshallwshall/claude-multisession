@@ -1,6 +1,8 @@
 # claude-multisession
 
-**TL;DR --** Run several Claude Code sessions at once on one repository without them overwriting each
+## TLDR/BLUF
+
+Run several Claude Code sessions at once on one repository without them overwriting each
 other. Each session gets its own git worktree and branch; hooks refuse the edits, commits and pushes
 that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git` and a `python`.
 PowerShell 7, Windows-first, MIT. Cloning installs nothing.

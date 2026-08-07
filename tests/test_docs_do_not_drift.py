@@ -17,6 +17,16 @@ something that already happened once.
      copy that disagrees. INSTALL.md was never in this scan despite the docstring's original
      "three copies": it writes `<tooling>` as a placeholder rather than `"$tooling/`, so
      INSTALL_COMMAND has never matched a line in it.
+
+     THAT INSTALL.md IS OUT OF SCOPE IS NOW A DECISION, NOT AN ACCIDENT OF THE PATTERN. It was
+     unpinned because a regex happened not to match it, which is a different thing from anyone
+     having judged it should be, and the gap is recorded here so the next reader does not have to
+     rediscover which of the two it was. The judgment: placeholder-form instructions are a
+     different artifact from copy-paste commands. Pinning them would mean normalising `<tooling>`
+     against `"$tooling/` so the two forms could be compared, and that comparison would go red on
+     cosmetic rewording that harms no reader -- a gate that fails for reasons unrelated to drift
+     is one people learn to ignore, which costs more than the coverage is worth. It stays
+     deliberately unpinned. Do NOT close this by widening INSTALL_COMMAND.
   2. LINKS THAT LEAVE THE SITE ARE PINNED TO `main`. Serving from /docs makes docs/ the site
      root, so a `../scripts/...` target resolves above the root and 404s. The fix was to rewrite
      those to absolute blob/main URLs -- which is correct, and which converts an in-repo
@@ -32,7 +42,27 @@ exists here still 404s on github.com if the branch is renamed or the file is not
 local can see that. They also do not check INSTALL.md's prose against the landing page -- it is the
 long form and is expected to differ.
 
-Run: python -m pytest tests -q     (or: python -m unittest discover -s tests -v)
+Run: python -m unittest discover -s tests
+
+WHY THAT FORM, stated from measurement rather than from what the last person assumed. unittest is
+stdlib, so that command works on every interpreter registered on this machine. That is the whole
+reason to prefer it, and it is a reason that survives the environment changing.
+
+pytest ALSO runs this suite -- `python -m pytest tests -q` was measured at 100 passed on the default
+interpreter, which does have pytest. It is simply not REQUIRED: CI never calls it. Whether it is
+importable depends on which python the reader has (three are registered here and one lacks it), so a
+pytest instruction is a coin flip where a stdlib one is not. An earlier version of this line claimed
+pytest "is not installed"; that was false on the default interpreter, and it was corrected by a peer
+session that measured all three rather than trusting the sentence.
+
+The single-module form works, but only from inside tests/:
+
+    cd tests && python -m unittest test_docs_do_not_drift        # runs, 11 tests
+    python -m unittest test_docs_do_not_drift                    # from the repo root: errors
+
+These files import `_ccxtest`, which resolves only with tests/ on sys.path. From the root the error
+looks like a broken test and is not -- that misreading cost one session four unverified commits.
+CI runs `python -m unittest discover -s . -p 'test_*.py' -v` (.github/workflows/gates.yml:196).
 """
 
 from __future__ import annotations
@@ -48,6 +78,18 @@ import _ccxtest as t
 # `pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1` are explanatory, not part of the
 # procedure, and pinning those would fail on a wording change that harms nobody.
 INSTALL_COMMAND = re.compile(r'pwsh -NoProfile -File "\$tooling/[^\n]*')
+
+# The BLUF heading the standards set and both landing pages settled on, and the spellings it
+# replaced. Held as data because two tests read it, and stated as a BAN on the old forms rather than
+# a requirement for the new one -- see TheBlufConventionHasOneSpelling for why that distinction is
+# deliberate. The inline form is matched at the start of a line because that is where it was used;
+# the words "TL;DR" inside a sentence are prose and are nobody's convention.
+BLUF_HEADING = "## TLDR/BLUF"
+SUPERSEDED_BLUF = (
+    r"^##\s+In short\s*$",
+    r"^##\s+TL;?DR\s*$",
+    r"^\*\*TL;DR\b[^*]*\*\*",
+)
 
 # Every outbound link into this repository's own tree, in both forms it is published in: the
 # human-readable blob view, and the raw view the standards hand out for download. Both pin `main`
@@ -79,6 +121,46 @@ def tracked_files() -> list[str]:
         check=True,
     )
     return [line.strip() for line in out.stdout.splitlines() if line.strip()]
+
+
+class TheTestIndexNamesEveryTest(unittest.TestCase):
+    """`tests/README.md` tabulates what each test file pins. Pin that the table is complete.
+
+    THE FAILURE THIS EXISTS FOR, and it is not hypothetical: the table had fallen to SIX rows for
+    ELEVEN files before anyone noticed. Nothing signalled it. A reader consulting the index to find
+    out what is covered gets a confident answer that silently omits five files, which is worse than
+    no index -- an absent row reads as "no such test" rather than "nobody updated this".
+
+    It is the same shape as every other case in this file: a document that describes the system, kept
+    by hand, with nothing making it keep up. Both directions are checked, because a row naming a file
+    that has since been deleted or renamed is the same defect pointing the other way.
+    """
+
+    INDEX = t.REPO_ROOT / "tests" / "README.md"
+    ROW = re.compile(r"^\| `(test_\w+\.py)`", re.M)
+
+    def test_the_table_names_every_test_file_and_no_others(self):
+        listed = set(self.ROW.findall(t.read(self.INDEX)))
+        self.assertTrue(
+            listed,
+            f"{self.INDEX.name}: no `| `test_*.py`` rows found at all. Either the table was "
+            "reshaped or this pattern stopped matching it -- and an empty set would compare equal "
+            "to an empty expectation and report agreement, so this raises instead.",
+        )
+        present = {p.name for p in (t.REPO_ROOT / "tests").glob("test_*.py")}
+        self.assertEqual(
+            set(),
+            present - listed,
+            f"these test files have no row in {self.INDEX.name}: {sorted(present - listed)}. Add "
+            "one saying what it pins and the failure it exists for, or the index quietly claims "
+            "they do not exist.",
+        )
+        self.assertEqual(
+            set(),
+            listed - present,
+            f"{self.INDEX.name} has rows for files that are gone: {sorted(listed - present)}. A "
+            "row for a deleted test is a coverage claim with nothing behind it.",
+        )
 
 
 class TheInstallProcedureHasOneCopy(unittest.TestCase):
@@ -301,6 +383,84 @@ class TheScansCanSeeWhatTheyLookFor(unittest.TestCase):
         self.assertIsNone(
             CLAUDECODE_LOOSE.search("All four installers refuse when `$env:CLAUDECODE` is `1`,"),
             "the pattern must not fire on the correct wording, or the fix cannot make it green.",
+        )
+
+
+class TheBlufConventionHasOneSpelling(unittest.TestCase):
+    """The convention drifted three times in one evening, and every drift was green.
+
+    THE FAILURE THIS EXISTS FOR, measured rather than imagined. The standards set converged on a
+    BLUF heading. It was spelled `## In short` on some pages and `**TL;DR --**` inline on the two
+    landing pages, and the owner settled it as `## TLDR/BLUF` across all of them. While that rename
+    was in flight, three further pages -- AI-ASSISTED-DEVELOPMENT, CODE-QUALITY and
+    DEPENDENCY-INTEGRITY -- each gained a BLUF from a different session, all three spelled the old
+    way, none of them wrong to do so because nothing recorded that the spelling had moved. Every one
+    passed every gate. The set went from three pages to five to eight in a few hours.
+
+    WHAT IS PINNED, AND WHAT IS DELIBERATELY NOT. This checks only that no page carries a SUPERSEDED
+    spelling. It does NOT require a page to have a BLUF at all.
+
+    That restraint is the point, not an omission. Requiring one would be an editorial rule about
+    what every future standard must contain, and two published pages -- WHICH-STANDARDS-APPLY.md and
+    STANDARDS-REFERENCE.md -- deliberately have no BLUF section today; each opens on a bold lede
+    doing the same job unheaded. Whether they should gain one is a writing decision for whoever owns
+    those pages. A test is the wrong place to make it, and a gate that fails on a legitimate
+    editorial choice is one people delete.
+
+    So: have a BLUF or do not. If you have one, spell it the way the rest of the set does.
+    """
+
+    def test_no_page_carries_a_superseded_bluf_spelling(self):
+        offenders = []
+        for relpath in tracked_files():
+            if not relpath.endswith(".md"):
+                continue
+            text = t.read(t.REPO_ROOT / relpath)
+            for spelling in SUPERSEDED_BLUF:
+                for match in re.finditer(spelling, text, re.M):
+                    line = text.count("\n", 0, match.start()) + 1
+                    offenders.append(f"{relpath}:{line}: {match.group(0).strip()}")
+        self.assertEqual(
+            [],
+            offenders,
+            "these pages spell the BLUF heading a way the set no longer uses:\n  "
+            + "\n  ".join(offenders)
+            + f"\nThe convention is `{BLUF_HEADING}`. Two spellings for one thing is how a reader "
+            "ends up believing the pages disagree about something, and it has already happened "
+            "three times here. Rename it -- and if the page has a Word copy, regenerate that in the "
+            "same commit.",
+        )
+
+    def test_the_canonical_heading_is_actually_in_use(self):
+        """The empty-match guard. A scan for absences passes trivially against an empty corpus.
+
+        If nothing carries the canonical spelling, either the convention was renamed again without
+        this file being told, or `tracked_files` has stopped returning markdown -- and in both cases
+        the case above is asserting nothing while reporting success.
+        """
+        carrying = [
+            relpath
+            for relpath in tracked_files()
+            if relpath.endswith(".md") and BLUF_HEADING in t.read(t.REPO_ROOT / relpath)
+        ]
+        self.assertGreaterEqual(
+            len(carrying),
+            5,
+            f"only {len(carrying)} tracked pages carry {BLUF_HEADING!r}. The absence scan above "
+            "would pass against a corpus where the convention had been renamed out from under it, "
+            "so this number is what makes that scan mean anything.",
+        )
+
+    def test_the_superseded_patterns_match_the_spellings_they_exist_to_catch(self):
+        """Prove each pattern on a planted example, and prove the canonical form is not caught."""
+        for planted in ("## In short", "## TL;DR", "**TL;DR --** run it"):
+            self.assertTrue(
+                any(re.search(p, planted, re.M) for p in SUPERSEDED_BLUF),
+                f"no superseded-spelling pattern fired on {planted!r}; the check is unenforced.",
+            )
+        self.assertFalse(
+            any(re.search(p, BLUF_HEADING, re.M) for p in SUPERSEDED_BLUF),
+            "a pattern fires on the canonical heading itself, so no page could ever be made green.",
         )
 
 

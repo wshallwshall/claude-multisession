@@ -10,21 +10,33 @@ encyclopedias that explain what each standard says rather than whether it applie
 > <https://wshallwshall.github.io/claude-multisession/standards/WHICH-STANDARDS-APPLY.html> --
 > written out in full, because a relative link is dead in a downloaded Word file.
 
-**This page routes, and carries no reference table.** One question, answered at least twelve ways.
-Every answer points into
+---
+
+## TLDR/BLUF
+
+**Most standards writing explains what each document says. The question you actually have is which
+of them reach you at all, and that is the one this page answers.** It routes and carries no
+reference table: one question, answered at least twelve ways, every answer pointing into
 [the reference](https://wshallwshall.github.io/claude-multisession/standards/STANDARDS-REFERENCE.html),
-which holds one row per document -- what it issues, what triggers it, the status with the date it was
-checked, and a check you can run yourself -- along with the reasoning behind the cuts it sorts on.
+which holds one row per document and the reasoning behind the cuts it sorts on.
+
+Work it in three steps:
+
+1. **Answer the routing questions below** for your own situation -- or use the selector, if you are
+   reading this on the served site rather than in a downloaded copy.
+2. **Take every answer to its row in the reference**, which carries what that document issues, what
+   triggers it, the status with the date it was checked, and a check you can run yourself.
+3. **Read the result as a floor, not a list.** *"At least these"* is the only claim available here,
+   so matching nothing is not evidence that nothing applies --
+   [the gaps are named on purpose](#what-this-page-did-not-assess).
+
+**None of it says you must comply.** That a document applies to your situation does not mean it
+binds you; a clause in a contract, a statute or a procurement rule decides that, and nothing here is
+legal advice.
 
 The served page adds a selector above the routing table. It only hides rows: it computes nothing and
 holds no fact this document does not. A downloaded copy gives you the same routing unfiltered --
 printable, forwardable to counsel, markable.
-
-**Two things this never does.** It will not tell you that you must comply: that a document applies to
-your situation does not mean it binds you, what binds you is a clause in a contract, a statute or a
-procurement rule, and nothing here is legal advice. And it will not give you a complete list. *"At
-least these"* is the only claim available, so matching nothing here is not evidence that nothing
-applies -- [the gaps are named on purpose](#what-this-page-did-not-assess).
 
 ---
 

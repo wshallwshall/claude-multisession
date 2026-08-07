@@ -11,7 +11,7 @@ this afternoon.**
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **One question separates a control from a report: does failing it stop the change?** A tool
 inventory, a dashboard and a scan that runs overnight and emails somebody all describe work being

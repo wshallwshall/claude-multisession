@@ -10,7 +10,7 @@ finished?**
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **The rubric judges the artifact, so nothing in it turns on who typed the lines.** It was written
 for a repository where much of the code came from an AI coding assistant across parallel sessions,

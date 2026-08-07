@@ -5,7 +5,9 @@ layout: default
 
 # claude-multisession
 
-**TL;DR --** Run several Claude Code sessions at once on one repository without them overwriting each
+## TLDR/BLUF
+
+Run several Claude Code sessions at once on one repository without them overwriting each
 other. Each session gets its own git worktree and branch; hooks refuse the edits, commits and pushes
 that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git` and a `python`.
 PowerShell 7, Windows-first, MIT. Cloning installs nothing.
@@ -340,9 +342,10 @@ wrote and a small team has to stand behind. Start with
 no certification; they came out of one working codebase and carry its assumptions.
 [The index](standards/OVERVIEW.md) enumerates the set and says what each one buys you -- deliberately
 not repeated here, because a count in prose goes stale the day the set grows and nothing tests it.
-One member is not in that directory: [Use OWASP ASVS 5.0](ASVS-ASSESSMENT.md) -- assessing a codebase
-against a standard too large to read in a week, and publishing no results, deliberately -- sits a
-level up because it predates the standards section. Browsing `standards/` will not show it.
+One member is not in that directory:
+[Running a large security-standard assessment with AI agents](ASVS-ASSESSMENT.md) sits a level up
+because it predates the standards section, so browsing `standards/` will not show it. Its location
+is pinned by a test rather than left to chance, and it publishes no results, deliberately.
 
 **At the repository root:**
 [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) (record of

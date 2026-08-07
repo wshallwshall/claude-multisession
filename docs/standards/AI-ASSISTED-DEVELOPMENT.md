@@ -9,7 +9,7 @@ actually needs.**
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/AI-ASSISTED-DEVELOPMENT.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
-## In short
+## TLDR/BLUF
 
 **Nothing here is always-on except a short floor. Everything else is a dial that the change's risk
 tier sets.** That is what keeps a heavy process from being ignored wholesale: a one-line fix carries

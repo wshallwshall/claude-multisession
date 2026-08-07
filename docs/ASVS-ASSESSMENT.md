@@ -16,7 +16,7 @@ one person cannot read it carefully in a week.
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **Almost every defect this method exists to catch is an instrument answering a narrower question
 than the one you asked, and looking clean while it does it.** We scored a batch of requirements
