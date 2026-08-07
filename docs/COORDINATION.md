@@ -240,6 +240,26 @@ computed over eleven, and only the count tells you which one you are holding.
 The `-Json` branch had already been fixed for exactly this failure, one line above -- **a fix applied
 to one branch of an `if` is not a fix**. Look for the sibling path every time.
 
+### An empty cache invented a worktree
+
+**Trap.** A walk with zero rows is `AutomationNull`, which `@()` correctly unrolls to nothing. The
+same emptiness **round-trips through the cache as `"rows": null`**, and `@($null)` is a one-element
+array holding `$null`.
+
+**Why it is wrong.** `@($map).Count` was therefore `1` for an empty cached map. The zero-rows
+all-clear never fired, and the render loop printed a peer with a blank name, a blank branch,
+`dormant`, and `1 changed file(s)` -- that last because `@($null).Count` is `1` there too. It does not
+fail to report a worktree; it **invents** one. That is worse than silence, because a fabricated peer
+gets acted on.
+
+It is also *stateful*, which is what hid it: the fresh walk answers "No other worktree has changes."
+and the very next run inside the 60-second cache window answers with a ghost. Same repo, same state,
+two answers. **A bug that only appears on the second run reads as flakiness, not as a defect.**
+
+**Rule.** Normalise **once, at the source**, the moment the value is loaded -- not at each consumer.
+There were three consumers here, and the JSON one was already correct, which is precisely how the
+other two stayed overlooked.
+
 ### The committed-work diff needs both dots
 
 Neither diff form is correct alone, and each is wrong in the opposite direction:

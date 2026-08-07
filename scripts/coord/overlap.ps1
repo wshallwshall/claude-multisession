@@ -350,6 +350,24 @@ if ($null -eq $map) {
     }
 }
 
+# NORMALISE ONCE, HERE, so that no consumer below has to remember to. $map arrives by two routes and
+# they do not agree about what empty looks like: a fresh walk with zero rows is AutomationNull, which
+# `@()` correctly unrolls to nothing -- but that same emptiness ROUND-TRIPS THROUGH THE CACHE as
+# `"rows": null`, and `@($null)` is a one-element array holding $null.
+#
+# So `@($map).Count` was 1 for an empty cached map. The zero-rows all-clear below never fired, and the
+# render loop printed a PHANTOM WORKTREE: blank name, blank branch, "dormant", and "1 changed file(s)"
+# -- that last because `@($null).Count` is 1 there too. It does not fail to report a peer, it INVENTS
+# one, which is worse than the silence this script has now been fixed for twice.
+#
+# It is also STATEFUL, which is what kept it hidden: the fresh walk answers "No other worktree has
+# changes." and the very next run inside the 60-second cache window answers with a ghost -- same repo,
+# same state, two different answers. Reproduced against the real script, not reasoned about.
+#
+# Write-JsonArray keeps its own filter. That one guards a different mechanism (parameter binding
+# converting AutomationNull to a real $null on the way in) and it is also called with $hits.
+$map = @($map | Where-Object { $null -ne $_ })
+
 # --- single-file query (the hook's fast path) ----------------------------------------------------
 if ($File) {
     $q = $File
@@ -390,11 +408,10 @@ if ($File) {
     # its evidence can be disbelieved when the evidence turns out to be thin (zero worktrees examined
     # is a very different all-clear from eleven).
     #
-    # The null filter is the one Write-JsonArray needs, for the same reason: a cached walk with zero
-    # rows round-trips through JSON as `"rows": null`, `@($c.rows)` rebuilds that as a one-element
-    # array holding $null, and an unfiltered count would then claim a peer worktree was examined when
-    # none was. Measured, not assumed.
-    $examined = @($map | Where-Object { $null -ne $_ }).Count
+    # $map is normalised above, so this count is honest without filtering here. It did need the filter
+    # when it was written -- an empty CACHED map would otherwise have reported one peer worktree
+    # examined when none was.
+    $examined = $map.Count
     if ($hits.Count -eq 0) {
         Write-Host "  $File -- no other worktree is changing it ($examined peer worktree(s) with changes or a live session examined)."
     }
@@ -407,7 +424,7 @@ if ($File) {
 
 if ($Json) { (Write-JsonArray $map); exit 0 }
 
-if (@($map).Count -eq 0) { Write-Host "No other worktree has changes."; exit 0 }
+if ($map.Count -eq 0) { Write-Host "No other worktree has changes."; exit 0 }
 Write-Host ""
 foreach ($r in $map) {
     $who = if ($r.Live) { "LIVE $($r.Surface) $($r.Short)" } else { "dormant" }
