@@ -64,6 +64,21 @@
     "a finished branch touched it once" with no error anywhere, which is the entire failure this
     written-down contract exists to prevent.
 
+    EXIT CODES, AND WHY THEY ARE PART OF THE CONTRACT
+    -------------------------------------------------
+    0   the question was ANSWERED. That includes "nobody else is in this file", which under -Json is
+        the two bytes `[]` and on the human path is a stated line naming what was examined.
+    2   the question could NOT be answered: no git repository resolved, so nothing was examined.
+
+    The exit code is load-bearing rather than decorative, because it is the ONLY channel that reaches
+    the gate. collision_gate.ps1 invokes this script with stderr discarded (`2>$null`) and reads `[]`
+    as "resolved, and nobody else is touching it" -- so a stderr receipt on a can't-answer path is
+    invisible to the consumer that most needs it, and the gate would go on reporting an all-clear
+    derived from nothing having been measured. It already handles non-zero correctly.
+
+    Adding a new non-zero code is compatible: the gate treats every non-zero alike. Making a
+    can't-answer path exit 0 is NOT, and is the exact regression this block exists to prevent.
+
 .EXAMPLE
     pwsh -NoProfile -File scripts/coord/overlap.ps1                       # human summary
     pwsh -NoProfile -File scripts/coord/overlap.ps1 -Json                 # machine-readable
@@ -72,8 +87,9 @@
 #>
 [CmdletBinding()]
 param(
-    # Ask about ONE path: who else is changing it. Repo-relative or absolute. Exit 0 with no output
-    # when nobody is -- the fast path a hook takes on nearly every edit.
+    # Ask about ONE path: who else is changing it. Repo-relative or absolute. This is the fast path a
+    # hook takes on nearly every edit. An all-clear is `[]` under -Json and a STATED line on the human
+    # path -- never silence, which is what this used to say and what it used to do.
     [string]$File,
     # Emit JSON.
     [switch]$Json,
@@ -140,8 +156,20 @@ function Write-JsonArray($Rows) {
 $gitArgs = @(); if ($Repo) { $gitArgs = @("-C", $Repo) }
 $common = Get-CcxGitCommonDir -Repo $Repo
 if (-not $common) {
+    # NO REPOSITORY IS NOT AN ANSWER, and this was the quietest exit in the file: nothing at all for a
+    # human, and a bare `[]` for -Json -- the two bytes that mean "I walked every peer worktree and
+    # nobody is in your file". Nothing had been walked. git had not resolved a repository at all.
+    #
+    # THE EXIT CODE IS THE FIX; a stderr receipt alone would not have been one. The gate discards our
+    # stderr (`2>$null`) and reads `[]` as resolved-and-clear, so a receipt is invisible to exactly the
+    # consumer that acts on the answer. A non-zero exit it already handles -- it says the edit was
+    # allowed WITHOUT consulting any peer, which is the true statement. See EXIT CODES in the header.
+    #
+    # stdout still carries `[]` under -Json, so anything that only parses stdout is unaffected.
+    $from = if ($Repo) { $Repo } else { $PWD.Path }
+    [Console]::Error.WriteLine("overlap: NO REPOSITORY RESOLVED from '$from' -- nothing was examined, so nothing can be concluded. An empty result here is NOT 'nobody else is changing it'.")
     if ($Json) { "[]" | Write-Output }
-    exit 0
+    exit 2
 }
 $myRoot = Invoke-CcxGit -Repo $Repo -Arguments @('rev-parse', '--path-format=absolute', '--show-toplevel')
 $myRootNorm = ConvertTo-Norm $myRoot
