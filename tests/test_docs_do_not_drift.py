@@ -121,6 +121,82 @@ class TheInstallProcedureHasOneCopy(unittest.TestCase):
         )
 
 
+class EveryStandardIsReachable(unittest.TestCase):
+    """No prose may claim a total for a set another file enumerates.
+
+    THE FAILURE THIS EXISTS FOR, caught in the wild. docs/index.md said the standards set was "four
+    documents" and named four. docs/standards/ held eleven. The sentence was true when written; the
+    set grew and the sentence did not, and nothing compared them. Renumbering it to eleven would
+    have staged the identical failure for document twelve, so the fix was to delete the count and
+    route through the index -- and this case is what keeps it deleted.
+
+    That is this repository's own published rule failing on its own site: a completeness claim is a
+    liability, prefer "at least" to an enumeration. A count in prose is the shape that goes stale
+    silently, because nothing errors when the world moves.
+
+    SCOPE, stated because the first attempt at this measurement got it wrong. This checks the LINK
+    GRAPH, not the landing page's prose. Every standard is in docs/_data/nav.yml, which
+    _layouts/default.html renders as a sidebar on every page of the served site, so a standard
+    absent from index.md's prose is still one click away. The defect was never that a reader could
+    not reach these -- it was that the prose asserted a size for a set it did not enumerate.
+    """
+
+    STANDARDS_DIR = t.REPO_ROOT / "docs" / "standards"
+
+    # A bare integer word in front of "document"/"standard" is the construction that rotted. The
+    # set's size belongs in OVERVIEW.md, which enumerates it, and nowhere else.
+    COUNTED_CLAIM = re.compile(
+        r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+"
+        r"(?:\w+\s+){0,2}(documents?|standards)\b",
+        re.IGNORECASE,
+    )
+
+    def _standards(self) -> list[str]:
+        return sorted(
+            p.name for p in self.STANDARDS_DIR.glob("*.md") if p.name != "OVERVIEW.md"
+        )
+
+    def test_the_overview_still_enumerates_every_standard(self):
+        standards = self._standards()
+        self.assertNotEqual(
+            [],
+            standards,
+            "no standards found in docs/standards/. Either the section moved or this test's "
+            "premise is stale; a scan that finds nothing passes everything, so fix the scan "
+            "before trusting a green run here.",
+        )
+
+        overview = t.read(self.STANDARDS_DIR / "OVERVIEW.md")
+        missing = [name for name in standards if name not in overview]
+        self.assertEqual(
+            [],
+            missing,
+            "docs/standards/OVERVIEW.md is the index and does not link every standard beside it: "
+            f"{', '.join(missing)}.\n"
+            "The landing pages delegate the enumeration to OVERVIEW.md precisely so there is one "
+            "list to maintain. If OVERVIEW is not that list, nothing is.",
+        )
+
+    def test_no_landing_page_asserts_a_total_for_the_set(self):
+        offenders = []
+        for path, label in ((LANDING, "docs/index.md"), (README, "README.md")):
+            for line in t.read(path).splitlines():
+                if "standards/" not in line and "docs/standards" not in line:
+                    continue
+                for match in self.COUNTED_CLAIM.finditer(line):
+                    offenders.append(f"{label}: {match.group(0)!r} in: {line.strip()[:120]}")
+
+        self.assertEqual(
+            [],
+            offenders,
+            "a landing page states a count for the standards set:\n  "
+            + "\n  ".join(offenders)
+            + "\nDo not correct the number -- that stages the same failure for the next document "
+            "added. Drop the count and let docs/standards/OVERVIEW.md enumerate the set, which is "
+            "the only file that has to change when it grows.",
+        )
+
+
 class OutboundLinksResolve(unittest.TestCase):
     def test_every_blob_main_url_names_a_path_git_is_tracking(self):
         tracked = set(tracked_files())

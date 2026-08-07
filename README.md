@@ -336,7 +336,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/ASVS-ASSESSMENT.md` | Method for running a several-hundred-requirement security-standard assessment with agent sessions. Deliberately carries no results, for the same reason the case study carries no status table |
 | `docs/TIPS-AND-TRICKS.md` | The "wish I'd known" file, ordered by when it bites: setting up, running two at once, writing a guardrail, proving it works, cleaning up |
 | `docs/USAGE-AWARENESS.md` | Warning a session before it hits a hard usage cutoff, and why that is harder than it looks. Ships no hook -- the mechanism depends on undocumented client internals, so what transfers is the design and the eight ways it reports confidently wrong numbers |
-| `docs/standards/` | Four standards to adapt rather than adopt -- AI-assisted development, dependency and artifact integrity, code quality, secure development -- with `OVERVIEW.md` as the section index. They ship no code and confer no certification; each states its limits before its rules |
+| `docs/standards/` | Standards to adapt rather than adopt, with `OVERVIEW.md` as the section index -- it enumerates the set, so this row does not. Start at `CISO-SUMMARY.md` if you are deciding whether to adopt them, `ADOPTING-THESE.md` if you already have. They ship no code and confer no certification; each states its limits before its rules |
 | `CLAUDE.md.template` | A working agreement to drop into your own repo: plan first, commit-versus-push approval split, never grep for a number, shared memory across worktrees |
 
 Worked examples live in `examples/`: a language-agnostic worktree setup hook

@@ -334,12 +334,13 @@ is most useful as the list of ways the obvious implementations fail).
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list) -
 [Use OWASP ASVS 5.0](ASVS-ASSESSMENT.md) (publishes no results, deliberately).
 
-**[Standards to adapt](standards/OVERVIEW.md)** -- four documents setting a bar for code an agent
-wrote and a small team has to stand behind: [AI-assisted development](standards/AI-ASSISTED-DEVELOPMENT.md),
-[Dependency integrity](standards/DEPENDENCY-INTEGRITY.md), [Code quality](standards/CODE-QUALITY.md),
-[Secure development](standards/SECURE-DEVELOPMENT.md). They ship no code and confer no certification;
-they came out of one working codebase and carry its assumptions. Read the index first -- it says what
-each one buys you and which rules the pages above already own.
+**[Standards to adapt](standards/OVERVIEW.md)** -- a set of documents setting a bar for code an agent
+wrote and a small team has to stand behind. Start with
+[the CISO summary](standards/CISO-SUMMARY.md) if you are deciding whether to adopt them, or
+[How to adopt these](standards/ADOPTING-THESE.md) if you already have. They ship no code and confer
+no certification; they came out of one working codebase and carry its assumptions.
+[The index](standards/OVERVIEW.md) enumerates the set and says what each one buys you -- deliberately
+not repeated here, because a count in prose goes stale the day the set grows and nothing tests it.
 
 **At the repository root:**
 [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) (record of
