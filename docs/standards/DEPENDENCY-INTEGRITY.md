@@ -9,7 +9,7 @@
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **Two directions, one document.** *Inbound:* you import code you did not write, cannot fully audit,
 and that changes underneath you. *Outbound:* you publish a build other people install, and they need
