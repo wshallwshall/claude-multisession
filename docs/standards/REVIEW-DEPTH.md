@@ -38,20 +38,6 @@ not an attestation to present.
 
 ---
 
-## What you get
-
-- **An answer that is not a percentage.** "Review 30 percent of AI-generated code" cannot be
-  defended, audited, or complied with. What replaces it is a rule that decides depth per change, in
-  one question, and gives the same answer to two different reviewers.
-- **A defensible line to hold when someone asks to skip review** because the output looks finished.
-  The rule does not care how finished it looks.
-- **Two conditions that force a full line-by-line read regardless of tier**, so the hardest cases
-  cannot be argued down.
-- **A floor that survives every other dial being turned down**, stated in one sentence a whole
-  organization can remember.
-- **Questions to ask a team**, with what a good answer sounds like, so you can tell a real practice
-  from a described one without reading the code yourself.
-
 ## What this costs you, and where it does not apply
 
 - **It focuses your effort rather than reducing it.** Deciding the tier takes judgment at the start
