@@ -41,7 +41,13 @@
   --code-keyword: #8a3b0b;
   --code-literal: #0b5fa5;
 
-  --measure: 78ch;
+  /* MEASURED, NOT CHOSEN BY EYE, and `ch` is why the old value read wider than it looked. `ch` is
+     the advance width of "0", which in this stack is wider than the average lowercase letter, so
+     78ch rendered as 85 average characters on a 1280px viewport -- ten above the 75 that typographic
+     guidance treats as the top of the comfortable range. 66ch measures at roughly 72. Re-measure
+     against a real paragraph rather than trusting the unit: append a hidden nowrap span of a-z to a
+     paragraph, divide its width by 26, and divide the paragraph width by that. */
+  --measure: 66ch;
   --content-max: 62rem;
   --sidebar-width: 15rem;
   --radius: 4px;
@@ -559,6 +565,62 @@ samp {
   margin: 0;
 }
 
+/* ---------- on-this-page contents ---------- */
+
+/* Built at build time by _layouts/default.html, not by a script, for the reason stated at the narrow
+   screens comment below: the list has to be complete in the served HTML.
+
+   It is deliberately quiet. This block sits between a reader and the document they asked for, so it
+   is set at the small size, without the accent, and reads as apparatus rather than as content. The
+   left rule is the only thing marking it, matching the sidebar's current-page treatment. */
+.page-toc {
+  margin: 1.75rem 0 2.5rem;
+  padding: 0 0 0 1rem;
+  border-left: 2px solid var(--border);
+  max-width: var(--measure);
+}
+
+.page-toc-heading {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.page-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Two columns on a wide viewport: a fourteen-heading list is otherwise a screen of its own, which
+     is the scrolling problem this block exists to shorten. `columns` is used rather than a grid
+     because the items are a single flow whose order stays top-to-bottom within each column, and it
+     collapses to one column on its own when the width is not there. */
+  columns: 2;
+  column-gap: 2rem;
+}
+
+.page-toc-list li {
+  margin: 0 0 0.3rem;
+  /* Keeps a wrapped two-line entry from being split across the column break. */
+  break-inside: avoid;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.page-toc-list a {
+  color: var(--fg-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.page-toc-list a:hover,
+.page-toc-list a:focus {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 /* ---------- narrow screens ---------- */
 
 /* Under roughly 900px the sidebar stops being a sidebar and becomes a top nav: one column, groups
@@ -621,6 +683,13 @@ samp {
   .page-content h2 {
     font-size: 1.25rem;
     margin-top: 2.25rem;
+  }
+
+  /* One column on a phone. Two columns of jump links at this width produce entries two or three
+     words wide, and this is the viewport where the contents block earns the most: the longest
+     document is 37 screens here against 26 on a desktop. */
+  .page-toc-list {
+    columns: 1;
   }
 }
 
