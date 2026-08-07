@@ -12,18 +12,29 @@ That page routes and holds no rows; this one holds the rows and the argument.
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/STANDARDS-REFERENCE.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
-**Every status below was checked on 2026-08-06, and that date is stated once rather than repeated in
-every cell.** Where a cell says "the check date", it means that date. This is a snapshot, not a
-maintained register: several of these facts changed within the twelve months before it, and some will
-have changed since.
+---
 
-**At least these items.** This is not a complete map of the security standards landscape and does not
-claim to be.
-[What the routing page did not assess](https://wshallwshall.github.io/claude-multisession/standards/WHICH-STANDARDS-APPLY.html#what-this-page-did-not-assess)
-names what is missing on purpose, and you should not read its silence as coverage. That link is
-written out in full because a relative one is dead in a downloaded Word file. Nothing here is legal
-advice, and nothing here says that any of it binds your organization -- a clause number decides
-that, and applying to your situation is not the same thing as binding you.
+## TLDR/BLUF
+
+**This is a reference to consult, not a document to read through.** One row per document: what it
+issues, what triggers it, its status with the date that was checked, and a check you can run
+yourself. If you do not yet know which of these is worth your attention, you are on the wrong page
+-- start at [which standards apply to you](WHICH-STANDARDS-APPLY.md).
+
+Three things to hold while reading any row:
+
+1. **Every status was checked on 2026-08-06**, stated once here rather than repeated in every cell.
+   Where a cell says "the check date", it means that one.
+2. **This is a snapshot, not a maintained register.** Several of these facts changed within the
+   twelve months before that date, and some will have changed since. Re-check anything you intend
+   to rely on; each row says how.
+3. **"At least these."** This is not a complete map of the landscape and does not claim to be.
+   [What the routing page did not assess](https://wshallwshall.github.io/claude-multisession/standards/WHICH-STANDARDS-APPLY.html#what-this-page-did-not-assess)
+   names what is missing on purpose -- do not read its silence as coverage. That link is written out
+   in full because a relative one is dead in a downloaded Word file.
+
+**Nothing here says any of it binds your organization.** A clause number decides that, applying to
+your situation is not the same thing as binding you, and nothing here is legal advice.
 
 **Sorted by who each document makes demands of**, which is the most stable fact about it: status,
 trigger and enforcement machinery change constantly, and the audience almost never does. The column
