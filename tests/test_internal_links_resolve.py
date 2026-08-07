@@ -39,6 +39,13 @@ blind to fences answers "does this text match a link pattern" when the question 
 which is the narrower-instrument failure this repository keeps rediscovering. `test_a_link_inside_a
 _code_fence_is_not_reported` pins the fix.
 
+INLINE CODE SPANS ARE EXCLUDED FOR THE SAME REASON, and that gap surfaced the same way: by firing.
+A file that DOCUMENTS a link has to write one, and `tests/README.md` describes the heading-citation
+shape `[Code quality](CODE-QUALITY.md), *Tier 1*` in backticks. Relative to `tests/` that path does
+not exist and never should. Fenced blocks were handled from the first version; single-backtick spans
+were not, so the scan reported three false positives the moment a row was added describing what
+another test pins.
+
 ANCHOR SLUGS follow GitHub's rule: lowercase, drop everything that is not a word character, space or
 hyphen, then spaces to hyphens. GitHub disambiguates repeated headings with a `-1`, `-2` suffix, so a
 link to `#the-files-1` is accepted when `the-files` occurs more than once.
@@ -71,6 +78,12 @@ INLINE_LINK = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)\)")
 
 ATX_HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
 FENCE = re.compile(r"^\s*(```|~~~)")
+
+# An inline code span. Stripped before links are matched, for the same reason fenced blocks are:
+# documentation that DESCRIBES a link writes the link, and `[Code quality](CODE-QUALITY.md)` inside
+# backticks is an example of a citation's shape, not a link anyone can click. tests/README.md
+# demonstrates exactly this and was the first file to trip it.
+INLINE_CODE = re.compile(r"`+[^`]*`+")
 
 # Links that leave the repository. The absolute in-repo forms are pinned by test_docs_do_not_drift.
 EXTERNAL = ("http://", "https://", "mailto:", "tel:")
@@ -118,7 +131,7 @@ def parse(text: str) -> tuple[list[str], list[tuple[int, str]]]:
         m = ATX_HEADING.match(line)
         if m:
             slugs.append(anchor_slug(m.group(2)))
-        body.append((lineno, line))
+        body.append((lineno, INLINE_CODE.sub("", line)))
     return slugs, body
 
 
@@ -384,6 +397,25 @@ class TheScanCanActuallyBite(unittest.TestCase):
             }
         )
         self.assertEqual([], found, "a fenced example is not a link anyone can click")
+
+    def test_a_link_inside_an_inline_code_span_is_not_reported(self):
+        """Same class as the fence case, one level finer, and it tripped on tests/README.md.
+
+        A file that DOCUMENTS a link has to write one. `tests/README.md` describes the citation
+        shape `[Code quality](CODE-QUALITY.md), *Tier 1*` in backticks; relative to `tests/` that
+        path does not exist and never should. Backticks make it an example, not a link.
+        """
+        found = self._scan(
+            {
+                "a.md": (
+                    "# A\n\n"
+                    "See [the real one](b.md). The citation shape is "
+                    "`[Code quality](CODE-QUALITY.md), *Tier 1*` and it is not a link.\n"
+                ),
+                "b.md": "# B\n",
+            }
+        )
+        self.assertEqual([], found, "a backticked example is not a link anyone can click")
 
     def test_a_resolving_link_and_anchor_are_not_reported(self):
         found = self._scan(
