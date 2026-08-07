@@ -640,6 +640,35 @@ hold that item's claim for this worktree) and announce closes the *push* directi
 early). **Neither stops two sessions building the same thing under two different names.** Accept that
 limit explicitly rather than assuming coverage.
 
+### A clean merge is not evidence that nobody duplicated your work
+
+**Overlapping edits conflict. Overlapping intentions do not.** Two sessions fixing the same defect in
+*adjacent* lines produce a three-way merge with nothing to reconcile, so git keeps both -- and the
+doubled fix ships green.
+
+Measured. Two sessions independently fixed one defect in `docs/index.md` about an hour apart, neither
+knowing about the other. One landed on main (`de72973`); the other sat unpushed (`8ba7696`). The
+rebase reported **no conflict**, because the two inserts were adjacent rather than overlapping. The
+result was two consecutive paragraphs telling a reader the same thing about the same document, with
+87 tests passing and the ASCII gate green. Nothing mechanical could have caught it: every gate was
+answering "do these lines overlap", and the question was "do these changes say the same thing".
+
+**A clean merge is the worse outcome of the two.** A conflict stops you and demands a decision; a
+clean merge ships. So the moment you learn a peer touched your file, read the resulting *text* --
+do not accept the exit code as the answer. `git merge-tree <base> <ours> <theirs>` will show you a
+textual conflict before you rebase, but a silent pass from it means only that the lines do not
+collide, never that the changes are not redundant.
+
+When it happens, resolve to **one** passage taking what each version had and the other lacked, rather
+than deleting one wholesale. In the case above each version was better on a different axis -- one
+quoted the target document's heading verbatim, the other carried the framing that fitted the
+surrounding paragraph and the concrete consequence for a reader -- and picking a winner would have
+thrown away half the work.
+
+This is the same shape as [`isRunning`](#the-id-rules----the-most-valuable-part-of-the-hook): an
+instrument answering a narrower question than the one being asked of it, and reporting success while
+it does.
+
 ## Proving any of this is live
 
 Every failure mode in this system is byte-identical to success. A wired hook that resolves nothing

@@ -42,12 +42,28 @@ porous in two ways, both found by attacking it rather than by reading it:
     the markdown and a text comparison sees nothing, while the published Word copy goes on sending
     readers to the old address under identical anchor text.
 
-So the verdict is taken on the NORMALIZED XML of the parts that carry authored content: the body,
-the footnotes, and the relationship parts that hold the link targets, with whitespace collapsed and
-nothing else touched. Those are reproducible -- every committed copy in this repository rebuilds to
-identical XML in every one of them. The visible text is still extracted, but for the failure MESSAGE
-rather than for the verdict, because "diverges at this sentence" is readable and "these two zip
-members differ" is not.
+The verdict is therefore taken on THREE derived things, not on one: the extracted text, the external
+link targets in order, and the heading-level sequence. See `authored_content`.
+
+RAW XML WAS TRIED FOR THIS AND REJECTED ON A MEASUREMENT, which is worth recording because it looks
+like the stronger choice. Comparing the normalized XML of the body, footnotes and relationship parts
+does catch all three cases, and more besides. It also catches the CONVERTER. Rebuilding all 14
+published standards with pandoc 3.1.3 against copies committed from 3.10:
+
+    raw XML          reports drift on 14 of 14
+    text alone       reports drift on  1 of 14   -- and misses both holes above
+    these three      reports drift on  1 of 14   -- and catches both
+
+3.1.3 is not an arbitrary pick: it is what `apt-get install pandoc` gives on Ubuntu 24.04, so that
+row is the CI this repository would have had if the version were not pinned. A gate that reddens
+every document at once whenever the converter moves is one people learn to regenerate past without
+reading, and a gate nobody reads is not a gate. The three derived forms are each taken from the
+AUTHOR's content rather than from pandoc's styling, which is why they survive a bump the markup does
+not.
+
+Not perfectly, and the exception is instructive: the one document that still differs does so because
+3.1.3 and 3.10 space the contents of a fenced code block differently. Nothing that compares a
+generated artifact is fully version-proof. Pinning is what buys that, and CI pins.
 
 PANDOC IS A DEPENDENCY OF THIS SUITE, NOT AN OPTIONAL EXTRA. If it is missing, these tests FAIL.
 They do not skip. A skip is printed beside the passes and reads as one, and a result that measured
@@ -55,10 +71,11 @@ nothing is not a pass -- the same judgment `scripts/quality/check-ascii.ps1` mak
 rather than 0 for having scanned no files. Install pandoc, or delete the Word copies and stop
 offering the format; there is no third position in which this file is meaningful.
 
-A PANDOC VERSION DIFFERENCE CAN ALSO FAIL THIS, and that is the one failure here that is not a
-stale document. Every committed copy matched pandoc 3.10 output on 2026-08-06. If a rebuild differs
-everywhere at once rather than in one document, suspect the converter before the markdown; the
-failure message prints the version it used.
+A PANDOC VERSION DIFFERENCE CAN STILL FAIL THIS, and it is the one failure here that is not a stale
+document. Every committed copy matched pandoc 3.10 output on 2026-08-06. Measured against 3.1.3, the
+comparison above survives 13 of 14 documents, so a version problem now looks like ONE document
+failing on a change nobody made rather than like drift. Check `pandoc --version` before believing
+the markdown is at fault; the failure message prints the version it used.
 
 REGENERATE WITH (from docs/standards/, needs pandoc):
 
@@ -130,6 +147,7 @@ TEXT_PARTS = ("word/document.xml", "word/footnotes.xml")
 # instead of reporting an empty document -- which would read as "no drift".
 BODY = TEXT_PARTS[0]
 
+_HEADING_STYLE = re.compile(r'<w:pStyle\s+w:val="(Heading\d+)"')
 _PANDOC_LINE = re.compile(r"^\s*pandoc\s+(\S+)\s+(.+?)\s+-o\s+(\S+)\s*$", re.M)
 _REGEN_LOOP = re.compile(r"^\s*for\s+f\s+in\s+(.+?);\s*do\s*$", re.M)
 
@@ -154,31 +172,48 @@ def docx_text(path) -> str:
     return html.unescape(text)
 
 
-def authored_parts(path) -> dict:
-    """The XML this comparison takes its verdict from, whitespace collapsed and nothing else changed.
+def heading_levels(path) -> list:
+    """The heading LEVELS in document order: Heading1, Heading2, and so on.
 
-    THE BODY, THE FOOTNOTES, AND THE RELATIONSHIP PARTS. The first two are where words live. The
-    third is where LINK TARGETS live, and it is included because leaving it out is a hole with a
-    worked example: `document.xml` refers to a link only as `r:id="rId9"`, so a comparison of visible
-    text cannot see a URL at all, and a Word copy can go on pointing at a moved page under anchor
-    text that still reads correctly.
-
-    Deliberately NOT the whole package. `docProps/core.xml` carries a build timestamp, and comparing
-    it would fail every run -- a gate that is always red is one people learn to ignore, which is
-    worse than the drift it was meant to catch.
+    Compared because a heading demoted from `##` to `###` keeps every one of its words. The extracted
+    text is then character-for-character identical while the section has changed rank and dropped out
+    of the table of contents, and no comparison of words can see it.
     """
-    parts = {}
     with zipfile.ZipFile(path) as z:
-        names = z.namelist()
-        if BODY not in names:
-            raise KeyError(BODY)
-        for name in sorted(names):
-            keep = name in TEXT_PARTS or (name.startswith("word/_rels/") and name.endswith(".rels"))
-            if keep:
-                # Whitespace only. Any richer normalisation would be this file quietly deciding which
-                # differences are allowed to exist, which is the judgment it exists to refuse.
-                parts[name] = re.sub(r"\s+", " ", z.read(name).decode("utf-8", "ignore"))
-    return parts
+        return _HEADING_STYLE.findall(z.read(BODY).decode("utf-8", "ignore"))
+
+
+def authored_content(path) -> dict:
+    """What the AUTHOR put in this document -- the verdict is taken on this.
+
+    THREE THINGS, each because leaving it out is a hole with a worked example:
+
+      text    the prose, the headings' words, the table cells. The obvious one.
+      links   the external targets, in order. NOT in the body: `document.xml` refers to a link only
+              as `r:id="rId9"` and the URL lives in a relationship part, so a comparison of words
+              discards every URL in the file. A Word copy can go on pointing at a moved page under
+              anchor text that still reads correctly.
+      levels  the heading-level sequence, for the demotion case above.
+
+    WHY THESE AND NOT THE RAW XML, which would catch all three and more. Because it also catches the
+    converter. Measured, rebuilding all 14 published standards with pandoc 3.1.3 against copies
+    committed from 3.10: raw XML reports drift on 14 of 14, this reports it on 1. A comparison that
+    goes red on every document at once whenever the converter moves is one people learn to regenerate
+    past without reading, and a gate nobody reads is not a gate. (3.1.3 is not an arbitrary pick: it
+    is what `apt-get install pandoc` gives on Ubuntu 24.04, so that is the CI this repo would have
+    had if the version were not pinned.)
+
+    Each of these three is derived from the author's content rather than from pandoc's styling, which
+    is why they survive a bump that the raw markup does not. Not perfectly -- the one document that
+    still differs does so because 3.1.3 and 3.10 space the contents of a fenced code block
+    differently. No comparison of a generated artifact is fully version-proof; pinning is what buys
+    that, and CI pins.
+    """
+    return {
+        "text": docx_text(path),
+        "links": docx_link_targets(path),
+        "levels": heading_levels(path),
+    }
 
 
 def docx_link_targets(path) -> list:
@@ -348,24 +383,23 @@ def rebuild_from_source(exe: str, markdown: str, name: str):
         # but relying on that silently is how a test starts passing for the wrong reason.)
         source.write_text(markdown, encoding="utf-8", newline="\n")
         built = build_docx(exe, source, Path(tmp) / "rebuilt.docx")
-        return authored_parts(built), docx_text(built)
+        return authored_content(built), docx_text(built)
 
 
-def describe_drift(fresh, committed, differing: list) -> str:
+def describe_drift(rebuilt: dict, committed: dict) -> str:
     """Why these two documents are not the same, in the most readable terms available.
 
-    Layered on purpose. A prose edit is named by its sentence, a moved link by its URL, and anything
-    else by the parts it touched -- because "they differ" about a zip sends the reader to a diff tool
-    that cannot open one, and they stop reading the failure instead of fixing it.
+    Layered on purpose, cheapest to read first. A prose edit is named by its sentence, a moved link
+    by its URL, a restructure by the level counts -- because "they differ" about a .docx sends the
+    reader to a diff tool that cannot open one, and they stop reading the failure instead of fixing
+    it.
     """
-    rebuilt_text, committed_text = docx_text(fresh), docx_text(committed)
-    if rebuilt_text != committed_text:
-        return first_difference(rebuilt_text, committed_text)
+    if rebuilt["text"] != committed["text"]:
+        return first_difference(rebuilt["text"], committed["text"])
 
-    rebuilt_links, committed_links = docx_link_targets(fresh), docx_link_targets(committed)
-    if rebuilt_links != committed_links:
-        gone = [u for u in committed_links if u not in rebuilt_links]
-        added = [u for u in rebuilt_links if u not in committed_links]
+    if rebuilt["links"] != committed["links"]:
+        gone = [u for u in committed["links"] if u not in rebuilt["links"]]
+        added = [u for u in rebuilt["links"] if u not in committed["links"]]
         return (
             "every visible word is unchanged, but the LINKS are not: the Word copy points somewhere "
             "the markdown no longer does, under anchor text that still reads correctly.\n"
@@ -374,10 +408,17 @@ def describe_drift(fresh, committed, differing: list) -> str:
         )
 
     return (
-        "every visible word and every link is unchanged, but the markup is not -- a heading level, "
-        "a list, a table or an emphasis moved. A heading demoted from ## to ### looks exactly like "
-        f"this.\n      parts that differ: {', '.join(differing)}"
+        "every visible word and every link is unchanged, but a heading changed LEVEL. The section "
+        "keeps its wording and leaves the table of contents, which is why this needs its own "
+        "check.\n"
+        f"      committed: {_levels_summary(committed['levels'])}\n"
+        f"      rebuilt  : {_levels_summary(rebuilt['levels'])}"
     )
+
+
+def _levels_summary(levels: list) -> str:
+    """Heading levels as counts, so a demotion reads as one number down and another up."""
+    return ", ".join(f"{lvl} x{levels.count(lvl)}" for lvl in sorted(set(levels))) or "no headings"
 
 
 def documented_builds() -> dict:
@@ -547,17 +588,15 @@ class TheWordCopiesAreWhatTheMarkdownProducesToday(unittest.TestCase):
                     drifted.append(f"{committed.name}: no Word copy is committed at all")
                     continue
                 try:
-                    have = authored_parts(committed)
+                    have = authored_content(committed)
                 except (zipfile.BadZipFile, KeyError) as exc:
                     drifted.append(f"{committed.name}: not a readable .docx ({type(exc).__name__})")
                     continue
-                want = authored_parts(fresh)
+                want = authored_content(fresh)
                 compared += 1
                 if want != have:
-                    differing = sorted(set(want) | set(have))
-                    differing = [p for p in differing if want.get(p) != have.get(p)]
                     drifted.append(
-                        f"{committed.name}: {describe_drift(fresh, committed, differing)}\n"
+                        f"{committed.name}: {describe_drift(want, have)}\n"
                         f"      rebuild it: {regenerate_command(src)}"
                     )
 
@@ -669,7 +708,7 @@ class TheWordCopiesAreWhatTheMarkdownProducesToday(unittest.TestCase):
             "expects, but the reasoning in this file's header is now wrong and should be corrected.",
         )
         self.assertNotEqual(
-            authored_parts(WORD / "OVERVIEW.docx"),
+            authored_content(WORD / "OVERVIEW.docx"),
             parts,
             "a heading changed level and the comparison saw nothing. It has fallen back to comparing "
             "words, and every structural edit is now invisible to this suite.",
@@ -700,7 +739,7 @@ class TheWordCopiesAreWhatTheMarkdownProducesToday(unittest.TestCase):
             "longer the whole truth and should be corrected.",
         )
         self.assertNotEqual(
-            authored_parts(WORD / "OVERVIEW.docx"),
+            authored_content(WORD / "OVERVIEW.docx"),
             parts,
             "a link was repointed and the comparison saw nothing. The relationship parts have "
             "dropped out of it, and every URL in every published Word copy is now unchecked.",
@@ -717,7 +756,7 @@ class TheWordCopiesAreWhatTheMarkdownProducesToday(unittest.TestCase):
         src = STANDARDS / "OVERVIEW.md"
         parts, _ = rebuild_from_source(exe, t.read(src), src.name)
         self.assertEqual(
-            authored_parts(WORD / "OVERVIEW.docx"),
+            authored_content(WORD / "OVERVIEW.docx"),
             parts,
             "an UNEDITED standard rebuilt to different XML. Until that is understood, every other "
             "failure in this class is suspect: the comparison is sensitive to something other than "
