@@ -44,6 +44,9 @@
     - label: CISO summary
       title: The CISO summary
       path: /standards/CISO-SUMMARY.html
+    - label: Secure development
+      title: "Secure development: the process a build must satisfy"
+      path: /standards/SECURE-DEVELOPMENT.html
     - label: Which standards apply to you
       title: "Which security standards actually apply to you?"
       path: /standards/WHICH-STANDARDS-APPLY.html
@@ -71,9 +74,6 @@
     - label: Code quality
       title: Judging code quality, whoever or whatever wrote it
       path: /standards/CODE-QUALITY.html
-    - label: Secure development
-      title: "Secure development: the process a build must satisfy"
-      path: /standards/SECURE-DEVELOPMENT.html
     - label: Use OWASP ASVS 5.0
       title: Running a large security-standard assessment with AI agents
       path: /ASVS-ASSESSMENT.html
