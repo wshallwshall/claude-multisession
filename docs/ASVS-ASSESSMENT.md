@@ -1,30 +1,120 @@
 # Running a large security-standard assessment with AI agents
 
-A method for assessing a codebase against OWASP ASVS 5.0 -- a standard with several hundred
-individually verifiable requirements -- when most of the scoring is done by Claude Code sessions
-rather than by one person reading code all week.
+**How to assess a codebase against OWASP ASVS 5.0 -- several hundred individually verifiable
+requirements -- when most of the scoring is done by Claude Code sessions rather than by one person
+reading code all week. The hard part is not the volume. It is that an agent which did no work
+produces an answer indistinguishable from one that did.**
 
-**This document contains no results, and that is deliberate.** An assessment's findings are a map of
-where a system is weak: which control is off, which surface is uncovered, which item nobody has got
-to yet. That map belongs in a private record with the people who can act on it, not in a public
-repository.
+> **Take a copy:**
+> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/ASVS-ASSESSMENT.md)
+> or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/ASVS-ASSESSMENT.docx).
+> [Every file, both formats](standards/OVERVIEW.md#the-files).
 
-So nothing below states a verdict, a count, a percentage, or a level attainment for any codebase.
-What is here is the part that transfers: the procedure, the vocabulary, the traps, and the review
-pass. To find out where a system stands, run the assessment against that system -- do not read
-someone's published summary of theirs.
+---
 
-That separation is itself one of the lessons. Publishing the method invites scrutiny of the
-reasoning. Publishing the register invites something else.
+## In short
 
-**Two independent sources.** This was first written from published method documents, then corrected
-and deepened against a first-hand practitioner account. That account came from a session that ran an
-assessment end to end and was asked afterwards for method only. Where the two disagreed, the
-first-hand account won.
+**An agent will produce confident, on-topic, well-structured reasoning about a security requirement
+whether or not it read the requirement, whether or not the file it cites supports the claim, and
+whether or not the search it ran could have returned anything.** Fluency is not the failure mode
+most review processes are built to catch. A person who has not done the work usually looks like
+someone who has not done the work; an agent that has not done the work looks exactly like one that
+has.
 
-**Its organizing insight, stated up front:** the recurring failure is an instrument answering a
-narrower question than the one asked, and looking clean while doing it. Most of the traps below are
-instances of it.
+Underneath almost every trap in this document is one recurring shape: **an instrument answering a
+narrower question than the one asked, and looking clean while doing it.** A condensed requirement, a
+neighbouring requirement, a search that could not have matched, a control that ships switched off --
+each produces a verdict that is internally consistent, well argued, and answering the wrong
+question. Nothing in the output signals it.
+
+So what follows is not a scoring rubric. It is a set of forcing functions that make the difference
+between a real verdict and a fluent one mechanically visible. The order matters, because each step
+is worth little without the one above it:
+
+1. **Build the corpus first.** Hold the standard's own text locally, pinned to a version. Score
+   against a summary instead and every verdict quietly answers a narrower question than the standard
+   asked.
+2. **Fix the verdict vocabulary** before a single cell is scored. The standard supplies none, so two
+   sessions will each invent a reasonable one and produce verdicts nobody can reconcile afterwards.
+3. **Declare scope positively**, and argue every exclusion rather than assuming it. Scoping a
+   requirement out does not buy you the level.
+4. **Partition on both axes.** The collision that actually costs you is not two agents editing the
+   same row; it is two agents applying different unwritten rules and neither recording which.
+5. **Run the review pass.** This is where most of the wrong answers are actually caught, and it is
+   the step that gets cut when the schedule slips.
+
+If you take one rule from this page: **a verdict that does not quote the requirement's own words has
+not been assessed**, however well it reads.
+
+## What you get
+
+- **A verdict vocabulary that cannot be misread** -- six grades, each marked standard-native or
+  local extension, each with the written definition that stops two sessions meaning different things
+  by the same word. Including `unverified`, which exists so that inherited verdicts cannot pass
+  themselves off as fresh ones.
+- **A record shape that does not drift.** Exactly one computed scorecard is the authority, and no
+  prose document states a count -- because a typed number is a second source of truth from the
+  moment it is typed.
+- **The partitioning that survived real concurrency.** One integrator owns every write; workers read
+  the record and emit structured verdict files but never edit it; claims are taken by an atomic
+  filesystem operation rather than by convention, and they do not expire.
+- **The recurring agent failure modes in one table**, ordered by cost, each paired with the forcing
+  function that neutralizes it -- the completeness claim, the control that does nothing but is
+  certified into the record, the citation whose surrounding code now means the opposite.
+- **A review pass with three lenses that pull apart cleanly**, and the measured caveat that
+  reviewers given the same instruction converge on the same defects and leave the rest untouched, no
+  matter how many of them you add.
+- **A closing checklist** to run against a finished assessment before anyone signs it.
+
+### What one scored cell looks like
+
+Everything above is a claim about record-keeping, so here is the shape itself. This is an
+illustrative skeleton, not a result -- every value is a placeholder:
+
+```toml
+[cell."<chapter>.<section>.<requirement>"]
+verdict   = "partial"   # local extension; defined in the vocabulary table
+quoted    = "<the requirement's own description text, copied out of the pinned corpus>"
+version   = "<the standard version that text was pinned at>"
+rule      = "ships-off" # WHICH written rule produced this verdict
+evidence  = ["<path>:<lines>", "<path>:<lines>"]
+reviewer  = "<session>"
+scored_at = "<timestamp>"
+```
+
+Five of those seven fields exist only so that a later reader can disagree with the verdict.
+`quoted` and `version` make it re-checkable without scoring it again from scratch; `rule` names
+which written rule produced it, so two sessions' verdicts can be compared rather than merely
+counted; `reviewer` and `scored_at` make staleness visible. A cell carrying only a grade and a file
+path is not a cheaper version of this. It is a verdict that cannot be defended.
+
+## What this costs you, and where it does not apply
+
+- **This document contains no results, and that is deliberate.** An assessment's findings are a map
+  of where a system is weak: which control is off, which surface is uncovered, which item nobody has
+  got to yet. That map belongs in a private record with the people who can act on it, not in a
+  public repository. So nothing below states a verdict, a count, a percentage, or a level attainment
+  for any codebase, and the same rule should govern whatever you produce. To find out where a system
+  stands, run the assessment against that system -- do not read someone's published summary of
+  theirs. Publishing the method invites scrutiny of the reasoning; publishing the register invites
+  something else.
+- **It confers no certification, and neither does ASVS.** OWASP publishes the standard; no body
+  assesses you against it. Nor is a level a score: there is no partial credit and no percentage.
+- **It quotes no price and no duration, on purpose.** Per-cell verification at this rigour is
+  expensive enough that naive extrapolation across a full standard will shock whoever is paying for
+  it, so establish your number early -- by timing a pilot section of your own, not by taking one
+  from a page that has never seen your codebase. A figure printed here would be wrong for you and
+  would get planned against anyway.
+- **The savings are real but they come from one place: batching by shared precondition.** One
+  applicability investigation can serve an entire section, and one posture question can settle a
+  dozen cells. They never come from cutting rigour on a cell, because an unearned verdict is the
+  whole defect this exercise exists to prevent. A cheaper assessment that produces unearned passes
+  has not saved anything; it has bought a document that reads like an assessment.
+- **The ASVS summary in the next section is orientation, not the thing you assess against.** If your
+  level definitions come from this page rather than from the pinned text, you have already made the
+  mistake this document exists to prevent.
+- **No speed claim.** Nothing here is measured as a productivity gain. What the method buys is
+  auditability and verdicts that survive being challenged.
 
 ---
 
@@ -41,8 +131,6 @@ individually verifiable requirements, which is far more than one person reads ca
 And it is **specific**: each requirement is written to be checkable, so a requirement either holds
 for your code or it does not, and "roughly, yes" is not one of the answers.
 
-### The three levels
-
 The requirements are tiered, and the tiers are cumulative -- each level contains everything below
 it.
 
@@ -52,26 +140,19 @@ it.
 | **Level 2** | Applications handling sensitive data | The level most applications with real users should target. Assumes a reviewer who can read the source |
 | **Level 3** | The highest-value applications | The most rigorous tier, for systems where a compromise is severe. Assumes deep review and defense in depth |
 
-Two things about levels that catch people out. **Choosing a level is a scoping decision you have to
-argue, not a difficulty setting** -- claiming Level 2 means every Level 1 and Level 2 requirement in
-scope has been assessed, and scoping a requirement out does not buy you the level. And **a level is
-not a score**: there is no partial credit, no percentage, and nothing issues a certificate for any of
-it. OWASP publishes the standard; no body assesses you against it.
+The thing that catches people out: **choosing a level is a scoping decision you have to argue, not a
+difficulty setting.** Claiming Level 2 means every Level 1 and Level 2 requirement in scope has been
+assessed -- and scoping a requirement out does not buy you the level, it just moves the argument to
+the rationale you now owe.
 
-### ASVS 5.0 is a renumbering, not an edition bump
-
-Version 5.0 reorganized the chapters and renumbered requirements from 4.0. Requirement identifiers
-do not carry across, so a mapping, a spreadsheet, or an internal policy built on 4.0 numbers does not
-survive the move. If you inherit prior work, expect to re-anchor it rather than translate it.
-
-> **Check the paragraph above against the standard itself before you rely on it.** It is a summary,
-> written to get you oriented, and the whole point of the next section is that a summary is not what
-> you assess against. If your level definitions come from this page rather than from the pinned text,
-> you have already made the mistake this document exists to prevent.
+One version note. **ASVS 5.0 is a renumbering, not an edition bump.** It reorganized the chapters
+and renumbered requirements from 4.0, and identifiers do not carry across, so a mapping, a
+spreadsheet, or an internal policy built on 4.0 numbers does not survive the move. If you inherit
+prior work, expect to re-anchor it rather than translate it.
 
 ---
 
-## Start by building the thing you will compare against, and build it from the exact wording
+## Build the thing you will compare against, from the exact wording
 
 **This is the first work item, before any scoring, any partitioning, any agent. Get the standard's
 own text, held locally, pinned to a version. Do not let an AI coding assistant write you a summary of
@@ -90,8 +171,7 @@ narrowed. The damage surfaced later, in two shapes:
 
 - **Requirements that lost a clause in the condensing.** A requirement with two conditions became a
   summary with one. Every cell assessed against it was answered honestly and was still wrong, because
-  the question had quietly shrunk. This is the same failure the rest of this document keeps naming:
-  an instrument answering a narrower question than the one asked, and looking clean while doing it.
+  the question had quietly shrunk.
 - **Verdicts that could not be re-checked.** With no pinned text behind a cell, there was nothing to
   re-read when a verdict was challenged. The only way to settle it was to score it again from scratch.
 
@@ -116,18 +196,28 @@ starting, not when something goes wrong.
 
 ## Handing this to Claude Code
 
-Everything from here is written to be handed to an AI coding assistant that will do the bulk of the
-scoring. It is a working method, not a description of one: the vocabulary, the decision procedure,
-the partitioning, the review pass, and the traps that produce clean-looking wrong answers.
+**Part 1 ends here.** Everything from this point on is written to be handed to an AI coding assistant
+that will do the bulk of the scoring: the vocabulary, the decision procedure, the partitioning, the
+review pass, and the traps that produce clean-looking wrong answers. It is a working method, not a
+description of one, which is why its register changes from here -- it is addressed to the agent, not
+to you.
 
-The order that works:
+To start, open Claude Code in the repository you want assessed and paste this:
 
-1. **Build the corpus first**, per the section above. Nothing downstream is trustworthy without it.
-2. **Fix the verdict vocabulary** before any cell is scored, so two sessions mean the same thing by
-   the same word.
-3. **Declare scope positively**, and argue every exclusion rather than assuming it.
-4. **Partition the work** so sessions do not collide or silently overlap.
-5. **Run the review pass**, which is where most of the wrong answers are actually caught.
+```text
+Read https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/ASVS-ASSESSMENT.md
+from the heading "The standard supplies no verdict rubric" onward, and use it as the method for
+assessing this repository against OWASP ASVS 5.0. Begin at step 1, building the pinned corpus, and
+score nothing until that corpus exists.
+```
+
+The first pass will not produce a score, and it should not. It builds the corpus. Anything that
+hands you a percentage before that exists is the failure this document is about.
+
+New to the rest of this repository's tooling? [Here's what to feed to Claude
+Code](FEED-THIS-TO-CLAUDE-CODE.md) is the front door. For the same reasoning applied to this
+repository's own controls -- including why it also publishes no status table -- see [the drift-audit
+case study](CASE-STUDY-drift-audit.md).
 
 ---
 
