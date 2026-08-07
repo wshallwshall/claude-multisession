@@ -455,13 +455,21 @@ control:
   off by configuration. With one -- **as the shipped `ccx.config.json` has, so this is what a run in
   this checkout prints** -- it is `[OFF] sequence gate`: numbers are being allocated and nothing at
   commit time defends them.
+- The **ASCII gate is `[OFF] ASCII gate: present, not wired`** in any checkout that carries
+  `scripts/quality/check-ascii.ps1`, which is every checkout. The file being here proves the checker
+  exists; nothing shipped runs it, so it refuses nothing until you invoke it. Presence is capability,
+  not enforcement, and `OK` is reserved for a control that is installed **and** wired.
 
-Neither tag fails the run. The `OFF` one is counted and named separately in the verdict, under
-`OFF (opt-in)`, so the row you can see above it is a row you can find below it.
+Neither tag fails the run, with one exception: if the ASCII checker is missing from the checkout
+altogether the row reads `[OFF] ASCII gate: not in this checkout` and that one **is** counted as
+required, because a checkout missing a file it ships is broken rather than opt-in. The `OFF` rows
+that are opt-in are counted and named separately in the verdict, under `OFF (opt-in)`, so the row you
+can see above it is a row you can find below it.
 
 | Control | Why it is not installed | Wire it |
 |---|---|---|
 | `scripts/hooks/seq_check.py` | It needs `pre-commit`, and installer 2 never writes that file | Into whatever hook framework you already use. Until you do, two sessions can take the same number and the collision merges clean |
+| `scripts/quality/check-ascii.ps1` | A repo-local checker rather than an installed hook, so there is no second copy to hash -- and no shipped installer runs it | Into your own `pre-commit` hook and into CI (this repo's own `gates` workflow is that second half). Until you do it sees a file only when someone runs it, so a character written after a run is unscanned until the next one |
 | `scripts/hooks/block-blanket-git-stage.ps1` | Narrow, and a false positive is expensive | A `PreToolUse` row on the shell tools -- `.claude/settings.example.json` in this checkout is that row, with the path left as a loud placeholder you must replace with an absolute one. It costs a `pwsh` spawn on **every** shell tool call, git or not, which is the other half of why it is opt-in |
 | `scripts/hooks/steer-inject.ps1` | A `PreToolUse` hook on `*` taxes every tool call in every session (measured on the machine this tooling was developed on: roughly 366 ms per call, most of it bare `pwsh` startup) | Per worktree, in that worktree's `.claude/settings.local.json`, when you actually want it -- see `docs/STEERING.md` and `bin/ccx-steer.ps1` |
 
@@ -594,10 +602,11 @@ code is an accounting over the whole control set.
 - **`--` never fails a run.** That tag is for a control that is opt-in by design (the blanket-stage
   guard, the steering injector) or off by configuration (the sequence gate with no `sequences` key).
 - **An *opt-in* control reported `OFF` never fails a run either**, and is counted on its own
-  `OFF (opt-in)` line rather than folded into the `OFF` number. Today that is the sequence gate when
-  `sequences` **is** configured -- a real hole worth an `OFF` rather than a `--`, since numbers are
-  being allocated and nothing at commit time defends them, but not one a shipped installer ever
-  promised to close.
+  `OFF (opt-in)` line rather than folded into the `OFF` number. Today that is two rows: the sequence
+  gate when `sequences` **is** configured -- a real hole worth an `OFF` rather than a `--`, since
+  numbers are being allocated and nothing at commit time defends them -- and the ASCII gate, which
+  every checkout carries and no installer runs. Neither is a hole a shipped installer ever promised
+  to close.
 
 So exit 0 also needs a `python` on `PATH` (the git-hook shims fail open without one), every config
 root the run lists wired, and no kill switch set. The `VERDICT` block names every `RED`, `OFF` and
