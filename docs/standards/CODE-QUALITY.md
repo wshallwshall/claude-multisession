@@ -1,16 +1,39 @@
 # Judging code quality, whoever or whatever wrote it
 
-A rubric for answering one question about a body of code: **is this good, or is it filler that
-looks finished?**
-
-It was written for a repository where much of the code came from Claude Code, or another AI coding
-assistant, across parallel sessions. Nothing in it depends on who typed the lines. The rubric judges
-the artifact.
+**A rubric for answering one question about a body of code: is this good, or is it filler that looks
+finished?**
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CODE-QUALITY.md)
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/CODE-QUALITY.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
+
+---
+
+## In short
+
+**The rubric judges the artifact, so nothing in it turns on who typed the lines.** It was written
+for a repository where much of the code came from an AI coding assistant across parallel sessions,
+and it would read the same way for code written entirely by hand.
+
+Eleven signals answer the question, in two tiers weighted unequally. **Tier 1 carries the verdict:**
+six structural properties a machine can check and that are hard to fake -- enforced architecture
+boundaries, strict type checking, tests that assert real values rather than mock choreography,
+dependency integrity, blocking security scanning alongside a written threat model, and a published
+artifact containing only what was declared. **Tier 2 only starts conversations:** mutation testing,
+coverage visibility, duplication, lint breadth and complexity triage inform a reviewer and certify
+nothing.
+
+The rule that holds the two apart is hard, and it is the one most often broken. **Do not certify
+quality, and do not fail a build, on any single number** -- not line coverage, not lines of code,
+not cyclomatic complexity, not static-analysis severity counts. Any of them may be surfaced as
+advisory triage that a human arbitrates; none of them may be the gate. The verdict is the composite,
+never one row.
+
+Two things this deliberately withholds. It supplies **no thresholds**: the published evidence
+establishes that single metrics fail and validates no cutoff, so any number you use is one you set
+and have to defend. And where merges cannot be blocked, Tier 1 degrades from a set of controls to a
+checklist -- which an honest scorecard says out loud rather than scoring around.
 
 ---
 

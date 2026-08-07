@@ -1,23 +1,41 @@
 # Dependency and artifact integrity
 
-Trusting what you did not write, and controlling what you ship.
+**Trusting what you did not write, and controlling what you ship.**
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DEPENDENCY-INTEGRITY.md)
 > or [Word document](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/word/DEPENDENCY-INTEGRITY.docx).
 > [Every file, both formats](OVERVIEW.md#the-files).
 
-Two directions, one document.
+---
 
-**Inbound.** You import code you did not write, cannot fully audit, and that changes underneath you.
-How do you control that without reading it?
+## In short
 
-**Outbound.** You publish a build that other people install. How do they know it is the thing you
-meant to send, and how do you know it contains only what you intended?
+**Two directions, one document.** *Inbound:* you import code you did not write, cannot fully audit,
+and that changes underneath you. *Outbound:* you publish a build other people install, and they need
+some way to know it is the thing you meant to send.
 
-Both halves share a shape. The honest answer in each is not "review it harder". It is a small number
-of machine-enforced controls, plus human attention spent at two or three specific moments rather
-than spread thin across everything.
+Both halves share a shape, and in neither is the answer "review it harder". It is a small number of
+machine-enforced controls, plus human attention spent at two or three specific moments rather than
+spread thin across everything.
+
+Inbound, those moments are adoption and each version bump: verify identity rather than mere
+existence when you add a dependency, and read the changelog and the lock delta when you bump it.
+Between them the machinery runs unattended -- pin by digest and enforce the pin at install, because
+a version pin is not a hash pin, and give every manifest one blocking audit of its own.
+
+Outbound, allowlist what goes into the artifact and check it *before* the upload. The upload is the
+irreversible step, and an exclusion list ships whatever nobody thought to exclude.
+
+One moment resists automation. Whether a package is the project you meant is not a mechanical
+question: a real, years-old, canonically named package can still be the wrong one, and an AI coding
+assistant makes plausible-but-wrong names a routine hazard. That is the one place a human is
+structurally required.
+
+The honest limit, stated here rather than left to be discovered: **none of this detects a malicious
+release from a legitimate maintainer.** A compromised upstream that publishes a signed, canonically
+named, advisory-free release passes every control in this document. What the controls buy is that
+the change arrives pinned, surveilled and reviewable instead of silent.
 
 ---
 
