@@ -7,7 +7,7 @@
 
 ---
 
-## In short
+## TLDR/BLUF
 
 This is a starting point you adapt, not a compliance attestation. It describes the process a build
 has to satisfy before you can honestly say it was built securely.
@@ -51,7 +51,7 @@ For where a rule was borrowed from, and what the bracketed marks on some rules m
 
 The numbered sections are the rules. What sits before and after them is context for reading them. Subsections are listed under the section that holds them.
 
-[In short](#in-short) -- [What you get](#what-you-get) -- [What this costs you](#what-this-costs-you) -- [How to adopt this](#how-to-adopt-this) -- [The shape: two layers, and the second is where the defects are](#the-shape-two-layers-and-the-second-is-where-the-defects-are)
+[TLDR/BLUF](#tldrbluf) -- [What you get](#what-you-get) -- [What this costs you](#what-this-costs-you) -- [How to adopt this](#how-to-adopt-this) -- [The shape: two layers, and the second is where the defects are](#the-shape-two-layers-and-the-second-is-where-the-defects-are)
 
 - Under [What this costs you](#what-this-costs-you): [Where this does not apply](#where-this-does-not-apply)
 
