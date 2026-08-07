@@ -94,7 +94,7 @@ Three mechanisms touch that failure. Only the first prevents it:
 
 | | Script | What it does |
 |---|---|---|
-| **Prevention** | `scripts/hooks/worktree_gate.ps1` | A `PreToolUse` hook. Refuses an agent's `git checkout`/`git switch` that would move a *linked* worktree onto a branch another session is building on. The tool call does not run. |
+| **Prevention** | `scripts/hooks/worktree_gate.ps1` | A `PreToolUse` hook. Refuses the git verbs that would swap or discard the shared **primary** checkout's tree -- that is the tree #76590 flips, and the rule that stops it. A separate rule refuses a `git checkout`/`git switch` that would hijack another session's *linked* worktree. Either way the tool call does not run. |
 | **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the shared *primary* checkout when its HEAD has drifted and the tree is clean. On a dirty tree it declines, says so, and touches nothing. |
 | **Detection** | the home-branch record | Recorded in each worktree's private git directory, where a checkout cannot move it. A later session finding the worktree elsewhere warns and offers the restore command. Warn-only; it is [wrong by design](WORKTREES.md#the-sidecar-home-branch-record-is-wrong-by-design), so treat a warning as a prompt to read the reflog, not as proof. |
 
