@@ -1,7 +1,8 @@
 # What to ask a software vendor for, and what each answer proves
 
-**The mirror of the standards map: that one answers which of these reach you, this one answers what
-a buyer will ask you to produce -- and what each item actually proves.**
+**The mirror of the standards map: that one answers which of these reach your own organization, this
+one answers what to require of a vendor you are evaluating -- and what each answer actually
+proves.**
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/DILIGENCE-PACKET.md)

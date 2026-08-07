@@ -106,7 +106,7 @@ The order matters. Reversed, you get a dashboard and no controls.
 | How to judge whether code is good, whoever wrote it | [Code quality](CODE-QUALITY.md) |
 | The process a build must satisfy | [Secure development](SECURE-DEVELOPMENT.md) |
 | Trusting what you did not write, and controlling what you ship | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |
-| What a buyer will ask you to produce | [The diligence packet](DILIGENCE-PACKET.md) |
+| What to require of a vendor you are evaluating | [What to ask a software vendor for](DILIGENCE-PACKET.md) |
 | All of it, and how to adopt | [Overview](OVERVIEW.md) |
 
 **MIT licensed.** Adapt this, put your own name on it, and delete anything you cannot stand behind.
