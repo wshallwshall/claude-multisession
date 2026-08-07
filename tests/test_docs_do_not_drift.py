@@ -42,13 +42,27 @@ exists here still 404s on github.com if the branch is renamed or the file is not
 local can see that. They also do not check INSTALL.md's prose against the landing page -- it is the
 long form and is expected to differ.
 
-Run: python -m unittest discover -s tests     (pytest is NOT installed and is not needed)
+Run: python -m unittest discover -s tests
 
-The pytest invocation this line used to give first does not work here, and reading it cost a
-session real time: it reported "could not run the tests" off a pytest failure while the working
-command was in the same docstring. The single-module form does not work either -- these files
-import `_ccxtest`, which only resolves when `discover` puts tests/ on sys.path, so the failure
-looks like a broken test and is not.
+WHY THAT FORM, stated from measurement rather than from what the last person assumed. unittest is
+stdlib, so that command works on every interpreter registered on this machine. That is the whole
+reason to prefer it, and it is a reason that survives the environment changing.
+
+pytest ALSO runs this suite -- `python -m pytest tests -q` was measured at 100 passed on the default
+interpreter, which does have pytest. It is simply not REQUIRED: CI never calls it. Whether it is
+importable depends on which python the reader has (three are registered here and one lacks it), so a
+pytest instruction is a coin flip where a stdlib one is not. An earlier version of this line claimed
+pytest "is not installed"; that was false on the default interpreter, and it was corrected by a peer
+session that measured all three rather than trusting the sentence.
+
+The single-module form works, but only from inside tests/:
+
+    cd tests && python -m unittest test_docs_do_not_drift        # runs, 11 tests
+    python -m unittest test_docs_do_not_drift                    # from the repo root: errors
+
+These files import `_ccxtest`, which resolves only with tests/ on sys.path. From the root the error
+looks like a broken test and is not -- that misreading cost one session four unverified commits.
+CI runs `python -m unittest discover -s . -p 'test_*.py' -v` (.github/workflows/gates.yml:196).
 """
 
 from __future__ import annotations

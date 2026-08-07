@@ -35,7 +35,8 @@ RAISES when it finds nothing rather than returning an empty set for a caller to 
 another empty set. TheScansCanSeeWhatTheyLookFor below proves each extractor on a planted example,
 because a pattern that silently matches nothing passes everything.
 
-Run: python -m unittest discover -s tests     (pytest is NOT installed and is not needed)
+Run: python -m unittest discover -s tests     (pytest also works; unittest is stdlib, so it works
+                                               on every interpreter here. Not required by CI.)
 """
 
 from __future__ import annotations
