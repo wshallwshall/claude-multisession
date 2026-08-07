@@ -166,6 +166,26 @@ root and found nobody. This is the roster other tools gate on, so an empty list 
 is a green light derived from nothing having been measured. **A receipt on the paths you were
 thinking about is not a receipt.**
 
+**And the receipt alone was still not enough.** That was found by going and reading the *consumer*,
+not by re-reading `presence.ps1`. `session-context.ps1` -- the SessionStart banner whose entire job is
+telling a new session who else is live -- reads presence's **stdout only**. Handed `[]` it found no
+rows, silently omitted its "LIVE sessions in this repo right now" section, and the reader concluded
+nobody was there. The receipt was correct, sat on stderr, and was never read. `overlap.ps1` hit the
+identical trap with the collision gate, one file over.
+
+So presence carries it in the **exit code** too: `0` means the roster is *complete* (including a
+complete roster listing nobody), `2` means it could not be completed. Note that `2` fires **even when
+rows are listed** -- an incomplete roster naming two peers is still no evidence about a third, which
+is why `Available` is false for *any* unplaceable record. For the same reason the human table now says
+`Roster INCOMPLETE` above the list rather than printing a count that looks exhaustive.
+
+The reachable case is not exotic. A record that will not parse is exactly what a session that
+launched a second ago looks like -- and SessionStart is when that banner runs.
+
+**The rule this generalises to:** a can't-tell path is not fixed until you have checked what the
+consumer actually consumes. Stderr, exit codes and stdout are three different channels, and a control
+that signals on the one its caller ignores is documentation, not a control.
+
 ### Keep exactly one copy of the fence
 
 `presence.ps1` (a read-only roster), `scripts/worktree/sessions.ps1` (which **moves** a transcript)

@@ -102,9 +102,28 @@ if ($root) {
         $presence = Join-Path $PSScriptRoot "../coord/presence.ps1"
         if (Test-Path -LiteralPath $presence) {
             $peers = @()
-            try { $peers = @(& $presence -Json | ConvertFrom-Json) } catch { $peers = @() }
+            # READ THE EXIT CODE, not just the rows. presence exits 2 when its roster could not be
+            # completed, and hands back `[]` -- which is byte-identical to a complete roster with
+            # nobody in it. Taking stdout alone, this hook found no rows, silently omitted the section
+            # below, and the banner then read as "nobody else is here" on a measurement that never
+            # happened. presence's receipt says so on stderr; nothing here was reading stderr.
+            #
+            # NOT A WEAKENING OF "never prints a guess" (see the header). A stated "the roster could
+            # not be completed" is the opposite of a guess. The guess was the silence.
+            $rosterIncomplete = $false
+            try {
+                $peers = @(& $presence -Json | ConvertFrom-Json)
+                if ($LASTEXITCODE -ne 0) { $rosterIncomplete = $true }
+            } catch { $peers = @(); $rosterIncomplete = $true }
 
             $others = @($peers | Where-Object { -not $_.IsSelf })
+            if ($rosterIncomplete) {
+                $lines += ""
+                $lines += "LIVE sessions: THE ROSTER COULD NOT BE COMPLETED -- treat this as UNKNOWN, not as"
+                $lines += "  'nobody else is here'. A session that launched a moment ago has a half-written"
+                $lines += "  registry record and looks exactly like this. Check before you assume you are alone:"
+                $lines += "    pwsh -NoProfile -File scripts/coord/presence.ps1"
+            }
             if ($others.Count -gt 0) {
                 $lines += ""
                 $lines += "LIVE sessions in this repo right now ($($others.Count) besides you):"
