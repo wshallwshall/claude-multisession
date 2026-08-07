@@ -197,11 +197,25 @@ class TheDenyReasonCarriesProvenance(GateHarness):
             "`install-gate.ps1 -Status` or bin/ccx-doctor.ps1, which is the whole point of printing "
             "a prefix rather than the full hash.",
         )
+        # COMPARE RESOLVED PATHS, NOT RAW STRINGS. Two spellings of one file are still one file, and
+        # a raw string comparison quietly encodes an assumption about the machine the test runs on.
+        #
+        # This assertion passed on every local run and failed on every Windows CI run. The runner's
+        # profile directory carries an 8.3 short name, so PowerShell reported
+        # C:\Users\RUNNER~1\...\worktree_gate.ps1 where the test had built
+        # C:\Users\runneradmin\...\worktree_gate.ps1 -- one file, two spellings -- and the test
+        # reported it as the gate stamping the wrong path. The gate was right the whole time.
+        #
+        # os.path.realpath resolves short names on Windows and is harmless elsewhere, so this
+        # compares what the two sides POINT AT rather than how each happened to spell it. Both raw
+        # strings are still printed, because when this does fail the spelling is the evidence.
         self.assertEqual(
-            str(self.gate),
-            m.group("self"),
+            os.path.realpath(str(self.gate)),
+            os.path.realpath(m.group("self")),
             "the stamp must name the file that RAN. On this machine that is the installed copy, "
-            "which is routinely not the file a reader has open.",
+            "which is routinely not the file a reader has open.\n"
+            f"  expected, as built : {self.gate}\n"
+            f"  stamped by the gate: {m.group('self')}",
         )
 
     def test_the_stamp_is_last_so_it_does_not_displace_the_blocked_sentence(self):
