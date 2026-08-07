@@ -87,7 +87,7 @@ drift. If this suite goes red on a document nobody edited, check the options bef
 document is stale. That is the trade: one line per new document, in exchange for never again having
 to encode an individual edit as a pair of string assertions that rot within the year.
 
-Run: python -m unittest discover -s tests     (pytest is not installed)
+Run: python -m unittest discover -s tests     (no test runner required; pytest works too)
 """
 
 from __future__ import annotations

@@ -331,8 +331,7 @@ Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](
 is most useful as the list of ways the obvious implementations fail).
 
 **In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
-[Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list) -
-[Use OWASP ASVS 5.0](ASVS-ASSESSMENT.md) (publishes no results, deliberately).
+[Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list).
 
 **[Standards to adapt](standards/OVERVIEW.md)** -- a set of documents setting a bar for code an agent
 wrote and a small team has to stand behind. Start with
@@ -341,6 +340,9 @@ wrote and a small team has to stand behind. Start with
 no certification; they came out of one working codebase and carry its assumptions.
 [The index](standards/OVERVIEW.md) enumerates the set and says what each one buys you -- deliberately
 not repeated here, because a count in prose goes stale the day the set grows and nothing tests it.
+One member is not in that directory: [Use OWASP ASVS 5.0](ASVS-ASSESSMENT.md) -- assessing a codebase
+against a standard too large to read in a week, and publishing no results, deliberately -- sits a
+level up because it predates the standards section. Browsing `standards/` will not show it.
 
 **At the repository root:**
 [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) (record of
