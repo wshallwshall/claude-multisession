@@ -3,7 +3,9 @@
 THE FAILURE THIS EXISTS FOR, and it is the highest-probability defect in the whole feature. The
 selector's facts live in docs/_data/standards_selector.yml. The same facts live again in
 docs/standards/STANDARDS-REFERENCE.md, because the markdown and the Word copy have to stand alone --
-a reader who downloaded the .docx cannot run a web app. Two copies of one fact diverge silently, and
+a reader who downloaded the .docx cannot run a web app. There was a THIRD copy until the routing
+page, docs/standards/WHICH-STANDARDS-APPLY.md, stopped carrying the reference table; a case below
+now asserts it has not come back. Two copies of one fact diverge silently, and
 this repository has been bitten by exactly that shape before: the install block existed in three
 copies and drifted, which is why tests/test_docs_do_not_drift.py exists, and the Word copies drifted
 inside a single session, which is why tests/test_word_copies_track_the_markdown.py exists.
@@ -46,7 +48,7 @@ import _ccxtest as t
 DATA = t.REPO_ROOT / "docs" / "_data" / "standards_selector.yml"
 INCLUDE = t.REPO_ROOT / "docs" / "_includes" / "standards-selector.html"
 LAYOUT = t.REPO_ROOT / "docs" / "_layouts" / "default.html"
-GUIDE = t.REPO_ROOT / "docs" / "standards" / "STANDARDS-LANDSCAPE.md"
+ROUTING = t.REPO_ROOT / "docs" / "standards" / "WHICH-STANDARDS-APPLY.md"
 REFERENCE = t.REPO_ROOT / "docs" / "standards" / "STANDARDS-REFERENCE.md"
 
 SENTINEL = "<!-- STANDARDS-SELECTOR -->"
@@ -215,31 +217,27 @@ class TheTwoCopiesOfTheFactsAgree(unittest.TestCase):
             "the Word copy.",
         )
 
-    def test_the_guide_carries_the_same_names_and_the_same_statuses(self):
-        """The guide holds its own copy of the reference table, so it is a THIRD copy of one fact.
+    def test_the_routing_page_carries_no_third_copy_of_the_statuses(self):
+        """There used to be a case here pinning a THIRD copy. Now there is a case forbidding one.
 
-        It is allowed to exist for the reason the second one is: a reader holding the Word copy of
-        the guide cannot run a web app and cannot open a sibling file either, so the guide has to be
-        complete on its own. But three copies drift faster than two, and this one would drift
-        silently in exactly the same way -- the app, the reference file and the printed guide all
-        rendering perfectly while saying different things about the same date.
+        The routing page carried the whole reference table as well, so every status existed in the
+        app, in the reference file and in the printed routing page -- three renderings that all keep
+        working while disagreeing about the same date. The rows moved to the reference and the
+        routing page now points at it, which is what makes two copies the whole exposure.
+
+        This asserts the split held. A status string reappearing on the routing page is somebody
+        recreating the third copy, and the drift would be invisible again the moment they did.
         """
-        guide = squash(t.read(GUIDE))
-        drifted = []
-        for item in read_items():
-            if squash(item["name"]) not in guide:
-                drifted.append(f"{item['id']}: name is not in the guide at all")
-                continue
-            if squash(item["status"]) not in guide:
-                drifted.append(f"{item['id']}: {item['status']}")
+        routing = squash(t.read(ROUTING))
+        reappeared = [i["id"] for i in read_items() if squash(i["status"]) in routing]
         self.assertEqual(
             [],
-            drifted,
-            "the guide's own reference table disagrees with the selector data:\n  "
-            + "\n  ".join(drifted)
-            + f"\nEdit {DATA.name}, {REFERENCE.name} and {GUIDE.name} in the same commit, then "
-            "regenerate both Word copies. If the guide deliberately stopped carrying the table, "
-            "delete this case rather than leaving it to fail.",
+            reappeared,
+            "these selector statuses have reappeared verbatim on the routing page:\n  "
+            + "\n  ".join(reappeared)
+            + f"\n{ROUTING.name} routes and points into {REFERENCE.name}; it is not a second place "
+            "to keep a status. Put the row in the reference and link to it, or this becomes three "
+            "copies of one date again.",
         )
 
     def test_every_status_is_present_and_the_checked_date_is_stated_once(self):
@@ -375,20 +373,35 @@ class TheTriggersResolve(unittest.TestCase):
 
 class TheWiringIsDeclaredOnBothSides(unittest.TestCase):
     def test_the_sentinel_is_in_the_markdown_exactly_once(self):
-        guide = t.read(GUIDE)
+        routing = t.read(ROUTING)
         self.assertEqual(
             1,
-            guide.count(SENTINEL),
-            f"{GUIDE.name} carries the selector sentinel {guide.count(SENTINEL)} times. It has to "
-            "appear exactly once: none means the app never renders, and more than one means the "
+            routing.count(SENTINEL),
+            f"{ROUTING.name} carries the selector sentinel {routing.count(SENTINEL)} times. It has "
+            "to appear exactly once: none means the app never renders, and more than one means the "
             "layout's split puts the document back together in the wrong order.",
+        )
+
+    def test_the_layout_names_the_page_the_fallback_is_for(self):
+        """The fallback branch names the routing page's URL, and a rename would strand it silently.
+
+        If the sentinel ever stops surviving kramdown, that branch is the only thing that keeps the
+        app on the page. It compares against a hardcoded URL, so renaming the markdown without
+        renaming it there leaves a fallback that can never fire -- with every gate green.
+        """
+        url = "/standards/" + ROUTING.stem + ".html"
+        self.assertIn(
+            url,
+            t.read(LAYOUT),
+            f"{LAYOUT.name} does not name {url}. The selector's fallback branch compares page.url "
+            f"against a literal, so it no longer matches {ROUTING.name} and would never fire.",
         )
 
     def test_the_layout_splits_on_the_same_string(self):
         self.assertIn(
             SENTINEL,
             t.read(LAYOUT),
-            f"{LAYOUT.name} no longer splits on the sentinel that {GUIDE.name} carries. Nothing "
+            f"{LAYOUT.name} no longer splits on the sentinel that {ROUTING.name} carries. Nothing "
             "errors when these disagree -- the page just ships without the app, and every gate "
             "stays green. That is why this case exists.",
         )

@@ -46,7 +46,7 @@
       path: /standards/CISO-SUMMARY.html
     - label: Which standards apply to you
       title: "Which security standards actually apply to you?"
-      path: /standards/STANDARDS-LANDSCAPE.html
+      path: /standards/WHICH-STANDARDS-APPLY.html
     - label: Standards reference
       title: "Security standards reference: what each one issues, and what triggers it"
       path: /standards/STANDARDS-REFERENCE.html

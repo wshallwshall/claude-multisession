@@ -678,7 +678,7 @@ against a standard with many individually verifiable requirements. Skip the whol
 | What to read, and in what order | [Standards you can start from](OVERVIEW.md) |
 | The two-page version for a security executive | [The CISO summary](CISO-SUMMARY.md) |
 | Where a project keeps its standing rules, and a table for what is live | [The `CLAUDE.md` template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template) |
-| How these sit against the mainstream frameworks | [The standards landscape](STANDARDS-LANDSCAPE.md) |
+| How these sit against the mainstream frameworks | [The standards reference](STANDARDS-REFERENCE.md) |
 | Gates, receipts, claim honesty, and why a check that cannot fail is not a control | [CI and standards](../CI-AND-STANDARDS.md) |
 | A fail-closed content scanner and the blind spot no scanner closes | [The leak gate](../LEAK-GATE.md) |
 | The same reasoning applied to one repository's own controls | [Case study: a drift audit](../CASE-STUDY-drift-audit.md) |

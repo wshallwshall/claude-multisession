@@ -6,7 +6,7 @@
 
    ONE PAGE RUNS SCRIPT, and this comment used to say none did. _includes/standards-selector.html
    carries an inline style block and an inline script for the interactive selector on the standards
-   landscape page. It is scoped to .ssel, it declares its own local fallbacks for every custom
+   routing page. It is scoped to .ssel, it declares its own local fallbacks for every custom
    property below so a saved file:// copy still reads correctly, and it only ever hides and reorders
    content that is already in the served HTML. Nothing else on the site has a script, and the
    narrow-screen nav below still refuses one on purpose -- see the note at the media query. Both
@@ -503,7 +503,7 @@ samp {
    max-width caps it at the column, which is what makes it scroll instead of the page.
 
    This used to be justified by a claim that nothing on the site ran a script, which is no longer
-   true -- _includes/standards-selector.html runs one on the standards landscape page. The rule stands
+   true -- _includes/standards-selector.html runs one on the standards routing page. The rule stands
    anyway, and now on a better reason: the only script on the site is scoped to one component and
    does not touch tables, and a table on any of the other twenty pages would still be unwrapped. Do
    not "fix" this by having the selector's script wrap tables globally; that would make the layout
@@ -565,7 +565,7 @@ samp {
    laid out as wrapped rows above the content. No script here, no toggle -- a collapsed menu that
    needs JavaScript is one more thing that can be wired and inert.
 
-   That refusal still stands, and the selector on the standards landscape page is not an exception
+   That refusal still stands, and the selector on the standards routing page is not an exception
    to it. The nav was refused because script would have been THE ONLY WAY TO REACH THE LINKS. The
    selector is allowed because the answer it filters is complete before any script runs. If a future
    feature cannot say that second sentence about itself, it does not get a script either. */

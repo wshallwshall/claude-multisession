@@ -54,10 +54,10 @@ narrower than that: reading a program attestation as an answer to "is this produ
 part of it asked that question.
 
 Every row carries what it proves, what it does not prove, and what to ask. Statuses, versions and
-dates live on the landscape and reference pages, each carrying the date it was checked; this page
-carries none, on purpose, so that it does not rot. For the producer's side of the same cut, see [the
-organization layer is not the software
-layer](STANDARDS-LANDSCAPE.md#the-organization-layer-is-not-the-software-layer).
+dates live on the reference page, each carrying the date it was checked; this page carries none, on
+purpose, so that it does not rot. For the producer's side of the same cut, see [the organization
+layer is not the software
+layer](STANDARDS-REFERENCE.md#the-organization-layer-is-not-the-software-layer).
 
 ---
 
@@ -155,8 +155,8 @@ remediation clock.
   page. Nothing here has been reviewed by counsel.
 - **No assessor, tool, format or vendor is named.** The rows describe instruments, not the market
   that sells them.
-- **No status, version or edition claim appears here.** Those live on the landscape and reference
-  pages, each carrying the date it was checked, so a stale fact is visible as one.
+- **No status, version or edition claim appears here.** Those live on the reference page, each
+  carrying the date it was checked, so a stale fact is visible as one.
 - **A complete packet is not a secure product, and a thin packet is not an insecure one.** Both are
   evidence about what you are able to check, which is a more modest thing than either side of a
   procurement conversation usually wants it to be.
@@ -167,8 +167,8 @@ remediation clock.
 
 | If you need | Read |
 |---|---|
-| Which of these reach your own organization, with statuses and dates | [Which standards apply to you](STANDARDS-LANDSCAPE.md) |
-| One row per document, as a lookup | [Security standards reference](STANDARDS-REFERENCE.md) |
+| Which of these reach your own organization | [Which standards apply to you](WHICH-STANDARDS-APPLY.md) |
+| One row per document, as a lookup, with statuses and dates | [Security standards reference](STANDARDS-REFERENCE.md) |
 | What to require of your own developers | [The CISO summary](CISO-SUMMARY.md) |
 | The process a build must satisfy, including dynamic testing, the data flow diagram and disclosure | [Secure development](SECURE-DEVELOPMENT.md) |
 | SBOM, provenance, and what gets published | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |

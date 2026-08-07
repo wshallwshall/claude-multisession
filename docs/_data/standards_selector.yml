@@ -1,5 +1,6 @@
 # ---------------------------------------------------------------------------------------------
-# THE DATA BEHIND THE INTERACTIVE SELECTOR ON THE STANDARDS LANDSCAPE PAGE.
+# THE DATA BEHIND THE INTERACTIVE SELECTOR ON THE ROUTING PAGE,
+# docs/standards/WHICH-STANDARDS-APPLY.md.
 #
 # ONE PLACE. Everything the selector says -- every question, every option, every item, every
 # status, every boundary panel -- is declared here. _includes/standards-selector.html renders it
@@ -13,6 +14,11 @@
 # so tests/test_the_selector_matches_the_routing_table.py asserts every `name` and every `status`
 # below appears verbatim in that file. If you edit a status here, edit it there in the same commit
 # or the test says so.
+#
+# THERE USED TO BE A THIRD COPY. The routing page carried the whole reference table again, and every
+# status therefore existed three times. It no longer does: that page routes and points here, and the
+# rows live in STANDARDS-REFERENCE.md alone. Do not reintroduce one -- two copies are the most this
+# feature can keep honest, and the test only pins two.
 #
 # ASCII ONLY. scripts/quality/check-ascii.ps1 walks the whole tree and fails the build on any
 # non-ASCII byte. No curly quotes, no en or em dashes, no arrows. Write `--`.

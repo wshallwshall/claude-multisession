@@ -60,7 +60,7 @@
             THE SENTINEL SPLIT, and it exists so that ONE page can carry an interactive app without
             the markdown source carrying a line of HTML or Liquid.
 
-            docs/standards/STANDARDS-LANDSCAPE.md is also converted to Word by pandoc and pinned by
+            docs/standards/WHICH-STANDARDS-APPLY.md is also converted to Word by pandoc and pinned by
             tests/test_word_copies_track_the_markdown.py, so raw markup in it would appear as garbage
             in the .docx -- or, worse, be silently dropped along with the prose around it. An HTML
             comment costs the markdown one invisible line: it renders as nothing on GitHub, and
@@ -75,7 +75,7 @@
             THE FALLBACK IS DELIBERATE. kramdown is expected to pass a block-level HTML comment
             through to the rendered HTML, but nothing in tests/ builds this site, so a change in that
             behaviour would drop the app off the page with every gate still green. So: if the page IS
-            the landscape page and the sentinel did NOT survive, the include is emitted after the
+            the routing page and the sentinel did NOT survive, the include is emitted after the
             content instead. Placement degrades; the feature does not vanish silently.
           {%- endcomment -%}
           {%- assign sentinel = '<!-- STANDARDS-SELECTOR -->' -%}
@@ -84,7 +84,7 @@
           {{ parts[0] }}
           {% include standards-selector.html %}
           {{ parts[1] }}
-          {%- elsif page.url == '/standards/STANDARDS-LANDSCAPE.html' -%}
+          {%- elsif page.url == '/standards/WHICH-STANDARDS-APPLY.html' -%}
           {{ content }}
           {% include standards-selector.html %}
           {%- else -%}
