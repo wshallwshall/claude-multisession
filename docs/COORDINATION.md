@@ -238,7 +238,49 @@ were examined to clear it. An all-clear computed over zero worktrees is a far we
 computed over eleven, and only the count tells you which one you are holding.
 
 The `-Json` branch had already been fixed for exactly this failure, one line above -- **a fix applied
-to one branch of an `if` is not a fix**. Look for the sibling path every time.
+to one branch of an `if` is not a fix**. Look for the sibling path every time. That rule was written
+here after fixing the human `-File` path -- and applying it to the very same file turned up two more,
+both below.
+
+### An empty cache invented a worktree
+
+**Trap.** A walk with zero rows is `AutomationNull`, which `@()` correctly unrolls to nothing. The
+same emptiness **round-trips through the cache as `"rows": null`**, and `@($null)` is a one-element
+array holding `$null`.
+
+**Why it is wrong.** `@($map).Count` was therefore `1` for an empty cached map. The zero-rows
+all-clear never fired, and the render loop printed a peer with a blank name, a blank branch,
+`dormant`, and `1 changed file(s)` -- that last because `@($null).Count` is `1` there too. It does not
+fail to report a worktree; it **invents** one. That is worse than silence, because a fabricated peer
+gets acted on.
+
+It is also *stateful*, which is what hid it: the fresh walk answers "No other worktree has changes."
+and the very next run inside the 60-second cache window answers with a ghost. Same repo, same state,
+two answers. **A bug that only appears on the second run reads as flakiness, not as a defect.**
+
+**Rule.** Normalise **once, at the source**, the moment the value is loaded -- not at each consumer.
+There were three consumers here, and the JSON one was already correct, which is precisely how the
+other two stayed overlooked.
+
+### "I could not look" needs an exit code, not just a receipt
+
+**Trap.** Fixing a can't-tell path by writing a receipt to stderr, and stopping there.
+
+**Why it is wrong.** `collision_gate.ps1` invokes `overlap.ps1` with **stderr discarded** (`2>$null`).
+A receipt is therefore invisible to the one consumer that acts on the verdict, and the gate goes on
+reading `[]` as *"resolved, and nobody else is touching it"* -- the comment in its own source. When
+`overlap.ps1` could not resolve a git repository at all, it exited **0** with `[]`, and the gate
+reported a clean all-clear derived from nothing having been measured.
+
+**Rule.** Exit **0** only when the question was *answered* -- including "nobody is here", which under
+`-Json` is `[]`. Exit **non-zero** when it could not be answered at all. The gate already handled that
+correctly, reporting *"allowed the edit without consulting any peer worktree ... an absent collision
+warning means UNKNOWN here, not clear."* The exit code is the only channel that survives a consumer
+discarding stderr, so it is part of the contract and is written down in `overlap.ps1`'s header beside
+the row fields.
+
+**The general shape:** before calling a can't-tell path fixed, go and read what the *consumer*
+actually consumes. A receipt on a stream nobody reads is documentation, not a control.
 
 ### The committed-work diff needs both dots
 

@@ -41,6 +41,11 @@ OVERLAP = REPO_ROOT / "scripts" / "coord" / "overlap.ps1"
 PRESENCE = REPO_ROOT / "scripts" / "coord" / "presence.ps1"
 WORKTREE_REMOVE = REPO_ROOT / "scripts" / "worktree" / "remove.ps1"
 
+# The consumer that makes overlap.ps1's exit code load-bearing. It runs overlap with stderr
+# DISCARDED, so a receipt on stderr is invisible to it and the exit code is the only channel that
+# reaches it -- which is why one case here drives this gate rather than asserting on overlap alone.
+COLLISION_GATE = REPO_ROOT / "scripts" / "hooks" / "collision_gate.ps1"
+
 
 def read(path: Path) -> str:
     """Read a source file. Explicit encoding, always.
