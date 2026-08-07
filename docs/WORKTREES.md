@@ -335,8 +335,17 @@ git's last protection against destroying commits was being overridden every sing
 unrelated to the branch's actual state.
 
 **The rule.** `remove.ps1` runs `-d`, never `-D`. If git refuses, the branch is **left in place on
-purpose**, the refusal is explained, the tip is printed again, and the forcing command is offered for
-you to run deliberately. A stale ref costs nothing; a destroyed commit costs a session.
+purpose**, **git's own reason is printed verbatim**, the tip is printed again, and the forcing command
+is offered for you to run deliberately. A stale ref costs nothing; a destroyed commit costs a session.
+
+**And it deletes the branch the worktree was *on*, never `-Name`.** `-Name` is the directory
+component and cannot contain `/`; a branch name can, and `new.ps1 -Name my-task -Branch
+feature/my-task` is a documented invocation. Asking git to delete `my-task` there fails with *branch
+not found* -- which is exactly why the refusal has to relay what git said instead of asserting a cause.
+It used to state one: that the branch held commits no other ref has. So the common namespaced case
+sent you looking for commits that do not exist, while the real branch quietly survived a run that read
+as a full cleanup. A **detached** worktree has no branch to delete at all, and the script now says so
+rather than guessing at one that happens to share the directory's name.
 
 ### Never `git worktree prune` as cleanup
 

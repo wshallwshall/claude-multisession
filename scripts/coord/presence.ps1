@@ -153,7 +153,23 @@ function Get-SelfPids([int]$Override) {
 # --- Collect ------------------------------------------------------------------------------------
 $occ = Get-WorktreeOccupancy -Repo $Repo -ConfigRoot $ConfigRoot -StartSkewMinutes $StartSkewMinutes
 if (-not $occ.RepoFound) {
-    if ($Json) { "[]" | Write-Output } else { Write-Host "Not inside a git repository -- nothing to scope presence to." }
+    if ($Json) {
+        # A RECEIPT, for the same reason the roster-UNAVAILABLE one below exists -- and this was the
+        # one unavailable exit in this file that did not have one. Nothing was scoped, no config root
+        # was read, no record was fenced, and yet stdout carried the exact two bytes it carries for
+        # "the fence ran across every root and nobody is live". A consumer cannot tell those apart, and
+        # this is the roster other tools gate on: an empty list read as an all-clear is a green light
+        # derived from nothing having been measured.
+        #
+        # stderr, never stdout: every machine consumer keeps a pure JSON array to parse, so this is
+        # additive and breaks nobody. $occ.Detail rather than a sentence retyped here, so the reason
+        # stays the one occupancy.ps1 actually reached.
+        [Console]::Error.WriteLine("presence: roster UNAVAILABLE -- $($occ.Detail). Nothing was examined. An empty list here is NOT 'nobody is live'.")
+        "[]" | Write-Output
+    } else {
+        Write-Host "Not inside a git repository -- nothing to scope presence to." -ForegroundColor Yellow
+        Write-Host "  This is NOT 'nobody is live'. Nothing was examined, so nothing can be concluded." -ForegroundColor Yellow
+    }
     exit 0
 }
 

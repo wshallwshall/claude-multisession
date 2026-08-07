@@ -34,6 +34,13 @@ ALL_INSTALLERS = (GIT_HOOK_INSTALLER, GATE_INSTALLER, COORD_INSTALLER, SELFHEAL_
 CLAIM_CHECK = REPO_ROOT / "scripts" / "hooks" / "claim_check.py"
 PUSH_GUARD = REPO_ROOT / "scripts" / "hooks" / "push_guard.py"
 
+# The coordination surfaces a human or a tool reads for an all-clear. Grouped here because what they
+# have in common is the failure mode, not the directory: each one has an exit path that means "I could
+# not tell" and used to render byte-identically to "I looked, and it is clear".
+OVERLAP = REPO_ROOT / "scripts" / "coord" / "overlap.ps1"
+PRESENCE = REPO_ROOT / "scripts" / "coord" / "presence.ps1"
+WORKTREE_REMOVE = REPO_ROOT / "scripts" / "worktree" / "remove.ps1"
+
 
 def read(path: Path) -> str:
     """Read a source file. Explicit encoding, always.

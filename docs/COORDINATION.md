@@ -159,6 +159,13 @@ stdout stays pure JSON, and an empty roster prints the literal `[]` rather than 
 `@() | ConvertTo-Json -AsArray` emits *nothing at all*, which a consumer cannot distinguish from a
 script that died before answering.
 
+That has to hold on **every** exit, not just the interesting ones. The not-inside-a-repository path
+was the exception that hid: it emitted `[]` and exited 0 with no receipt at all, alone among that
+file's unavailable paths -- the same two bytes a completed fence emits when it has read every config
+root and found nobody. This is the roster other tools gate on, so an empty list read as an all-clear
+is a green light derived from nothing having been measured. **A receipt on the paths you were
+thinking about is not a receipt.**
+
 ### Keep exactly one copy of the fence
 
 `presence.ps1` (a read-only roster), `scripts/worktree/sessions.ps1` (which **moves** a transcript)
@@ -218,6 +225,20 @@ Two independent signals, because they catch different failures:
 the session already keeps. That is deliberate: an explicit claim tool sat in the repository for a
 long time and was used exactly zero times, because *a coordination step you must remember is a
 coordination step you will skip*. Anything built on voluntary declaration decays to nothing.
+
+### An all-clear has to be said out loud
+
+`-File <path>` on the human path, with nobody else in that file, used to print **nothing** and exit 0.
+That is byte-identical to what the script produces when it dies before answering -- and this is the
+command you are told to run *before* starting a chunk of work, so the reading that costs you is the
+reassuring one.
+
+It now states the all-clear and names its evidence: the file it cleared, and how many peer worktrees
+were examined to clear it. An all-clear computed over zero worktrees is a far weaker claim than one
+computed over eleven, and only the count tells you which one you are holding.
+
+The `-Json` branch had already been fixed for exactly this failure, one line above -- **a fix applied
+to one branch of an `if` is not a fix**. Look for the sibling path every time.
 
 ### The committed-work diff needs both dots
 
