@@ -41,7 +41,13 @@
   --code-keyword: #8a3b0b;
   --code-literal: #0b5fa5;
 
-  --measure: 78ch;
+  /* MEASURED, NOT CHOSEN BY EYE, and `ch` is why the old value read wider than it looked. `ch` is
+     the advance width of "0", which in this stack is wider than the average lowercase letter, so
+     78ch rendered as 85 average characters on a 1280px viewport -- ten above the 75 that typographic
+     guidance treats as the top of the comfortable range. 66ch measures at roughly 72. Re-measure
+     against a real paragraph rather than trusting the unit: append a hidden nowrap span of a-z to a
+     paragraph, divide its width by 26, and divide the paragraph width by that. */
+  --measure: 66ch;
   --content-max: 62rem;
   --sidebar-width: 15rem;
   --radius: 4px;
