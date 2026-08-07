@@ -200,11 +200,15 @@ class TheDenyReasonCarriesProvenance(GateHarness):
         # COMPARE RESOLVED PATHS, NOT RAW STRINGS. Two spellings of one file are still one file, and
         # a raw string comparison quietly encodes an assumption about the machine the test runs on.
         #
-        # This assertion passed on every local run and failed on every Windows CI run. The runner's
-        # profile directory carries an 8.3 short name, so PowerShell reported
-        # C:\Users\RUNNER~1\...\worktree_gate.ps1 where the test had built
-        # C:\Users\runneradmin\...\worktree_gate.ps1 -- one file, two spellings -- and the test
-        # reported it as the gate stamping the wrong path. The gate was right the whole time.
+        # This assertion passed on every local run and failed on every Windows CI run. A hosted
+        # runner's profile directory carries an 8.3 SHORT NAME, so PowerShell reported the gate's
+        # path spelled with the short form of that directory while the test had built the same path
+        # with the long form. One file, two spellings -- and the test reported it as the gate
+        # stamping the wrong file. The gate was right on every one of those runs.
+        #
+        # The two literal paths are deliberately NOT written out here. An earlier draft of this
+        # comment spelled them, and the leak gate refused the commit: an absolute user-home path
+        # carries an OS account name, which is exactly what this repository strips.
         #
         # os.path.realpath resolves short names on Windows and is harmless elsewhere, so this
         # compares what the two sides POINT AT rather than how each happened to spell it. Both raw
