@@ -49,29 +49,45 @@ For where a rule was borrowed from, and what the bracketed marks on some rules m
 
 ## How this page is organized
 
-The numbered sections are the rules. What sits before them is what this costs and where to start; what sits after them is where each rule came from and what may be claimed. Subsections are reached from the cross-references in the body, which link to them directly.
+The numbered sections are the rules. What sits before them is what this costs and where to start; what sits after them is where each rule came from and what may be claimed. Subsections are listed under the section that holds them.
 
 [In short](#in-short) -- [What you get](#what-you-get) -- [What this costs you](#what-this-costs-you) -- [How to adopt this](#how-to-adopt-this) -- [The shape: two layers, and the second is where the defects are](#the-shape-two-layers-and-the-second-is-where-the-defects-are)
 
+- Under [What this costs you](#what-this-costs-you): [Where this does not apply](#where-this-does-not-apply)
+
 1. [Shared responsibility: write the split down first](#1-shared-responsibility-write-the-split-down-first)
+   - [The third participant: services neither column owns](#the-third-participant-services-neither-column-owns) -- [What "restricted data" means here, exactly once](#what-restricted-data-means-here-exactly-once)
 2. [Threat model each trust boundary before you build it](#2-threat-model-each-trust-boundary-before-you-build-it)
+   - [A diagram without marked trust boundaries is not a security artifact](#a-diagram-without-marked-trust-boundaries-is-not-a-security-artifact) -- [Execution boundaries need the longest look](#execution-boundaries-need-the-longest-look)
 3. [Secure coding: the finite list a review can check](#3-secure-coding-the-finite-list-a-review-can-check)
 4. [Review, and what to do when there is no second reviewer](#4-review-and-what-to-do-when-there-is-no-second-reviewer)
+   - [Self-review is a documented deviation, not a satisfied control](#self-review-is-a-documented-deviation-not-a-satisfied-control) -- [The confidence effect bites hardest in self-review](#the-confidence-effect-bites-hardest-in-self-review) -- [The comprehension bar, and two additions to it](#the-comprehension-bar-and-two-additions-to-it)
 5. [Scanner posture: what blocks, what advises, what may never be waived](#5-scanner-posture-what-blocks-what-advises-what-may-never-be-waived)
+   - [What must block, and may not be waived](#what-must-block-and-may-not-be-waived) -- [Dynamic testing: an event trigger, and a written record of what no trigger reached](#dynamic-testing-an-event-trigger-and-a-written-record-of-what-no-trigger-reached) -- [Three additions specific to a security posture](#three-additions-specific-to-a-security-posture) -- [The security anti-metrics](#the-security-anti-metrics)
 6. [Secrets and repository hygiene](#6-secrets-and-repository-hygiene)
 7. [Secure defaults, and the opt-in that must be explicit](#7-secure-defaults-and-the-opt-in-that-must-be-explicit)
+   - [Synthetic data by default in anything that is not production](#synthetic-data-by-default-in-anything-that-is-not-production) -- [Rate a collection by the highest class it holds](#rate-a-collection-by-the-highest-class-it-holds)
 8. [Machine-to-machine authentication](#8-machine-to-machine-authentication)
+   - [Service accounts: no long-lived secret in a file](#service-accounts-no-long-lived-secret-in-a-file)
 9. [Tamper-evident audit logging](#9-tamper-evident-audit-logging)
+   - [What happens when the log cannot be written](#what-happens-when-the-log-cannot-be-written) -- [Ship the review affordance; the cadence is not yours](#ship-the-review-affordance-the-cadence-is-not-yours)
 10. [Build and release integrity](#10-build-and-release-integrity)
+   - [Where the build runs, and who can change it](#where-the-build-runs-and-who-can-change-it) -- [Publishing controls, and the limit each one carries](#publishing-controls-and-the-limit-each-one-carries) -- [What an adopter can verify without contacting you](#what-an-adopter-can-verify-without-contacting-you) -- [Obfuscation is not the control you are looking for](#obfuscation-is-not-the-control-you-are-looking-for)
 11. [Runtime tamper resistance, and the bootstrap-trust limit](#11-runtime-tamper-resistance-and-the-bootstrap-trust-limit)
+   - [Operator-owned hardening: document and recommend, never claim](#operator-owned-hardening-document-and-recommend-never-claim) -- [Roll out a blocking verification control in audit mode first](#roll-out-a-blocking-verification-control-in-audit-mode-first)
 12. [Vulnerability response, exercised](#12-vulnerability-response-exercised)
+   - [What actually closes a finding](#what-actually-closes-a-finding) -- [The producer half: an intake a reporter can find, and an advisory a tool can read](#the-producer-half-an-intake-a-reporter-can-find-and-an-advisory-a-tool-can-read)
 13. [Deviations and risk acceptance](#13-deviations-and-risk-acceptance)
 14. [Re-evaluate on a trigger, and on a short calendar for what has no trigger](#14-re-evaluate-on-a-trigger-and-on-a-short-calendar-for-what-has-no-trigger)
 15. [Independent external verification](#15-independent-external-verification)
+   - [Write the engagement down before it starts](#write-the-engagement-down-before-it-starts)
 16. [The release gate](#16-the-release-gate)
+   - [Confirm the control plane before reading any code](#confirm-the-control-plane-before-reading-any-code)
 17. [What you may claim](#17-what-you-may-claim)
 
 [In one table](#in-one-table) -- [Adapting this to your project](#adapting-this-to-your-project) -- [Where the rules come from](#where-the-rules-come-from) -- [What this document does not take from a control catalog](#what-this-document-does-not-take-from-a-control-catalog) -- [Sources](#sources) -- [Related](#related)
+
+- Under [Where the rules come from](#where-the-rules-come-from): [Full conformance is not on offer, so tailoring is not a compromise](#full-conformance-is-not-on-offer-so-tailoring-is-not-a-compromise) -- [The one setting where such a claim is a legal instrument, and its expiry date](#the-one-setting-where-such-a-claim-is-a-legal-instrument-and-its-expiry-date)
 
 ---
 
