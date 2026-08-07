@@ -17,6 +17,16 @@ something that already happened once.
      copy that disagrees. INSTALL.md was never in this scan despite the docstring's original
      "three copies": it writes `<tooling>` as a placeholder rather than `"$tooling/`, so
      INSTALL_COMMAND has never matched a line in it.
+
+     THAT INSTALL.md IS OUT OF SCOPE IS NOW A DECISION, NOT AN ACCIDENT OF THE PATTERN. It was
+     unpinned because a regex happened not to match it, which is a different thing from anyone
+     having judged it should be, and the gap is recorded here so the next reader does not have to
+     rediscover which of the two it was. The judgment: placeholder-form instructions are a
+     different artifact from copy-paste commands. Pinning them would mean normalising `<tooling>`
+     against `"$tooling/` so the two forms could be compared, and that comparison would go red on
+     cosmetic rewording that harms no reader -- a gate that fails for reasons unrelated to drift
+     is one people learn to ignore, which costs more than the coverage is worth. It stays
+     deliberately unpinned. Do NOT close this by widening INSTALL_COMMAND.
   2. LINKS THAT LEAVE THE SITE ARE PINNED TO `main`. Serving from /docs makes docs/ the site
      root, so a `../scripts/...` target resolves above the root and 404s. The fix was to rewrite
      those to absolute blob/main URLs -- which is correct, and which converts an in-repo
@@ -32,7 +42,13 @@ exists here still 404s on github.com if the branch is renamed or the file is not
 local can see that. They also do not check INSTALL.md's prose against the landing page -- it is the
 long form and is expected to differ.
 
-Run: python -m pytest tests -q     (or: python -m unittest discover -s tests -v)
+Run: python -m unittest discover -s tests     (pytest is NOT installed and is not needed)
+
+The pytest invocation this line used to give first does not work here, and reading it cost a
+session real time: it reported "could not run the tests" off a pytest failure while the working
+command was in the same docstring. The single-module form does not work either -- these files
+import `_ccxtest`, which only resolves when `discover` puts tests/ on sys.path, so the failure
+looks like a broken test and is not.
 """
 
 from __future__ import annotations
