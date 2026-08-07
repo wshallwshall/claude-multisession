@@ -50,8 +50,8 @@ its URL still land somewhere useful. It is not a standard and is not offered for
 5. **[Secure development](SECURE-DEVELOPMENT.md)** last. It is the widest and the most
    setting-specific, and the one you should expect to rewrite rather than adopt.
 
-**Two are short enough to read straight through**: [the CISO summary](CISO-SUMMARY.md) and [Human
-review of code](REVIEW-DEPTH.md).
+**Two are short enough to read straight through**: [the CISO summary](CISO-SUMMARY.md) and
+[Human review of code](REVIEW-DEPTH.md).
 
 **Read the scope-and-limits block first.** If you read only one paragraph of any of them, read that
 one. It tells you whether the rest applies to you, and it is deliberately placed before the rules.

@@ -132,8 +132,8 @@ At the point of use, that name is indistinguishable from one that exists. The re
 attack surface: a name suggested often enough can be registered by somebody else.
 
 The rule, the gate shape and the published magnitude with its model-era caveat are already on the
-site. They are not restated here: [Verify a dependency before adding it, and know what verification
-cannot see](../CI-AND-STANDARDS.md#verify-a-dependency-before-adding-it-and-know-what-verification-cannot-see).
+site. They are not restated here:
+[Verify a dependency before adding it, and know what verification cannot see](../CI-AND-STANDARDS.md#verify-a-dependency-before-adding-it-and-know-what-verification-cannot-see).
 
 Two things are worth adding at this document's altitude.
 
@@ -153,9 +153,9 @@ not, and the boundary between them is ownership rather than authorship.
 
 **Code in your tree** is yours to account for, whoever or whatever typed it. The site's settled
 position is that an explanation reached with assistance is acceptable, rubber-stamping is not, opaque
-even with help is discarded, and you capture it durably. It is stated at [Reject code you cannot
-explain -- assistance in reaching the explanation is
-fine](../CI-AND-STANDARDS.md#reject-code-you-cannot-explain----assistance-in-reaching-the-explanation-is-fine).
+even with help is discarded, and you capture it durably. It is stated in
+[CI and standards](../CI-AND-STANDARDS.md),
+*"Reject code you cannot explain -- assistance in reaching the explanation is fine"*.
 
 **Code behind a package boundary** is not yours to account for. You account for its *provenance* and
 for the *behavior you depend on*, which is what the table above enumerates.
@@ -238,10 +238,10 @@ Three questions to answer for your own ecosystem before assuming you have this:
 - Can a developer or a CI step bypass it -- an ad-hoc install, a floating tool install on the runner,
   a build step that resolves fresh?
 
-The site's [Constrain every install site from a checked-in
-lock](../CI-AND-STANDARDS.md#constrain-every-install-site-from-a-checked-in-lock) covers the
-CI-facing half, including the regenerate-and-diff gate that keeps the lock honest. Two deltas belong
-here rather than there.
+The site's
+[Constrain every install site from a checked-in lock](../CI-AND-STANDARDS.md#constrain-every-install-site-from-a-checked-in-lock)
+covers the CI-facing half, including the regenerate-and-diff gate that keeps the lock honest. Two
+deltas belong here rather than there.
 
 **A version pin does not satisfy a supply-chain scorer's pinned-dependency requirement**, and more
 importantly does not satisfy the property you actually wanted. If your CI tooling is installed by
@@ -289,8 +289,8 @@ happen. It happens because the packaging list was written as an exclusion and th
 later.
 
 Checking the thing you built is not checking the thing that shipped. The rule itself is covered in
-full at [Package manifests are allowlists, not
-sweeps](../CI-AND-STANDARDS.md#package-manifests-are-allowlists-not-sweeps), and not restated.
+full at [Package manifests are allowlists, not sweeps](../CI-AND-STANDARDS.md#package-manifests-are-allowlists-not-sweeps),
+and not restated.
 
 ### Publishing credentials should be minted per run, not stored
 

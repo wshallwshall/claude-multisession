@@ -219,10 +219,10 @@ score nothing until that corpus exists.
 The first pass will not produce a score, and it should not. It builds the corpus. Anything that
 hands you a percentage before that exists is the failure this document is about.
 
-New to the rest of this repository's tooling? [Here's what to feed to Claude
-Code](FEED-THIS-TO-CLAUDE-CODE.md) is the front door. For the same reasoning applied to this
-repository's own controls -- including why it also publishes no status table -- see [the drift-audit
-case study](CASE-STUDY-drift-audit.md).
+New to the rest of this repository's tooling?
+[Here's what to feed to Claude Code](FEED-THIS-TO-CLAUDE-CODE.md) is the front door. For the same
+reasoning applied to this repository's own controls -- including why it also publishes no status
+table -- see [the drift-audit case study](CASE-STUDY-drift-audit.md).
 
 ---
 

@@ -101,9 +101,10 @@ correctness, and the gap is widest exactly when the author reviews their own ass
 the strongest argument for keeping a review step you might otherwise drop for speed, and for the
 adversarial verification pass in section 7.
 
-**It also constrains what you may say about your own loop.** The site's rule [*"Do not claim a speed or
-quality gain you have not measured here"*](../CI-AND-STANDARDS.md#do-not-claim-a-speed-or-quality-gain-you-have-not-measured-here) in [CI and standards](../CI-AND-STANDARDS.md) applies to
-your impressions of the loop, not only to published figures.
+**It also constrains what you may say about your own loop.** The site's rule
+[*"Do not claim a speed or quality gain you have not measured here"*](../CI-AND-STANDARDS.md#do-not-claim-a-speed-or-quality-gain-you-have-not-measured-here)
+in [CI and standards](../CI-AND-STANDARDS.md) applies to your impressions of the loop, not only to
+published figures.
 
 ---
 
@@ -442,8 +443,9 @@ An AI coding assistant implements a control exactly where it was prompted and mi
 Make enumerating them a review step rather than a hope, and prefer one deterministic check over all
 instances to a recurring manual sweep.
 
-Full rule and the audit finding behind it: [CI and
-standards](../CI-AND-STANDARDS.md#enumerate-sibling-paths-for-every-control) *"Enumerate sibling paths for every control"*.
+Full rule and the audit finding behind it:
+[CI and standards](../CI-AND-STANDARDS.md#enumerate-sibling-paths-for-every-control)
+*"Enumerate sibling paths for every control"*.
 
 ### Provenance: record it, and count it before you cite it
 
@@ -468,9 +470,10 @@ Before enforcing any trailer, check its form against the merge gates that will s
 it with a commit-time hook **plus** an independent pipeline backstop, so a local bypass does not
 defeat it.
 
-The general form of this is on the site already -- [CI and
-standards](../CI-AND-STANDARDS.md#measure-the-adoption-of-a-convention-before-citing-it-as-evidence) *"Measure the adoption of a convention before citing it as
-evidence"*. The two deltas above are the parts specific to a provenance trailer.
+The general form of this is on the site already --
+[CI and standards](../CI-AND-STANDARDS.md#measure-the-adoption-of-a-convention-before-citing-it-as-evidence)
+*"Measure the adoption of a convention before citing it as evidence"*. The two deltas above are the
+parts specific to a provenance trailer.
 
 **Be equally precise about granularity.** A commit trailer records provenance at **commit**
 granularity; it does not mark which lines or hunks were AI-authored. If a downstream process wants

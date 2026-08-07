@@ -68,8 +68,8 @@ scheduled scans, anything that reports into a channel. **Bucket 3** is judgment,
 Which bucket a control lands in is as much a fact about your configuration as about the control,
 and the gap between the two is where money goes without buying enforcement. Advisory and
 scheduled-only jobs never turn a proposed change red, so counting them as coverage inflates the
-number without adding a gate ([CI and
-standards](../CI-AND-STANDARDS.md#blocking-and-advisory-are-not-the-same-coverage)).
+number without adding a gate
+([CI and standards](../CI-AND-STANDARDS.md#blocking-and-advisory-are-not-the-same-coverage)).
 
 Three things survive the sort and still catch people:
 
@@ -83,8 +83,8 @@ Three things survive the sort and still catch people:
   what counts as sensitive, and its green says nothing about that definition being right.
 
 Bucket 3 needs people or governance instead, which makes it a hiring and process decision rather
-than a tooling one. The long form of that list is in [How to adopt these, step
-4](ADOPTING-THESE.md#step-4-automate-wherever-possible-so-it-stays-done).
+than a tooling one. The long form of that list is in
+[How to adopt these, step 4](ADOPTING-THESE.md#step-4-automate-wherever-possible-so-it-stays-done).
 
 ---
 
@@ -150,12 +150,12 @@ What it costs:
   which does not transfer directly to a company).
 - **The first day of a new gate is a wall of findings you already had.** A blocking check applied
   to existing code fails on everything it inherits. Run it reporting-only first, then hold only
-  what the change introduced ([How to adopt these, step
-  4](ADOPTING-THESE.md#step-4-automate-wherever-possible-so-it-stays-done)).
+  what the change introduced
+  ([How to adopt these, step 4](ADOPTING-THESE.md#step-4-automate-wherever-possible-so-it-stays-done)).
 - **Attention, which is scarcer than minutes.** An advisory job nobody reads is worse than absent,
-  because the scorecard still counts it (*this set's own rule, from [Code
-  quality](CODE-QUALITY.md)*). One large engineering organization reached the same conclusion by
-  measurement: its developers ignored non-blocking warnings, so its policy became to make a check
+  because the scorecard still counts it (*this set's own rule, from
+  [Code quality](CODE-QUALITY.md)*). One large engineering organization reached the same conclusion
+  by measurement: its developers ignored non-blocking warnings, so its policy became to make a check
   stop the change or remove it **[external]** (Sadowski et al., 2018, one organization's policy,
   not a controlled study).
 - **The checks are themselves software**, with versions, breakages and upgrade costs of their own.
