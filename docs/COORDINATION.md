@@ -1,5 +1,7 @@
 # Coordination
 
+## TLDR/BLUF
+
 Presence, overlap, claims, locks and announce -- the parts of this repo that let several Claude Code
 sessions work in one repository at the same time without silently destroying each other's work.
 
@@ -12,6 +14,15 @@ Two sessions in two worktrees cannot overwrite each other's bytes. They can stil
   the same dependency advisory; two of the three pull requests were closed as duplicates.
 
 Nothing structural sees the second case. That is what this directory of scripts is for.
+
+**Not for you** if you run one session at a time, in which case none of this does anything. Not for a
+plain CLI install either, for announce specifically: that one feature needs the desktop client, and
+the reason is the first two rows of [Honest limits, stated
+first](#honest-limits-stated-first).
+
+**Start at** [The pieces](#the-pieces), which routes each question to the single script that answers
+it. Then [Proving any of this is live](#proving-any-of-this-is-live), which is where an installed
+fence is separated from a wired one.
 
 ## Honest limits, stated first
 
