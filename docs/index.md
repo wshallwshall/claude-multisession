@@ -82,7 +82,11 @@ tell which of those a worktree is. [Pruning](PRUNING.md)
 
 **Work too large for one context.** A coordinated set of sessions can cover a codebase at once, which
 extends to compliance work -- an OWASP ASVS 5.0 assessment runs to several hundred requirements, more
-than one session can hold. [Running a large assessment](ASVS-ASSESSMENT.md)
+than one session can hold. The write-up is candid that the obvious split is the wrong one: a session
+per chapter is a scheduling answer, and the collision that actually costs you is not two agents
+editing the same row but **two agents applying different unwritten rules**, producing verdicts that
+cannot be reconciled afterwards because neither recorded which rule it applied.
+[Running a large assessment](ASVS-ASSESSMENT.md)
 
 ### Which part defends against #76590
 
