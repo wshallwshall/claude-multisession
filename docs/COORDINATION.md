@@ -650,7 +650,7 @@ Measured. Two sessions independently fixed one defect in `docs/index.md` about a
 knowing about the other. One landed on main (`de72973`); the other sat unpushed (`8ba7696`). The
 rebase reported **no conflict**, because the two inserts were adjacent rather than overlapping. The
 result was two consecutive paragraphs telling a reader the same thing about the same document, with
-87 tests passing and the ASCII gate green. Nothing mechanical could have caught it: every gate was
+92 tests passing and the ASCII gate green. Nothing mechanical could have caught it: every gate was
 answering "do these lines overlap", and the question was "do these changes say the same thing".
 
 **A clean merge is the worse outcome of the two.** A conflict stops you and demands a decision; a
@@ -668,6 +668,15 @@ thrown away half the work.
 This is the same shape as [`isRunning`](#the-id-rules----the-most-valuable-part-of-the-hook): an
 instrument answering a narrower question than the one being asked of it, and reporting success while
 it does.
+
+**The one mechanism here that prevents rather than reports.** In the episode above, every correction
+the two sessions made for each other arrived *after* the work was already done -- the duplicate
+paragraph, the stale verification base, the wrong noun on the routing page, all found by reading
+afterwards. The collision gate was the exception: when the second session tried to edit
+`docs/index.md` a third time, it refused, named the session holding the file and named its branch,
+and the edit never happened. Announce tells peers what you intend; overlap tells you what they have
+touched; both inform. The gate is the only one that stops you, and it is worth keeping loud for that
+reason alone.
 
 ## Proving any of this is live
 
