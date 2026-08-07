@@ -65,29 +65,6 @@ The
 carries a table for exactly that: which of these controls exist here, and when each was last proven
 able to fail. A standard that no such file references is a document, not a practice.
 
-## What you get
-
-- **A rubric you can run against your own repository at each release.** It separates controls that
-  may decide a verdict from measurements that may only start a conversation. So an argument about
-  "is this good enough" resolves against structure rather than against whoever quotes the largest
-  number.
-- **A discipline for third-party code that never asks you to read it.** The human effort lands at
-  exactly two moments: adopting a dependency and bumping one. The rest is machinery that runs
-  unattended until it raises something.
-- **A release an adopter can verify without trusting your account of your own process.** The
-  allowlist is checked before the upload rather than after it, because the upload is the
-  irreversible step.
-- **A written split between what you own and what an adopter owns**, made before you claim any
-  control. That gap is where a control ends up unowned by both sides, each assuming the other had
-  it.
-- **A risk tier you can resolve in one question.** A one-line fix does not carry the same obligation
-  as a change to an authorization path, and the cheap answer errs strict rather than convenient.
-- **Wording you can actually publish.** Approved phrasings sit next to the overclaims they replace,
-  with a rule for saying what a gate does not prove. That rule is what stops a document being
-  rejected by the first reader who checks its sources.
-- **The claims that failed verification, published next to the ones that survived.** Specific
-  numbers to stop repeating, including several that circulate widely and did not survive the filter.
-
 ## What these are not
 
 - **No code ships with them.** These are rules and review procedures. Where one names a control, it

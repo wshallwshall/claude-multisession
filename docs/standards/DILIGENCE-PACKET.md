@@ -38,26 +38,17 @@ Each of the three is a document, a date or a name. None can be answered with an 
 
 ---
 
-## How this page is organized
-
-The three groups below are sorted by layer, which is the cut that makes the mistake visible:
-
-- **Organization layer** -- evidence about the company.
-- **Software layer** -- evidence about the thing you are buying.
-- **Legal instruments** -- evidence about who pays when it goes wrong.
+## The organization layer is worth having; the failure is narrower
 
 None of this is a reason to dismiss the organization-layer instruments. What they establish -- that
 somebody outside the company examined how it governs itself, grants access and manages change, and
 wrote down what they found -- is worth having, and a vendor holding none of them is a different risk
-entirely. The failure is
-narrower than that: reading a program attestation as an answer to "is this product secure", when no
-part of it asked that question.
+entirely. The failure is narrower than that: reading a program attestation as an answer to "is this
+product secure", when no part of it asked that question.
 
-Every row carries what it proves, what it does not prove, and what to ask. Statuses, versions and
-dates live on the reference page, each carrying the date it was checked; this page carries none, on
-purpose, so that it does not rot. For the producer's side of the same cut, see [the organization
-layer is not the software
-layer](STANDARDS-REFERENCE.md#the-organization-layer-is-not-the-software-layer).
+Statuses, versions and dates live on the reference page, each carrying the date it was checked. For
+the producer's side of the same cut, see
+[the organization layer is not the software layer](STANDARDS-REFERENCE.md#the-organization-layer-is-not-the-software-layer).
 
 ---
 

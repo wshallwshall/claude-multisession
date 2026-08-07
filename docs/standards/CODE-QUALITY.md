@@ -37,31 +37,6 @@ checklist -- which an honest scorecard says out loud rather than scoring around.
 
 ---
 
-## What you get
-
-- **A scorecard you can run each release**, split into rows allowed to decide a verdict and rows
-  allowed only to start a conversation. An argument about "is this good enough" then resolves
-  against structure instead of against whoever quotes the largest number.
-- **One sentence to point at** when somebody proposes a coverage floor or a complexity gate, plus
-  the published evidence that makes it a defect rather than a matter of taste.
-- **The bibliography and the hedge for each of those findings**, so a decision not to gate on a
-  number survives review by someone who has read the underlying paper.
-- **A map from each way machine-written code goes wrong to the control that neutralizes it**, each
-  control tagged with the document that owns it. Adopting this adds gates rather than a second copy
-  of rules you already enforce.
-- **A placement rule for every gate**: which run in the local loop, which are pipeline-first, and
-  the one condition under which that decision must be re-derived from scratch.
-- **A review method that makes a large diff finite.** Depth tiers aim the line-by-line read at the
-  small fraction that earns it, and give every other file a named cheaper obligation. The
-  alternative is a file either skipped in silence or read at ruinous cost.
-- **A question set for the hardest review in any codebase** -- the seam where content of unknown
-  provenance becomes running code -- including the two questions almost always missed.
-- **The widely repeated figures about machine-written code that did not survive verification**,
-  named so you can stop repeating them, and as a worked demonstration that this document's own
-  filter has teeth.
-
----
-
 ## What this costs you, and where it does not apply
 
 - **It confers no certification.** There is no badge, no pass mark, and no grade. A completed
