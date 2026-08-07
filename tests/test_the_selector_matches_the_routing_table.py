@@ -539,13 +539,41 @@ class TheWiringIsDeclaredOnBothSides(unittest.TestCase):
         )
 
     def test_the_layout_still_renders_pages_that_have_no_sentinel(self):
-        """Twenty other pages go through this split. The absent case has to be identity."""
+        """Twenty other pages go through this split. The absent case has to be identity.
+
+        THE LITERAL THIS CHECKS CHANGED, AND WHY. It asserted `{{ content }}` in the else branch
+        until the on-this-page contents block landed. That block splits the document once on `</h1>`
+        so the list can sit after the title and before the first section, so the branch now emits
+        `body`: the same document, with the part before the split re-emitted above the list. The
+        invariant is untouched -- a page without the sentinel still renders whole.
+
+        THE FAILURE THIS NOW GUARDS, which the old form could not see. `body` is derived, and an
+        undefined variable in Liquid renders as NOTHING rather than raising. If a later edit assigns
+        it on only one branch of the contents condition, every page on this site ships with an empty
+        content area, the build succeeds, and every check in this file stays green. So both
+        assignments are pinned, not only the output -- including the identity one, which is the whole
+        claim of this test.
+        """
         layout = t.read(LAYOUT)
         self.assertRegex(
             layout,
-            r"\{%-?\s*else\s*-?%\}\s*\{\{\s*content\s*\}\}",
-            "the layout no longer has a plain {{ content }} branch for pages without the "
+            r"\{%-?\s*else\s*-?%\}\s*\{\{\s*(?:content|body)\s*\}\}",
+            "the layout no longer has a branch emitting the whole document for pages without the "
             "sentinel. Every other page on the site renders through here.",
+        )
+        self.assertRegex(
+            layout,
+            r"\{%-?\s*else\s*-?%\}\s*\{%-?\s*assign\s+body\s*=\s*content\s*-?%\}",
+            "the contents block no longer falls back to `assign body = content`. Without that "
+            "branch `body` is undefined on the path it guards, and Liquid renders an undefined "
+            "variable as nothing: the page would ship with no content and the build would succeed.",
+        )
+        self.assertIn(
+            "{{ h1_split[0] }}</h1>",
+            layout,
+            "the layout splits the document on `</h1>` but no longer re-emits the part before the "
+            "split. That part is the page's own title, so every long page would lose its heading "
+            "while still rendering everything else.",
         )
 
     def test_the_include_exists_and_the_data_file_is_what_it_reads(self):
