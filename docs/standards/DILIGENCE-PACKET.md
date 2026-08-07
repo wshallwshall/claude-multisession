@@ -55,9 +55,8 @@ part of it asked that question.
 
 Every row carries what it proves, what it does not prove, and what to ask. Statuses, versions and
 dates live on the reference page, each carrying the date it was checked; this page carries none, on
-purpose, so that it does not rot. For the producer's side of the same cut, see [the organization
-layer is not the software
-layer](STANDARDS-REFERENCE.md#the-organization-layer-is-not-the-software-layer).
+purpose, so that it does not rot. For the producer's side of the same cut, see
+[the organization layer is not the software layer](STANDARDS-REFERENCE.md#the-organization-layer-is-not-the-software-layer).
 
 ---
 

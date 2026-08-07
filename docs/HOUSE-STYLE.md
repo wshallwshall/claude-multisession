@@ -74,6 +74,7 @@ orientation sections were deleted for restating the page rather than opening it.
 | HS-13 | A heading **MUST NOT** be renamed until the repository has been searched for its text | Standards cite headings by name, and only the link-adjacent form is gated |
 | HS-14 | Lines **SHOULD** wrap near 100 characters | The wrap |
 | HS-15 | A quantity **MUST** be the number where one exists, not a vague determiner | "139", not "nearly all" |
+| HS-16 | A markdown link **MUST** sit on one line, text and target both, and that outranks HS-14 | `tests/test_a_links_text_never_wraps.py`. `jekyll-relative-links` matches a link with a pattern whose `.` excludes a newline, so a wrapped one is never rewritten and the published site serves the raw `.md` while github.com renders it correctly. 35 links were in this state on 2026-08-07 |
 
 ---
 

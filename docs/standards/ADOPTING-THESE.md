@@ -47,8 +47,8 @@ and each usually finds something.
 
 1. **Classify every nominally-security job you already run as blocking or advisory**, and write the
    classification down. Zero engineering, and it narrows believed coverage on the spot, because an
-   advisory job and a blocking one are indistinguishable from a green badge. [Secure
-   development](SECURE-DEVELOPMENT.md), SD-5.1, and the unwaivable set in SD-5.2 to SD-5.5.
+   advisory job and a blocking one are indistinguishable from a green badge.
+   [Secure development](SECURE-DEVELOPMENT.md), SD-5.1, and the unwaivable set in SD-5.2 to SD-5.5.
 2. **Write the producer-versus-operator ownership split.** One table, one sitting. It is what makes
    every later claim scopeable. [Secure development](SECURE-DEVELOPMENT.md), SD-1.1.
 3. **Enumerate every dependency manifest in the repository** and note which of them has an audit.
@@ -56,8 +56,8 @@ and each usually finds something.
    with it. [Dependency integrity](DEPENDENCY-INTEGRITY.md), *"Every manifest in the repository needs
    its own audit net"*.
 4. **Open the deviations register with what you cannot do today.** A register written while you are
-   still honest about the gaps is worth more than one written at review time. [AI-assisted
-   development](AI-ASSISTED-DEVELOPMENT.md), *"The deviations register"*.
+   still honest about the gaps is worth more than one written at review time.
+   [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md), *"The deviations register"*.
 5. **Pick one gate you already have and try to make it fail.** Whatever happens, that is your first
    accurate row. [CI and standards](../CI-AND-STANDARDS.md), *"Attack the control with the failure
    class it was built to catch"*.
@@ -91,8 +91,9 @@ the corpus, and stamp the version on every number"*).
 - **Nothing here ships from this repository.** Where a document names a control, it is describing
   something you would build.
 
-For what to read and in what order, [the overview](OVERVIEW.md) owns that question under [*"The order
-to read them in"*](OVERVIEW.md#the-order-to-read-them-in). That section tells you what to read; this page tells you what to do with it.
+For what to read and in what order, [the overview](OVERVIEW.md) owns that question under
+[*"The order to read them in"*](OVERVIEW.md#the-order-to-read-them-in). That section tells you what
+to read; this page tells you what to do with it.
 
 ---
 
@@ -167,9 +168,9 @@ in the record from one nobody got to.
 your project"* section, and the do-not-weaken items live there. Changing something that section
 invites you to change is tailoring and owes no record. Striking a do-not-weaken item is a deviation
 and owes all four fields below. Three of the sections carry two literal lists, *"Change freely"* and
-*"Do not weaken"* -- [Code quality](CODE-QUALITY.md), [Dependency
-integrity](DEPENDENCY-INTEGRITY.md) and [Secure development](SECURE-DEVELOPMENT.md). The other two
-do not, and the difference matters:
+*"Do not weaken"* -- [Code quality](CODE-QUALITY.md),
+[Dependency integrity](DEPENDENCY-INTEGRITY.md) and [Secure development](SECURE-DEVELOPMENT.md).
+The other two do not, and the difference matters:
 [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md) states its first list as *what you must
 change*, so those items are obligations rather than options; [Human review of code](REVIEW-DEPTH.md)
 states no split at all, and calls its do-not-weaken item out inline.
@@ -205,12 +206,12 @@ is a register entry:
 - **A pointer to the intended shape:** where the review process you intend is written down.
 
 The wording constraint travels with it: this is a **compensating control**, never "reviewed" in a
-sense that implies an independent audit. The entry is worked out in [AI-assisted
-development](AI-ASSISTED-DEVELOPMENT.md), *"When there is no second reviewer"*, in [Secure
-development](SECURE-DEVELOPMENT.md), *"Self-review is a documented deviation, not a satisfied
-control"*, and in [Code quality](CODE-QUALITY.md), *"When review is self-review"*. Note what it does
-not do: it does not drop the practice. The requirement stays unmet, named and dated, with an event
-that ends the arrangement.
+sense that implies an independent audit. The entry is worked out in
+[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md), *"When there is no second reviewer"*, in
+[Secure development](SECURE-DEVELOPMENT.md), *"Self-review is a documented deviation, not a
+satisfied control"*, and in [Code quality](CODE-QUALITY.md), *"When review is self-review"*. Note
+what it does not do: it does not drop the practice. The requirement stays unmet, named and dated,
+with an event that ends the arrangement.
 
 ### What tailoring is not
 
@@ -244,10 +245,9 @@ neither can be shown wrong, so the ranking cannot be reviewed -- only overruled.
 checkable: you can be shown to have made a check blocking before anything recorded what it examined,
 or to have written a rule saying "restricted data" before anything defined the term. The strongest
 instance is why the rule reads this way -- with no receipts, every severity ranking is unfalsifiable,
-so instrumentation comes before ranking ([Case study: a drift
-audit](../CASE-STUDY-drift-audit.md), *"A control with no receipts cannot be ranked, fixed, or
-defended"*). A prioritization scheme that cannot be checked is the same defect named elsewhere as a
-control that cannot fail.
+so instrumentation comes before ranking ([Case study: a drift audit](../CASE-STUDY-drift-audit.md),
+*"A control with no receipts cannot be ranked, fixed, or defended"*). A prioritization scheme that
+cannot be checked is the same defect named elsewhere as a control that cannot fail.
 
 This is a build order, not a reading order, and the two diverge on purpose: the data-class table
 sits inside the document [the overview](OVERVIEW.md) puts last, while several earlier documents
@@ -264,19 +264,20 @@ resolve against it.
 | **L4 -- receipts and proof of failure** | Units examined printed on every run, zero-units-examined exiting non-zero, and a date somebody watched each gate refuse something | Ranking is unfalsifiable until this exists, which is why it precedes the measurement layer rather than following it | [CI and standards](../CI-AND-STANDARDS.md), *Receipts: count what the check examined, never what it found*; [*Attack the control with the failure class it was built to catch*](../CI-AND-STANDARDS.md#attack-the-control-with-the-failure-class-it-was-built-to-catch) |
 | **L5 -- measurement** | Mutation on changed code, coverage visibility, duplication, complexity triage | Last, and never a gate on its own -- reversed, you get a dashboard and no controls | [The CISO summary](CISO-SUMMARY.md), *What to fund first*; [Code quality](CODE-QUALITY.md), *Tier 2 -- the measurement layer, which is guidance and triage* |
 
-**Take each document's own adoption list when you reach that document.** [AI-assisted
-development](AI-ASSISTED-DEVELOPMENT.md#how-to-adopt-this), [Code
-quality](CODE-QUALITY.md#how-to-adopt-this) and [Dependency
-integrity](DEPENDENCY-INTEGRITY.md#how-to-adopt-this) each carry a *"How to adopt this"* section
-ordered by its own leverage, and each opens with a measurement rather than a build. The layer table is the
-cross-document order those three lists cannot express. [Secure development](SECURE-DEVELOPMENT.md)
-no longer carries one; its own opening points at the two sections to start from.
+**Take each document's own adoption list when you reach that document.**
+[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md#how-to-adopt-this),
+[Code quality](CODE-QUALITY.md#how-to-adopt-this) and
+[Dependency integrity](DEPENDENCY-INTEGRITY.md#how-to-adopt-this) each carry a
+*"How to adopt this"* section ordered by its own leverage, and each opens with a measurement rather
+than a build. The layer table is the cross-document order those three lists cannot express.
+[Secure development](SECURE-DEVELOPMENT.md) no longer carries one; its own opening points at the two
+sections to start from.
 
 Two sequencing errors are worth naming. Adopting the tier ladder and the control dials before the
 floor is real produces ceremony over a hole ([AI-assisted development](AI-ASSISTED-DEVELOPMENT.md),
 *"How to adopt this"*). And a cost figure quoted from before a gate was repaired is unmeasured:
-placement is a derived value and must be re-derived after any repair ([CI and
-standards](../CI-AND-STANDARDS.md), *"A cost model built on a broken gate is fiction"*).
+placement is a derived value and must be re-derived after any repair
+([CI and standards](../CI-AND-STANDARDS.md), *"A cost model built on a broken gate is fiction"*).
 
 **Do not report adoption as a count of controls marked built.** It is named as a non-verdict in
 [Secure development](SECURE-DEVELOPMENT.md#the-security-anti-metrics). The queue is three deep
@@ -291,15 +292,15 @@ an unordered backlog.
 A rule that depends on somebody remembering it is a rule you will lose. The set's position on what
 counts is narrow: **a gate is a deterministic check with an exit code** -- a hook, a deny-list, a
 blocking pipeline job, a validate-and-run command. It is never an instruction to a model to be
-careful, and an AI-run review is advisory input a human arbitrates, never a gate. [AI-assisted
-development](AI-ASSISTED-DEVELOPMENT.md), *"Controls as dials"*.
+careful, and an AI-run review is advisory input a human arbitrates, never a gate.
+[AI-assisted development](AI-ASSISTED-DEVELOPMENT.md), *"Controls as dials"*.
 
 **Only blocking checks count as coverage.** Advisory and scheduled-only jobs are useful and are not
-coverage, and the two are indistinguishable from a green badge ([CI and
-standards](../CI-AND-STANDARDS.md), *"Blocking and advisory are not the same coverage"*). Where a
-rule cannot be automated, record it as convention-only and therefore unenforced rather than letting
-it pass as covered ([CI and standards](../CI-AND-STANDARDS.md), *"Ship the guard the same day as the
-rule"*).
+coverage, and the two are indistinguishable from a green badge
+([CI and standards](../CI-AND-STANDARDS.md), *"Blocking and advisory are not the same coverage"*).
+Where a rule cannot be automated, record it as convention-only and therefore unenforced rather than
+letting it pass as covered ([CI and standards](../CI-AND-STANDARDS.md), *"Ship the guard the same
+day as the rule"*).
 
 ### What a gate has to do to count
 
@@ -311,16 +312,16 @@ rule"*).
   with the failure class it was built to catch"*.
 - **One check over every instance**, not a control applied where somebody remembered it.
   [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md), *"Control parity is a review gate"*.
-- **Audit mode first** for anything that can reject. [Dependency
-  integrity](DEPENDENCY-INTEGRITY.md), *"Roll a blocking verification control out in audit mode
-  first"*.
+- **Audit mode first** for anything that can reject.
+  [Dependency integrity](DEPENDENCY-INTEGRITY.md), *"Roll a blocking verification control out in
+  audit mode first"*.
 - **Its own tooling installed from a checked-in lock**, inside the machinery that regenerates your
   runtime locks. [Code quality](CODE-QUALITY.md), *"Install the gate's own tooling from a checked-in
   lock"*.
 
 A control that exists only locally is advisory in practice regardless of intent. The ways a gate
-lies while reporting green belong to [CI and standards](../CI-AND-STANDARDS.md) and [the leak
-gate](../LEAK-GATE.md); read them there.
+lies while reporting green belong to [CI and standards](../CI-AND-STANDARDS.md) and
+[the leak gate](../LEAK-GATE.md); read them there.
 
 ### What you cannot automate, and must therefore give to a person
 
@@ -333,11 +334,12 @@ green control plane otherwise implies coverage it does not have.
 - **The explain-it floor.** [Human review of code](REVIEW-DEPTH.md), *"The floor: reject code you
   cannot explain"*.
 - **The outbound channel.** A commit-time scanner sees what lands in a commit, not an outbound
-  query, a tool-server call or a fetch argument. [AI-assisted
-  development](AI-ASSISTED-DEVELOPMENT.md), *"A commit scanner is not a live interceptor"*.
+  query, a tool-server call or a fetch argument.
+  [AI-assisted development](AI-ASSISTED-DEVELOPMENT.md), *"A commit scanner is not a live
+  interceptor"*.
 - **Independent external review.** Among the controls an internally-run pipeline cannot substitute
-  for, and its absence caps what you may honestly claim. [Secure
-  development](SECURE-DEVELOPMENT.md), *"Independent external verification"*.
+  for, and its absence caps what you may honestly claim.
+  [Secure development](SECURE-DEVELOPMENT.md), *"Independent external verification"*.
 
 ---
 
@@ -384,10 +386,10 @@ aspirational, and it returns you to step 1 with the same worksheet.
 ## Worked example: dependency integrity, end to end
 
 Four rows of one document, through all five steps -- not the whole document, and not the required
-scope of a first pass. [Dependency integrity](DEPENDENCY-INTEGRITY.md) is the example because [the
-overview](OVERVIEW.md) calls its controls the most mechanical of the set and the one most likely to
-be adopted close to whole, and because it holds both a clear Partial and a control that can never be
-automated.
+scope of a first pass. [Dependency integrity](DEPENDENCY-INTEGRITY.md) is the example because
+[the overview](OVERVIEW.md) calls its controls the most mechanical of the set and the one most
+likely to be adopted close to whole, and because it holds both a clear Partial and a control that
+can never be automated.
 
 ### Step 1 -- the baseline
 
@@ -438,8 +440,8 @@ things here -- which manifest to fix first, and whether the lock work happens th
 ### Step 4 -- automate
 
 - **One deterministic parity check over all instances**, failing when a manifest exists with no
-  corresponding audit entry, rather than a recurring manual sweep. [*Every manifest in the repository
-  needs its own audit net*](DEPENDENCY-INTEGRITY.md#every-manifest-in-the-repository-needs-its-own-audit-net).
+  corresponding audit entry, rather than a recurring manual sweep.
+  [*Every manifest in the repository needs its own audit net*](DEPENDENCY-INTEGRITY.md#every-manifest-in-the-repository-needs-its-own-audit-net).
 - **Audit mode first** for anything that can reject an artifact, because a control that blocks
   legitimate work on day one gets switched off permanently and the second attempt is harder to fund.
   [*Roll a blocking verification control out in audit mode first*](DEPENDENCY-INTEGRITY.md#roll-a-blocking-verification-control-out-in-audit-mode-first).
@@ -452,9 +454,10 @@ things here -- which manifest to fix first, and whether the lock work happens th
 
 **The refusal.** Verify-before-add is not automatable. A package that genuinely exists, publishes
 files, is years old and is served under its own canonical name can still be a different project than
-the one intended, and it passes everything ([*"The hallucinated package, and why an AI coding
-assistant makes it routine"*](DEPENDENCY-INTEGRITY.md#the-hallucinated-package-and-why-an-ai-coding-assistant-makes-it-routine)). It leaves the automation column and becomes a named human obligation
-in the project instruction file.
+the one intended, and it passes everything
+([*"The hallucinated package, and why an AI coding assistant makes it routine"*](DEPENDENCY-INTEGRITY.md#the-hallucinated-package-and-why-an-ai-coding-assistant-makes-it-routine)).
+It leaves the automation column and becomes a named human obligation in the project instruction
+file.
 
 ### Step 5 -- wire it in
 
