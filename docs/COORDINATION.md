@@ -671,6 +671,25 @@ no conflict markers; `--write-tree` exited 1 and named `docs/standards/SECURE-DE
 `.docx`. The old form's exit code is not a statement about mergeability. It is the third instrument
 in this file with that property, after `isRunning` and a two-dot diff read as a merge preview.
 
+**Nor is a two-dot diff a merge preview, and it fails in the more alarming direction.**
+`git diff <main> <branch>` compares two *trees*. Against a branch that is far behind, most of what it
+reports as deletions is simply `main`'s own later work, which the branch has never seen and a merge
+would never touch:
+
+```powershell
+git diff --stat main <branch>                # TREE comparison. Says nothing about merging.
+git merge-tree --write-tree main <branch>    # the merge. This is the one that answers the question.
+```
+
+Measured on the same branch, 63 commits behind: the two-dot diff reported 1,478 insertions and 3,247
+deletions across 46 files, including two entire test files -- and was briefly read as what landing it
+would do. The actual merge touches **two** files. The alarming number was a fact about how stale the
+branch was, not about what merging it would destroy.
+
+The two errors point opposite ways -- the old `merge-tree` under-reports danger, a two-dot diff wildly
+over-reports it -- and they were made by two different sessions on the same branch within an hour of
+each other. Neither is a reading of the merge. **To ask what a merge would do, compute the merge.**
+
 Even from the correct form, a silent pass means only that the lines do not collide -- never that the
 changes are not redundant.
 
