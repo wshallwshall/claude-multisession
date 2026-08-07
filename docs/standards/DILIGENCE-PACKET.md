@@ -11,7 +11,7 @@ proves.**
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **The commonest mistake in vendor diligence is reading an audit report or a certificate as an answer
 about the product.** Those instruments examine how a company governs

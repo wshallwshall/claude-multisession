@@ -10,7 +10,7 @@ and how to tell whether you got it.**
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **Nothing new is going wrong with your code. There is just far more of it, arriving faster, and
 looking finished before anyone has checked it.** Injection, weak authorization, bad dependencies,
