@@ -448,6 +448,18 @@ Branch does not join them either: the two rosters reported different branches fo
    listed session with `isRunning: false` is idle, not gone -- `send_message` delivers to it
    normally, and the message waits as a user turn until that session next runs. Skipping on it
    silently drops nearly every peer, which is the failure this step exists to prevent.
+
+**Measured, and it runs the opposite way to the discarded rule.** Against the live MCP: a peer with
+`isRunning: false` returned `Message sent.`, while a peer with `isRunning: true` returned `queued
+... will be processed after the in-flight turn`. The flag appears to mean "a turn is executing right
+now", so **true** is the value that delays delivery and **false** is the value that delivers
+immediately. The old rule did not merely guess badly, it was closest to inverted.
+
+**So attempt the send and let the return value be the evidence.** It answers the question directly
+where the flag only gestures at it, and it costs one call. A wrong id fails loudly (`Session <id>
+not found.`), so a failed attempt is self-announcing rather than silent. Any TSV row recorded
+`NOT_RUNNING` under the old rule is a false negative and should not be read as "this peer was
+unreachable".
 3. Send to the `sessionId` from that row. A usable messaging id starts with `local_`.
 4. Message at most the peers you actually reached, one message each.
 

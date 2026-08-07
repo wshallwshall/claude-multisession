@@ -1,9 +1,13 @@
 # Running a large security-standard assessment with AI agents
 
-**How to assess a codebase against OWASP ASVS 5.0 -- several hundred individually verifiable
-requirements -- when most of the scoring is done by Claude Code sessions rather than by one person
-reading code all week. The hard part is not the volume. It is that an agent which did no work
-produces an answer indistinguishable from one that did.**
+**Several hundred requirements is not the hard part. The hard part is that an agent returns a
+confident, well-cited verdict for every one of them, and the wrong ones are indistinguishable from
+the right ones by reading.**
+
+Written for whoever has to run one of these and then answer for the result. The worked standard is
+OWASP ASVS 5.0 -- a catalog of several hundred individually verifiable security requirements for web
+applications and services -- and most of what is here transfers to any standard large enough that
+one person cannot read it carefully in a week.
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/ASVS-ASSESSMENT.md)
@@ -14,18 +18,19 @@ produces an answer indistinguishable from one that did.**
 
 ## In short
 
-**An agent will produce confident, on-topic, well-structured reasoning about a security requirement
-whether or not it read the requirement, whether or not the file it cites supports the claim, and
-whether or not the search it ran could have returned anything.** Fluency is not the failure mode
-most review processes are built to catch. A person who has not done the work usually looks like
-someone who has not done the work; an agent that has not done the work looks exactly like one that
-has.
+**Almost every defect this method exists to catch is an instrument answering a narrower question
+than the one you asked, and looking clean while it does it.** We scored a batch of requirements
+against condensed wording. A requirement carrying two conditions had become a summary carrying one,
+so every cell under it was honestly reasoned and still wrong, and nothing in the output said so. A
+condensed requirement, a neighbouring requirement, a search that could not have matched, a control
+that ships switched off: each produces a verdict that is internally consistent, well argued, and
+answering a question nobody asked.
 
-Underneath almost every trap in this document is one recurring shape: **an instrument answering a
-narrower question than the one asked, and looking clean while doing it.** A condensed requirement, a
-neighbouring requirement, a search that could not have matched, a control that ships switched off --
-each produces a verdict that is internally consistent, well argued, and answering the wrong
-question. Nothing in the output signals it.
+Fluency is what makes it stick. An agent will produce on-topic, well-structured reasoning about a
+requirement whether or not it read the requirement, whether or not the file it cites supports the
+claim, and whether or not the search it ran could have returned anything. A person who has not done
+the work usually looks like someone who has not done the work. An agent that has not done the work
+looks exactly like one that has.
 
 So what follows is not a scoring rubric. It is a set of forcing functions that make the difference
 between a real verdict and a fluent one mechanically visible. The order matters, because each step
