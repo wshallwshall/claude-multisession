@@ -219,6 +219,20 @@ the session already keeps. That is deliberate: an explicit claim tool sat in the
 long time and was used exactly zero times, because *a coordination step you must remember is a
 coordination step you will skip*. Anything built on voluntary declaration decays to nothing.
 
+### An all-clear has to be said out loud
+
+`-File <path>` on the human path, with nobody else in that file, used to print **nothing** and exit 0.
+That is byte-identical to what the script produces when it dies before answering -- and this is the
+command you are told to run *before* starting a chunk of work, so the reading that costs you is the
+reassuring one.
+
+It now states the all-clear and names its evidence: the file it cleared, and how many peer worktrees
+were examined to clear it. An all-clear computed over zero worktrees is a far weaker claim than one
+computed over eleven, and only the count tells you which one you are holding.
+
+The `-Json` branch had already been fixed for exactly this failure, one line above -- **a fix applied
+to one branch of an `if` is not a fix**. Look for the sibling path every time.
+
 ### The committed-work diff needs both dots
 
 Neither diff form is correct alone, and each is wrong in the opposite direction:
