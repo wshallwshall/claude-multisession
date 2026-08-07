@@ -10,7 +10,7 @@ code, and the one where a wrong answer is expensive in both directions.**
 
 ---
 
-## In short
+## TLDR/BLUF
 
 **Every answer that fails here is a quantity -- some share of the code a human reads.** A percentage
 cannot be assigned to the change in front of you, so "review 30 percent" means the easy 30 percent,
