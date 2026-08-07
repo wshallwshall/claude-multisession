@@ -169,7 +169,7 @@ remediation clock.
 | What to require of your own developers | [The CISO summary](CISO-SUMMARY.md) |
 | The process a build must satisfy, including dynamic testing, the data flow diagram and disclosure | [Secure development](SECURE-DEVELOPMENT.md) |
 | SBOM, provenance, and what gets published | [Dependency integrity](DEPENDENCY-INTEGRITY.md) |
-| Whether a written rule can actually stop a change | [What is actually enforced](CI-ENFORCEMENT.md) |
+| Whether a written rule can actually stop a change | [Automated compliance in CI](CI-ENFORCEMENT.md) |
 
 **None of this certifies anything.** MIT licensed. Adapt it, put your own name on it, and delete
 anything you cannot stand behind.

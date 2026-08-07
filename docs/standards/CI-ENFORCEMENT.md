@@ -1,7 +1,8 @@
-# Which of your rules can actually stop a change, and what is that worth?
+# Automated compliance in CI: which of your rules can actually stop a change
 
-**A rule that is written down and a rule that cannot be skipped are different things, and most
-organizations cannot say which of theirs are which.**
+**A rule that is written down and a rule that cannot be skipped are different things. Most
+organizations cannot say which of theirs are which, and the answer is a setting somebody can read
+this afternoon.**
 
 > **Take a copy:**
 > [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/standards/CI-ENFORCEMENT.md)
@@ -10,132 +11,89 @@ organizations cannot say which of theirs are which.**
 
 ---
 
-## What a pipeline is, and what your team means by CI
+## In short
 
-Somebody proposes a change to the shared code. A server automatically runs checks against it. If a
-check is wired to block, a failure stops the change from joining. That is the whole mechanism. Your
-team calls this CI -- continuous integration -- or the pipeline, or the build system. Which checks
-run, and which can stop a change, are separate settings your team chose, not properties of the
-tooling.
+**One question separates a control from a report: does failing it stop the change?** A tool
+inventory, a dashboard and a scan that runs overnight and emails somebody all describe work being
+done. None of them is a rule being enforced. Which checks can stop a change is a setting in your
+pipeline rather than a property of the tools, and it is routinely different from what the people
+accountable for it believe.
 
-**Two doors, one page.** Accountable for security: start at [Blocking or
-advisory](#blocking-or-advisory), then [The three
-buckets](#the-three-buckets-and-the-rule-that-sorts-them) -- which of your controls are real, and
-why most were never going to be. Running a development team and justifying the spend: start at [What
-it buys you, and what it costs](#what-it-buys-you-and-what-it-costs), where the deciding argument is
-arithmetic about your headcount, not anybody's research.
+Sorted that way, most of a compliance program does not automate. Of the roughly 150 controls this
+document set asks for, about five in six would not stop anything: most need human judgment that no
+configuration supplies, and the rest describe work a machine could decide that nobody has wired to
+a block.
 
----
+Three things to do, in order. None of them needs a project:
 
-## What it buys you, and what it costs
+1. **Get the list of checks that can stop a change, read from today's configuration** rather than
+   from anyone's memory or from a list of tools you own.
+2. **Prove one of them can fail.** Plant a violation on a branch, watch the build go red, record
+   the date. A gate nobody has ever seen fail is indistinguishable from no gate.
+3. **Find out who can push a change through when a check is red**, whether every use is logged, and
+   whether anyone reads the log. Overrides are on by default in most setups.
 
-*Marked **[external]** is published research, with its limitation attached. The rest is this page's
-own reasoning.*
+What automation buys is narrower than the pitch: a class of failure stops recurring without anyone
+remembering to look for it, and reviewer hours move off mechanical findings onto judgment. Fund it
+on those two. The cost-avoidance multiple you have heard quoted does not survive contact with its
+sources, and neither does the delivery-speed claim -- [what it buys you, and what it
+costs](#what-it-buys-you-and-what-it-costs).
 
-- **The volume rises and the review budget does not.** If an AI coding assistant writes a meaningful
-  share of the code, the change arriving at review has gone up and the hours available to read it
-  have not. That is subtraction about your own headcount, not a research finding. Reviewer attention
-  is the constraint now.
-- **Your reviewers stop doing machine work.** Where mechanical findings are produced automatically
-  and attached to the change, review comments move off mechanical matters and onto design and intent
-  **[external]** (Sadowski et al., *Communications of the ACM*, 2018; Bacchelli and Bird, ICSE 2013
-  -- evidence that attention moves, not that review gets better).
-- **Fixing it before it merges takes fewer steps than fixing it after release -- a claim about
-  steps, not about cost.** Caught after release, the same problem costs a release, possibly a
-  rollback, possibly a conversation with people outside your team. That is the entire claim. The
-  ratio you have heard -- ten times, a hundred times -- traces to a study nobody has ever produced,
-  and the largest attempt to test the effect, across 171 projects, did not find it **[external]**
-  (Menzies, Nichols et al., *Empirical Software Engineering*, 2016, measuring effort on the issue
-  itself, not the release work around it).
-- **It takes the decision out of the moment.** A blocking check resolves "is this good enough"
-  against structure rather than against whoever argues hardest or ranks highest, and it makes no
-  exception late on a Friday. That is the argument to make to your own engineers: the check keeps
-  the deadline from being negotiated out of their work. It holds only as far as the people who can
-  override it -- the third question below.
-
-What it costs:
-
-- **Pipeline time, charged to the people it was meant to help.** Every check adds waiting between
-  written and shipped, and a broken blocking check stops everyone, not only the change that broke
-  it. Adopting a pipeline may not speed delivery at all: the most direct study found no quickening
-  of merged changes **[external]** (Bernardo et al., preprint, 2023, across open-source projects,
-  which does not transfer directly to a company).
-- **The first day of a new gate is a wall of findings you already had.** A blocking check applied to
-  existing code fails on everything it inherits. Run it reporting-only first, then hold only what
-  the change introduced ([How to adopt these, step
-  4](ADOPTING-THESE.md#step-4-automate-wherever-possible-so-it-stays-done)).
-- **Attention, which is scarcer than minutes.** An advisory job nobody reads is worse than absent,
-  because the scorecard still counts it (*this set's own rule, from [Code
-  quality](CODE-QUALITY.md)*). One large engineering organization got there by measurement: its
-  developers ignored non-blocking warnings, so its policy became to make a check stop the change or
-  remove it **[external]** (Sadowski et al., 2018, one organization's policy, not a controlled
-  study).
-- **The checks are themselves software**, with versions, breakages and upgrade costs of their own.
-- **A gate that cannot fail is worse than none.** It spends the credibility of the real ones.
-
-Automation does not improve code. It stops things that used to work from quietly stopping, and it
-redirects human attention off work a machine does better. Only the second is an improvement in
-anyone's judgment.
-
-What you are buying is narrow and real: a class of failure that stops recurring without anyone
-remembering to look for it, and reviewer hours moved onto judgment only people can do. Fund it on
-those two.
+Two ways through the rest of this page. Accountable for security: [the one
+question](#the-one-question-does-failing-it-stop-the-change), then [what to
+ask](#what-to-ask-and-what-a-good-answer-sounds-like). Running the team and justifying the spend:
+start with the arithmetic in [what it buys you, and what it
+costs](#what-it-buys-you-and-what-it-costs).
 
 ---
 
-## Blocking or advisory
+## The one question: does failing it stop the change?
 
-One question separates a control from a report: does failing it stop the change?
+Somebody proposes a change to the shared code. A server runs checks against it automatically. If a
+check is wired to block, a failure stops the change from joining. Your team calls that CI --
+continuous integration -- or the pipeline, or the build system. Which checks run, and which can
+stop a change, are separate settings somebody chose.
 
-A long tool inventory reads as security posture, but advisory and scheduled-only jobs never turn a
-proposed change red. Counting them as coverage inflates the number without adding a gate -- and
-**nobody investigates a green check** ([CI and
+Ask two questions of each control you are relying on, in this order:
+
+- **Can a machine decide this without judgment?** If no, it is bucket 3, and nothing you configure
+  will move it.
+- **Is the check wired so that a failure stops the change?** If no, it is bucket 2, whatever the
+  tool is technically capable of.
+
+What survives both is **bucket 1**: a machine deciding, with failure stopping the change.
+**Bucket 2** is a machine that could decide, wired so that nothing stops -- advisory jobs,
+scheduled scans, anything that reports into a channel. **Bucket 3** is judgment, permanently.
+
+Which bucket a control lands in is as much a fact about your configuration as about the control,
+and the gap between the two is where money goes without buying enforcement. Advisory and
+scheduled-only jobs never turn a proposed change red, so counting them as coverage inflates the
+number without adding a gate ([CI and
 standards](../CI-AND-STANDARDS.md#blocking-and-advisory-are-not-the-same-coverage)).
 
-A run that examined nothing certifies nothing -- the difference between "found nothing" and "looked
-at nothing".
+Three things survive the sort and still catch people:
 
-> **A green gate is evidence only if you have proved it can *see* that class.**
+- **A pass proves nothing until you have proved the check can see that class of problem.** A run
+  that examined nothing and a run that found nothing look identical from outside, and nobody
+  investigates a green check ([the leak gate](../LEAK-GATE.md#the-caveat-that-matters-most)).
+- **A blocking, machine-enforced check can still be about nothing.** Requiring an approval passes
+  every test above and establishes only that somebody clicked a button; whether anyone read
+  anything is bucket 3. At least fifteen controls in this set have that shape.
+- **Bucket 1 is not therefore handled.** A secret scan is mechanical only once a person has defined
+  what counts as sensitive, and its green says nothing about that definition being right.
 
--- [the leak gate](../LEAK-GATE.md#the-caveat-that-matters-most). Plant a violation. Watch it fail.
-Then trust the pass.
-
----
-
-## The three buckets, and the rule that sorts them
-
-The rule is two questions, in order. Can a machine decide this without judgment? If no, it is
-bucket 3, and nothing you configure will move it. Is the check wired so that a failure stops the
-change? If no, it is bucket 2, whatever the tool is technically capable of.
-
-**Bucket 1** is a machine deciding, with failure stopping the change. **Bucket 2** is a machine that
-could decide, wired so that nothing stops. **Bucket 3** is judgment, permanently. Which bucket a
-control lands in is a fact about your configuration, not only about the control -- and that gap is
-the theater to detect and the spend to recover.
-
-Existence and substance are different things. Requiring an approval is a real, blocking,
-machine-enforced check, and all it establishes is that somebody clicked a button. Whether anyone
-read anything is bucket 3. At least fifteen controls here have that shape, and the green check on
-the shape is what stops the substance being examined.
-
-Nor is bucket 1 therefore handled: a secret scan is mechanical only once a person has defined what
-counts as sensitive, and its green says nothing about that definition being right.
-
-What lands in bucket 3 needs people or governance instead, which makes it a funding decision rather
-than a tooling decision. The long form of that list is in [How to adopt these, step
+Bucket 3 needs people or governance instead, which makes it a hiring and process decision rather
+than a tooling one. The long form of that list is in [How to adopt these, step
 4](ADOPTING-THESE.md#step-4-automate-wherever-possible-so-it-stays-done).
-
-> **A scanner cannot see a policy judgment.**
 
 ---
 
 ## This set, sorted once
 
-These documents ask for at least 150 separate controls. Sorted by the rule above -- an example of
-the sorting, not an inventory -- roughly five in six describe something that would not stop a
-change: 96 need judgment that no configuration will move, and 30 describe work a machine could
-decide but that nothing here requires anyone to wire to a block. Twenty-four are described as
-stopping the change. Where each of yours lands is your configuration's answer, not this page's.
+These documents ask for at least 150 separate controls. Sorted by the two questions above, 96 need
+judgment that no configuration will move and 30 describe work a machine could decide but that
+nothing here requires anyone to wire to a block. Twenty-four are described as stopping the change.
+The table below is an example of the sorting rather than the inventory itself.
 
 | Bucket | The control | Why it lands there |
 |---|---|---|
@@ -145,22 +103,76 @@ stopping the change. Where each of yours lands is your configuration's answer, n
 | **3** | Whether the threat model is any good, not whether one exists | A check confirms one exists; nothing confirms it is good |
 | **3** | Whether anyone on the team can explain the code | The textbook case of what a machine cannot assess |
 
-Read the installer row against its half-measure: writing component fingerprints into a file, and
-making the installer refuse anything that does not match, are the same control one setting apart.
-Only one stops anything.
+Read the installer row against its half-measure. Writing component fingerprints into a file, and
+making the installer refuse anything that does not match, are the same control one setting apart --
+and only one of them stops anything.
 
-The sorting is the point, not the number. Take your own list, ask the two questions of each, and
-count -- an afternoon's work, and the answer is about your team.
+Take your own list, ask the two questions of each entry, and total the buckets. It is an
+afternoon's work, and the answer is about your team rather than about this page.
 
 *Sorted 2026-08-06. Split the compound rules differently and you get a different number; the ratio
 transfers, not the count. No row describes any organization's pipeline.*
 
 ---
 
+## What it buys you, and what it costs
+
+*Marked **[external]** is published research, with its limitation attached. The rest is this page's
+own reasoning.*
+
+- **The volume rises and the review budget does not.** If an AI coding assistant writes a
+  meaningful share of the code, the change arriving at review has gone up and the hours available
+  to read it have not. Subtraction about your own headcount rather than a research finding, and it
+  makes reviewer attention the binding constraint.
+- **Your reviewers stop doing machine work.** Where mechanical findings are produced automatically
+  and attached to the change, review comments move off mechanical matters and onto design and
+  intent **[external]** (Sadowski et al., *Communications of the ACM*, 2018; Bacchelli and Bird,
+  ICSE 2013 -- evidence that attention moves, not that review gets better).
+- **Fixing it before it merges takes fewer steps than fixing it after release.** That is a claim
+  about steps, not about cost: caught after release, the same problem costs a release, possibly a
+  rollback, possibly a conversation with people outside your team. The ratio you have heard -- ten
+  times, a hundred times -- traces to a study nobody has ever produced, and the largest attempt to
+  test the effect, across 171 projects, did not find it **[external]** (Menzies, Nichols et al.,
+  *Empirical Software Engineering*, 2016, measuring effort on the issue itself, not the release
+  work around it).
+- **It takes the decision out of the moment.** A blocking check resolves "is this good enough"
+  against structure rather than against whoever argues hardest or ranks highest, and it makes no
+  exception late on a Friday. That is also the argument to make to your own engineers: the check
+  keeps the deadline from being negotiated out of their work. It holds only as far as the people
+  who can override it -- the third question below.
+
+What it costs:
+
+- **Pipeline time, charged to the people it was meant to help.** Every check adds waiting between
+  written and shipped, and a broken blocking check stops everyone, not only the change that broke
+  it. Adopting a pipeline may not speed delivery at all: the most direct study found no quickening
+  of merged changes **[external]** (Bernardo et al., preprint, 2023, across open-source projects,
+  which does not transfer directly to a company).
+- **The first day of a new gate is a wall of findings you already had.** A blocking check applied
+  to existing code fails on everything it inherits. Run it reporting-only first, then hold only
+  what the change introduced ([How to adopt these, step
+  4](ADOPTING-THESE.md#step-4-automate-wherever-possible-so-it-stays-done)).
+- **Attention, which is scarcer than minutes.** An advisory job nobody reads is worse than absent,
+  because the scorecard still counts it (*this set's own rule, from [Code
+  quality](CODE-QUALITY.md)*). One large engineering organization reached the same conclusion by
+  measurement: its developers ignored non-blocking warnings, so its policy became to make a check
+  stop the change or remove it **[external]** (Sadowski et al., 2018, one organization's policy,
+  not a controlled study).
+- **The checks are themselves software**, with versions, breakages and upgrade costs of their own.
+- **A gate that cannot fail costs more than no gate**, because it spends the credibility of the
+  ones that work.
+
+Automation does not make code better. It stops a class of failure from quietly resuming and moves
+human attention onto work a machine cannot do, which is the whole case for funding it. Fewer
+defects overall, faster delivery, an avoided cost multiple: none of those is supported.
+
+---
+
 ## What to ask, and what a good answer sounds like
 
-The same five questions serve both chairs. If you are not accountable for the team, you are
-interrogating; if you are, you are diagnosing. The bad-answer column is the trap list.
+The same five questions work from either chair -- interrogating somebody else's team, or diagnosing
+your own. The bad answers are the plausible ones, which is why they are worth being able to
+recognize.
 
 | Ask | A good answer | A bad answer |
 |---|---|---|
