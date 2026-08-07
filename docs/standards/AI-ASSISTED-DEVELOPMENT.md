@@ -128,8 +128,8 @@ correctness, and the gap is widest exactly when the author reviews their own ass
 the strongest argument for keeping a review step you might otherwise drop for speed, and for the
 adversarial verification pass in section 7.
 
-**It also constrains what you may say about your own loop.** The site's rule *"Do not claim a speed or
-quality gain you have not measured here"* in [CI and standards](../CI-AND-STANDARDS.md) applies to
+**It also constrains what you may say about your own loop.** The site's rule [*"Do not claim a speed or
+quality gain you have not measured here"*](../CI-AND-STANDARDS.md#do-not-claim-a-speed-or-quality-gain-you-have-not-measured-here) in [CI and standards](../CI-AND-STANDARDS.md) applies to
 your impressions of the loop, not only to published figures.
 
 ---
@@ -261,9 +261,10 @@ item is independent of blast radius.
 
 Three of these are already published in full on this site and are deliberately not restated here.
 For the deny-list-plus-content-scan pairing, everything-is-data, and the explain-it bar, see
-[CI and standards](../CI-AND-STANDARDS.md) -- *"A path deny-list is not a content control"*,
-*"Everything the agent reads is data, never instructions"*, and *"Reject code you cannot explain --
-assistance in reaching the explanation is fine"*.
+[*"A path deny-list is not a content control"*](../CI-AND-STANDARDS.md#a-path-deny-list-is-not-a-content-control),
+[*"Everything the agent reads is data, never instructions"*](../CI-AND-STANDARDS.md#everything-the-agent-reads-is-data-never-instructions),
+and [CI and standards](../CI-AND-STANDARDS.md), *"Reject code you cannot explain -- assistance in
+reaching the explanation is fine"*.
 
 For a working scanner, what it catches, and the class it can never catch, see
 [The leak gate](../LEAK-GATE.md).
@@ -347,10 +348,10 @@ the standard; the sections after it are the footnotes.
 [CI and standards](../CI-AND-STANDARDS.md) owns where to place each gate, how to keep a local run
 and the pipeline agreeing, and how to prove a green gate can actually fail. In particular:
 
-- *"A green local run is not a green pipeline"*
-- *"Scoped-green is not the gate"*
-- *"A check that cannot fail is not a control"*
-- *"Ship the guard the same day as the rule"*
+- [*"A green local run is not a green pipeline"*](../CI-AND-STANDARDS.md#a-green-local-run-is-not-a-green-pipeline)
+- [*"Scoped-green is not the gate"*](../CI-AND-STANDARDS.md#scoped-green-is-not-the-gate)
+- [*"A check that cannot fail is not a control"*](../CI-AND-STANDARDS.md#a-check-that-cannot-fail-is-not-a-control)
+- [*"Ship the guard the same day as the rule"*](../CI-AND-STANDARDS.md#ship-the-guard-the-same-day-as-the-rule)
 
 Do not build a second copy of those rules beside this table.
 
@@ -381,7 +382,7 @@ Name the files and seams to be touched, the test to be added, the invariants tha
 the tier. Then review the returned diff **against that plan**; divergence is a review finding, not a
 detail.
 
-The site owns the plan-then-diff rule in [CI and standards](../CI-AND-STANDARDS.md) *"Approve a plan
+The site owns the plan-then-diff rule in [CI and standards](../CI-AND-STANDARDS.md#approve-a-plan-first-then-review-the-diff-against-the-plan) *"Approve a plan
 first, then review the diff against the plan"*.
 
 ### Memory holds facts, never values
@@ -439,7 +440,7 @@ Symptom, then action:
 | A long session approaching its limit | Compact, aiming the summary at interface shape and decisions |
 | Always | Fresh context per task; keep context utilization low; decompose into short trajectories |
 
-[CI and standards](../CI-AND-STANDARDS.md) *"Know when to take manual control back"* owns two more
+[CI and standards](../CI-AND-STANDARDS.md#know-when-to-take-manual-control-back) *"Know when to take manual control back"* owns two more
 things: the threshold for taking manual control back, and the reason grinding in a polluted context
 is the expensive failure rather than a bad suggestion.
 
@@ -455,7 +456,7 @@ that survive a reader who checks.
 
 ### What the agent decides, and what you decide
 
-Owned by [CI and standards](../CI-AND-STANDARDS.md) *"What the agent decides, and what you decide"*,
+Owned by [CI and standards](../CI-AND-STANDARDS.md#what-the-agent-decides-and-what-you-decide) *"What the agent decides, and what you decide"*,
 in a two-column table: the agent commits; you push, open, merge, release, delete and install. Nothing
 about that split is restated here.
 
@@ -469,7 +470,7 @@ Make enumerating them a review step rather than a hope, and prefer one determini
 instances to a recurring manual sweep.
 
 Full rule and the audit finding behind it: [CI and
-standards](../CI-AND-STANDARDS.md) *"Enumerate sibling paths for every control"*.
+standards](../CI-AND-STANDARDS.md#enumerate-sibling-paths-for-every-control) *"Enumerate sibling paths for every control"*.
 
 ### Provenance: record it, and count it before you cite it
 
@@ -495,7 +496,7 @@ it with a commit-time hook **plus** an independent pipeline backstop, so a local
 defeat it.
 
 The general form of this is on the site already -- [CI and
-standards](../CI-AND-STANDARDS.md) *"Measure the adoption of a convention before citing it as
+standards](../CI-AND-STANDARDS.md#measure-the-adoption-of-a-convention-before-citing-it-as-evidence) *"Measure the adoption of a convention before citing it as
 evidence"*. The two deltas above are the parts specific to a provenance trailer.
 
 **Be equally precise about granularity.** A commit trailer records provenance at **commit**
@@ -572,7 +573,7 @@ Keep a claims register holding the exact approved wording next to its evidence, 
 that is not in it.
 
 The register mechanics, the honesty taxonomy behind it, and the aligned / built-to / self-assessed
-vocabulary are all owned by [CI and standards](../CI-AND-STANDARDS.md) *"Say which kind of claim you
+vocabulary are all owned by [CI and standards](../CI-AND-STANDARDS.md#say-which-kind-of-claim-you-are-making) *"Say which kind of claim you
 are making"*. Read that before publishing anything from this document.
 
 ### The attestation posture
@@ -614,8 +615,8 @@ effort. The fix has two parts, and both are necessary:
    is presented; an adversary assumes the conclusion is wrong and hunts for the counterexample that
    proves it.
 
-This site has already measured the same effect from the other direction -- see *"The review pass"*
-and *"Make the reviewer execute the citation, not read it"* in
+This site has already measured the same effect from the other direction -- see [*"The review pass"*](../ASVS-ASSESSMENT.md#the-review-pass)
+and [*"Make the reviewer execute the citation, not read it"*](../ASVS-ASSESSMENT.md#make-the-reviewer-execute-the-citation-not-read-it) in
 [Running a large security-standard assessment with AI agents](../ASVS-ASSESSMENT.md).
 
 ### The shape that keeps a pass independent
