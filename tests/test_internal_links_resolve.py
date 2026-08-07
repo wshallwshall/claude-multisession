@@ -24,6 +24,17 @@ _code_fence_is_not_reported` pins the fix.
 ANCHOR SLUGS follow GitHub's rule: lowercase, drop everything that is not a word character, space or
 hyphen, then spaces to hyphens. GitHub disambiguates repeated headings with a `-1`, `-2` suffix, so a
 link to `#the-files-1` is accepted when `the-files` occurs more than once.
+
+THAT ONE RULE IS ENOUGH ONLY BECAUSE THE TWO RENDERERS AGREE, which was verified rather than
+assumed. These documents are read on github.com AND on the published Jekyll site, each of which
+generates heading ids itself. If they disagreed on a heading, a link would be correct on one surface
+and silently broken on the other, and pinning either rule alone would certify the wrong half.
+Checked against the deployed page on 2026-08-07: `## 1. Five failure modes, and the control for
+each` in `docs/standards/AI-ASSISTED-DEVELOPMENT.md` carries
+`id="1-five-failure-modes-and-the-control-for-each"` on the site -- the leading digit kept,
+character-identical to github.com's slugger. Numbered headings are the case most likely to diverge
+and they do not, so one rule serves both. If a renderer's id generation ever changes, this file goes
+on passing while links break on one surface only; nothing local can see that.
 """
 
 from __future__ import annotations
