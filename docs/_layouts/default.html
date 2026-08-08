@@ -143,11 +143,6 @@
           {%- else -%}
           {%- assign body = content -%}
           {%- endif -%}
-          {#- The interactive standards selector was rendered here, at a sentinel comment in
-              WHICH-STANDARDS-APPLY.md, with a page.url fallback behind it. Both the page and the
-              include went to secure-development-standards in the split, and a Liquid `include` of a
-              missing file is a BUILD ERROR rather than an empty string -- so this is removed rather
-              than left to fail closed on the next build. -#}
           {{ body }}
         </div>
       </main>
