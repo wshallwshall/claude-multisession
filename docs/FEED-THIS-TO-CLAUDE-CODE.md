@@ -191,5 +191,5 @@ Do not reconstruct these from memory -- read them when they become relevant.
 | Worktree rules and the hijack it prevents | [Worktrees](WORKTREES.md) |
 | Claims, locks, presence, overlap | [Coordination](COORDINATION.md) |
 | Which hook fires when, and its failure posture | [Hooks](HOOKS.md) |
-| Getting work through CI without believing false things | [CI and standards](CI-AND-STANDARDS.md) |
-| Standards to hold the resulting code to | [Standards](standards/OVERVIEW.md) |
+| Getting work through CI without believing false things | [CI and standards](https://wshallwshall.github.io/secure-development-standards/CI-AND-STANDARDS.html) |
+| Standards to hold the resulting code to | [Standards](https://wshallwshall.github.io/secure-development-standards/standards/OVERVIEW.html) |

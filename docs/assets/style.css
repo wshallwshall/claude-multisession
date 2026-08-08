@@ -4,13 +4,10 @@
    One hand-written stylesheet, no theme CSS, no web fonts, no CDN. Light and dark are both real:
    the palette lives in custom properties and prefers-color-scheme swaps it.
 
-   ONE PAGE RUNS SCRIPT, and this comment used to say none did. _includes/standards-selector.html
-   carries an inline style block and an inline script for the interactive selector on the standards
-   routing page. It is scoped to .ssel, it declares its own local fallbacks for every custom
-   property below so a saved file:// copy still reads correctly, and it only ever hides and reorders
-   content that is already in the served HTML. Nothing else on the site has a script, and the
-   narrow-screen nav below still refuses one on purpose -- see the note at the media query. Both
-   statements here were corrected in the commit that made them false; a false comment about a
+   NO PAGE RUNS SCRIPT. This comment has now been true, then false, then true again: the interactive
+   standards selector was the single exception, and it left with the standards in the split. The
+   narrow-screen nav below still refuses a script on purpose -- see the note at the media query.
+   Each time this claim changed it was corrected in the same commit, because a false comment about a
    control is precisely the defect these documents are about.
 
    The documents this styles carry long PowerShell command lines and wide tables, so the layout is
@@ -508,12 +505,11 @@ samp {
    the table itself is made the scroll container. width: max-content lets it size to its content and
    max-width caps it at the column, which is what makes it scroll instead of the page.
 
-   This used to be justified by a claim that nothing on the site ran a script, which is no longer
-   true -- _includes/standards-selector.html runs one on the standards routing page. The rule stands
-   anyway, and now on a better reason: the only script on the site is scoped to one component and
-   does not touch tables, and a table on any of the other twenty pages would still be unwrapped. Do
-   not "fix" this by having the selector's script wrap tables globally; that would make the layout
-   of every page depend on a script the page does not otherwise need. */
+   The justification has survived a reversal worth recording. It rested on nothing running a script;
+   that became false when the standards selector shipped, and true again when the standards left. The
+   rule does not depend on it either way: a table has to scroll on its own because kramdown wraps
+   none of them, and wrapping them from script would make every page's layout depend on a script the
+   page does not otherwise need. */
 .page-content table {
   display: block;
   width: max-content;

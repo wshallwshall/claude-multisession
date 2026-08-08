@@ -211,13 +211,13 @@ class BannedConstructionsAreAbsent(unittest.TestCase):
         files = prose_files()
         self.assertGreaterEqual(
             len(files),
-            25,
+            15,
             f"the prose scan found only {len(files)} pages. The absence check above would pass "
             "against an empty corpus while measuring nothing, so this is what makes it mean "
             "anything. If the docs really did shrink this far, lower the number deliberately.",
         )
         words = sum(len(t.read(t.REPO_ROOT / f).split()) for f in files)
-        self.assertGreater(words, 50_000, f"only {words} words scanned; the corpus is ~170,000.")
+        self.assertGreater(words, 30_000, f"only {words} words scanned; the corpus is ~170,000.")
 
 
 class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
@@ -279,20 +279,25 @@ class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # Reported, and ratcheted. These may not get worse.
 
-# Measured on 2026-08-08 against the corpus at that commit, over 110,092 words of prose in 34 files.
+# Measured on 2026-08-08, AFTER the standards left for their own repository. The figures roughly
+# halved with them, which is the whole point of a ratchet being re-derived rather than carried:
+# keeping the old numbers would have left a gate that could never fail.
+#
+# MEASURE WITH THE FILES STAGED. `prose_files()` reads `git ls-files`, so a baseline taken before a
+# deletion is staged still counts the deleted pages.
 # To change one, run the test: it names the current figure and which direction it moved.
 #
 # These are lower than the figures in the writing plan (which counted 1,397 long sentences) because
 # that count included headings, table rows and block quotes. This one is prose only, for the same
 # reason PD-4 exists: a table row is not a sentence and shortening it is not an improvement.
-BASELINE_LONG_SENTENCES = 833       # sentences over 30 words
-BASELINE_FAT_TABLE_CELLS = 49       # table cells over 40 words
+BASELINE_LONG_SENTENCES = 470       # sentences over 30 words
+BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 
 # How far below baseline a metric may drift before the test asks for the baseline to be lowered.
 # Sized to each metric rather than shared: 40 is noise against 833 and most of the way to zero
 # against 49.
-LONG_SENTENCE_SLACK = 40
-FAT_CELL_SLACK = 8
+LONG_SENTENCE_SLACK = 30
+FAT_CELL_SLACK = 5
 
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 
@@ -326,7 +331,7 @@ class TheReportedMetricsDoNotRegress(unittest.TestCase):
         long_sentences, fat_cells, words = _measure()
         self.assertGreater(
             words,
-            50_000,
+            30_000,
             f"the metric pass examined {words} words of prose, which is too few to have read the "
             "corpus. A measurement over nothing reports zero and reads like a pass.",
         )
