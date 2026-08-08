@@ -143,18 +143,12 @@
           {%- else -%}
           {%- assign body = content -%}
           {%- endif -%}
-          {%- assign sentinel = '<!-- STANDARDS-SELECTOR -->' -%}
-          {%- assign parts = body | split: sentinel -%}
-          {%- if parts.size > 1 -%}
-          {{ parts[0] }}
-          {% include standards-selector.html %}
-          {{ parts[1] }}
-          {%- elsif page.url == '/standards/WHICH-STANDARDS-APPLY.html' -%}
+          {#- The interactive standards selector was rendered here, at a sentinel comment in
+              WHICH-STANDARDS-APPLY.md, with a page.url fallback behind it. Both the page and the
+              include went to secure-development-standards in the split, and a Liquid `include` of a
+              missing file is a BUILD ERROR rather than an empty string -- so this is removed rather
+              than left to fail closed on the next build. -#}
           {{ body }}
-          {% include standards-selector.html %}
-          {%- else -%}
-          {{ body }}
-          {%- endif -%}
         </div>
       </main>
     </div>

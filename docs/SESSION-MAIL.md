@@ -199,4 +199,4 @@ worktree of a clone resolves it identically, and an unread message survives a se
 | Delivering a note into a running session | [Steering](STEERING.md) |
 | Why the liveness fence may only ever veto | [Concepts](CONCEPTS.md) |
 | Hook events and their failure postures | [Hooks](HOOKS.md) |
-| Proving a control can actually fail | [CI and standards](CI-AND-STANDARDS.md) |
+| Proving a control can actually fail | [CI and standards](https://wshallwshall.github.io/secure-development-standards/CI-AND-STANDARDS.html) |

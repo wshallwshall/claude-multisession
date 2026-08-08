@@ -88,7 +88,7 @@ than one session can hold. The write-up is candid that the obvious split is the 
 per chapter is a scheduling answer, and the collision that actually costs you is not two agents
 editing the same row but **two agents applying different unwritten rules**, producing verdicts that
 cannot be reconciled afterwards because neither recorded which rule it applied.
-[Running a large assessment](ASVS-ASSESSMENT.md)
+[Running a large assessment](https://wshallwshall.github.io/secure-development-standards/ASVS-ASSESSMENT.html)
 
 ### Which part defends against #76590
 
@@ -325,9 +325,8 @@ Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](
 [Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -
 [PRs and merges](PR-AND-MERGE.md) - [Pruning](PRUNING.md).
 
-**Safety and standards,** in descending order of how much actually ships:
+**Safety,** in descending order of how much actually ships:
 [Leak gate](LEAK-GATE.md) (a scanner you can run today, plus the blind spot no scanner can close) -
-[CI and standards](CI-AND-STANDARDS.md) (ships no CI configuration) -
 [Usage awareness](USAGE-AWARENESS.md) (a design; ships no hook) -
 [Session mail](SESSION-MAIL.md) (a design for reaching the peers announce cannot; ships nothing, and
 is most useful as the list of ways the obvious implementations fail).
@@ -335,17 +334,12 @@ is most useful as the list of ways the obvious implementations fail).
 **In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list).
 
-**[Standards to adapt](standards/OVERVIEW.md)** -- a set of documents setting a bar for code an agent
-wrote and a small team has to stand behind. Start with
-[the CISO summary](standards/CISO-SUMMARY.md) if you are deciding whether to adopt them, or
-[How to adopt these](standards/ADOPTING-THESE.md) if you already have. They ship no code and confer
-no certification; they came out of one working codebase and carry its assumptions.
-[The index](standards/OVERVIEW.md) enumerates the set and says what each one buys you -- deliberately
-not repeated here, because a count in prose goes stale the day the set grows and nothing tests it.
-One member is not in that directory:
-[Running a large security-standard assessment with AI agents](ASVS-ASSESSMENT.md) sits a level up
-because it predates the standards section, so browsing `standards/` will not show it. Its location
-is pinned by a test rather than left to chance, and it publishes no results, deliberately.
+**The standards are a separate project now.**
+[secure-development-standards](https://wshallwshall.github.io/secure-development-standards/) holds
+the set that used to live in this repository: a bar for code an agent wrote and a small team has to
+stand behind, plus the CI discipline and the assessment method that went with it. They ship no code
+and confer no certification. Their index is over there and is not mirrored here, because two copies
+of one list is the drift both projects are about.
 
 **At the repository root:**
 [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) (record of
