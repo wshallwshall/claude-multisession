@@ -93,17 +93,13 @@ pass that removes filler is the pass most likely to remove a measurement.
 | PD-6 | **MUST NOT** remove a rule identifier, or renumber rules. Retire an identifier with a tombstone instead |
 | PD-7 | **MUST NOT** rewrite an agentless passive into an active sentence in a normative rule. The requirement holds whoever performs it |
 
-### PD-8: four sections that look like filler and are not
+### PD-8: retired, and the identifier is kept rather than reissued
 
-An editor applying `OPEN-3` or `B-6` to any of these introduces a defect. Each is named by path
-because none of them looks load-bearing from the inside.
-
-| Section | Why it stays |
-|---|---|
-| `standards/SECURE-DEVELOPMENT.md`, `## Retired rules` | The table is empty, and the empty table is the artifact. `tests/test_rule_ids_are_stable.py` raises if the heading is absent |
-| `ASVS-ASSESSMENT.md`, `## Handing this to Claude Code` | The document's only Part 1 to Part 2 boundary marker |
-| `standards/WHICH-STANDARDS-APPLY.md`, the selector sentinel comment | A test requires it to appear exactly once, and the interactive selector renders at it |
-| `standards/STANDARDS-REFERENCE.md`, the line carrying the status-check date | A test requires the date. The sentence is filler by shape and required by contract |
+PD-8 named four sections that look like filler and are not, so that an editor applying `OPEN-3` or
+`B-6` would leave them alone. All four were sections of the standards, and they left with them for
+[secure-development-standards](https://github.com/wshallwshall/secure-development-standards).
+The rule is not repealed: it holds wherever those sections now live, and no section in this
+repository is under it. PD-6 forbids reissuing an identifier, so this row stays here saying so.
 
 ---
 
@@ -130,11 +126,10 @@ Each is drawn from prose measured in this repository, not from a general style g
 
 1. Re-derive an edit's target by heading text or a quoted sentence, never by a line number from a plan
    or a review. Line numbers move under any edit to the same file.
-2. Before renaming or deleting any heading under `docs/`, search the repository for its text. Standards
-   cite each other by heading name, and only the link-adjacent form of that citation is gated.
-3. A commit editing any file under `docs/standards/` regenerates that file's Word copy in the same
-   commit, on pandoc 3.10, and runs the link, citation, selector and Word-copy tests.
-4. Tests run from inside `tests/`: `python -m unittest discover -s . -q`. A run from the repository
+2. Before renaming or deleting any heading under `docs/`, search the repository for its text. Pages
+   here cite headings by name and link to them by anchor, and `tests/test_internal_links_resolve.py`
+   fails on an anchor whose heading has moved.
+3. Tests run from inside `tests/`: `python -m unittest discover -s . -q`. A run from the repository
    root finds nothing and exits without testing anything.
-5. Run `scripts/coord/overlap.ps1` before starting a chunk of work. A clean merge proves lines did not
+4. Run `scripts/coord/overlap.ps1` before starting a chunk of work. A clean merge proves lines did not
    collide, not that intentions did not.

@@ -10,7 +10,8 @@
 # run inside an agent session by design. A CI run that skipped those paths and reported green would
 # be a worse signal than not running it at all. The doctor stays a local, plain-terminal command.
 #
-# See docs/CI-AND-STANDARDS.md for the reasoning behind the shape of this file.
+# The reasoning behind the shape of this file left with the standards, and is now at
+# https://wshallwshall.github.io/secure-development-standards/CI-AND-STANDARDS.html
 
 name: gates
 
