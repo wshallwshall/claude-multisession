@@ -10,11 +10,13 @@ review comment the way a standard's rule is cited, so both sides point at the sa
   never describes its own structure.
 - **What it costs.** Length, in the places where length was doing nothing. The rules protect density
   explicitly, so applying them is not a licence to flatten precision into blandness.
-- **Where it does not apply.** `standards/SECURE-DEVELOPMENT.md`, which is the model these rules were
-  derived from and is not edited to satisfy them. Generated files. The `PD` section, which is the list
-  of things an editor MUST NOT cut.
-- **Where to start.** `PD` first, before touching anything. It names four sections that read exactly
-  like the filler `B` orders deleted, and are load-bearing.
+- **Where it does not apply.** Generated files. The `PD` section, which is the list of things an editor
+  MUST NOT cut. The document these rules were derived from, `SECURE-DEVELOPMENT.md`, left with
+  [the standards](https://github.com/wshallwshall/secure-development-standards) and answers to that
+  repository's own house style now.
+- **Where to start.** `PD` first, before touching anything: it is the list of things an editor MUST
+  NOT cut. The one rule that named specific sections, `PD-8`, is a tombstone -- all four went with the
+  standards.
 
 ---
 
@@ -98,8 +100,14 @@ pass that removes filler is the pass most likely to remove a measurement.
 PD-8 named four sections that look like filler and are not, so that an editor applying `OPEN-3` or
 `B-6` would leave them alone. All four were sections of the standards, and they left with them for
 [secure-development-standards](https://github.com/wshallwshall/secure-development-standards).
-The rule is not repealed: it holds wherever those sections now live, and no section in this
-repository is under it. PD-6 forbids reissuing an identifier, so this row stays here saying so.
+No section in this repository is under it, and PD-6 forbids reissuing an identifier, so this row
+stays here saying so.
+
+WHAT IT DOES NOT DO IS FOLLOW THEM. That repository's house style is derived from what its own gates
+enforce, and carries no equivalent of this rule. Three of the four sections are at least named in its
+tests: `## Retired rules`, the selector sentinel, and the status-check date. The fourth, the ASVS
+Part 1 to Part 2 boundary marker, is named by nothing in either repository -- which is the exact
+condition PD-8 was written to fix, now true again one repository over.
 
 ---
 
