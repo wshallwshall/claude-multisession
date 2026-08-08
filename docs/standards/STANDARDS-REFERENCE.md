@@ -145,7 +145,7 @@ below.
 
 **The cloud programs assess a service offering you operate**, which is why they sit here rather than
 with the producer items even though a software company usually pays for them. One cloud program has
-begun leveraging an external framework for its lightest class only, and calls that class transitory:
+begun using an external framework for its lightest class only, and calls that class transitory:
 narrow, and not a shortcut. A discrepancy between one cloud program's claim of recognition by another
 and that other program's own published outcome is left open here rather than resolved -- read both
 programs' own notices before repeating either claim.
