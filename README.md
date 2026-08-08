@@ -7,15 +7,11 @@ other. Each session gets its own git worktree and branch; hooks refuse the edits
 that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git` and a `python`.
 PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
-> **Every failure mode in this system is byte-identical to success.** That one sentence explains the
-> whole shape of this repository -- most of all why `ccx doctor` exists and why you run it *before*
-> installing anything as well as after. The full statement and what it costs you are at the top of
-> the [documentation site](https://wshallwshall.github.io/claude-multisession/).
-
-**Is this for you?** Yes if you drive two or more Claude Code sessions against one repo and have
-watched them collide -- [the collision table below](#what-problem-this-solves) is the fastest way to
-tell. No if you run one session at a time. Also no if you are CLI-only and wanted cross-session
-announce specifically: that one feature needs the desktop client.
+> **When something here breaks, it produces exactly the same output as when it works -- byte-identical
+> to success.** That one sentence explains the whole shape of this repository -- most of all why
+> `ccx doctor` exists and why you run it *before* installing anything as well as after. The full
+> statement and what it costs you are at the top of the
+> [documentation site](https://wshallwshall.github.io/claude-multisession/).
 
 **Go:** [What problem this solves](#what-problem-this-solves) - [Install](INSTALL.md) -
 [Documentation site](https://wshallwshall.github.io/claude-multisession/) -
@@ -333,13 +329,16 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/STEERING.md` | The two steering scripts: queue a note from a second terminal, deliver it mid-task |
 | `docs/SESSION-MAIL.md` | The async lane for peers the realtime announce cannot reach. Ships nothing -- it is a design note, and most useful as the measured list of ways the obvious implementations fail |
 | `docs/LEAK-GATE.md` | The forbidden-content scanner: what a shape detector catches before a repo goes public, what a token file adds, and the two things no scanner can ever see |
-| `docs/CI-AND-STANDARDS.md` | N parallel branches through one pipeline, and a standard that survives agent-written code. Ships no CI configuration -- the scripts it cites are illustrations of the rules |
 | `docs/CASE-STUDY-drift-audit.md` | A redacted account of auditing a multi-session estate as one system -- the method, not a status snapshot |
-| `docs/ASVS-ASSESSMENT.md` | Method for running a several-hundred-requirement security-standard assessment with agent sessions. Deliberately carries no results, for the same reason the case study carries no status table |
 | `docs/TIPS-AND-TRICKS.md` | The "wish I'd known" file, ordered by when it bites: setting up, running two at once, writing a guardrail, proving it works, cleaning up |
 | `docs/USAGE-AWARENESS.md` | Warning a session before it hits a hard usage cutoff, and why that is harder than it looks. Ships no hook -- the mechanism depends on undocumented client internals, so what transfers is the design and the eight ways it reports confidently wrong numbers |
-| `docs/standards/` | Standards to adapt rather than adopt, with `OVERVIEW.md` as the section index -- it enumerates the set, so this row does not. Start at `CISO-SUMMARY.md` if you are deciding whether to adopt them, `ADOPTING-THESE.md` if you already have. The primary sources, the ones to read rather than follow a reference into: `WHICH-STANDARDS-APPLY.md` (which of these reach you at all), `STANDARDS-REFERENCE.md` (a row for each: what it issues and what triggers it), `DILIGENCE-PACKET.md` (what to require of a vendor, and what each answer proves), `CI-ENFORCEMENT.md` (which of your rules can actually stop a change). They ship no code and confer no certification; each states its limits before its rules |
 | `CLAUDE.md.template` | A working agreement to drop into your own repo: plan first, commit-versus-push approval split, never grep for a number, shared memory across worktrees |
+
+**The standards are a separate project now.** They were roughly half of this repository and shared
+none of its subject. The set, its CI discipline and the assessment method live at
+[secure-development-standards](https://github.com/wshallwshall/secure-development-standards),
+which carries its own index. That index is not mirrored here: two copies of one list is the drift
+both projects are about.
 
 Worked examples live in `examples/`: a language-agnostic worktree setup hook
 (`worktree-setup.ps1.example`), a session banner (`session-banner.md.example`), an annotated sequence

@@ -14,19 +14,15 @@ PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
 **The one thing to know before you start:**
 
-> **Every failure mode in this system is byte-identical to success.** A hook that is wired but
-> resolves nothing exits 0 and prints nothing -- exactly what a healthy hook with no peers does. A
-> gate whose helper failed to load allows the edit -- exactly what a gate that checked and found
-> nothing does. You cannot detect a difference the producer never encoded.
+> **When something here breaks, it produces exactly the same output as when it works -- byte-identical
+> to success.** A hook that is installed but reaches nothing exits 0 and prints nothing, which is what
+> a healthy hook does when there is no other session to find. A gate whose helper never loaded lets
+> the edit through, which is what a gate does when it checks and finds nothing wrong. You cannot tell
+> the two apart from the outside, because the difference was never written into the output.
 
 That is why `ccx doctor` exists, why you run it *before* installing anything as well as after, and
 why it fires each control on purpose instead of reading a settings file. A green report you did not
 baseline is not evidence.
-
-**Is this for you?** Yes if you drive two or more Claude Code sessions against one repo and have
-watched them collide. No if you run one session at a time -- there is nothing here for you. Also no
-if you are CLI-only and wanted cross-session announce specifically: that one feature needs the
-desktop client (see [Limits](#limits-read-before-installing)).
 
 **Go:** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
 [What ships](#what-ships) - [Full docs](#where-to-go-next)
