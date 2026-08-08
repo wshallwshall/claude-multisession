@@ -104,10 +104,11 @@ No section in this repository is under it, and PD-6 forbids reissuing an identif
 stays here saying so.
 
 WHAT IT DOES NOT DO IS FOLLOW THEM. That repository's house style is derived from what its own gates
-enforce, and carries no equivalent of this rule. Three of the four sections are at least named in its
-tests: `## Retired rules`, the selector sentinel, and the status-check date. The fourth, the ASVS
-Part 1 to Part 2 boundary marker, is named by nothing in either repository -- which is the exact
-condition PD-8 was written to fix, now true again one repository over.
+enforce, and carried no equivalent of this rule. Two of the four are held by tests that name them for
+other reasons: `test_rule_ids_are_stable.py` parses the `## Retired rules` section, and the selector
+test pins the sentinel on both sides. The status-check date line and the ASVS Part 1 to Part 2
+boundary marker are held by nothing at all. That is the exact condition PD-8 was written for, now
+true again one repository over, and a rule covering it is proposed there rather than assumed here.
 
 ---
 
