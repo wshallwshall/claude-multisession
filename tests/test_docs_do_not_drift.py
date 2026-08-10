@@ -126,6 +126,17 @@ LEGACY_GITHUB_URL = re.compile(
     r"|raw\.githubusercontent\.com/wshallwshall/claude-multisession)/main/([^)\"'\s>]+)"
 )
 
+# The sibling documentation site. It is the one external host whose HEADINGS this repository has any
+# business caring about, because the two projects cross-reference each other constantly and moved off
+# github.io together on 2026-08-10.
+#
+# Written as a plain string through re.escape rather than as a pattern with the dots escaped by hand,
+# for the reason test_internal_links_resolve.py records about its own host: a hand-escaped
+# `secure-development-standards\.pages\.dev` does not match a find-and-replace over the literal host,
+# so the occurrence that silently survives the next move is the one inside the checker.
+SIBLING_HOST = "https://secure-development-standards.pages.dev"
+SIBLING_URL = re.compile(re.escape(SIBLING_HOST) + r"(/[^)\"'\s>]*)?")
+
 # The looser phrasing. All four installers test the LITERAL string "1", so "is set" promises a
 # refusal that does not happen for CLAUDECODE=0, =true, or anything else truthy-looking.
 CLAUDECODE_LOOSE = re.compile(r"CLAUDECODE`?\s+is set", re.IGNORECASE)
@@ -308,6 +319,72 @@ class SourceLinksResolve(unittest.TestCase):
         )
 
 
+class CrossRepositoryAnchorsAreRefused(unittest.TestCase):
+    """No link into the sibling site may name one of its headings with a `#fragment`.
+
+    THE GAP THIS CLOSES, AND IT IS NOT CLOSED BY CHECKING. An anchor into another repository is the
+    one link shape that NOTHING can verify. This suite resolves anchors inside this tree by reading
+    the target's headings; it cannot read theirs. Their suite cannot read ours. So a heading renamed
+    on either side leaves a link that still renders, still clicks, still returns 200, and lands the
+    reader at the top of the right page -- with no error on either surface and no check anywhere that
+    could have reported it. Measured on 2026-08-10: two such links existed, both pointing from the
+    sibling repository into this one, and both resolved only by luck.
+
+    WHY A BAN RATHER THAN A CROSS-REPOSITORY CHECKER. The checker is the obvious answer and it is the
+    wrong one twice over. It would have to fetch another repository's headings over a network this
+    suite deliberately never touches -- this file's own docstring states that it fetches nothing --
+    so it would go red when the other site is down, mid-deploy, or unreachable from the runner, and
+    `test_prose_rules_hold.py` already records what happens to a gate that reddens for reasons
+    unrelated to the defect. And it could not prevent the break anyway: renaming a heading here
+    breaks their links the moment it merges, and their run would discover it afterwards, with their
+    site already wrong. The ban stops the fragile link from existing. It is the same judgment
+    `test_internal_links_resolve.py` made about `--` headings, in its own words: the fix is a ban,
+    not a second rule, because refusing the shape cannot rot.
+
+    WHAT THIS BUYS, STATED HONESTLY. Not verification. The by-name citation this pushes people to is
+    not checked either -- `test_heading_citations_resolve.py` left this repository with the standards
+    it pinned. What changes is how the failure presents. A renamed heading leaves a stale quoted
+    heading beside a link that still lands on the correct page, which a reader can see and scroll
+    past. An anchor leaves nothing visible at all. That is the difference these documents are about.
+
+    SCOPED TO THIS ONE HOST ON PURPOSE. An anchor into a third party's page is ordinary and none of
+    this repository's business -- docs/index.md links to a GitHub issue by `#issuecomment-...` and
+    should keep doing so. The sibling site is different because the headings on the other end are
+    written by people who read this rule.
+    """
+
+    def test_no_link_into_the_sibling_site_carries_an_anchor(self):
+        offenders = []
+        seen = 0
+        for relpath in sorted(tracked_files()):
+            if not relpath.endswith(LINK_BEARING_SUFFIXES):
+                continue
+            for m in SIBLING_URL.finditer(t.read(t.REPO_ROOT / relpath)):
+                seen += 1
+                if "#" in m.group(0):
+                    offenders.append(f"{relpath}: {m.group(0)}")
+
+        self.assertNotEqual(
+            0,
+            seen,
+            f"no link to {SIBLING_HOST} was found at all. Either every cross-reference to the "
+            "sibling project is gone -- in which case delete this rule rather than leaving it to "
+            "refuse nothing -- or the host moved and this pattern went blind, which is the silent "
+            "version of the same thing.",
+        )
+        self.assertEqual(
+            [],
+            offenders,
+            "\n\nThese links name a heading in the sibling repository, which is the one link shape\n"
+            "nothing on either side can check: this suite cannot read their headings and theirs\n"
+            "cannot read ours. A rename leaves the link rendering, clicking and returning 200 while\n"
+            "landing at the top of the page:\n  "
+            + "\n  ".join(offenders)
+            + f"\n\nCite it by name instead -- [Page]({SIBLING_HOST}/PAGE.html), *\"The heading\"* --\n"
+            "which lands the reader on the right page and shows them what to look for when it moves.",
+        )
+
+
 class DocClaimsMatchTheCode(unittest.TestCase):
     def test_all_four_installers_still_test_the_literal_one(self):
         """The doc rule below is only correct while this is."""
@@ -375,6 +452,15 @@ class TheScansCanSeeWhatTheyLookFor(unittest.TestCase):
         )
         self.assertEqual(["scripts/hooks/worktree_gate.ps1"], LEGACY_GITHUB_URL.findall(blob))
         self.assertEqual(["CLAUDE.md.template"], LEGACY_GITHUB_URL.findall(raw))
+
+    def test_the_sibling_pattern_tells_an_anchored_link_from_a_bare_one(self):
+        """Both halves, because a ban that cannot see the shape refuses nothing and one that sees it
+        everywhere refuses correct links -- and this pattern has to stop at the closing bracket of a
+        markdown link to distinguish them at all."""
+        anchored = "see [the tier](https://secure-development-standards.pages.dev/CQ.html#tier-1)"
+        bare = 'see [the page](https://secure-development-standards.pages.dev/CQ.html), *"Tier 1"*'
+        self.assertIn("#", SIBLING_URL.search(anchored).group(0))
+        self.assertNotIn("#", SIBLING_URL.search(bare).group(0))
 
     def test_the_published_path_rule_moves_docs_pages_to_the_root(self):
         """The asymmetry that produces the most plausible-looking wrong link."""
