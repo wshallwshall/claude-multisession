@@ -95,12 +95,22 @@ jobs:
           echo "=== warnings and errors in the build log ==="
           grep -inE "warn|error|deprecat|cannot|missing|invalid" build.log || echo "  none"
 
+      # THE SITE CARRIES THE SOURCE, because the audience cannot fetch it from anywhere else. Their
+      # firewall blocks GitHub wholesale, so they cannot clone this repository and every blob/main
+      # link in these documents used to point at a file they had no route to -- in documents that are
+      # largely ABOUT those files. Everything git tracks is copied in, so /scripts/coord/claim.ps1
+      # resolves on the same origin as the page describing it. See the script for the docs/
+      # asymmetry, which is the one thing to know before writing such a link by hand.
+      - name: Publish the repository's own files into the site
+        run: python3 scripts/site/publish_sources.py _site
+
       - name: What was actually produced
         if: always()
         run: |
           echo "=== pages generated ==="
           find _site -name '*.html' | sort | sed 's/^/  /'
           echo "  total: $(find _site -name '*.html' | wc -l) html files"
+          echo "  plus:  $(find _site -type f ! -name '*.html' | wc -l) source and asset files"
 
       # THE GATE ON PUBLISHING. Three plugins carry this site, and none of them errors when absent:
       #

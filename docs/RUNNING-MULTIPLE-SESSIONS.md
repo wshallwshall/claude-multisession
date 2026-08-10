@@ -20,7 +20,7 @@ problem is doing it too late.
    ([Worktrees](WORKTREES.md)).
 3. Install the gates into **every** config root the client uses, then verify with the three commands
    in the surface section
-   ([INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md),
+   ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md),
    [Hooks](HOOKS.md)).
 4. Wire the steering hook now if you will ever want it, because it only takes effect in sessions
    started after it was wired ([Steering](STEERING.md)).
@@ -76,7 +76,7 @@ says what class of evidence it rests on, because they are not the same class:
   worktree.** Measured on the repo this tooling was developed in, and often enough to matter: a large
   share of the worktrees had no project settings file at all, and a live editor session was working in
   one of them with **zero** coordination context ([Tips and tricks](TIPS-AND-TRICKS.md),
-  [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md)). That is why
+  [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md)). That is why
   the hooks here install at **user** scope ([Hooks](HOOKS.md)).
 - *Observed once.* **User scope means *per config root*, and the gate fails open**, so an unwired root
   is byte-identical to a governed one from inside the session. This is the only bullet that connects a
@@ -84,7 +84,7 @@ says what class of evidence it rests on, because they are not the same class:
   branch out inside another session's linked worktree, and the gate that would have refused it was
   simply not installed there. That an additional config root is where editor-hosted chats show up is
   the installers' stated reason for wiring every root
-  ([INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md), "Why every
+  ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md), "Why every
   config directory"), and it is the configuration the one observed hijack came from -- but nothing
   here counts roots by surface, so take it as the installers' rationale, not a measured distribution.
 
@@ -157,7 +157,7 @@ At least these channels exist. Each links to the page that owns it.
 | [Sequence allocation](SEQUENCE-ALLOC.md) | **C** -- every session, present and future, when it asks for a number. | broadcast to a shared registry | the allocator, yes; **no installer writes the `pre-commit` gate** -- until you wire it, nothing at commit time catches a reused number |
 | [Commit-time claim gate](COORDINATION.md) | **D** -- the committing session, at commit; it reaches one that never asked for anything. | addressed to the committing session | yes, installed per clone into the shared git hooks directory, so one copy governs every worktree; `--no-verify` bypasses it |
 | [SessionStart context](HOOKS.md) | **E** -- only a session that starts later. | broadcast | yes |
-| The working agreement ([`CLAUDE.md`](https://github.com/wshallwshall/claude-multisession/blob/main/CLAUDE.md.template)) | **E** -- only sessions that start later; an edit misses a running one. | broadcast | template only; nothing installs it |
+| The working agreement ([`CLAUDE.md`](https://claude-multisession.pages.dev/CLAUDE.md.template)) | **E** -- only sessions that start later; an edit misses a running one. | broadcast | template only; nothing installs it |
 | [Session mail](SESSION-MAIL.md) | **E** -- a session that starts later; a mid-turn wake-up is possible and is one-shot. | addressed to a worktree box, keyed by normalized path | **no** -- designed and documented here, not implemented here |
 
 One property explains the whole first band, and generalizes past this table: **a file is re-read on

@@ -5,7 +5,7 @@
 > reasoned about, and several survived a full review before being caught.
 
 > **Take a copy:**
-> [markdown](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/SESSION-MAIL.md).
+> [markdown](https://claude-multisession.pages.dev/SESSION-MAIL.md).
 
 The [announce hook](COORDINATION.md) reaches peers in realtime and cannot reach all of them. Delivery
 goes through the desktop client's session-management tooling, which enumerates an in-memory map of
@@ -199,4 +199,4 @@ worktree of a clone resolves it identically, and an unread message survives a se
 | Delivering a note into a running session | [Steering](STEERING.md) |
 | Why the liveness fence may only ever veto | [Concepts](CONCEPTS.md) |
 | Hook events and their failure postures | [Hooks](HOOKS.md) |
-| Proving a control can actually fail | [CI and standards](https://wshallwshall.github.io/secure-development-standards/CI-AND-STANDARDS.html) |
+| Proving a control can actually fail | [CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) |

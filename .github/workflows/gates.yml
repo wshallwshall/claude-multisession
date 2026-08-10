@@ -11,7 +11,7 @@
 # be a worse signal than not running it at all. The doctor stays a local, plain-terminal command.
 #
 # The reasoning behind the shape of this file left with the standards, and is now at
-# https://wshallwshall.github.io/secure-development-standards/CI-AND-STANDARDS.html
+# https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html
 
 name: gates
 

@@ -42,7 +42,7 @@
     # than the filename.
     - label: Installing
       title: "INSTALL.md: four installers, four scopes, and how to prove each is live"
-      url: https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md
+      url: https://claude-multisession.pages.dev/INSTALL.md
 
 - group: Running sessions
   items:
@@ -107,13 +107,13 @@
     # index is the drift both projects are about.
     - label: Security standards
       title: Security standards for teams building with AI coding assistants
-      url: https://wshallwshall.github.io/secure-development-standards/
+      url: https://secure-development-standards.pages.dev/
 
 - group: On GitHub
   items:
     - label: CLAUDE.md template
       title: A working agreement to copy into your own repository
-      url: https://github.com/wshallwshall/claude-multisession/blob/main/CLAUDE.md.template
+      url: https://claude-multisession.pages.dev/CLAUDE.md.template
     - label: Source repository
       title: claude-multisession on GitHub
       url: https://github.com/wshallwshall/claude-multisession

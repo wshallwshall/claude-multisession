@@ -5,7 +5,7 @@
 Open Claude Code in the repository you are thinking about, and paste this:
 
 ```text
-Read https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/docs/FEED-THIS-TO-CLAUDE-CODE.md
+Read https://claude-multisession.pages.dev/FEED-THIS-TO-CLAUDE-CODE.md
 and use it to advise me about this repository. Stop where it tells you to stop.
 ```
 
@@ -126,13 +126,13 @@ Only now, and only for the pieces they chose.
    a config file, not an installer. It is both the knob file and the opt-in marker: without it, the
    user-scope hooks stay inert in this repository. Start from the tooling's own `ccx.config.json`.
 2. **Produce the commands, do not run them.** Substitute the real absolute paths, order them as
-   [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) does, and
+   [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) does, and
    tell them to run the set **in a plain terminal, not through you**. Ask for the output pasted back
    rather than summarised.
 3. **STOP** until they have run it and reported back.
 4. **Verify what came back**, using the audit commands you are allowed to run. See below.
 5. **Offer a working agreement.** Copy
-   [CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template)
+   [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
    into the target as `CLAUDE.md` and edit it down to what is true here. Delete every rule the target
    does not actually follow. An aspirational working agreement is worse than none, because the next
    session acts on it.
@@ -186,10 +186,10 @@ Do not reconstruct these from memory -- read them when they become relevant.
 
 | For | Read |
 |---|---|
-| The full install procedure | [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) |
+| The full install procedure | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
 | What the whole thing is for | [Concepts](CONCEPTS.md) |
 | Worktree rules and the hijack it prevents | [Worktrees](WORKTREES.md) |
 | Claims, locks, presence, overlap | [Coordination](COORDINATION.md) |
 | Which hook fires when, and its failure posture | [Hooks](HOOKS.md) |
-| Getting work through CI without believing false things | [CI and standards](https://wshallwshall.github.io/secure-development-standards/CI-AND-STANDARDS.html) |
-| Standards to hold the resulting code to | [Standards](https://wshallwshall.github.io/secure-development-standards/standards/OVERVIEW.html) |
+| Getting work through CI without believing false things | [CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) |
+| Standards to hold the resulting code to | [Standards](https://secure-development-standards.pages.dev/standards/OVERVIEW.html) |

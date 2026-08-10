@@ -27,20 +27,24 @@ something that already happened once.
      cosmetic rewording that harms no reader -- a gate that fails for reasons unrelated to drift
      is one people learn to ignore, which costs more than the coverage is worth. It stays
      deliberately unpinned. Do NOT close this by widening INSTALL_COMMAND.
-  2. LINKS THAT LEAVE THE SITE ARE PINNED TO `main`. Serving from /docs makes docs/ the site
-     root, so a `../scripts/...` target resolves above the root and 404s. The fix was to rewrite
-     those to absolute blob/main URLs -- which is correct, and which converts an in-repo
-     reference that a move would break loudly into an external URL that a move breaks silently.
+  2. LINKS TO FILES OUTSIDE docs/ ARE ABSOLUTE, AND THEIR HOST HAS MOVED ONCE ALREADY. Serving
+     from /docs makes docs/ the site root, so a `../scripts/...` target resolves above the root
+     and 404s. Those were rewritten to absolute blob/main URLs on github.com -- correct at the
+     time, and it converted an in-repo reference that a move breaks loudly into an external one
+     that a move breaks silently. On 2026-08-10 the owner confirmed the firewall in front of this
+     project's readers blocks GitHub wholesale rather than only the Pages host, which made all 35
+     of them unreachable for the audience the documents are written for. They now point at the
+     copy the site publishes itself, and the pin moved with them.
   3. A DOC CLAIM ABOUT A CONTROL CAN OUTLIVE THE CONTROL. The CLAUDECODE case is the live
      example: the sentence was not wrong when written, it was wrong about what the code tests.
 
 WHAT THIS PROVES, AND WHAT IT DOES NOT. These cases read source. They prove the install block still
 exists where the pattern can see it and that README does not carry a second copy that disagrees,
-that every blob/main URL names a path git is tracking, and that no copy describes the installer
-refusal more loosely than the installers implement it. They do NOT fetch anything: a URL whose path
-exists here still 404s on github.com if the branch is renamed or the file is not pushed, and nothing
-local can see that. They also do not check INSTALL.md's prose against the landing page -- it is the
-long form and is expected to differ.
+that every same-origin source URL names a path the build actually serves, that no link has reverted
+to the GitHub form, and that no copy describes the installer refusal more loosely than the
+installers implement it. They do NOT fetch anything: a URL whose path exists here still 404s if the
+deploy did not run, and nothing local can see that. They also do not check INSTALL.md's prose
+against the landing page -- it is the long form and is expected to differ.
 
 Run: python -m unittest discover -s tests
 
@@ -91,11 +95,33 @@ SUPERSEDED_BLUF = (
     r"^\*\*TL;DR\b[^*]*\*\*",
 )
 
-# Every outbound link into this repository's own tree, in both forms it is published in: the
-# human-readable blob view, and the raw view the standards hand out for download. Both pin `main`
-# and both rot into a 404 the same way, so both belong in one scan -- a pattern that saw only the
-# blob form would have gone quietly blind the day the raw links were added.
-BLOB_URL = re.compile(
+# Every link that is a reader's route to a FILE in this repository's own tree.
+#
+# THESE USED TO BE GITHUB URLS AND ARE NOW SAME-ORIGIN, which changed what this scan is for without
+# changing what it does. Until 2026-08-10 they were written two ways -- the human-readable
+# `github.com/.../blob/main/` view and the `raw.githubusercontent.com/.../main/` download form -- and
+# both were pinned here because both rot into a 404 the same way. Then the owner confirmed the
+# firewall in front of this project's readers blocks GitHub wholesale, not merely the Pages host, so
+# all 35 of them named a file that audience has no route to at all. They now point at the copy the
+# site itself serves; scripts/site/publish_sources.py is what puts it there.
+#
+# The check is unchanged in shape and stronger in consequence. A link that named a moved file used
+# to give the reader a GitHub 404, which at least says "not found" in a page they recognise. It now
+# gives them a 404 from the documentation site itself, so the site is the thing that looks broken --
+# and this is the only place that can catch it, because the target is not a markdown page and
+# test_internal_links_resolve.py resolves only `.html` and directory indexes.
+#
+# THE `docs/` ASYMMETRY IS THE TRAP, and it is why the expected path is computed rather than assumed:
+# Jekyll publishes docs/CONCEPTS.md at /CONCEPTS.md, while everything else keeps its repository path,
+# so /scripts/coord/claim.ps1 is right and /docs/CONCEPTS.md is a 404 that looks perfectly sensible.
+SOURCE_URL = re.compile(
+    r"https://claude-multisession\.pages\.dev/([^)\"'\s>]+)"
+)
+
+# The GitHub forms this replaced. Kept as a pattern so the ban below can refuse a regression: a
+# reader writing a new link will reach for the URL github.com hands them, and it is correct on the
+# surface they copied it from.
+LEGACY_GITHUB_URL = re.compile(
     r"https://(?:github\.com/wshallwshall/claude-multisession/blob"
     r"|raw\.githubusercontent\.com/wshallwshall/claude-multisession)/main/([^)\"'\s>]+)"
 )
@@ -203,42 +229,82 @@ class TheInstallProcedureHasOneCopy(unittest.TestCase):
         )
 
 
-class OutboundLinksResolve(unittest.TestCase):
-    def test_every_blob_main_url_names_a_path_git_is_tracking(self):
+def published_path(tracked_relpath: str) -> str:
+    """Where the built site serves a tracked file.
+
+    ONE function, used by the check below and by nothing else that could disagree with it. Jekyll
+    publishes docs/CONCEPTS.md at /CONCEPTS.md; scripts/site/publish_sources.py copies everything
+    else to its repository path. Two rules, one place.
+    """
+    return tracked_relpath[len("docs/"):] if tracked_relpath.startswith("docs/") else tracked_relpath
+
+
+class SourceLinksResolve(unittest.TestCase):
+    def test_every_source_url_names_a_path_the_site_actually_serves(self):
         tracked = set(tracked_files())
+        served = {published_path(p) for p in tracked}
         offenders = []
         checked = 0
-        for relpath in tracked:
+        for relpath in sorted(tracked):
             if not relpath.endswith(LINK_BEARING_SUFFIXES):
                 continue
             text = t.read(t.REPO_ROOT / relpath)
-            for target in BLOB_URL.findall(text):
+            for target in SOURCE_URL.findall(text):
                 # A target carrying a shell or PowerShell variable is a TEMPLATE inside a fetch
                 # snippet, not a link anyone clicks. Resolving it would mean executing the snippet.
                 if "$" in target:
                     continue
+                # Rendered pages and in-page anchors are test_internal_links_resolve.py's job; it
+                # resolves them back to the markdown and checks the headings too. Checking them here
+                # as file paths would report every one of them as missing.
+                if target.endswith(".html") or "#" in target or target.endswith("/"):
+                    continue
                 checked += 1
-                if target in tracked:
+                if target in served:
                     continue
-                # A directory is a legitimate target: the download snippets point a base URL at
-                # docs/standards/ and append the filename per iteration.
-                if any(p.startswith(target + "/") for p in tracked):
+                # A directory is a legitimate target: a download snippet points a base URL at one
+                # and appends the filename per iteration.
+                if any(p.startswith(target + "/") for p in served):
                     continue
-                offenders.append(f"{relpath}: main/{target}")
+                offenders.append(f"{relpath}: /{target}")
 
         self.assertNotEqual(
             0,
             checked,
-            "this scan found no blob/main URLs at all. That is either a repository with none "
-            "left, or a broken pattern. Confirm which before accepting the pass.",
+            "this scan found no same-origin source URLs at all. That is either a repository with "
+            "none left, or a broken pattern. Confirm which before accepting the pass.",
         )
         self.assertEqual(
             [],
             sorted(offenders),
-            "a blob/main URL points at a path git is not tracking:\n"
+            "a source link names a path the built site does not serve:\n"
             + "\n".join(sorted(offenders))
-            + "\nThese links leave the site, so nothing here fails when the target moves -- the "
-            "reader gets a GitHub 404 instead. Repoint them, or restore the file.",
+            + "\nThe reader gets a 404 from the documentation site itself, so the site is what "
+            "looks broken. Note the asymmetry that causes most of these: a docs/ page is served "
+            "at the site ROOT, so /CONCEPTS.md is right and /docs/CONCEPTS.md is not.",
+        )
+
+    def test_no_link_reverts_to_the_github_form(self):
+        """The regression this file cannot afford, because it is invisible to every other check.
+
+        A github.com URL resolves perfectly for whoever writes it -- they are looking at the page
+        they copied it from -- and is unreachable for the audience the site exists for. Nothing
+        about it looks wrong in review, which is why it is banned by pattern rather than by habit.
+        """
+        offenders = []
+        for relpath in sorted(tracked_files()):
+            if not relpath.endswith(LINK_BEARING_SUFFIXES):
+                continue
+            for target in LEGACY_GITHUB_URL.findall(t.read(t.REPO_ROOT / relpath)):
+                offenders.append(f"{relpath}: {target}")
+        self.assertEqual(
+            [],
+            offenders,
+            "these links point at a file on GitHub, which the readers this site is written for "
+            "cannot reach at all -- their firewall blocks it wholesale, not just the Pages host:\n"
+            + "\n".join(offenders)
+            + "\nUse the copy the site serves: https://claude-multisession.pages.dev/<path>, with "
+            "docs/NAME.md written as /NAME.md.",
         )
 
 
@@ -285,20 +351,36 @@ class TheScansCanSeeWhatTheyLookFor(unittest.TestCase):
         planted = 'pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target'
         self.assertEqual([planted], INSTALL_COMMAND.findall(planted))
 
-    def test_the_blob_pattern_extracts_the_path_and_stops_at_the_delimiter(self):
+    def test_the_source_pattern_extracts_the_path_and_stops_at_the_delimiter(self):
         planted = (
+            "see [the gate](https://claude-multisession.pages.dev/"
+            "scripts/hooks/worktree_gate.ps1) for the rule"
+        )
+        self.assertEqual(["scripts/hooks/worktree_gate.ps1"], SOURCE_URL.findall(planted))
+
+    def test_the_legacy_pattern_still_sees_both_github_forms(self):
+        """The ban is only worth anything while it can recognise what it refuses.
+
+        Both spellings are planted, because the raw form was added to this repository AFTER the
+        blob form and a pattern that saw only one went quietly blind for a while. The ban inherits
+        that history, so it inherits the case.
+        """
+        blob = (
             "see [the gate](https://github.com/wshallwshall/claude-multisession/blob/main/"
             "scripts/hooks/worktree_gate.ps1) for the rule"
         )
-        self.assertEqual(["scripts/hooks/worktree_gate.ps1"], BLOB_URL.findall(planted))
-
-    def test_the_pattern_also_sees_the_raw_download_form(self):
-        """The standards hand out raw links; a scan blind to them checks half the published URLs."""
-        planted = (
+        raw = (
             "take the [raw markdown](https://raw.githubusercontent.com/wshallwshall/"
-            "claude-multisession/main/docs/standards/CODE-QUALITY.md) instead"
+            "claude-multisession/main/CLAUDE.md.template) instead"
         )
-        self.assertEqual(["docs/standards/CODE-QUALITY.md"], BLOB_URL.findall(planted))
+        self.assertEqual(["scripts/hooks/worktree_gate.ps1"], LEGACY_GITHUB_URL.findall(blob))
+        self.assertEqual(["CLAUDE.md.template"], LEGACY_GITHUB_URL.findall(raw))
+
+    def test_the_published_path_rule_moves_docs_pages_to_the_root(self):
+        """The asymmetry that produces the most plausible-looking wrong link."""
+        self.assertEqual("CONCEPTS.md", published_path("docs/CONCEPTS.md"))
+        self.assertEqual("scripts/coord/claim.ps1", published_path("scripts/coord/claim.ps1"))
+        self.assertEqual("INSTALL.md", published_path("INSTALL.md"))
 
     def test_the_loose_phrasing_pattern_matches_the_wording_it_exists_to_catch(self):
         self.assertTrue(

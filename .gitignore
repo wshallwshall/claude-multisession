@@ -43,6 +43,10 @@ _redirect/
 .jekyll-cache/
 .jekyll-metadata
 
+# Local state written by the wrangler CLI when someone runs it by hand against the Pages project.
+# CI authenticates from repository secrets and never writes this.
+.wrangler/
+
 # Editors and desktops.
 .vs/
 .vscode/*.local.json
