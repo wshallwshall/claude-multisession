@@ -1,9 +1,9 @@
 # Landing work: PRs and merges
 
 Several sessions working in parallel produce several branches, and all of them have to land in one
-trunk. That last mile is where parallelism stops being free: the trunk moves while you are looking at
-it, two branches append to the same file, a queued pull request quietly stops progressing, and every
-one of those failures looks like something else.
+trunk. That last mile is where parallelism stops being free. The trunk moves while you are looking at
+it, two branches append to the same file, a queued pull request quietly stops progressing -- and
+every one of those failures looks like something else.
 
 This document is the merge-time counterpart to [WORKTREES.md](WORKTREES.md) (creating and living in
 worktrees) and [PRUNING.md](PRUNING.md) (cleaning them up afterwards). Everything here was learned by
@@ -287,8 +287,8 @@ Squash-merge is why cleanup needs its own tooling. After the work is in the trun
   they stop doing the moment anything was rebased, amended or conflict-resolved
 
 All three ask the same question -- "is this commit reachable from the trunk" -- and squash-merge is
-defined by making the answer no. So **being ahead of the trunk is not evidence of unmerged work**,
-and [`scripts/worktree/prune-merged.ps1`](https://claude-multisession.pages.dev/scripts/worktree/prune-merged.ps1) carries three merge
+defined by making the answer no. So **being ahead of the trunk is not evidence of unmerged work**.
+[`scripts/worktree/prune-merged.ps1`](https://claude-multisession.pages.dev/scripts/worktree/prune-merged.ps1) carries three merge
 signals instead of one: nothing beyond the trunk, *or* a merged PR whose head is this exact tip, *or*
 the branch's own upstream ref is gone. The converse is worse and is the one that destroyed an
 occupied worktree: **zero commits beyond the trunk does not mean merged either** -- a branch created

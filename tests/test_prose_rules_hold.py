@@ -88,6 +88,7 @@ def prose_files() -> list[str]:
 
 RULE_ROW = re.compile(r"^\|\s*`?(?:B|HS|PD|OPEN|SD|CP)-\d+`?\s*\|")
 FENCE = re.compile(r"^\s*(```|~~~)")
+LIST_MARKER = re.compile(r"^(?:[-*+]|\d+\.)\s+")
 
 
 def scannable_lines(text: str) -> list[tuple[int, str]]:
@@ -116,6 +117,13 @@ def paragraphs(text: str) -> list[tuple[str, list[tuple[int, int]]]]:
     ever reaches 30 words, so a sentence-length measure reports zero, and a line that happens to
     BEGIN with a wrapped "importantly" looks like a sentence opener when it is the middle of one.
     Both were observed before this was rewritten.
+
+    A LIST ITEM BEGINS ITS OWN UNIT, and its marker is not a word. Rejoining a list into one blob
+    measured a run of items as a single sentence: 17 of the long sentences this file counted were
+    lists, not sentences. The defect punished the fix it existed to ask for, because pulling a long
+    sentence apart into bullets moved words from one blob into the same blob and changed nothing.
+    A WRAPPED continuation line still belongs to the item above it, which is why only a line that
+    STARTS with a marker flushes.
 
     Tables are excluded here and counted separately -- a table row is not prose and PD-4 protects it.
     """
@@ -148,6 +156,10 @@ def paragraphs(text: str) -> list[tuple[str, list[tuple[int, int]]]]:
         if inside or not stripped or stripped.startswith(("|", "#", ">")) or RULE_ROW.match(line):
             flush()
             continue
+        marker = LIST_MARKER.match(stripped)
+        if marker:
+            flush()
+            line = stripped[marker.end() :]
         current.append((n, line))
     flush()
     return out
@@ -290,7 +302,24 @@ class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
 # These are lower than the figures in the writing plan (which counted 1,397 long sentences) because
 # that count included headings, table rows and block quotes. This one is prose only, for the same
 # reason PD-4 exists: a table row is not a sentence and shortening it is not an improvement.
-BASELINE_LONG_SENTENCES = 470       # sentences over 30 words
+# 470 -> 390 ON 2026-08-10 WITH NO SENTENCE EDITED. Both drops were measurement errors in this
+# file, found by the sibling standards repository in its own copy of this checker and reproduced
+# here: 17 for a bullet list rejoined into one blob, 67 for a stop inside `**` not counting as a
+# stop. 80 of the old 470, or 17%, was the instrument rather than the prose. Any figure quoted from
+# a scan before this date should be re-derived. Both are pinned by planted cases above, because a
+# corpus check cannot find them -- the corpus is where the wrong number came from.
+#
+# 390 -> 294 ON 2026-08-10 BY EDITING PROSE, in a sweep over the 18 pages the site RENDERS. Every
+# edit split a sentence carrying two independent claims joined by a dash or a semicolon, where
+# splitting cost no fact; five enumerations became lists. Nothing was cut: the checklist that
+# prompted the sweep was measured against this corpus first and found nothing to purge, with B-5,
+# B-11, B-12, B-13 and B-14 all firing zero times and every `very`/`really` hit load-bearing.
+#
+# THE REMAINING 294 SPLIT 226 UNDER `docs/` AND 68 IN README.md AND INSTALL.md, which this sweep did
+# NOT touch. Those two are in this corpus but are not site pages: they live at the repository root,
+# outside the Jekyll source, so the site links them as raw `.md` rather than serving them. They are
+# the obvious next chunk, and 68 is the figure to beat.
+BASELINE_LONG_SENTENCES = 294       # sentences over 30 words
 BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 
 # How far below baseline a metric may drift before the test asks for the baseline to be lowered.
@@ -299,7 +328,16 @@ BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 LONG_SENTENCE_SLACK = 30
 FAT_CELL_SLACK = 5
 
-SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
+# A STOP INSIDE EMPHASIS IS STILL A STOP. This document set writes `**A claim.** The evidence.`
+# constantly, and the bare `(?<=[.!?])\s+` form never fired on it, because the character after the
+# stop is `*` rather than a space. Every such paragraph measured its bold lede fused to the sentence
+# after it, which is 67 of the long sentences this file used to count. The defect punished its own
+# remedy: splitting a fused claim off as its own lede is the ordinary fix, and it made the number
+# worse. A COLON lede -- `**Control not met:** independent review` -- introduces rather than closes
+# and must NOT split, which is why only `[.!?]` widens. Before widening, every emphasis run ending
+# in a stop was read: all are lede labels, and an abbreviation inside emphasis (`**e.g.**`), which
+# WOULD cut mid-sentence, does not occur in this corpus.
+SENTENCE_SPLIT = re.compile(r"(?<=[.!?])(?:\*{1,2})?\s+")
 
 
 def _measure() -> tuple[int, int, int]:
@@ -322,6 +360,72 @@ def _measure() -> tuple[int, int, int]:
                 if len(cell.split()) > 40:
                     fat_cells += 1
     return long_sentences, fat_cells, words
+
+
+class AListIsNotOneLongSentence(unittest.TestCase):
+    """Planted, because the corpus cannot find this one: the corpus IS where the wrong number came
+    from. A measure that counts a run of bullets as one 40-word sentence reports a defect that is
+    not there, and reports no change when somebody applies the fix it was asking for."""
+
+    def test_each_item_is_its_own_unit(self):
+        text = "- the gate is advisory\n- the hook is unwired\n- the claim is stale\n"
+        self.assertEqual(3, len(paragraphs(text)))
+
+    def test_a_marker_is_not_counted_as_a_word(self):
+        joined, _ = paragraphs("- one two three\n")[0]
+        self.assertEqual(3, len(joined.split()), f"the marker leaked into {joined!r}")
+
+    def test_a_numbered_item_splits_too(self):
+        self.assertEqual(2, len(paragraphs("1. the first\n2. the second\n")))
+
+    def test_a_wrapped_continuation_stays_with_its_item(self):
+        """HS-14 wraps near 100 characters, so most items are more than one line."""
+        text = "- the gate is advisory and this item\n  wraps onto a second line\n- a second item\n"
+        units = paragraphs(text)
+        self.assertEqual(2, len(units))
+        self.assertIn("wraps onto a second line", units[0][0])
+
+    def test_a_dash_run_and_a_bold_opener_are_not_markers(self):
+        """`--` is this corpus's em dash and `**` opens a lede. Neither begins a list."""
+        for text in ("-- the aside continues\nand wraps here\n", "**Trap.** The gate is advisory\nand wraps\n"):
+            self.assertEqual(1, len(paragraphs(text)), f"{text!r} was split as a list")
+
+
+class ABoldLedeEndsASentence(unittest.TestCase):
+    """The larger of the two, and the one that punished its own remedy. Positive cases and the
+    near-neighbours that must NOT split are pinned together; without the negative half this passes
+    against a pattern that splits on every asterisk."""
+
+    SPLITS = [
+        ("**Rule.** Pick the source.", 2),
+        ("**Trap.** The gate is advisory.", 2),
+        ("*Rule.* Pick the source.", 2),
+        ("The gate is advisory. It never blocks.", 2),
+    ]
+
+    HOLDS = [
+        # A colon lede introduces what follows; cutting here would sever the label from its content.
+        "**Control not met:** independent review never happened.",
+        # Emphasis inside a sentence, which is not a lede at all.
+        "An entry is a *claim*; a receipt is evidence.",
+        "The rows are ordered by *leverage* rather than by name.",
+    ]
+
+    def test_a_stop_inside_emphasis_splits(self):
+        for text, expected in self.SPLITS:
+            self.assertEqual(
+                expected,
+                len(SENTENCE_SPLIT.split(text)),
+                f"{text!r} did not split into {expected}; a bold lede is fusing with what follows.",
+            )
+
+    def test_the_near_neighbours_stay_whole(self):
+        for text in self.HOLDS:
+            self.assertEqual(
+                1,
+                len(SENTENCE_SPLIT.split(text)),
+                f"{text!r} was split. That is one sentence, and the pattern is too wide.",
+            )
 
 
 class TheReportedMetricsDoNotRegress(unittest.TestCase):

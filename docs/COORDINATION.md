@@ -120,7 +120,7 @@ several logins coexist and a session is visible only to the login that owns it).
 uncleanly leaves its record behind, and stale records naming long-dead processes are routine. The
 client ships a `procStart` field intended for exactly this fence; do not depend on it. It may be
 absent or in a shape you did not expect, and the guard shipped alongside it returns true when it
-cannot tell -- it fails **open** toward "still alive", so relying on it silently degrades to a bare
+cannot tell. It fails **open** toward "still alive", so relying on it silently degrades to a bare
 pid check.
 
 **Rule.** `Test-RecordLiveness` reads the process start time itself and requires it to be consistent
@@ -154,13 +154,14 @@ failed to read the registry at all.
 
 **Why it is wrong.** "Nobody is here" and "I could not look" produce the same empty answer. Worse:
 records that will not parse, and records that parse but carry no `cwd`, used to be dropped by a
-silent `continue` and appeared in no count -- and a half-written record is exactly what a session that
-launched one second ago looks like.
+silent `continue`, so they appeared in no count. A half-written record is exactly what a session
+that launched one second ago looks like.
 
-**Rule.** `Get-WorktreeOccupancy` returns a **receipt** alongside the rows -- `RootsExamined`,
-`RecordsExamined`, `RecordsUnplaceable`, `UnplaceableFiles` -- and sets `Available` only when there
-was at least one config root with a registry, at least one readable record, **and** no record that
-could not be placed. Any unplaceable record makes the whole fence unavailable, because it could name
+**Rule.** `Get-WorktreeOccupancy` returns a **receipt** alongside the rows: `RootsExamined`,
+`RecordsExamined`, `RecordsUnplaceable`, `UnplaceableFiles`. It sets `Available` only under three
+conditions: at least one config root with a registry, at least one readable record, **and** no
+record that could not be placed. Any unplaceable record makes the whole fence unavailable, because
+it could name
 *any* worktree and therefore clears none of them. Callers about to destroy something must gate on
 `Available`, print the receipt, and refuse when it is false. Count what you **examined**, not what
 you found.
@@ -172,10 +173,10 @@ script that died before answering.
 
 That has to hold on **every** exit, not just the interesting ones. The not-inside-a-repository path
 was the exception that hid: it emitted `[]` and exited 0 with no receipt at all, alone among that
-file's unavailable paths -- the same two bytes a completed fence emits when it has read every config
-root and found nobody. This is the roster other tools gate on, so an empty list read as an all-clear
-is a green light derived from nothing having been measured. **A receipt on the paths you were
-thinking about is not a receipt.**
+file's unavailable paths. Those are the same two bytes a completed fence emits when it has read
+every config root and found nobody. This is the roster other tools gate on, so an empty list read as
+an all-clear is a green light derived from nothing having been measured. **A receipt on the paths
+you were thinking about is not a receipt.**
 
 **And the receipt alone was still not enough.** That was found by going and reading the *consumer*,
 not by re-reading `presence.ps1`. `session-context.ps1` -- the SessionStart banner whose entire job is
@@ -253,14 +254,14 @@ Two independent signals, because they catch different failures:
   different files.
 
 **Nobody has to opt in.** Every input is a by-product of working normally -- git state and a task list
-the session already keeps. That is deliberate: an explicit claim tool sat in the repository for a
-long time and was used exactly zero times, because *a coordination step you must remember is a
-coordination step you will skip*. Anything built on voluntary declaration decays to nothing.
+the session already keeps. That is deliberate. An explicit claim tool sat in the repository for a
+long time and was used exactly zero times. *A coordination step you must remember is a coordination
+step you will skip.* Anything built on voluntary declaration decays to nothing.
 
 ### An all-clear has to be said out loud
 
 `-File <path>` on the human path, with nobody else in that file, used to print **nothing** and exit 0.
-That is byte-identical to what the script produces when it dies before answering -- and this is the
+That is byte-identical to what the script produces when it dies before answering. This is the
 command you are told to run *before* starting a chunk of work, so the reading that costs you is the
 reassuring one.
 
@@ -307,8 +308,8 @@ reported a clean all-clear derived from nothing having been measured.
 `-Json` is `[]`. Exit **non-zero** when it could not be answered at all. The gate already handled that
 correctly, reporting *"allowed the edit without consulting any peer worktree ... an absent collision
 warning means UNKNOWN here, not clear."* The exit code is the only channel that survives a consumer
-discarding stderr, so it is part of the contract and is written down in `overlap.ps1`'s header beside
-the row fields.
+discarding stderr. It is part of the contract, and `overlap.ps1`'s header writes it down beside the
+row fields.
 
 **The general shape:** before calling a can't-tell path fixed, go and read what the *consumer*
 actually consumes. A receipt on a stream nobody reads is documentation, not a control.
@@ -325,7 +326,7 @@ Neither diff form is correct alone, and each is wrong in the opposite direction:
 
 The **intersection** is what the branch authored and has not yet landed. It self-clears on squash,
 rebase and merge-commit alike. Measured on the repo this tooling was developed in: two landed
-branches claimed 8 and 4 files under three-dot and 0 under the intersection, while every branch with
+branches claimed 8 and 4 files under three-dot and 0 under the intersection. Every branch with
 genuinely outstanding work kept its full file set.
 
 **It self-clears only while nobody else edits the same file.** That condition was missing from this
@@ -339,7 +340,7 @@ That is left in place on purpose. Such a row is **dormant** with `MatchedDirty` 
 collision gate cannot block on it -- it requires `Live` **and** `MatchedDirty` -- and
 `session-context.ps1` filters dormant rows out of the banner entirely. The cost is one line in a human
 summary, not a refused edit. And the precise question, *"is this difference mine, or did someone
-change it after me?"*, is not one the two-dot form can answer; buying it means walking history per
+change it after me?"*, is not one the two-dot form can answer. Buying it means walking history per
 file on the hot path of every edit. **Over-reporting a dormant row is the safe direction.** Reading
 the self-clearing property as unconditional is not.
 
@@ -381,7 +382,7 @@ because producer and consumer are edited by different people at different times.
 
 Adding a field is compatible. Renaming one, removing one, or **changing what `MatchedDirty` means**
 is not -- change the contract block and the gate's version-lock note in the same commit. The gate
-handles the one direction that can be handled safely: a row with no `MatchedDirty` at all (a stale
+handles the one direction that can be handled safely. A row with no `MatchedDirty` at all (a stale
 cache, an older `overlap.ps1`) is treated as dirty, so it over-blocks rather than permitting a real
 collision. There is no equivalent protection against a field keeping its name and changing its
 meaning.
@@ -422,11 +423,12 @@ are two claimants.
 **Why it is wrong.** Age measures how long the *work* has run and says nothing about whether anyone
 is still doing it. Measured on the repo this tooling was developed in: a claim was reported
 `STALE ~21h` while its holder had committed **two minutes earlier**. Releasing on that advice frees
-the key for a second session to start building what someone is mid-flight on -- the exact duplicate
-build the registry exists to prevent, arrived at by following the tool's own recommendation.
+the key for a second session to start building what someone is mid-flight on. That is the exact
+duplicate build the registry exists to prevent, arrived at by following the tool's own
+recommendation.
 
 **Rule.** `Get-HolderLiveness` reports only what it can prove, and all three surfaces (`-List`,
-`-Take`, `-Release`) use it -- they used to disagree, and the two *blocking* paths were the ones that
+`-Take`, `-Release`) use it. They used to disagree, and the two *blocking* paths were the ones that
 did not probe at all:
 
 | Holder state | What the tool says |
@@ -456,8 +458,8 @@ indefinitely. A measured instance: a claim note was still announcing a merge fre
 session hours after the work it was waiting on had merged.
 
 **Rule.** Make in-place refresh a first-class operation for any coordination record whose content is
-broadcast, and stamp the refresh time (`claimed` is the claim's identity and never moves; `refreshed`
-is how old the *note* is). Two mechanics make the refresh safe:
+broadcast, and stamp the refresh time. (`claimed` is the claim's identity and never moves;
+`refreshed` is how old the *note* is.) Two mechanics make the refresh safe:
 
 - Write to a temp file and **`[IO.File]::Move(..., overwrite)`, not `Move-Item -Force`.** The claim
   file's existence *is* the lock, so any instant in which the name does not exist is an instant
@@ -486,7 +488,7 @@ is how old the *note* is). Two mechanics make the refresh safe:
 Not being able to read a claim file is precisely *not knowing whose it is*, so it can be neither
 attributed nor cleared. And "no claims directory" and "a claims directory with nothing wrong" both
 produce an empty problem list. Survey unreadable records separately, leave them in place, and emit an
-explicit "did not scan" when the source did not exist -- an empty problem list is only meaningful when
+explicit "did not scan" when the source did not exist. An empty problem list is only meaningful when
 you can prove you looked.
 
 ## Locks: one operation at a time
@@ -522,13 +524,13 @@ then can only say "hello" -- the interrupt without the information. One prompt l
 was asked to do, and the announcement can carry **intent**, which is the entire value.
 
 **When it fires:** on the first prompt at which a *messageable* peer exists -- not simply the first
-prompt -- and again when a new peer appears, under per-session budgets (`-MaxMessages` per round,
-`-MaxTotal` for the session's whole life, `-MaxChecks` before it settles). A peer that starts thirty
+prompt -- and again when a new peer appears. Per-session budgets bound it: `-MaxMessages` per round,
+`-MaxTotal` for the session's whole life, `-MaxChecks` before it settles. A peer that starts thirty
 seconds from now is exactly the one worth announcing to, so "no peers yet" is never written as a
 terminal state.
 
 **It always exits 0.** A UserPromptSubmit hook that fails can block the user's prompt outright.
-Nothing here is worth that -- which is also why the file carries no `#Requires` line: a requirements
+Nothing here is worth that. It is also why the file carries no `#Requires` line. A requirements
 failure is raised *before* the body runs and exits non-zero, precisely the outcome the rest of the
 file is built to avoid.
 
@@ -611,9 +613,9 @@ Ask nothing, expect no answer, do not wait for a reply. The hook's own peer bloc
 reason. And every peer-supplied field is stripped of control characters and capped before it is
 interpolated, so nothing a peer wrote can break out of the line it belongs on.
 
-The same rule applies to the *claim note* the hook surfaces. Prefer it over the worktree name -- a
-worktree name is a creation-time label and nothing keeps it current; one is known to have described
-work that session never did -- but read its bracketed age, and verify before relying on it.
+The same rule applies to the *claim note* the hook surfaces. Prefer it over the worktree name. A
+worktree name is a creation-time label and nothing keeps it current, and one is known to have
+described work that session never did. But read its bracketed age, and verify before relying on it.
 
 ### The audit trail is written by the thing being audited
 
@@ -638,10 +640,12 @@ configured server, and the session-management MCP is host-provided.
 ### A probe with no positive control cannot tell "failed" from "not surfaced"
 
 **Trap.** Testing whether an `mcp_tool` hook could reach the host-provided session-messaging server.
-Three hooks in one `UserPromptSubmit` array: a `command` control fired and its stdout reached the
-model verbatim; an `mcp_tool` naming the real server produced nothing; an `mcp_tool` naming a
-**deliberately nonexistent** server *also* produced nothing -- where the documentation promises a
-non-blocking error.
+Three hooks in one `UserPromptSubmit` array:
+
+- a `command` control fired, and its stdout reached the model verbatim;
+- an `mcp_tool` naming the real server produced nothing;
+- an `mcp_tool` naming a **deliberately nonexistent** server *also* produced nothing, where the
+  documentation promises a non-blocking error.
 
 **Why the result is worthless.** With no connected MCP server anywhere on the box, "output not
 surfacing", "the server not being addressable" and "every call erroring with the error never reaching
@@ -653,7 +657,7 @@ known-good instance before trusting either answer. The `mcp_tool` route here is 
 **untested, not impossible**; if it works, this whole design collapses to one hook entry and the
 model stops having to write its own delivery receipt.
 
-`bin/ccx-doctor.ps1` follows the same rule for every attack it fires: each is paired with an ordinary
+`bin/ccx-doctor.ps1` follows the same rule for every attack it fires. Each is paired with an ordinary
 action the same control must **allow**, because a script that refuses everything is not a working
 guard either.
 
@@ -683,10 +687,10 @@ pwsh -NoProfile -File scripts/coord/install-coordination.ps1 -Only UserPromptSub
 ### The cost of an always-on hook, stated rather than discovered
 
 Measured on the repo this tooling was developed in: the shim costs roughly half a second on **every**
-user prompt in **every** repository on the machine, and the peer lookup adds about a second on the
-prompts where it actually runs. Order cheap guards before expensive lookups (the opt-in check and the
-marker check both precede the roster call) and back off deliberately: at most once a minute for the
-first ten checks, then once every ten minutes, stopping after forty.
+user prompt in **every** repository on the machine. The peer lookup adds about a second on the
+prompts where it actually runs. Order cheap guards before expensive lookups: the opt-in check and the
+marker check both precede the roster call. Back off deliberately, at most once a minute for the first
+ten checks, then once every ten minutes, stopping after forty.
 
 Publish the per-prompt cost of any always-on hook. People who discover it themselves configure it
 away.
@@ -696,8 +700,8 @@ away.
 - **Delivery is unprovable from PowerShell.** See above.
 - **The `kind` filter is currently unexercised.** Every registry record measured on the development
   host read `kind=interactive`, including a workflow-driven session. Do not read it as protection it
-  has never provided -- and note that it deliberately does *not* write a terminal state, because a
-  wrong filter would then produce evidence identical to a right one.
+  has never provided. It deliberately does *not* write a terminal state, because a wrong filter would
+  then produce evidence identical to a right one.
 - **Whether the harness kills the hook process at its timeout, or merely stops waiting, is not
   observable from inside the hook.** The `checking` -> `LOOKUP_KILLED` ladder is best-effort and
   self-heals on a bounded clock rather than silencing the session forever.
@@ -791,31 +795,31 @@ git merge-tree --write-tree main <branch>    # the merge. This is the one that a
 ```
 
 Measured on the same branch, 63 commits behind: the two-dot diff reported 1,478 insertions and 3,247
-deletions across 46 files, including two entire test files -- and was briefly read as what landing it
+deletions across 46 files, including two entire test files. It was briefly read as what landing it
 would do. The actual merge touches **two** files. The alarming number was a fact about how stale the
 branch was, not about what merging it would destroy.
 
-The two errors point opposite ways -- the old `merge-tree` under-reports danger, a two-dot diff wildly
-over-reports it -- and they were made by two different sessions on the same branch within an hour of
-each other. Neither is a reading of the merge. **To ask what a merge would do, compute the merge.**
+The two errors point opposite ways: the old `merge-tree` under-reports danger, and a two-dot diff
+wildly over-reports it. Two different sessions made them, on the same branch, within an hour of each
+other. Neither is a reading of the merge. **To ask what a merge would do, compute the merge.**
 
 Even from the correct form, a silent pass means only that the lines do not collide -- never that the
 changes are not redundant.
 
 When it happens, resolve to **one** passage taking what each version had and the other lacked, rather
-than deleting one wholesale. In the case above each version was better on a different axis -- one
-quoted the target document's heading verbatim, the other carried the framing that fitted the
-surrounding paragraph and the concrete consequence for a reader -- and picking a winner would have
-thrown away half the work.
+than deleting one wholesale. In the case above each version was better on a different axis. One
+quoted the target document's heading verbatim; the other carried the framing that fitted the
+surrounding paragraph and the concrete consequence for a reader. Picking a winner would have thrown
+away half the work.
 
 This is the same shape as [`isRunning`](#the-id-rules-the-most-valuable-part-of-the-hook): an
 instrument answering a narrower question than the one being asked of it, and reporting success while
 it does.
 
 **The one mechanism here that prevents rather than reports.** In the episode above, every correction
-the two sessions made for each other arrived *after* the work was already done -- the duplicate
-paragraph, the stale verification base, the wrong noun on the routing page, all found by reading
-afterwards. The collision gate was the exception: when the second session tried to edit
+the two sessions made for each other arrived *after* the work was already done. The duplicate
+paragraph, the stale verification base, the wrong noun on the routing page: all were found by
+reading afterwards. The collision gate was the exception. When the second session tried to edit
 `docs/index.md` a third time, it refused, named the session holding the file and named its branch,
 and the edit never happened. Announce tells peers what you intend; overlap tells you what they have
 touched; both inform. The gate is the only one that stops you, and it is worth keeping loud for that
@@ -838,10 +842,10 @@ and WORK only helps if you run it **before you start building**, not when you go
 pwsh -NoProfile -File scripts/coord/overlap.ps1        # both signals, before you begin
 ```
 
-The honest summary is that the gates are strong on *editing the same thing* and weak on *building the
-same thing*, the second is the more expensive of the two, and the one tool aimed at it is the one
-everybody skips -- which is precisely the decay the WORK signal was designed to resist by needing no
-opt-in. Reading it is still a step you have to remember.
+The gates are strong on *editing the same thing* and weak on *building the same thing*. The second is
+the more expensive of the two, and the one tool aimed at it is the one everybody skips. That is
+precisely the decay the WORK signal was designed to resist by needing no opt-in. Reading it is still
+a step you have to remember.
 
 ## Proving any of this is live
 
@@ -931,8 +935,8 @@ installer, writing into the same user settings file, from deleting this one's ho
 
 The user-scope hooks fire in **every** repository on the machine, so each one first asks "is this
 repository governed?" by testing for **`ccx.config.json` at the repository root** before it writes a
-byte. That is deliberately *not* "does one of the scripts happen to exist" -- which is true in a
-half-installed tree, true in any fork that copied the scripts directory and opted into nothing, and
-false in a repository that vendors the scripts elsewhere. It is a direct presence test at the root,
-never a walk-up: a walk-up from an unrelated repository checked out *inside* a governed one would
-find the outer config and claim the inner repo.
+byte. That is deliberately *not* "does one of the scripts happen to exist". That test is true in a
+half-installed tree, and true in any fork that copied the scripts directory and opted into nothing.
+It is false in a repository that vendors the scripts elsewhere. The check is a direct presence test
+at the root, never a walk-up. A walk-up from an unrelated repository checked out *inside* a governed
+one would find the outer config and claim the inner repo.

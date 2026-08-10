@@ -226,7 +226,7 @@ any window under the empirical floor releases trees that measurement says are in
 Only the literal `0` used to be declared. Everything between 0 and the floor disarmed signal 2 just as
 effectively and printed nothing.
 
-`-Name` deserves its own line: it is `-IdleHours 0` scoped to one tree, and since signal 1 has been
+`-Name` deserves its own line. It is `-IdleHours 0` scoped to one tree, and since signal 1 has been
 measured vetoing none of the real siblings on a busy repo, `-Apply -Name <slug>` can leave a candidate
 with **no working occupancy signal at all**. It stays available because there are legitimate uses, but
 it is never silent.
@@ -234,8 +234,8 @@ it is never silent.
 ## A wrong-cwd run must refuse loudly, never green no-op
 
 Sibling worktrees are named after the **primary**, so run from a linked worktree the candidate set is
-empty for the wrong reason -- and the old script printed a green "nothing to consider", which reads
-exactly like "everything is tidy". Three refusals exist for this class:
+empty for the wrong reason. The old script printed a green "nothing to consider", which reads exactly
+like "everything is tidy". Three refusals exist for this class:
 
 - not the primary checkout -> exit 2, printing both paths.
 - the trunk cannot be resolved -> exit 2. Guessing `origin/main` in a repo whose trunk is something else
@@ -261,9 +261,9 @@ this tooling was developed in), plus the time taken by every removal before this
 arrive inside it.
 
 One subtlety worth copying: when the re-check vetoes, the occupants it found are **written back onto the
-decision**. Without that, the one candidate the fence actually saved still reports `Occupants: []`, and
-the "vetoed by signal 1" figure -- the number that exists precisely so "the fence ran" cannot imply "the
-fence covered it" -- under-reports the save to zero.
+decision**. Without that, the one candidate the fence actually saved still reports `Occupants: []`.
+The "vetoed by signal 1" figure then under-reports the save to zero -- the number that exists
+precisely so "the fence ran" cannot imply "the fence covered it".
 
 ## Count outcomes, not intentions
 
@@ -278,8 +278,8 @@ A destructive tool that over-reports what it destroyed is actively misleading. T
   decision nobody made (the JSON once said 7 branches were kept on a run whose summary said 0).
 - `Merged` is `$null`, not `$false`, when the test never ran: a machine consumer reads `false` as
   "checked, and it is not merged", which is a different claim from "never asked".
-- the final line is coloured by the **exit code**, not by the failure count -- a run where the fence died
-  and every removal was refused has `failed 0` and used to print that in green next to exit 2.
+- the final line is coloured by the **exit code**, not by the failure count. A run where the fence
+  died and every removal was refused has `failed 0`, and used to print that in green next to exit 2.
 
 ### Exit codes
 
@@ -323,10 +323,10 @@ git -C <primary> worktree add <path> <branch>
 It looks like the obvious tidy-up after a failed removal. It is not, and this repository never runs it --
 not in `prune-merged.ps1`, not in `remove.ps1`.
 
-`git worktree prune` deregisters **any** worktree whose directory is momentarily missing: one on a
-disconnected network drive, an unmounted volume, a path a live session is about to come back to, and the
-Claude Code-managed nested worktrees this tooling must never touch. It would finish exactly the
-destruction a half-failed removal started. `git worktree remove` already deregisters the one you
+`git worktree prune` deregisters **any** worktree whose directory is momentarily missing. That covers
+one on a disconnected network drive, an unmounted volume, a path a live session is about to come back
+to, and the Claude Code-managed nested worktrees this tooling must never touch. It would finish
+exactly the destruction a half-failed removal started. `git worktree remove` already deregisters the one you
 removed; a blanket prune is a second, much wider action wearing the costume of a cleanup step.
 Deregister specific worktrees deliberately, never by sweep.
 
@@ -373,7 +373,7 @@ the branch's actual state.
 A stale ref costs nothing; a destroyed commit costs a session. The branch is also never touched after an
 **unverified** removal.
 
-`remove.ps1` takes the stricter line: it only ever runs `-d`, and when git refuses it leaves the branch
+`remove.ps1` takes the stricter line. It only ever runs `-d`, and when git refuses it leaves the branch
 in place, prints the tip, and tells you the `-D` command to run deliberately rather than as a side
 effect of tidying up a directory.
 

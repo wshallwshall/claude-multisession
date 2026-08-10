@@ -47,8 +47,8 @@ Installers:
 | `scripts/coord/install-git-hooks.ps1` | claim gate, push guard | the clone's shared git hooks directory |
 
 Nothing installs `block-blanket-git-stage.ps1`, `steer-inject.ps1`, or `seq_check.py`. Wire those by
-hand: `.claude/settings.example.json` in this checkout is a real, tracked row for the blanket-stage
-guard (path left as a loud placeholder), and `docs/STEERING.md` carries the equivalent for the
+hand. `.claude/settings.example.json` in this checkout is a real, tracked row for the blanket-stage
+guard, with the path left as a loud placeholder. `docs/STEERING.md` carries the equivalent for the
 steering injector at `settings.local.json` scope, which is where that one belongs. An `.example.`
 file is inert by construction -- the harness loads `settings.json` and `settings.local.json` only --
 so nothing in this repository can be mistaken for an installed control.
@@ -122,7 +122,7 @@ project's own guards rather than replacing them. The installers here write user 
 project settings live on one branch and reach a sibling worktree only if it merges them.
 
 Markers are on-disk identity. `install-coordination.ps1` finds its own entries by the literal
-`ccx-coord` or `ccx-announce` inside the command string, and the match is a substring test -- so
+`ccx-coord` or `ccx-announce` inside the command string, and the match is a substring test. So
 **neither marker may contain the other**, in either direction, or one uninstall silently removes the
 other's hook. Rename a marker and every existing install is orphaned. Do it once, in one commit.
 
@@ -184,8 +184,8 @@ PowerShell parses `if` as a command name, and the script dies before its first l
 shipped, and the whole test suite missed it -- every test passed `-ReposFile` explicitly, and a
 parameter default is not evaluated when a value is supplied.
 `tests/test_worktree_gate_no_args.py` runs the script with no arguments at all, and requires it to
-deny a write into a governed root -- the only outcome that proves the default both evaluated and
-resolved to the file the installer writes.
+deny a write into a governed root. That is the only outcome that proves the default both evaluated
+and resolved to the file the installer writes.
 
 ### The git-hook contract
 
@@ -196,7 +196,7 @@ and the failure reads as "bad interpreter", not as "bad newline".
 
 If no interpreter is found the shim **writes to stderr and exits 0**. That is fail-open, declared:
 both gates are off for that commit or push, and they say so. `-Status` reports which interpreter it
-resolved, and it asks the interpreter to run rather than trusting the lookup -- on Windows a `python`
+resolved, and it asks the interpreter to run rather than trusting the lookup. On Windows a `python`
 on PATH is often an app-execution alias that resolves cleanly and then does not execute anything. The
 instrument must answer the question you asked.
 
@@ -205,8 +205,8 @@ anywhere else. Bolted onto `pre-commit` it would look installed and silently nev
 
 `install-git-hooks.ps1` **never writes `pre-commit`, at all** -- not to install, not to patch, not to
 migrate. Two tools cannot both own that file. A hook framework that finds a foreign hook there may
-rename it and invoke it from its own shim, and that chain has failed on Windows and blocked every
-commit in a repository until the shim was removed. Note that the renamed file *existing* did not
+rename it and invoke it from its own shim. That chain has failed on Windows and blocked every commit
+in a repository until the shim was removed. Note that the renamed file *existing* did not
 indicate success; only a real commit did. That is also why the sequence gate ships unwired: it needs
 `pre-commit`, so you attach it to whatever framework already owns that file.
 
@@ -249,10 +249,10 @@ You cannot detect a difference the producer never encoded. So:
 * Bound the throttle in **both** directions. A stamp dated in the future reads as eternally fresh and
   suppresses the notice forever: the same silence, now self-inflicted.
 * Scope the throttle per worktree, not per repository. A repo-wide stamp means the first session to
-  hit a broken gate silences it for every other session -- and those sessions read that silence as
+  hit a broken gate silences it for every other session. Those sessions read that silence as
   "checked, nobody is here", which is precisely the defect the notice exists to remove.
-* Where the notice cannot be JSON -- because the failure happened before the hook could load its
-  helpers -- write it to **stderr**, which is not parsed as a decision, and to the deny log. Both
+* Where the notice cannot be JSON, because the failure happened before the hook could load its
+  helpers, write it to **stderr**, which is not parsed as a decision, and to the deny log. Both
   `worktree_gate.ps1` and `block-blanket-git-stage.ps1` print `NOT ENFORCING` there when a dot-source
   fails.
 
@@ -412,7 +412,7 @@ only makes the boundary look firmer than it is. The real backstop for the shell 
 commit-time hook, which inspects the tree rather than the argument.
 
 And when you name a backstop, verify it implements the predicate you are relying on. A gate header
-once pointed at a `pre-commit` hook as its backstop for shell-route writes; that hook was a stock
+once pointed at a `pre-commit` hook as its backstop for shell-route writes. That hook was a stock
 dispatcher for unrelated linters, none of which had any notion of which checkout was being written
 to. The only actual control on that path was the deny text asking politely. An admitted gap is safer
 than a false one, because the next reader stops looking.
@@ -420,8 +420,8 @@ than a false one, because the next reader stops looking.
 ### State the cost of an always-on hook
 
 Measured on the repo this tooling was developed in: the coordination shim costs roughly half a second
-on **every** user prompt in **every** repository on the machine, and the peer lookup adds about a
-second more on the prompts where it actually runs. A `PreToolUse` hook on `*` costs a process spawn
+on **every** user prompt in **every** repository on the machine. The peer lookup adds about a second
+more on the prompts where it actually runs. A `PreToolUse` hook on `*` costs a process spawn
 before every tool call -- roughly a third of a second, most of which is bare interpreter startup and
 unavoidable.
 
@@ -518,8 +518,8 @@ blind spots on every run. Run it before believing any of this is on.
   asymmetry is the point: the human installs and removes these; a session may not.
 * **The gates governing what a session may install refuse to run inside a session.** Both
   hook-installers throw when `CLAUDECODE=1`. Their `-Status` paths are exempt, and run *before* the
-  refusal, because auditing is not installing -- and a session that cannot see whether its own
-  guardrails are live has no way to notice the one failure the machinery exists to surface.
+  refusal, because auditing is not installing. A session that cannot see whether its own guardrails
+  are live has no way to notice the one failure the machinery exists to surface.
 * **Announce delivery depends on a session-management MCP that is Desktop-only.** It is absent on a
   plain CLI install, where the hook still fires, still resolves peers, and then instructs the model to
   call tools it does not have. Leave it uninstalled there, or create its OFF file.

@@ -3,9 +3,14 @@
 `scripts/security/scan_forbidden.py` refuses to let identifying content reach a public repository.
 
 Publishing a repo that grew up in private is not a license question, it is a *string* question. The
-code is fine. What follows it out the door is the absolute path some traceback printed, the address
-of a box someone pasted out of a terminal, a token prefix in a config example, and the name of the
-client the work was actually for. None of that is a syntax error, a test failure, or a *secret* in
+code is fine. What follows it out the door is:
+
+- the absolute path some traceback printed;
+- the address of a box someone pasted out of a terminal;
+- a token prefix in a config example;
+- the name of the client the work was actually for.
+
+None of that is a syntax error, a test failure, or a *secret* in
 the sense a secret scanner means. So nothing else in a normal toolchain is looking for it, and it is
 found by a reader, after publication, or not at all.
 
