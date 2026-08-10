@@ -49,7 +49,7 @@ it happens, because each session believes it owns its directory.
 That is the loudest collision, not the only one. Six more -- same file, same work in different files,
 same reserved number, same config lock, same shared list, same agent memory -- are tabulated with
 their measurements in the
-[README's collision table](https://github.com/wshallwshall/claude-multisession#what-problem-this-solves),
+[README](https://claude-multisession.pages.dev/README.md), *"What problem this solves"*,
 which is the place to start if you are still deciding whether you have this problem.
 
 ## What you get
@@ -84,7 +84,7 @@ than one session can hold. The write-up is candid that the obvious split is the 
 per chapter is a scheduling answer, and the collision that actually costs you is not two agents
 editing the same row but **two agents applying different unwritten rules**, producing verdicts that
 cannot be reconciled afterwards because neither recorded which rule it applied.
-[Running a large assessment](https://wshallwshall.github.io/secure-development-standards/ASVS-ASSESSMENT.html)
+[Running a large assessment](https://secure-development-standards.pages.dev/ASVS-ASSESSMENT.html)
 
 ### Which part defends against #76590
 
@@ -139,7 +139,7 @@ Runs on PowerShell 7 for Linux and macOS, but the Windows paths are the exercise
 in the roster and path case-folding degrade elsewhere. There is **no `ccx` executable on `PATH`** --
 where these docs say `ccx doctor`, that is shorthand for
 `pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`. MIT licensed
-([LICENSE](https://github.com/wshallwshall/claude-multisession/blob/main/LICENSE)).
+([LICENSE](https://claude-multisession.pages.dev/LICENSE)).
 
 ---
 
@@ -231,12 +231,12 @@ pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target |
 ```
 
 **Give the sessions a working agreement.** Copy
-[CLAUDE.md.template](https://raw.githubusercontent.com/wshallwshall/claude-multisession/main/CLAUDE.md.template)
+[CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
 into the target as `CLAUDE.md` and edit it down to what is true there. The gates stop what they can
 see; this file is where you write down what they cannot. Keep it short enough that it stays true --
 an unmaintained working agreement is worse than none, because the next session acts on it anyway.
 
-[INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) is the record
+[INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) is the record
 of record for the installers: the annotated version of these steps, and how to prove each one is live
 rather than merely merged.
 
@@ -244,14 +244,17 @@ rather than merely merged.
 
 ## What ships
 
-Paths are relative to this checkout; browse them in the
-[repository](https://github.com/wshallwshall/claude-multisession).
+Paths are relative to this checkout. Every one of them is also served by this site at the same path,
+so `scripts/coord/claim.ps1` is readable at
+[/scripts/coord/claim.ps1](https://claude-multisession.pages.dev/scripts/coord/claim.ps1) without a
+clone. They are on [GitHub](https://github.com/wshallwshall/claude-multisession) too, which is the
+better view where it is reachable.
 
 ### Start here
 
 | Script | Does | Doc |
 |---|---|---|
-| `bin/ccx-doctor.ps1` | Prove -- by receipt and by attack -- that each control is installed, wired, and refuses what it can be made to refuse. It never infers, always prints WHAT WAS SCANNED and BLIND SPOTS ON THIS RUN, and a skip is never a pass (exit 2). At least one deny path is not self-testable: the collision gate's needs a live peer worktree holding an uncommitted change to the same file, so the doctor proves only that the gate refuses to go *silent*, and prints that as a blind spot every run | [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) |
+| `bin/ccx-doctor.ps1` | Prove -- by receipt and by attack -- that each control is installed, wired, and refuses what it can be made to refuse. It never infers, always prints WHAT WAS SCANNED and BLIND SPOTS ON THIS RUN, and a skip is never a pass (exit 2). At least one deny path is not self-testable: the collision gate's needs a live peer worktree holding an uncommitted change to the same file, so the doctor proves only that the gate refuses to go *silent*, and prints that as a blind spot every run | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
 
 ### To run sessions
 
@@ -300,10 +303,10 @@ Installed once, then invoked by the harness or by git.
 | `scripts/coord/session-registry.ps1` | The liveness fence: reads the client's session registry and decides whether a session is alive. Liveness may only VETO, never PERMIT -- DEAD/STALE/absent is the absence of a veto, not a permission | [Concepts](CONCEPTS.md) |
 | `scripts/coord/occupancy.ps1` | The one cwd-to-worktree matcher, returning a receipt alongside its rows (roots examined, records examined, records that could not be placed) and setting `Available` only when there was something to examine | [Concepts](CONCEPTS.md) |
 | `scripts/coord/lock.ps1` | The short-lived cross-session mutex, dot-sourced rather than run: `. lock.ps1` then `Enter-CcxLock` / `Exit-CcxLock`. No TTLs anywhere: locks retry and never steal, and on timeout fail loudly and name the holder | [Concepts](CONCEPTS.md) |
-| `scripts/coord/install-coordination.ps1` | Wires the banner, collision gate and announce at user scope as shims that re-resolve at run time; writes exactly one settings file per run (`-SettingsPath`) | [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) |
-| `scripts/coord/install-git-hooks.ps1` | Installs `commit-msg` + `pre-push` into one clone's shared `.git/hooks` (`-RepoRoot`), refuses to overwrite a foreign hook, and never writes `pre-commit` at all | [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) |
-| `scripts/worktree/install-gate.ps1` | Installs the worktree gate as a copy outside every working tree, into every config root it finds, plus the allowlist that is its kill switch (`-Repo`, `-ConfigDir`) | [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) |
-| `scripts/worktree/install-selfheal.ps1` | Wires the SessionStart backstop into ONE config root per run; `-ConfigDir` is mandatory, and it governs whatever the gate's allowlist already names | [INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) |
+| `scripts/coord/install-coordination.ps1` | Wires the banner, collision gate and announce at user scope as shims that re-resolve at run time; writes exactly one settings file per run (`-SettingsPath`) | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
+| `scripts/coord/install-git-hooks.ps1` | Installs `commit-msg` + `pre-push` into one clone's shared `.git/hooks` (`-RepoRoot`), refuses to overwrite a foreign hook, and never writes `pre-commit` at all | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
+| `scripts/worktree/install-gate.ps1` | Installs the worktree gate as a copy outside every working tree, into every config root it finds, plus the allowlist that is its kill switch (`-Repo`, `-ConfigDir`) | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
+| `scripts/worktree/install-selfheal.ps1` | Wires the SessionStart backstop into ONE config root per run; `-ConfigDir` is mandatory, and it governs whatever the gate's allowlist already names | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
 
 ---
 
@@ -331,14 +334,14 @@ is most useful as the list of ways the obvious implementations fail).
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list).
 
 **The standards are a separate project now.**
-[secure-development-standards](https://wshallwshall.github.io/secure-development-standards/) holds
+[secure-development-standards](https://secure-development-standards.pages.dev/) holds
 the set that used to live in this repository: a bar for code an agent wrote and a small team has to
 stand behind, plus the CI discipline and the assessment method that went with it. They ship no code
 and confer no certification. Their index is over there and is not mirrored here, because two copies
 of one list is the drift both projects are about.
 
 **At the repository root:**
-[INSTALL.md](https://github.com/wshallwshall/claude-multisession/blob/main/INSTALL.md) (record of
+[INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) (record of
 record for the installers) and
-[CLAUDE.md.template](https://github.com/wshallwshall/claude-multisession/blob/main/CLAUDE.md.template)
+[CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
 (a working agreement to drop into your own repository).

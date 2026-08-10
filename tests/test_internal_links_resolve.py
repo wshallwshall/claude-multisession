@@ -14,7 +14,7 @@ have reported it if one of those had moved. A separate session then renamed a `#
 across seven pages; that one happened to have no inbound links, which nothing checked either.
 
 THE SITE'S OWN URLS COUNT AS INTERNAL, AND THEY FELL BETWEEN THE TWO CHECKERS. A link written
-`https://wshallwshall.github.io/claude-multisession/standards/STANDARDS-REFERENCE.html#some-heading`
+`https://claude-multisession.pages.dev/standards/STANDARDS-REFERENCE.html#some-heading`
 points at a page in this repository, but it starts with `https://` so this scan skipped it as
 external, and it is neither of the two forms `test_docs_do_not_drift.py` pins -- that file matches
 `github.com/.../blob/main/` and `raw.githubusercontent.com/.../main/`, and this is a third host. So
@@ -117,9 +117,23 @@ LINK_BEARING = (".md",)
 # `url` + `baseurl` from docs/_config.yml. Both are load-bearing there and pinned by that file's own
 # comments; if either moves, this pattern stops matching and `TheServedUrlScanCanSee` goes red rather
 # than the scan silently going blind.
-SERVED_SITE = re.compile(
-    r"https://wshallwshall\.github\.io/claude-multisession(/[^)\s]*)?"
-)
+#
+# IT HAS ALREADY MOVED ONCE, which is the evidence that the guard above is not theoretical. The site
+# was served from `https://wshallwshall.github.io/claude-multisession` until 2026-08-10 and this
+# pattern named that host. Anything still written the old way is now an EXTERNAL link as far as this
+# file is concerned -- unchecked, and forwarded by a stub rather than served -- so the old form is
+# not a second spelling to accept here. It is a thing to find and repoint.
+#
+# AND IT WILL PROBABLY MOVE AGAIN, which is why the host below is a plain string run through
+# `re.escape` rather than a pattern with the dots escaped by hand. `*.pages.dev` is a shared free
+# subdomain in the same category as `*.github.io` and can be blocked by the same kind of rule, so the
+# next move is a question of when. Written as a pattern, this line reads
+# `claude-multisession\.pages\.dev` -- which a find-and-replace over the literal host does NOT match,
+# so the one occurrence that silently keeps working is the one in the checker, and a checker that
+# still matches the OLD host goes blind rather than red. That is the exact failure the paragraph
+# above describes, hiding in the instrument meant to catch it.
+SERVED_HOST = "https://claude-multisession.pages.dev"
+SERVED_SITE = re.compile(re.escape(SERVED_HOST) + r"(/[^)\s]*)?")
 
 # docs/ is the Jekyll source root, so a served path maps back onto it directly. No permalink style is
 # configured, so docs/a/b.md builds to /a/b.html -- the one exception being the directory index,
@@ -442,7 +456,7 @@ class TheScanCanActuallyBite(unittest.TestCase):
     # The served-URL form. These four are the ones that would have caught the gap: before the branch
     # above existed, every case here came back clean because the link starts with `https://`.
 
-    SERVED = "https://wshallwshall.github.io/claude-multisession/standards/ref.html"
+    SERVED = "https://claude-multisession.pages.dev/standards/ref.html"
 
     def test_a_missing_anchor_behind_a_served_url_is_reported(self):
         found = self._scan(

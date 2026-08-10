@@ -11,10 +11,10 @@ PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 > to success.** That one sentence explains the whole shape of this repository -- most of all why
 > `ccx doctor` exists and why you run it *before* installing anything as well as after. The full
 > statement and what it costs you are at the top of the
-> [documentation site](https://wshallwshall.github.io/claude-multisession/).
+> [documentation site](https://claude-multisession.pages.dev/).
 
 **Go:** [What problem this solves](#what-problem-this-solves) - [Install](INSTALL.md) -
-[Documentation site](https://wshallwshall.github.io/claude-multisession/) -
+[Documentation site](https://claude-multisession.pages.dev/) -
 [Honest limits](#honest-limits)
 
 Or paste [this page](docs/FEED-THIS-TO-CLAUDE-CODE.md) into Claude Code and have it evaluate your
@@ -44,7 +44,7 @@ record the *client* writes.
    answer -- and the doctor surfaces it as a record count going to zero.
 
 Full statement, with what each one costs you, on the
-[documentation site](https://wshallwshall.github.io/claude-multisession/#limits-read-before-installing).
+[documentation site](https://claude-multisession.pages.dev/#limits-read-before-installing).
 
 ---
 
@@ -108,7 +108,7 @@ three coordination hooks are shims that resolve their script inside whatever rep
 is running in.
 
 The seven-step path, with a command you can paste, is on the
-[documentation site](https://wshallwshall.github.io/claude-multisession/#quickstart).
+[documentation site](https://claude-multisession.pages.dev/#quickstart).
 **[INSTALL.md](INSTALL.md) is the record of record**: every installer, its scope, how to prove it is
 live rather than merely merged, and what the doctor's exit code means when you install only some of
 it.
@@ -132,7 +132,7 @@ copies and their allowlist, under your client config root; the wiring entries in
 `settings.json`; and a queued steering note, at `<worktree>/.claude/steer.txt`.
 
 **The full inventory -- every script, what it does, and which doc owns it -- is on the
-[documentation site](https://wshallwshall.github.io/claude-multisession/#what-ships)**, grouped by
+[documentation site](https://claude-multisession.pages.dev/#what-ships)**, grouped by
 what you are trying to do: run sessions, clean up, and the controls the harness or git invokes on
 their own. It is one table set rather than two, so it cannot drift from this page.
 
@@ -315,7 +315,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | Doc | What it covers |
 |---|---|
 | `README.md` | This file: what it is, which collisions it addresses and what they measured, the platform caveats, the cost, and the honest limits |
-| `docs/index.md` | The [documentation site](https://wshallwshall.github.io/claude-multisession/) front door: the quickstart, the full script inventory, and where every page below fits |
+| `docs/index.md` | The [documentation site](https://claude-multisession.pages.dev/) front door: the quickstart, the full script inventory, and where every page below fits |
 | `INSTALL.md` | The installers, their scopes, how to *prove* each one is live rather than merely merged, and what the exit code means on a partial install |
 | `docs/FEED-THIS-TO-CLAUDE-CODE.md` | A page to paste into Claude Code so it evaluates *your* repository against this tooling and tells you which parts you need |
 | `docs/RUNNING-MULTIPLE-SESSIONS.md` | The entry point to the running-sessions group: which surface to run sessions on, the channels they have for reaching each other, and using one session as a coordinator |

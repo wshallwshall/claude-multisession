@@ -134,9 +134,27 @@
           MIT licensed.
           <a href="{{ site.repo_url }}">claude-multisession on GitHub</a>.
         </p>
-        {%- if page.path %}
+        {%- comment %}
+          THIS LINK IS SAME-ORIGIN ON PURPOSE, and it is the one link on the page that had to be.
+          It used to be `{{ site.repo_url }}/blob/main/docs/{{ page.path }}`, which put a GitHub URL
+          on EVERY page of the site -- and the firewall in front of the readers this site is written
+          for blocks GitHub wholesale, so "view the source" was the one promise the site made on
+          every page and could not keep for them. The build copies each page's markdown beside its
+          HTML, so the source is served here and needs nobody else's host.
+
+          The two links above still say "on GitHub" and still go there. That is deliberate: they
+          name a place rather than offering a file, so a reader who cannot reach it knows exactly
+          what failed and why. A link that promises THIS PAGE'S SOURCE is a different thing, and it
+          is the one that has to resolve.
+
+          index.md IS EXCLUDED because it is the one page whose markdown the build does not copy:
+          it carries front matter, so Jekyll renders it and publishes no static source beside it,
+          while the other sixteen are front-matter-less and appear both ways. Linking it would give
+          the front page the single broken link on the site.
+        {%- endcomment -%}
+        {%- if page.path and page.path != 'index.md' %}
         <p class="footer-line">
-          <a href="{{ site.repo_url }}/blob/main/docs/{{ page.path }}">View the source of this page</a>
+          <a href="{{ page.path | relative_url }}">View the markdown source of this page</a>
         </p>
         {%- endif %}
       </div>

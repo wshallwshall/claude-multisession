@@ -22,12 +22,12 @@ Two assumptions run through the whole document, because they are what make the t
 ## What "trunk" means to these scripts
 
 Every script resolves the trunk through one function, `Get-CcxTrunk` in
-[`scripts/coord/_common.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/_common.ps1), in this order:
+[`scripts/coord/_common.ps1`](https://claude-multisession.pages.dev/scripts/coord/_common.ps1), in this order:
 
 | Order | Source | Notes |
 |---|---|---|
 | 1 | `$env:CCX_TRUNK` | Per-session override; wins over everything. |
-| 2 | `trunk` in [`ccx.config.json`](https://github.com/wshallwshall/claude-multisession/blob/main/ccx.config.json) | Unless it is the literal `auto`. |
+| 2 | `trunk` in [`ccx.config.json`](https://claude-multisession.pages.dev/ccx.config.json) | Unless it is the literal `auto`. |
 | 3 | `git symbolic-ref --short refs/remotes/origin/HEAD` | What the remote says its default branch is -- the only source that survives a rename. |
 | 4 | First of `origin/main`, `origin/master`, `main`, `master` that resolves | Last resort. |
 
@@ -288,7 +288,7 @@ Squash-merge is why cleanup needs its own tooling. After the work is in the trun
 
 All three ask the same question -- "is this commit reachable from the trunk" -- and squash-merge is
 defined by making the answer no. So **being ahead of the trunk is not evidence of unmerged work**,
-and [`scripts/worktree/prune-merged.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/worktree/prune-merged.ps1) carries three merge
+and [`scripts/worktree/prune-merged.ps1`](https://claude-multisession.pages.dev/scripts/worktree/prune-merged.ps1) carries three merge
 signals instead of one: nothing beyond the trunk, *or* a merged PR whose head is this exact tip, *or*
 the branch's own upstream ref is gone. The converse is worse and is the one that destroyed an
 occupied worktree: **zero commits beyond the trunk does not mean merged either** -- a branch created
@@ -300,7 +300,7 @@ pwsh -NoProfile -File scripts/worktree/prune-merged.ps1            # dry run, pr
 pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Apply     # act on a table it re-derives now
 ```
 
-For a single finished worktree, [`remove.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/worktree/remove.ps1) is the manual path. Two
+For a single finished worktree, [`remove.ps1`](https://claude-multisession.pages.dev/scripts/worktree/remove.ps1) is the manual path. Two
 of its behaviors matter at merge time:
 
 - It **references the tip before removing anything**, and with `-DeleteBranch` writes it to
@@ -310,7 +310,7 @@ of its behaviors matter at merge time:
   that the branch holds commits no other ref has. If the local trunk merely lags the remote, fetch and
   retry; do not force past the refusal as a tidying step.
 
-Work claims taken with [`claim.ps1`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/coord/claim.ps1) do not expire and do not release
+Work claims taken with [`claim.ps1`](https://claude-multisession.pages.dev/scripts/coord/claim.ps1) do not expire and do not release
 themselves when a PR merges. Release yours when the work lands:
 
 ```powershell
@@ -331,7 +331,7 @@ Stated plainly, because at merge time an assumption that is wrong is expensive:
   signal in the pruning tool all call `gh`. The pruning tool degrades explicitly -- `-SkipGh`, and a
   failed probe is reported as a failed probe rather than as "not merged".
 - **The push guard is a guardrail, not a security boundary.**
-  [`scripts/hooks/push_guard.py`](https://github.com/wshallwshall/claude-multisession/blob/main/scripts/hooks/push_guard.py) refuses a direct push to anything in
+  [`scripts/hooks/push_guard.py`](https://claude-multisession.pages.dev/scripts/hooks/push_guard.py) refuses a direct push to anything in
   `protectedRefs` (default `main` and `master`) and fails fast with an explanation, before the round
   trip. `git push --no-verify` skips it, and it is installed per clone. Configure server-side
   protection as well; this is only the part that tells you before you wait. The deliberate escape

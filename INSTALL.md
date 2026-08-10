@@ -185,7 +185,7 @@ kept only as a fallback.
 
 Both candidates are inside the session's **own** repository, which is what makes the vendored layout
 the one where these three rows can be `OK`. See
-[Quickstart](https://wshallwshall.github.io/claude-multisession/#quickstart) for the layout choice,
+[Quickstart](https://claude-multisession.pages.dev/#quickstart) for the layout choice,
 and for what a target that does not carry these scripts gets instead.
 
 ### Prove it
