@@ -211,6 +211,66 @@ jobs:
           print("  all three plugins are accounted for in the output")
           PY
 
+      # WHAT A READER SEES, which is not what every other check here looks at. They all verify that
+      # the site BUILT: the pages exist, the titles came from the H1s, the links were rewritten.
+      # A template comment written in the wrong dialect passes all of them, because the build
+      # succeeded -- it just emitted the comment as text.
+      #
+      # THIS REPOSITORY HAS SHIPPED IT ONCE (5b671be, "A Jinja comment in a Liquid template is not a
+      # comment, it is text") and the sibling repository migrating alongside this one shipped it
+      # again independently, putting ten lines of internal commentary in the published footer of
+      # every page on both hosts. It was found by a human reading the page. Nothing else could.
+      #
+      # `{#` and `#}` ARE BANNED OUTRIGHT: they are Jinja's comment delimiters and mean nothing to
+      # Liquid, so reaching the output is the only thing they can ever do. The Liquid delimiters are
+      # banned only OUTSIDE code, because a JSON or PowerShell sample legitimately contains braces
+      # and one already does -- a highlighted JSON block in STEERING.html emits `}}`. A gate that
+      # reddens correct content is one people delete along with the rules it was enforcing.
+      - name: Nothing in the output is unrendered template syntax
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, sys
+
+          CODE = re.compile(r"<(pre|code)\b[^>]*>.*?</\1>", re.S)
+          JINJA = ("{#", "#}")
+          LIQUID = ("{%", "%}", "{{", "}}")
+
+          def leaks(html):
+              """Delimiters that survived into what the reader sees, outside code samples."""
+              prose = CODE.sub("", html)
+              return [d for d in JINJA + LIQUID if d in prose]
+
+          # ARMED BEFORE USE. A scan for a rare string passes trivially by not matching, which is the
+          # whole failure mode this file keeps rediscovering, so it is fired on a planted example
+          # first -- and on a legitimate one, because half of a control is refusing correct content.
+          bad = '<footer>{#- an internal note -#} {{ page.title }}</footer>'
+          good = '<pre class="highlight"><code>{"a": {"b": 1}}</code></pre>'
+          if not leaks(bad):
+              sys.exit("the detector did not see a planted leak -- it would pass over anything")
+          if leaks(good):
+              sys.exit("the detector flags braces inside a code sample -- it would redden real pages")
+          print("detector armed: sees a planted leak, ignores braces in a code block")
+
+          site = pathlib.Path("_site")
+          pages = sorted(site.rglob("*.html"))
+          if not pages:
+              sys.exit("no html to scan -- this step examined nothing")
+          found = []
+          for page in pages:
+              hit = leaks(page.read_text(encoding="utf-8", errors="replace"))
+              if hit:
+                  found.append(f"{page}: {' '.join(hit)}")
+          print(f"scanned {len(pages)} rendered pages")
+          for f in found:
+              print("  " + f)
+          if found:
+              sys.exit("\nREFUSING to publish: template syntax reached the rendered output. The "
+                       "build succeeded and the reader sees the markup. Liquid comments are "
+                       "{% comment %}...{% endcomment %}; {# ... #} is Jinja and is not a comment "
+                       "here, it is text.")
+          print("  no template syntax reached the output")
+          PY
+
       # The record of what was served, kept for a week. It was originally uploaded so the output
       # could be diffed against the live GitHub Pages site before migrating; that comparison is
       # done, and what the artifact is for now is answering "what exactly went up in that run"
