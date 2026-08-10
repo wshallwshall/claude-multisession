@@ -183,9 +183,16 @@ jobs:
                   bad.append(f"jekyll-titles-from-headings: {page} title "
                              f"{(m.group(1) if m else None)!r} does not carry the H1 {h1!r}")
 
+          # THE SHAPE MATTERS, and this rule was wrong the first time it met a real page. An
+          # UNREWRITTEN link keeps the markdown's own target verbatim -- href="CONCEPTS.md", no
+          # leading slash and no scheme -- which is what a dead jekyll-relative-links looks like. A
+          # ROOT-ABSOLUTE href="/CONCEPTS.md" is the opposite: a deliberate link to the markdown the
+          # build publishes beside each page, and _layouts/default.html puts one in every footer. The
+          # first version of this check tested only the `.md` suffix, so it refused the whole site
+          # for doing the right thing, on all sixteen pages at once.
           for page in sorted(site.rglob("*.html")):
               for href in re.findall(r'href="([^"]*)"', page.read_text(encoding="utf-8")):
-                  if href.endswith(".md") and "://" not in href:
+                  if href.endswith(".md") and "://" not in href and not href.startswith("/"):
                       bad.append(f"jekyll-relative-links: {page} still links to {href}")
 
           pages = len(list(site.rglob("*.html")))
