@@ -7,29 +7,27 @@ layout: default
 
 ## TLDR/BLUF
 
-Run several Claude Code sessions at once on one repository without them overwriting each
-other. Each session gets its own git worktree and branch; hooks refuse the edits, commits and pushes
-that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git` and a `python`.
-PowerShell 7, Windows-first, MIT. Cloning installs nothing.
+**What this is.** A way to run several Claude Code sessions at once on one repository without them
+overwriting each other. Each session gets its own git worktree and branch; hooks refuse the edits,
+commits and pushes that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git`
+and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
-**The one thing to know before you start:**
+**Why you should care.** When something here breaks, it produces exactly the same output as when it
+works -- byte-identical to success.
 
-> **When something here breaks, it produces exactly the same output as when it works -- byte-identical
-> to success.** A hook that is installed but reaches nothing exits 0 and prints nothing, which is what
-> a healthy hook does when there is no other session to find. A gate whose helper never loaded lets
-> the edit through, which is what a gate does when it checks and finds nothing wrong. You cannot tell
-> the two apart from the outside, because the difference was never written into the output.
+> A hook that is installed but reaches nothing exits 0 and prints nothing, which is what a healthy
+> hook does when there is no other session to find. A gate whose helper never loaded lets the edit
+> through, which is what a gate does when it checks and finds nothing wrong. You cannot tell the two
+> apart from the outside, because the difference was never written into the output.
 
 That is why `ccx doctor` exists, why you run it *before* installing anything as well as after, and
 why it fires each control on purpose instead of reading a settings file. A green report you did not
-baseline is not evidence.
+baseline is not evidence. Not for you if you run one session at a time.
 
-**Go:** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
-[What ships](#what-ships) - [Full docs](#where-to-go-next)
-
-**Or have Claude Code evaluate it for you.** [Feed it this page](FEED-THIS-TO-CLAUDE-CODE.md) and it
-will read your repository and tell you which of these collisions you actually have -- usually faster
-than deciding from the docs.
+**How to use it.** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
+[What ships](#what-ships) - [Full docs](#where-to-go-next). Or have Claude Code evaluate it for you:
+[feed it this page](FEED-THIS-TO-CLAUDE-CODE.md). It will read your repository and tell you which of
+these collisions you actually have, usually faster than deciding from the docs.
 
 ---
 

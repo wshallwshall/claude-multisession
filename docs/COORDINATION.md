@@ -2,27 +2,23 @@
 
 ## TLDR/BLUF
 
-Presence, overlap, claims, locks and announce -- the parts of this repo that let several Claude Code
-sessions work in one repository at the same time without silently destroying each other's work.
+**What this is.** Presence, overlap, claims, locks and announce. They are the parts of this repo that
+let several Claude Code sessions work in one repository at the same time without silently destroying
+each other's work.
 
-Two sessions in two worktrees cannot overwrite each other's bytes. They can still:
+**Why you should care.** Two sessions in two worktrees cannot overwrite each other's bytes. They can
+still edit the same file in parallel and discover it at merge, by which point both have built on
+divergent assumptions and someone's work is thrown away. Worse, they can build the *same thing* in
+*different files*, producing zero merge conflicts and two green pull requests, which nothing
+structural sees. Measured on the repo this tooling was developed in: three sessions independently
+fixed the same dependency advisory, and two of the three pull requests were closed as duplicates. Not
+for you if you run one session at a time, and not for a plain CLI install for announce specifically,
+which needs the desktop client.
 
-- edit the same file in parallel and discover it at merge, by which point both have built on
-  divergent assumptions and someone's work is thrown away;
-- build the *same thing* in *different files*, producing zero merge conflicts and two green pull
-  requests. Measured on the repo this tooling was developed in: three sessions independently fixed
-  the same dependency advisory; two of the three pull requests were closed as duplicates.
-
-Nothing structural sees the second case. That is what this directory of scripts is for.
-
-**Not for you** if you run one session at a time, in which case none of this does anything. Not for a
-plain CLI install either, for announce specifically: that one feature needs the desktop client, and
-the reason is the first two rows of [Honest limits, stated
-first](#honest-limits-stated-first).
-
-**Start at** [The pieces](#the-pieces), which routes each question to the single script that answers
-it. Then [Proving any of this is live](#proving-any-of-this-is-live), which is where an installed
-fence is separated from a wired one.
+**How to use it.** Start at [The pieces](#the-pieces), which routes each question to the single
+script that answers it. Then [Proving any of this is live](#proving-any-of-this-is-live), which is
+where an installed fence is separated from a wired one. Read
+[Honest limits, stated first](#honest-limits-stated-first) before relying on any of it.
 
 ## Honest limits, stated first
 

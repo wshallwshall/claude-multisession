@@ -1,5 +1,20 @@
 # Usage awareness: knowing when to stop, without lying about it
 
+## TLDR/BLUF
+
+**What this is.** The design, failure modes and rules for a hook that warns a session when the plan
+pool it bills is running out.
+
+**Why you should care.** The lessons are the sharpest instance in this repo of its recurring theme:
+**an instrument that answers a narrower question than the one you asked, while looking completely
+healthy.** Not for you as code -- **no such hook ships here**, because the mechanism depends on client
+internals that are undocumented and can change without notice.
+
+**How to use it.** Take the rules, not the implementation; those transfer and the code does not.
+Start with the purpose, which is preventing lost work at a hard cutoff and is not budgeting.
+
+---
+
 A hook that warns a session when the plan pool it bills is running out is much harder to get right
 than it looks. **No such hook ships in this repo** -- the mechanism depends on client internals that
 are undocumented and can change without notice, so shipping one would be shipping a control that

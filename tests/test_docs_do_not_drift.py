@@ -489,17 +489,20 @@ class TheBlufConventionHasOneSpelling(unittest.TestCase):
     way, none of them wrong to do so because nothing recorded that the spelling had moved. Every one
     passed every gate. The set went from three pages to five to eight in a few hours.
 
-    WHAT IS PINNED, AND WHAT IS DELIBERATELY NOT. This checks only that no page carries a SUPERSEDED
-    spelling. It does NOT require a page to have a BLUF at all.
+    WHAT IS PINNED HERE. Only that no page carries a SUPERSEDED spelling. Whether a page must HAVE a
+    BLUF is now a separate question, answered by EveryRenderedPageOpensWithTheThreeAnswers below.
 
-    That restraint is the point, not an omission. Requiring one would be an editorial rule about
-    what every future standard must contain, and two published pages -- WHICH-STANDARDS-APPLY.md and
-    STANDARDS-REFERENCE.md -- deliberately have no BLUF section today; each opens on a bold lede
-    doing the same job unheaded. Whether they should gain one is a writing decision for whoever owns
-    those pages. A test is the wrong place to make it, and a gate that fails on a legitimate
-    editorial choice is one people delete.
+    THAT SPLIT USED TO BE A DELIBERATE RESTRAINT, AND THE REASON FOR IT EXPIRED. This class once
+    declined to require a BLUF at all, on the stated grounds that requiring one would be an editorial
+    rule about what every future standard must contain, and that two published pages --
+    WHICH-STANDARDS-APPLY.md and STANDARDS-REFERENCE.md -- deliberately had none, each opening on a
+    bold lede doing the same job unheaded. Both of those pages left with the standards for their own
+    repository. No page here was under that reasoning any more, and on 2026-08-10 the owner settled
+    the editorial question the restraint was protecting: every rendered page carries the section, and
+    carries three labelled answers inside it. The restraint was right while the decision was open. It
+    was not a permanent property of the check.
 
-    So: have a BLUF or do not. If you have one, spell it the way the rest of the set does.
+    So: spell it the way the rest of the set does, and see below for who must have one.
     """
 
     def test_no_page_carries_a_superseded_bluf_spelling(self):
@@ -554,6 +557,108 @@ class TheBlufConventionHasOneSpelling(unittest.TestCase):
             any(re.search(p, BLUF_HEADING, re.M) for p in SUPERSEDED_BLUF),
             "a pattern fires on the canonical heading itself, so no page could ever be made green.",
         )
+
+
+class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
+    """OPEN-2 and OPEN-7: the section exists, and it carries three labelled answers in order.
+
+    WHY THIS IS GATED RATHER THAN LEFT TO REVIEW. On 2026-08-10, 15 of the 18 rendered pages had no
+    summary section at all -- the convention existed on COORDINATION, HOUSE-STYLE and index and
+    nowhere else, and nothing recorded that the other 15 were missing it. That is the same shape as
+    the drift the class above exists for: a convention that is real on some pages, absent on most,
+    and green either way.
+
+    SCOPE IS THE RENDERED SITE, NOT THE CORPUS. README.md and INSTALL.md carry a BLUF and are
+    deliberately NOT under OPEN-7. They live at the repository root, outside the Jekyll source, so
+    the site links them as raw `.md` rather than serving them, and they are written for a reader
+    arriving from GitHub rather than from the nav. 404.md is a Jekyll stub, not a page.
+    """
+
+    # Verbatim, and the order is part of the rule: a reader who learns the shape on one page should
+    # find it in the same order on the next. Stored with the trailing period because that is the
+    # form OPEN-7 quotes -- `**What this is**` without it is a different string and must not pass.
+    THREE_ANSWERS = ("**What this is.**", "**Why you should care.**", "**How to use it.**")
+
+    NOT_A_PAGE = ("docs/404.md",)
+
+    def rendered_pages(self) -> list[str]:
+        return [
+            f
+            for f in tracked_files()
+            if f.startswith("docs/") and f.endswith(".md") and f not in self.NOT_A_PAGE
+        ]
+
+    def test_the_scan_actually_reads_the_rendered_pages(self):
+        """The empty-match guard. Every assertion below passes trivially over an empty list."""
+        pages = self.rendered_pages()
+        self.assertGreaterEqual(
+            len(pages),
+            15,
+            f"only {len(pages)} rendered pages found. The checks below would report success while "
+            "measuring nothing. If docs/ really shrank this far, lower the number deliberately.",
+        )
+
+    def test_every_rendered_page_carries_the_section(self):
+        missing = [f for f in self.rendered_pages() if BLUF_HEADING not in t.read(t.REPO_ROOT / f)]
+        self.assertEqual(
+            [],
+            missing,
+            "OPEN-2: these rendered pages carry no summary section:\n  "
+            + "\n  ".join(missing)
+            + f"\nEvery page the site renders must carry {BLUF_HEADING!r}. If a page genuinely "
+            "should not have one, that is a change to OPEN-2 in docs/HOUSE-STYLE.md and to this "
+            "test, not an exemption added here.",
+        )
+
+    def test_every_rendered_page_carries_the_three_answers_in_order(self):
+        offenders = []
+        for relpath in self.rendered_pages():
+            text = t.read(t.REPO_ROOT / relpath)
+            at = -1
+            for label in self.THREE_ANSWERS:
+                found = text.find(label, at + 1)
+                if found < 0:
+                    offenders.append(f"{relpath}: missing {label}")
+                    break
+                if found < at:
+                    offenders.append(f"{relpath}: {label} is out of order")
+                    break
+                at = found
+        self.assertEqual(
+            [],
+            offenders,
+            "OPEN-7: the opening must carry three labelled answers, verbatim and in this order -- "
+            + ", ".join(self.THREE_ANSWERS)
+            + ":\n  "
+            + "\n  ".join(offenders)
+            + "\nThe label is matched exactly, so a reworded or unbolded one reads as absent. That "
+            "is deliberate: the point of the labels is that they are the same three on every page.",
+        )
+
+    def test_the_labels_are_matched_exactly_and_near_misses_do_not_pass(self):
+        """Planted, because the corpus is now all-green and cannot demonstrate a failure.
+
+        Without this, the two cases above would still pass against a check that matched any bold run
+        at all, or that ignored order.
+        """
+        ordered = "**What this is.** a\n\n**Why you should care.** b\n\n**How to use it.** c"
+        at = -1
+        for label in self.THREE_ANSWERS:
+            found = ordered.find(label, at + 1)
+            self.assertGreaterEqual(found, 0, f"{label} not found in a correctly formed opening")
+            at = found
+
+        for near_miss in (
+            "**What this is** a",          # no trailing period
+            "**what this is.** a",         # lower case
+            "*What this is.* a",           # single asterisk, not bold
+            "What this is. a",             # no emphasis at all
+        ):
+            self.assertNotIn(
+                self.THREE_ANSWERS[0],
+                near_miss,
+                f"{near_miss!r} matched the label, so the check would accept a drifted spelling.",
+            )
 
 
 if __name__ == "__main__":

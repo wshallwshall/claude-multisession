@@ -315,11 +315,16 @@ class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
 # prompted the sweep was measured against this corpus first and found nothing to purge, with B-5,
 # B-11, B-12, B-13 and B-14 all firing zero times and every `very`/`really` hit load-bearing.
 #
-# THE REMAINING 294 SPLIT 226 UNDER `docs/` AND 68 IN README.md AND INSTALL.md, which this sweep did
-# NOT touch. Those two are in this corpus but are not site pages: they live at the repository root,
-# outside the Jekyll source, so the site links them as raw `.md` rather than serving them. They are
-# the obvious next chunk, and 68 is the figure to beat.
-BASELINE_LONG_SENTENCES = 294       # sentences over 30 words
+# 294 -> 290 ON 2026-08-10 by the OPEN-7 pass, which gave all 18 rendered pages a three-answer
+# opening. That pass ADDED prose and still came out ahead, because this ratchet caught its own new
+# sentences: eight of the openings were written over 30 words, and the failure named them before the
+# work landed rather than after.
+#
+# 68 OF THE REMAINING 290 ARE IN README.md AND INSTALL.md, which neither sweep touched. They are in
+# this corpus but are not site pages: they live at the repository root, outside the Jekyll source, so
+# the site links them as raw `.md` rather than serving them. They are the obvious next chunk, and 68
+# is the figure to beat.
+BASELINE_LONG_SENTENCES = 290       # sentences over 30 words
 BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 
 # How far below baseline a metric may drift before the test asks for the baseline to be lowered.

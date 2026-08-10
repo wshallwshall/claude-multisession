@@ -1,5 +1,20 @@
 # Tips and tricks
 
+## TLDR/BLUF
+
+**What this is.** The "wish I'd known" file, and the densest page here: one lesson per entry, each
+with the measurement or the incident that produced it.
+
+**Why you should care.** Everything here was paid for once already -- in lost work, in a guardrail
+that turned out to be inert, or in a measurement that answered a question nobody asked. Not for you
+if you have not yet run concurrent sessions; most entries will not mean anything until you have.
+
+**How to use it.** Skim for the entry that matches what just bit you rather than reading it through.
+Most of the repo is `pwsh 7.3+` and Windows-first, and announce needs a Desktop-only MCP, so check
+the scope list below before assuming an entry applies to your setup.
+
+---
+
 The "wish I'd known" file. Everything here was paid for once already -- in lost work, in a
 guardrail that turned out to be inert, or in a measurement that answered a question nobody
 asked.

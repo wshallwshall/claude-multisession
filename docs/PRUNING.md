@@ -1,5 +1,20 @@
 # Pruning worktrees
 
+## TLDR/BLUF
+
+**What this is.** Two scripts that remove a worktree: `prune-merged.ps1`, an unattended sweep over
+every sibling, and `remove.ps1`, a human removing one named tree at a time.
+
+**Why you should care.** `prune-merged.ps1` is the most destructive tool in this repository. It has
+destroyed a live session's worktree once, and every rule below is a consequence of that or of a near
+miss. A removal can delete commits into nothing, which is the only failure in the whole system that
+is genuinely unrecoverable through git. Not for you if you never create worktrees.
+
+**How to use it.** Read the first two sections before you run either script. `prune-merged.ps1` is a
+dry run by default and only `-Apply` acts.
+
+---
+
 Two scripts remove a worktree:
 
 | Script | Who runs it | Posture |

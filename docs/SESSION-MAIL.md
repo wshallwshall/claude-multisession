@@ -7,6 +7,21 @@
 > **Take a copy:**
 > [markdown](https://claude-multisession.pages.dev/SESSION-MAIL.md).
 
+## TLDR/BLUF
+
+**What this is.** A design for an async delivery lane that reaches the peers the realtime announce
+path cannot. The shape is a file drop in the shared state root, written by a send command and
+delivered by a hook.
+
+**Why you should care.** Announce enumerates an in-memory map of the sessions the desktop app itself
+spawned. A session launched by an editor extension, and a session under a different login, are
+unreachable by construction. Not for you as code: no script here implements this.
+
+**How to use it.** Read it as the list of ways the obvious implementations fail. Every failure below
+was measured rather than reasoned about, and several survived a full review before being caught.
+
+---
+
 The [announce hook](COORDINATION.md) reaches peers in realtime and cannot reach all of them. Delivery
 goes through the desktop client's session-management tooling, which enumerates an in-memory map of
 the sessions **that app itself spawned**, under the config root it authenticated against.

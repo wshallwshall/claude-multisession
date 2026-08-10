@@ -1,5 +1,21 @@
 # Hooks
 
+## TLDR/BLUF
+
+**What this is.** The map of every guardrail here to the event that fires it, the wiring contract
+between an installer and a settings file, and the house rules for adding one.
+
+**Why you should care.** Two different things are called a hook in this repository and they fail in
+opposite ways. A harness hook can refuse a tool call but never sees a shell redirect; a git hook sees
+every write route but only at commit time. Merging a hook does not install one. Not for you if you
+are not running concurrent sessions.
+
+**How to use it.** Read the two definitions below, then the wiring tables. The harness hooks are
+PowerShell 7 and Windows-first; the git-hook checkers are stdlib-only Python behind `/bin/sh` shims
+and are the portable part of the set.
+
+---
+
 Two different things are called a hook in this repository, and they fail in opposite ways.
 
 **Harness hooks** are wired into a Claude Code `settings.json`. The client runs them at an event,
