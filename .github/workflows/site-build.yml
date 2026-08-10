@@ -9,11 +9,16 @@
 # machine could tell the difference, because the only instrument reported one bit.
 #
 # WHY THE SITE MOVED, which is a different problem with the same shape. The reader this
-# documentation is written for sits behind a firewall that blocks *.github.io wholesale. For them
-# the site did not exist, and every check in this repository stayed green throughout, because none
-# of them runs on that network. The repository itself is still on github.com and still reachable;
-# only the Pages host was blocked. So the content is unchanged and the address is not:
-# https://claude-multisession.pages.dev.
+# documentation is written for sits behind a firewall that blocks GitHub WHOLESALE -- github.com and
+# raw.githubusercontent.com as well as the Pages host. For them the site did not exist, and every
+# check in this repository stayed green throughout, because none of them runs on that network. The
+# content is unchanged and the address is not: https://claude-multisession.pages.dev.
+#
+# THE SCOPE OF THAT BLOCK WAS WRITTEN DOWN WRONG HERE FIRST. This comment said "only the Pages host
+# was blocked", inferred from one sentence and never measured; the owner corrected it the same day.
+# It is recorded rather than quietly edited because the wrong version was load-bearing: it made the
+# repository look like a working fallback for exactly the reader who cannot reach it, and a false
+# statement about a control is the defect this repository is about.
 #
 # THIS FILE USED TO SAY, IN CAPITALS, THAT IT DEPLOYED NOTHING. It built the site beside the live
 # path and uploaded the result to be diffed by hand, on the argument that the plugin set had to be

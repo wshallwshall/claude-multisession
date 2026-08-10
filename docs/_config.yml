@@ -11,10 +11,22 @@ description: >-
 
 # WHERE THIS SITE LIVES, AND WHY IT IS NOT GITHUB PAGES. It was served from
 # wshallwshall.github.io/claude-multisession until 2026-08-10. The reader this site is written for
-# sits behind a firewall that blocks *.github.io wholesale, so for them the documentation did not
-# exist -- while every check in this repository stayed green, because nothing here can see a network
-# the build does not run on. The repository itself is still on github.com and still reachable; it is
-# only the Pages host that is blocked, which is why the source links below are unchanged.
+# sits behind a firewall that blocks GitHub WHOLESALE -- not just the Pages host -- so for them the
+# documentation did not exist, while every check in this repository stayed green, because nothing
+# here can see a network the build does not run on.
+#
+# THE FIRST VERSION OF THIS COMMENT SAID "only the Pages host is blocked, which is why the source
+# links below are unchanged", and that was an inference from one sentence rather than a measurement.
+# The owner corrected it on 2026-08-10. It matters more than a comment usually would, because the
+# looser reading made the site's own escape hatch look sound: github.com, raw.githubusercontent.com
+# and the "Source on GitHub" links in _layouts/default.html are ALL unreachable for the reader this
+# site exists for, and the false version said the opposite in writing.
+#
+# WHAT ACTUALLY REACHES THAT READER, measured on the build of 2026-08-10 rather than assumed: this
+# site serves the 16 markdown sources as static files beside the rendered pages, so /CONCEPTS.md is
+# readable on the same origin as /CONCEPTS.html. That is the only source path they have. Anything
+# that sends a reader to github.com to see a file is a dead end for them, and repointing those is
+# open work rather than something this file should imply is done.
 #
 # baseurl IS EMPTY, AND THAT IS A SETTING RATHER THAN AN OMISSION. On the old host the site sat in a
 # subdirectory named after the repository and every href needed that prefix. A Pages project owns

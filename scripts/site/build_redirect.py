@@ -1,11 +1,19 @@
 """Generate the forwarding site that replaces the old GitHub Pages content.
 
 WHY THERE IS A FORWARDER AT ALL. The documentation moved off wshallwshall.github.io on 2026-08-10
-because a firewall in front of the readers this project is written for blocks *.github.io wholesale.
-The old address does not stop being written down when that happens: it is in this repository's
-history, in pull requests, in anything anyone bookmarked. Turning the old site off would answer all
-of them with GitHub's own 404, which names no successor. So the old host keeps serving, and what it
-serves is a page per old URL saying where that page went.
+because a firewall in front of the readers this project is written for blocks GitHub wholesale. The
+old address does not stop being written down when that happens: it is in this repository's history,
+in pull requests, in anything anyone bookmarked. Turning the old site off would answer all of them
+with GitHub's own 404, which names no successor. So the old host keeps serving, and what it serves
+is a page per old URL saying where that page went.
+
+WHO THIS DOES NOT HELP, said plainly because the pages themselves cannot say it. These stubs are
+hosted on GitHub. The reader the move was made for cannot load them -- they cannot reach the host
+the forwarding page is served from, so for them an old link fails exactly as it did before, with no
+redirect and no explanation. This forwarder is for everyone ELSE holding an old link: readers
+outside that network, search results, and anything already indexed. It is worth building for them
+and it is not a mitigation for the blocked reader, and a comment that let those two be confused
+would be overstating a control -- which is the failure this repository is about.
 
 WHY A STUB PER PAGE RATHER THAN ONE CLEVER 404. A single 404 handler could read the path it was
 asked for and rewrite it, but only from script -- the served HTML cannot know which URL produced it.
@@ -111,9 +119,10 @@ a {{ overflow-wrap: anywhere; }}
 <p>The claude-multisession documentation now lives at
 <a href="{target}">{target_text}</a>.</p>
 <p>Your browser should be taking you there. If it does not, follow the link above.</p>
-<p class="note">It moved off github.io because that host is blocked by the firewalls in front of
-many of the readers this documentation is written for. The source is unchanged and is still at
-<a href="{repo}">{repo_text}</a>.</p>
+<p class="note">It moved because GitHub is blocked by the firewalls in front of many of the readers
+this documentation is written for. The source is unchanged and is still at
+<a href="{repo}">{repo_text}</a> -- which those readers cannot reach either; the new site serves
+the markdown sources alongside the pages for that reason.</p>
 </body>
 </html>
 """
