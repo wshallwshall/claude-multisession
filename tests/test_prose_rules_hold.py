@@ -322,7 +322,8 @@ class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
 #
 # 68 OF THE REMAINING 290 ARE IN README.md AND INSTALL.md, which neither sweep touched. They are in
 # this corpus but are not site pages: they live at the repository root, outside the Jekyll source, so
-# the site links them as raw `.md` rather than serving them. They are the obvious next chunk.
+# the site links them as raw `.md` rather than serving them. They are the obvious next chunk, and 68
+# is the figure to beat.
 BASELINE_LONG_SENTENCES = 290       # sentences over 30 words
 BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 
