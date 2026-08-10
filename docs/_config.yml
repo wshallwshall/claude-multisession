@@ -1,20 +1,30 @@
-# GitHub Pages configuration for the claude-multisession documentation site.
+# Jekyll configuration for the claude-multisession documentation site.
 #
-# Publishing source is /docs on the default branch, which makes THIS directory the Jekyll source
-# root. Every file the site needs -- _config.yml, _data, _layouts, assets, index.md -- has to live
-# under docs/. A _config.yml at the repository root would be ignored, and the build would still go
+# THIS DIRECTORY IS THE SOURCE ROOT. Every file the site needs -- _config.yml, _data, _layouts,
+# assets, index.md -- has to live under docs/, because that is what site-build.yml passes to
+# `--source`. A _config.yml at the repository root would be ignored, and the build would still go
 # green, so treat the location of this file as load-bearing.
 
 title: claude-multisession
 description: >-
   Coordination tooling for running several Claude Code sessions at once against one repository.
 
-# baseurl is NOT derived from the repository name by the GitHub Pages build. It has to be set here,
-# and everything depends on it: jekyll-relative-links rewrites the intra-docs links through
-# relative_url, which prepends this value, and the layout builds every nav href and the stylesheet
-# href from it. Wrong or missing means the pages still render and every link and asset 404s.
-url: https://wshallwshall.github.io
-baseurl: /claude-multisession
+# WHERE THIS SITE LIVES, AND WHY IT IS NOT GITHUB PAGES. It was served from
+# wshallwshall.github.io/claude-multisession until 2026-08-10. The reader this site is written for
+# sits behind a firewall that blocks *.github.io wholesale, so for them the documentation did not
+# exist -- while every check in this repository stayed green, because nothing here can see a network
+# the build does not run on. The repository itself is still on github.com and still reachable; it is
+# only the Pages host that is blocked, which is why the source links below are unchanged.
+#
+# baseurl IS EMPTY, AND THAT IS A SETTING RATHER THAN AN OMISSION. On the old host the site sat in a
+# subdirectory named after the repository and every href needed that prefix. A Pages project owns
+# the whole of its hostname, so the prefix is now the wrong answer and an empty string is the right
+# one. Everything still depends on this value: jekyll-relative-links rewrites the intra-docs links
+# through relative_url, which prepends it, and the layout builds every nav href and the stylesheet
+# href from it. Set it to a path this site is not served under and the pages still render, still go
+# green, and 404 every link and asset -- which is exactly how the old value would fail here.
+url: https://claude-multisession.pages.dev
+baseurl: ""
 
 # Used by the layout instead of site.github.*, which is empty in a local build without a token and
 # populated in production -- an instrument that answers a different question depending on where it
@@ -23,15 +33,32 @@ repo_url: https://github.com/wshallwshall/claude-multisession
 
 markdown: kramdown
 
-# No `plugins:` key on purpose.
+# No `plugins:` key on purpose, AND THAT NOW RESTS ON SOMETHING WEAKER THAN IT USED TO.
 #
-# GitHub Pages runs in safe mode with a fixed plugin allowlist, and three of the defaults are what
-# make this site work without touching the 14 documents:
+# Three plugins are what make this site work out of markdown that carries no front matter at all --
+# every document under docs/ except index.md is a bare .md file:
 #   jekyll-optional-front-matter  turns each front-matter-less .md into a rendered page
 #   jekyll-relative-links         rewrites ](CONCEPTS.md) to the built URL, with baseurl
 #   jekyll-titles-from-headings   sets page.title from the leading H1
-# Those cannot be disabled and need no configuration. A plugin that is not on the allowlist is not
-# an error either -- it simply never runs, which is the failure mode that looks like success.
+#
+# They used to arrive because GitHub Pages built this site in safe mode, where the plugin set is a
+# fixed allowlist that cannot be configured and therefore cannot be got wrong. They now arrive
+# because the Gemfile puts the `github-pages` gem in the :jekyll_plugins group, which bundler
+# requires on startup; see that file for why the gem rather than a hand-written list. The result is
+# identical and the guarantee is not: under GitHub's builder a missing plugin was impossible, and
+# under this one it is one line of the Gemfile away.
+#
+# THE EDIT THAT BREAKS IT IS NOT IN THIS FILE, which is worth knowing before someone reaches for the
+# obvious lever. Measured on 2026-08-10 against this config: adding `plugins: []` changed nothing,
+# and neither did building with `--safe`. The gem loads its set through bundler and re-whitelists
+# itself, so it is immune to both. Dropping `gem "github-pages"` from the Gemfile is what removes
+# them -- and that build EXITED ZERO, printed no warning, and produced ONE page instead of 17.
+# That is the whole failure: not an error, a site.
+#
+# So site-build.yml checks the three by their effects on every run rather than trusting that they
+# ran, and that check is armed -- the 1-page build above is what it was fired against. Clean, it
+# reports 17 pages from 17 markdown files, each title carrying its file's leading H1 and no
+# ](OTHER.md) left unrewritten.
 
 # No `exclude:` key on purpose. Setting it REPLACES Jekyll's defaults rather than adding to them,
 # and there is nothing under docs/ that should not be served.

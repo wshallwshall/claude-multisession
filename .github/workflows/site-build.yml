@@ -1,27 +1,43 @@
-# Build the site and say what happened. IT DOES NOT DEPLOY ANYTHING.
+# Build the documentation site, prove it is intact, publish it to Cloudflare Pages, and leave the
+# old address forwarding to the new one.
 #
-# WHY THIS FILE EXISTS. GitHub Pages builds this site from `main` `/docs` today, and its only
-# diagnostic is the string "Page build failed." with no line, no file and no log. On 2026-08-06 ten
-# consecutive builds failed that way over three hours while the pushes all looked successful: the
-# repository was green, the commits were correct, and the site silently stopped updating. The cause
-# was a rate limit on the legacy builder, not the content -- but nothing on the machine could tell
-# the difference, because the only instrument reported one bit.
+# WHY THIS FILE EXISTS. GitHub Pages built this site from `main` `/docs` until 2026-08-10, and its
+# only diagnostic was the string "Page build failed." with no line, no file and no log. On
+# 2026-08-06 ten consecutive builds failed that way over three hours while the pushes all looked
+# successful: the repository was green, the commits were correct, and the site silently stopped
+# updating. The cause was a rate limit on the legacy builder, not the content -- but nothing on the
+# machine could tell the difference, because the only instrument reported one bit.
 #
-# A build system whose sole output is "it failed" is the exact defect the documents in this repo are
-# about. This workflow replaces one bit with a log.
+# WHY THE SITE MOVED, which is a different problem with the same shape. The reader this
+# documentation is written for sits behind a firewall that blocks *.github.io wholesale. For them
+# the site did not exist, and every check in this repository stayed green throughout, because none
+# of them runs on that network. The repository itself is still on github.com and still reachable;
+# only the Pages host was blocked. So the content is unchanged and the address is not:
+# https://claude-multisession.pages.dev.
 #
-# WHAT IT DOES NOT DO, and this is deliberate for now:
-#   * It does not deploy. `build_type` stays `legacy`, so GitHub still serves what it builds itself.
-#     This runs BESIDE the live path rather than replacing it.
-#   * It therefore cannot break the site. The worst outcome is a red check on a pull request.
+# THIS FILE USED TO SAY, IN CAPITALS, THAT IT DEPLOYED NOTHING. It built the site beside the live
+# path and uploaded the result to be diffed by hand, on the argument that the plugin set had to be
+# compared against the live pages before anyone changed where the site was served from. That
+# comparison has now been done -- see docs/_config.yml for what it measured -- and this file is
+# where the site comes from. Keeping the old sentence would have been the cheapest possible lie.
 #
-# WHY THAT ORDER. The site depends on plugins that GitHub's safe mode supplies unconditionally. Under
-# a build we control they come from the Gemfile instead, and a plugin that is not declared does not
-# error -- it just does not run, and the symptom is fourteen documents quietly losing their titles or
-# their internal links. So the artifact this uploads exists to be COMPARED against the live pages
-# before anyone changes where the site is served from. See the Gemfile for the full argument.
+# WHAT REPLACES THAT SAFETY. Under GitHub's builder the plugin set was a fixed allowlist and could
+# not be got wrong. Here it comes from the Gemfile, and dropping one line from that file produces a
+# build that exits zero, warns about nothing, and publishes ONE page instead of seventeen. So the
+# three plugins are checked by their effects before anything is uploaded, and a failure there stops
+# the deploy. That step is the reason this workflow is allowed to publish at all.
+#
+# THE OLD ADDRESS IS NOT SWITCHED OFF, and the `forward` job below is why there are two jobs here.
+# Every link written down before the move -- in this repository's history, in pull requests, in
+# whatever anyone bookmarked -- still names github.io. Turning Pages off answers all of them with
+# GitHub's own 404, which names no successor, so the old host keeps serving and what it serves is a
+# page per old URL pointing at the new one. It publishes only after the Cloudflare deploy has
+# succeeded, because forwarding readers to a site that just failed to publish is worse than leaving
+# them on the stale one.
+#
+# The file is still named site-build.yml so that the Actions run history stays in one place.
 
-name: site-build
+name: site
 
 on:
   push:
@@ -29,14 +45,17 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Least privilege. This reads the repository and writes an artifact; it touches no Pages settings
-# and needs no `pages:` or `id-token:` permission precisely because it does not deploy.
+# Least privilege. Nothing here writes to the repository; the deploy authenticates to Cloudflare
+# with its own token and needs no `pages:` or `id-token:` permission from GitHub.
 permissions:
   contents: read
 
 concurrency:
-  group: site-build-${{ github.ref }}
-  cancel-in-progress: true
+  group: site-${{ github.ref }}
+  # Cancelling is right on a branch, where a newer push makes an in-flight run irrelevant, and wrong
+  # on main, where the run is a deployment. A cancelled deploy leaves the live site in a state
+  # nobody chose and no log explains -- which is this workflow's whole subject.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
@@ -62,9 +81,9 @@ jobs:
             --destination _site \
             --trace 2>&1 | tee build.log
 
-      # THE POINT OF THE WHOLE FILE. A build that "succeeded" while emitting warnings about missing
-      # plugins or unresolvable links is the failure that looks like success, so the log is surfaced
-      # rather than left in a collapsed step nobody opens.
+      # A build that "succeeded" while emitting warnings about missing plugins or unresolvable links
+      # is the failure that looks like success, so the log is surfaced rather than left in a
+      # collapsed step nobody opens.
       - name: Report warnings, if any
         if: always()
         run: |
@@ -78,8 +97,97 @@ jobs:
           find _site -name '*.html' | sort | sed 's/^/  /'
           echo "  total: $(find _site -name '*.html' | wc -l) html files"
 
-      # Uploaded so the output can be DIFFED against the live site before anyone considers changing
-      # where the site is served from. That comparison is the gate on migrating, not this run's colour.
+      # THE GATE ON PUBLISHING. Three plugins carry this site, and none of them errors when absent:
+      #
+      #   jekyll-optional-front-matter  renders the front-matter-less .md files as pages at all
+      #   jekyll-relative-links         rewrites ](CONCEPTS.md) to a built URL, with the baseurl
+      #   jekyll-titles-from-headings   takes each page.title from its leading H1
+      #
+      # Each is checked by its effect on the built output rather than by asking whether it loaded,
+      # because "did the gem load" is not the question a reader has. Nothing is hardcoded: the
+      # expected pages and the expected titles are both computed from the tracked markdown, so
+      # adding or renaming a document needs no edit here.
+      #
+      # ARMED, NOT ASSUMED. Fired on 2026-08-10 against a build made with `gem "github-pages"`
+      # removed from the Gemfile: that build exited zero and this step reported all sixteen missing
+      # pages. `plugins: []` and `--safe` were both tried first and neither suppressed anything --
+      # see docs/_config.yml. This runs before the upload and before the deploy, so a site that
+      # fails it is never published.
+      - name: The three plugins actually ran
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, subprocess, sys
+
+          site = pathlib.Path("_site")
+          srcs = [pathlib.Path(p) for p in subprocess.run(
+              ["git", "ls-files", "docs/*.md"], capture_output=True, text=True, check=True
+          ).stdout.split()]
+          bad = []
+
+          # kramdown applies smart typography before the title is read, so the rendered title holds
+          # a typographic apostrophe where the markdown holds an ASCII one, and an en dash where it
+          # holds `--`. Folding those back is what compares the two honestly. This is the same
+          # renderer difference test_internal_links_resolve.py measures for anchors.
+          #
+          # WRITTEN AS ESCAPES BECAUSE THE CHARACTERS THEMSELVES ARE BANNED HERE. check-ascii.ps1
+          # refuses every non-ASCII byte in the tree, and it does not carve out the one file whose
+          # job is naming them -- correctly, since the exception would have to be a path pattern and
+          # would outlive whatever needed it. The literal spelling is also unsafe in a second way:
+          # that gate offers a `-Fix` which rewrites U+2019 to an apostrophe, so a well-meant run of
+          # it would silently turn this table into four no-op mappings and the check into one that
+          # cannot tell the renderers apart.
+          SMART = str.maketrans({
+              "\u2019": "'",   # RIGHT SINGLE QUOTATION MARK, kramdown's apostrophe
+              "\u2018": "'",   # LEFT SINGLE QUOTATION MARK
+              "\u201c": '"',   # LEFT DOUBLE QUOTATION MARK
+              "\u201d": '"',   # RIGHT DOUBLE QUOTATION MARK
+          })
+
+          def plain(s):
+              return (s.translate(SMART)
+                       .replace("\u2014", "---")   # EM DASH
+                       .replace("\u2013", "--")    # EN DASH, what kramdown makes of `--`
+                       .replace("\u2026", "..."))  # HORIZONTAL ELLIPSIS
+
+          # A pass over nothing is not evidence. gates.yml refuses a green test run that reported no
+          # tests for the same reason.
+          if not srcs:
+              bad.append("git ls-files matched no markdown -- this step examined nothing")
+
+          for src in srcs:
+              page = site / src.relative_to("docs").with_suffix(".html")
+              if not page.exists():
+                  bad.append(f"jekyll-optional-front-matter: {src} produced no {page}")
+                  continue
+              h1 = next((l[2:].strip() for l in src.read_text(encoding="utf-8").split("\n")
+                         if l.startswith("# ")), None)
+              if h1 is None:
+                  continue
+              m = re.search(r"<title>(.*?)</title>", page.read_text(encoding="utf-8"), re.S)
+              if m is None or h1 not in plain(m.group(1)):
+                  bad.append(f"jekyll-titles-from-headings: {page} title "
+                             f"{(m.group(1) if m else None)!r} does not carry the H1 {h1!r}")
+
+          for page in sorted(site.rglob("*.html")):
+              for href in re.findall(r'href="([^"]*)"', page.read_text(encoding="utf-8")):
+                  if href.endswith(".md") and "://" not in href:
+                      bad.append(f"jekyll-relative-links: {page} still links to {href}")
+
+          pages = len(list(site.rglob("*.html")))
+          print(f"checked {len(srcs)} tracked markdown sources against {pages} built pages")
+          for b in bad:
+              print("  " + b)
+          if bad:
+              sys.exit(f"\nREFUSING to publish: {len(bad)} defect(s) above. A plugin that did not "
+                       "run does not error -- it just serves a site missing its pages, its titles "
+                       "or its links. See docs/_config.yml.")
+          print("  all three plugins are accounted for in the output")
+          PY
+
+      # The record of what was served, kept for a week. It was originally uploaded so the output
+      # could be diffed against the live GitHub Pages site before migrating; that comparison is
+      # done, and what the artifact is for now is answering "what exactly went up in that run"
+      # without having to reproduce the build.
       - name: Upload the built site
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -87,3 +195,64 @@ jobs:
           name: site-${{ github.sha }}
           path: _site
           retention-days: 7
+
+      # THE DEPLOY. Pushes to main only -- a pull request builds and is checked, and publishes
+      # nothing. That is not only caution: `secrets` are not available to workflow runs from forked
+      # repositories, so a fork's pull request would fail this step rather than skip it, and the
+      # check on the fork would be red for a reason that has nothing to do with the change.
+      #
+      # TWO REPOSITORY SECRETS ARE REQUIRED and the site stops updating without them:
+      #   CLOUDFLARE_API_TOKEN   a token with the "Cloudflare Pages: Edit" permission
+      #   CLOUDFLARE_ACCOUNT_ID  the account the Pages project lives in
+      #
+      # Both the action and the wrangler version are pinned, for the reason given at the checkout
+      # above. wrangler-action v4 defaults `wranglerVersion` to `latest`, which is exactly the
+      # moving target this repository pins against, so the version is stated here instead.
+      - name: Publish to Cloudflare Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.120.1"
+          command: pages deploy _site --project-name=claude-multisession --branch=main
+
+  # What the old GitHub Pages host serves now: a stub per old URL, naming where that page went.
+  #
+  # `needs: build` is the ordering that matters. This job replaces the old site's content, so it must
+  # not run until the new site has actually been published -- otherwise a failed Cloudflare deploy
+  # leaves readers forwarded from a stale-but-working site to one that was never updated.
+  #
+  # PAGES IS SERVED FROM ACTIONS, not from a branch. The repository setting has to say so
+  # (Settings > Pages > Source: GitHub Actions) or this job publishes into a void while going green.
+  # The alternative was an orphan gh-pages branch, which would have put the forwarding pages outside
+  # every gate in this repository -- untracked on main, reviewed by nobody, and free to drift from
+  # the document set they answer for.
+  forward:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Job-level permissions REPLACE the workflow-level block rather than adding to it, so `contents`
+    # is restated here; without it the checkout below cannot read the repository.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      # The page list comes from `git ls-files docs/*.md`, the same source the site build uses, so a
+      # document cannot be added to one and missed by the other.
+      # tests/test_redirect_covers_every_page.py fails the run if it ever is.
+      - name: Generate the forwarding pages
+        run: python3 scripts/site/build_redirect.py _redirect
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        with:
+          path: _redirect
+
+      - id: deploy
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128

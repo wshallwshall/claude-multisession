@@ -231,7 +231,7 @@ Four verification rules that this tooling exists because of:
 <Delete this whole section if you are not using the published standards.>
 
 This project measures itself against the standards at
-<https://wshallwshall.github.io/claude-multisession/standards/OVERVIEW.html>. They are starting
+<https://wshallwshall.github.io/secure-development-standards/standards/OVERVIEW.html>. They are starting
 points, not a compliance package. The copies that matter are the ones in this repository after you
 edited them down to what you actually do.
 

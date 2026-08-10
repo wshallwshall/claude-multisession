@@ -33,6 +33,16 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# Build output of the documentation site. site-build.yml writes _site at the repository root and
+# scripts/site/build_redirect.py writes _redirect; both are generated on every run and neither is
+# ever the source of anything. Gemfile.lock is deliberately NOT listed: site-build.yml explains that
+# a lock file is wanted eventually and is waiting on a green run to produce a trustworthy one, so
+# ignoring it here would quietly cancel that.
+_site/
+_redirect/
+.jekyll-cache/
+.jekyll-metadata
+
 # Editors and desktops.
 .vs/
 .vscode/*.local.json
