@@ -158,13 +158,21 @@ def build(dest: Path) -> list[Path]:
         out.write_text(stub(target, site_title, lede, repo), encoding="utf-8")
         written.append(out)
 
-    # The only page entitled to offer just the root, because it is the only one that genuinely does
-    # not know what was asked for.
-    out = dest / "404.html"
-    out.write_text(
-        stub(base + "/", site_title, "This documentation has moved", repo), encoding="utf-8"
-    )
-    written.append(out)
+    # THE CATCH-ALL, and it is now usually written by the loop above rather than here. GitHub Pages
+    # serves 404.html for any address it does not recognise, so this file answers every old URL that
+    # is not one of the pages -- which, since docs/404.md exists, means forwarding to the new site's
+    # OWN not-found page. That is the honest destination: the reader asked for something that does
+    # not exist, and landing them on a home page that returns 200 tells them it does.
+    #
+    # The fallback below is kept for the case where docs/404.md is deleted. It offers the site root,
+    # which is the only thing a page with no idea what was asked for can honestly offer, and it is
+    # worse -- so it is a fallback and not the design.
+    if not any(p.name == "404.html" for p in written):
+        out = dest / "404.html"
+        out.write_text(
+            stub(base + "/", site_title, "This documentation has moved", repo), encoding="utf-8"
+        )
+        written.append(out)
     return written
 
 

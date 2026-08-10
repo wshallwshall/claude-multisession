@@ -65,6 +65,11 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # ONE DEFINITION OF THE PROJECT NAME. It decides the published hostname, so the deploy command,
+    # the agreement check above it and anything printed in the log must all read the same value --
+    # a second copy is how a deploy ends up publishing to a host no document points at, greenly.
+    env:
+      PAGES_PROJECT: claude-multisession
     steps:
       # Pinned to a commit, matching gates.yml. A tag is a moving target and this file's whole
       # purpose is telling you what actually ran.
@@ -230,6 +235,47 @@ jobs:
       # Both the action and the wrangler version are pinned, for the reason given at the checkout
       # above. wrangler-action v4 defaults `wranglerVersion` to `latest`, which is exactly the
       # moving target this repository pins against, so the version is stated here instead.
+      # NOT CONFIGURED AND DEPLOYED MUST NOT SHARE A COLOUR. GitHub renders a missing secret as an
+      # empty string rather than failing, so without this step wrangler runs with no account and
+      # fails describing something else -- and a reader looking at the log learns the wrong thing.
+      # Raised by the session migrating secure-development-standards, which hit it: adding one
+      # secret through the GitHub UI replaced the other rather than sitting beside it.
+      #
+      # THE SECOND CHECK IS THE ONE THAT CANNOT BE FOUND BY LOOKING AT THE LOG. A Pages project's
+      # name produces its hostname, and docs/_config.yml writes that hostname into every link on
+      # the site. Deploying to a project no document points at SUCCEEDS: it publishes, the run is
+      # green, and every link misses. So the two are compared here, and the project name lives in
+      # one place that the check and the deploy command both read.
+      - name: The deploy is configured, and configured for this site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          HAVE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAVE_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          set -euo pipefail
+          missing=""
+          [ "$HAVE_TOKEN" = "true" ] || missing="$missing CLOUDFLARE_API_TOKEN"
+          [ "$HAVE_ACCOUNT" = "true" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$missing" ]; then
+            echo "REFUSING to deploy: missing repository secret(s):$missing"
+            echo "  CLOUDFLARE_API_TOKEN needs the Account > Cloudflare Pages > Edit permission."
+            echo "  CLOUDFLARE_ACCOUNT_ID is an identifier, not a credential; it is in the"
+            echo "  dashboard URL. Adding one through the GitHub UI has been observed to REPLACE"
+            echo "  the other, so confirm both are listed rather than assuming."
+            exit 1
+          fi
+          want="https://${PAGES_PROJECT}.pages.dev"
+          got=$(sed -n 's/^url:[[:space:]]*//p' docs/_config.yml | tr -d '"' | tr -d "'" | head -1)
+          echo "project    : ${PAGES_PROJECT}  -> ${want}"
+          echo "_config.yml: ${got}"
+          if [ "$want" != "$got" ]; then
+            echo "REFUSING to deploy: the project publishes to ${want}, and every link on the site"
+            echo "is written against ${got}. Cloudflare accepts this deploy and it goes green --"
+            echo "the site publishes and every internal link misses. Change whichever is wrong."
+            exit 1
+          fi
+          echo "the deploy target and the site's own address agree"
+
       - name: Publish to Cloudflare Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0
@@ -237,7 +283,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.120.1"
-          command: pages deploy _site --project-name=claude-multisession --branch=main
+          command: pages deploy _site --project-name=${{ env.PAGES_PROJECT }} --branch=main
 
   # What the old GitHub Pages host serves now: a stub per old URL, naming where that page went.
   #

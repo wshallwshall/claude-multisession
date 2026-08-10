@@ -80,13 +80,24 @@ class TheForwarderAnswersForEveryOldUrl(unittest.TestCase):
         )
 
     def test_unknown_paths_are_answered_too(self):
-        """The one page entitled to offer only the site root, because it knows nothing else."""
+        """Every old address that is not one of the pages still reaches the new site.
+
+        GitHub Pages serves 404.html for anything it does not recognise, so this one file answers
+        the entire long tail. What it may forward TO is deliberately loose here: while docs/404.md
+        exists the generator points it at the new site's own not-found page, which is the honest
+        answer, and without it the generator falls back to the site root. Pinning one of those two
+        would fail the run for a change of destination that is not a defect. What must not happen is
+        the file being absent, and that is what this asserts.
+        """
+        base = build_redirect.config_value("url").rstrip("/")
         with tempfile.TemporaryDirectory() as tmp:
             dest = build_into(tmp)
             self.assertTrue((dest / "404.html").exists(), "no 404.html: unknown old paths dead-end")
-            self.assertEqual(
-                build_redirect.config_value("url").rstrip("/") + "/", target_of(dest / "404.html")
-            )
+            target = target_of(dest / "404.html")
+        self.assertTrue(
+            target and target.startswith(base + "/"),
+            f"the catch-all forwards to {target!r}, which is not on the new site",
+        )
 
     def test_every_stub_forwards_to_the_configured_site(self):
         """Compared against docs/_config.yml, never against an address written in this file."""
