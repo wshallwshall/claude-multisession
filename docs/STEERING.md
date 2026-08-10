@@ -1,5 +1,21 @@
 # Steering a running session
 
+## TLDR/BLUF
+
+**What this is.** Two files, about a hundred lines between them. A command queues a message from a
+second terminal, and a `PreToolUse` hook delivers it at the running session's **next tool call**
+instead of after the current turn finishes.
+
+**Why you should care.** A session twenty minutes into a task and going the wrong way cannot be
+reached. Typing at the prompt queues your message for *after* the turn ends, which may be a long time
+and a lot of wasted work away. Not for you if you never run a session long enough to want to
+interrupt it.
+
+**How to use it.** The hook is opt-in and nothing installs it; wire it at `settings.local.json`
+scope. Both refusals in the path resolver are scar tissue, so read them before moving the file.
+
+---
+
 Queue a message from a second terminal for a session that is already mid-task, and have it delivered
 at that session's **next tool call** instead of after the current turn finishes.
 

@@ -1,5 +1,21 @@
 # Running multiple sessions
 
+## TLDR/BLUF
+
+**What this is.** The entry point to running more than one Claude Code session in one repository.
+Three things live here and nowhere else: **which surface to run the sessions on**, **the channels
+sessions have for reaching each other**, and **using one session as a coordinator**.
+
+**Why you should care.** Concurrency buys real parallelism and creates a specific set of failures,
+nearly all of which are invisible while they happen. Four of the preparations only work if you do
+them *before* the second session starts, because each takes effect in sessions started afterwards.
+Not for you if you run one session at a time.
+
+**How to use it.** Read [Concepts](CONCEPTS.md) first, then work the numbered list below in order.
+Everything else on this page names a problem and links to the page that owns the fix.
+
+---
+
 More than one Claude Code session in one repository at the same time buys real parallelism and
 creates a specific set of failures, nearly all of which are invisible while they happen.
 

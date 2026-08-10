@@ -1,8 +1,21 @@
 # Worktrees
 
-Day-to-day use of the worktree scripts: creating a checkout for a parallel session, rescuing work
-that is already in the wrong place, putting the shared checkout back, and removing a worktree without
-losing commits.
+## TLDR/BLUF
+
+**What this is.** Day-to-day use of the worktree scripts. They create a checkout for a parallel
+session, rescue work that is already in the wrong place, put the shared checkout back, and remove a
+worktree without losing commits.
+
+**Why you should care.** One side's `git checkout` swaps every file under the other side mid-task,
+and nothing on either screen says so. Not for you if you run one session at a time, and not for you
+off Windows without checking: these scripts are PowerShell 7 and Windows is the tested platform.
+
+**How to use it.** Read [`docs/CONCEPTS.md`](CONCEPTS.md) first for the state root and the liveness
+fence, then wire the gate and the SessionStart backstop with
+[`INSTALL.md`](https://claude-multisession.pages.dev/INSTALL.md).
+[`docs/PRUNING.md`](PRUNING.md) owns the automated reaper.
+
+---
 
 Two parallel efforts -- two agent sessions, or a human and an agent -- cannot safely share one working
 tree. One side's `git checkout` swaps every file under the other side mid-task, and nothing on either

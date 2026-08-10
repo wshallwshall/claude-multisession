@@ -1,5 +1,21 @@
 # Sequence allocation
 
+## TLDR/BLUF
+
+**What this is.** `scripts/coord/alloc.ps1` and `scripts/hooks/seq_check.py`, which hand out "the next
+free number" for a sequence -- decision records, issue headings, migration numbers -- so two sessions
+cannot reach for the same one.
+
+**Why you should care.** This is the one collision class every other control in this repository is
+blind to. Two sessions each compute the same next number correctly, from their own point of view, and
+both use it. Not for you if your repository maintains no numbered sequence.
+
+**How to use it.** What a sequence *is* lives entirely in `ccx.config.json`. Decision records are the
+worked example in `examples/sequence-adr/`, but nothing about the mechanism is specific to them. The
+gate ships **unwired**, so read the doctor's status output before assuming it enforces anything.
+
+---
+
 Some numbers are a shared resource that git cannot see. Decision records named `0001-*.md`,
 `0002-*.md`. Issues written as `## 58.` headings in one long file. Migration numbers, RFC numbers,
 schema versions -- anything where "the next one" is a scalar that two people can reach for at the

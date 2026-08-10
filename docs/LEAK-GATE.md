@@ -1,5 +1,21 @@
 # The leak gate
 
+## TLDR/BLUF
+
+**What this is.** `scripts/security/scan_forbidden.py`, a scanner that refuses to let identifying
+content reach a public repository. Stdlib Python, no project import, exit codes only.
+
+**Why you should care.** Publishing a repo that grew up in private is not a license question, it is a
+*string* question. None of what leaks is a syntax error, a test failure, or a *secret* in the sense a
+secret scanner means. Nothing else in a normal toolchain is looking for it. Not for you if the
+repository was public from its first commit.
+
+**How to use it.** Run it in a bare clone, in a git hook with no virtualenv, or on a CI runner. Read
+[What it catches](#what-it-catches) first, because the structural detectors and the configured ones
+fail differently.
+
+---
+
 `scripts/security/scan_forbidden.py` refuses to let identifying content reach a public repository.
 
 Publishing a repo that grew up in private is not a license question, it is a *string* question. The

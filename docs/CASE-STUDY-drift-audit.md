@@ -1,5 +1,20 @@
 # Case study: auditing a multi-session estate as one system
 
+## TLDR/BLUF
+
+**What this is.** A *method* document, audit date **2026-08-04**: how the controls in this repository
+were audited as a single system, what the audit proved, and what it could not.
+
+**Why you should care.** Each control here is small and readable, and reading one tells you nothing
+about whether it is enforcing. Six design rules came out of the audit, and each is a consequence of a
+control that looked installed and was not. Not for you if you want a status table: this deliberately
+carries none, because a published inventory of what is unenforced is a map for routing around it.
+
+**How to use it.** For the current status of *your* estate, do not read a document -- run
+`pwsh -NoProfile -File bin/ccx-doctor.ps1`. Everything here is the reasoning that command encodes.
+
+---
+
 **Audit date: 2026-08-04.** This is a *method* document. It describes how the controls in this
 repository were audited as a single system, what the audit was able to prove, and what it could not.
 It deliberately contains no status table, no finding list, and no inventory of what is or is not

@@ -1,5 +1,17 @@
 # Here's what to feed to Claude Code
 
+## TLDR/BLUF
+
+**What this is.** A prompt you paste into Claude Code, plus the instructions it follows once it has
+read this page. It surveys your repository and advises you; it installs nothing.
+
+**Why you should care.** It answers whether this tooling helps your situation at all, and running one
+session at a time is a perfectly good answer it is told to give. It reports what is already in your
+repository and what would have to change, before you commit to any of it.
+
+**How to use it.** Paste the block in the next section into Claude Code, opened in the repository you
+are thinking about. Everything after that section is addressed to the model, not to you.
+
 ## For the human, in thirty seconds
 
 Open Claude Code in the repository you are thinking about, and paste this:

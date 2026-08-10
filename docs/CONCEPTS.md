@@ -1,8 +1,18 @@
 # Concepts
 
-The mental model behind this tooling. Read this before the installers: almost every rule in the
-repository is a consequence of one of the five ideas below, and the ones that look like paranoia are
-the ones that were paid for.
+## TLDR/BLUF
+
+**What this is.** The mental model behind this tooling: a worktree per session, one shared state root
+every worktree of a clone resolves identically, and a liveness fence that may only ever veto.
+
+**Why you should care.** Almost every rule in the repository is a consequence of one of the five
+ideas below, and the ones that look like paranoia are the ones that were paid for. Read this before
+the installers or those rules read as arbitrary. Not for you if you run one session at a time.
+
+**How to use it.** Read the three-layer sketch below, then [Hooks](HOOKS.md) for the event each idea
+is wired to, and [Worktrees](WORKTREES.md) for the day-to-day commands.
+
+---
 
 The whole system is three layers:
 

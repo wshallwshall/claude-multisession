@@ -1,14 +1,28 @@
 # Landing work: PRs and merges
 
-Several sessions working in parallel produce several branches, and all of them have to land in one
-trunk. That last mile is where parallelism stops being free. The trunk moves while you are looking at
-it, two branches append to the same file, a queued pull request quietly stops progressing -- and
-every one of those failures looks like something else.
+## TLDR/BLUF
 
-This document is the merge-time counterpart to [WORKTREES.md](WORKTREES.md) (creating and living in
-worktrees) and [PRUNING.md](PRUNING.md) (cleaning them up afterwards). Everything here was learned by
-getting it wrong; where a number is quoted it was measured on the repo this tooling was developed in,
-and it is stated as evidence for the rule, not as a universal constant.
+**What this is.** The merge-time counterpart to [WORKTREES.md](WORKTREES.md) and
+[PRUNING.md](PRUNING.md): getting several parallel branches to land in one trunk.
+
+**Why you should care.** The last mile is where parallelism stops being free. The trunk moves while
+you are looking at it, two branches append to the same file, and a queued pull request quietly stops
+progressing. Every one of those failures looks like something else. Being ahead of the trunk is not
+evidence of unmerged work, and reading it that way has destroyed commits. Not for you if only one
+branch is ever in flight.
+
+**How to use it.** Read the merge-signal section before trusting any "is it merged?" answer.
+[WORKTREES.md](WORKTREES.md) covers creating and living in worktrees, and
+[PRUNING.md](PRUNING.md) covers cleaning them up afterwards.
+
+---
+
+Several sessions working in parallel produce several branches, and all of them have to land in one
+trunk.
+
+Everything here was learned by getting it wrong. Where a number is quoted it was measured on the repo
+this tooling was developed in, and it is stated as evidence for the rule, not as a universal
+constant.
 
 Two assumptions run through the whole document, because they are what make the traps traps:
 

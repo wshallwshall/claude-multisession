@@ -2,21 +2,22 @@
 
 ## TLDR/BLUF
 
-Every rule below is one testable statement with a permanent identifier. Cite the identifier in a
-review comment the way a standard's rule is cited, so both sides point at the same sentence.
+**What this is.** Every rule below is one testable statement with a permanent identifier. Cite the
+identifier in a review comment the way a standard's rule is cited, so both sides point at the same
+sentence. What they demand: an opening carrying the three labels this section itself carries. Then
+sentences that each carry a fact, a number, a constraint or a link, and prose that never describes
+its own structure.
 
-- **What it demands.** An opening that answers what this is, what it costs, and where to start, before
-  it explains anything. Sentences that carry a fact, a number, a constraint or a link. Prose that
-  never describes its own structure.
-- **What it costs.** Length, in the places where length was doing nothing. The rules protect density
-  explicitly, so applying them is not a licence to flatten precision into blandness.
-- **Where it does not apply.** Generated files. The `PD` section, which is the list of things an editor
-  MUST NOT cut. The document these rules were derived from, `SECURE-DEVELOPMENT.md`, left with
-  [the standards](https://github.com/wshallwshall/secure-development-standards) and answers to that
-  repository's own house style now.
-- **Where to start.** `PD` first, before touching anything: it is the list of things an editor MUST
-  NOT cut. The one rule that named specific sections, `PD-8`, is a tombstone -- all four went with the
-  standards.
+**Why you should care.** Applying them costs length, in the places where length was doing nothing --
+but the rules protect density explicitly, so this is not a licence to flatten precision into
+blandness. Not for you on generated files, nor on the `PD` section itself. The document these rules
+were derived from, `SECURE-DEVELOPMENT.md`, left with
+[the standards](https://github.com/wshallwshall/secure-development-standards) and answers to that
+repository's own house style now.
+
+**How to use it.** Read `PD` first, before touching anything: it is the list of things an editor MUST
+NOT cut. The one rule that named specific sections, `PD-8`, is a tombstone -- all four went with the
+standards.
 
 ---
 
@@ -48,12 +49,29 @@ orientation sections were deleted for restating the page rather than opening it.
 
 | ID | Rule | Evidence |
 |---|---|---|
-| OPEN-1 | The first screen **MUST** answer, in this order: what this is, what it costs the reader, who it is not for, and where to start | The four answers, above the first explanatory section |
-| OPEN-2 | A page with a summary section **MUST** spell its heading `## TLDR/BLUF` exactly | `tests/test_docs_do_not_drift.py` pins the string. A page **MAY** have no summary section at all |
+| OPEN-1 | The first screen **MUST** answer, in this order: what this is, why the reader should care, and how to use it | The three answers, above the first explanatory section |
+| OPEN-2 | A page **MUST** carry a summary section, and **MUST** spell its heading `## TLDR/BLUF` exactly | `tests/test_docs_do_not_drift.py` pins the string and the presence |
 | OPEN-3 | An opening **MUST NOT** describe the page's own structure, sections, or reading order | No "this page is organized as", no "first we cover" |
-| OPEN-4 | An opening **MUST** state who the page is not for, where that set is non-empty, and **MUST** say it as a plain no | A sentence a reader can fail |
+| OPEN-4 | An opening **MUST** state who the page is not for, where that set is non-empty, and **MUST** say it as a plain no. It belongs in the `Why you should care` slot | A sentence a reader can fail |
 | OPEN-5 | An opening **SHOULD** link rather than summarise, where the target says it already | A link, not a paraphrase |
-| OPEN-6 | A page longer than roughly 2,000 words **SHOULD** name its own starting point | One link, in the opening |
+| OPEN-6 | A page longer than roughly 2,000 words **SHOULD** name its own starting point | One link, in the `How to use it` slot |
+| OPEN-7 | The three answers **MUST** be labelled, verbatim and in order: `**What this is.**`, `**Why you should care.**`, `**How to use it.**`, each opening its own paragraph | `tests/test_docs_do_not_drift.py` pins all three, in order, on every rendered page |
+
+### What OPEN-1 and OPEN-2 demanded before 2026-08-10
+
+Both were reworded rather than reissued, and both changed what they demand, which is normally the
+trigger for a new identifier. The change is recorded here instead so that a citation written against
+the old text resolves to something rather than to a rule that quietly means something else.
+
+- **OPEN-1** required four answers -- what this is, *what it costs the reader*, who it is not for, and
+  where to start. It now requires the three above. "What it costs" is no longer a slot of its own;
+  where a page has a real cost to state, it goes in `Why you should care`.
+- **OPEN-2** ended with "A page **MAY** have no summary section at all". That permission is gone.
+  Every rendered page carries the section, which is what made OPEN-7 gateable: 15 of the 18 pages
+  had no summary section on 2026-08-10, so the rule had almost nothing to bind to.
+
+`OPEN-4` was reworded under its own identifier without changing what it demands: the not-for-you
+sentence is still required, it is now told which slot to sit in.
 
 ---
 
