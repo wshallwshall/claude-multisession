@@ -123,9 +123,17 @@ LINK_BEARING = (".md",)
 # pattern named that host. Anything still written the old way is now an EXTERNAL link as far as this
 # file is concerned -- unchecked, and forwarded by a stub rather than served -- so the old form is
 # not a second spelling to accept here. It is a thing to find and repoint.
-SERVED_SITE = re.compile(
-    r"https://claude-multisession\.pages\.dev(/[^)\s]*)?"
-)
+#
+# AND IT WILL PROBABLY MOVE AGAIN, which is why the host below is a plain string run through
+# `re.escape` rather than a pattern with the dots escaped by hand. `*.pages.dev` is a shared free
+# subdomain in the same category as `*.github.io` and can be blocked by the same kind of rule, so the
+# next move is a question of when. Written as a pattern, this line reads
+# `claude-multisession\.pages\.dev` -- which a find-and-replace over the literal host does NOT match,
+# so the one occurrence that silently keeps working is the one in the checker, and a checker that
+# still matches the OLD host goes blind rather than red. That is the exact failure the paragraph
+# above describes, hiding in the instrument meant to catch it.
+SERVED_HOST = "https://claude-multisession.pages.dev"
+SERVED_SITE = re.compile(re.escape(SERVED_HOST) + r"(/[^)\s]*)?")
 
 # docs/ is the Jekyll source root, so a served path maps back onto it directly. No permalink style is
 # configured, so docs/a/b.md builds to /a/b.html -- the one exception being the directory index,
