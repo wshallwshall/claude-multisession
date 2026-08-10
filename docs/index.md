@@ -49,8 +49,8 @@ it happens, because each session believes it owns its directory.
 That is the loudest collision, not the only one. Six more -- same file, same work in different files,
 same reserved number, same config lock, same shared list, same agent memory -- are tabulated with
 their measurements in the
-[README](https://claude-multisession.pages.dev/README.md), *"What problem this solves"*,
-which is the place to start if you are still deciding whether you have this problem.
+[README](https://claude-multisession.pages.dev/README.md), *"What problem this solves"*.
+Start there if you are still deciding whether you have this problem.
 
 ## What you get
 
@@ -80,10 +80,10 @@ tell which of those a worktree is. [Pruning](PRUNING.md)
 
 **Work too large for one context.** A coordinated set of sessions can cover a codebase at once, which
 extends to compliance work -- an OWASP ASVS 5.0 assessment runs to several hundred requirements, more
-than one session can hold. The write-up is candid that the obvious split is the wrong one: a session
+than one session can hold. The write-up is candid that the obvious split is the wrong one. A session
 per chapter is a scheduling answer, and the collision that actually costs you is not two agents
-editing the same row but **two agents applying different unwritten rules**, producing verdicts that
-cannot be reconciled afterwards because neither recorded which rule it applied.
+editing the same row but **two agents applying different unwritten rules**. Their verdicts cannot be
+reconciled afterwards, because neither recorded which rule it applied.
 [Running a large assessment](https://secure-development-standards.pages.dev/ASVS-ASSESSMENT.html)
 
 ### Which part defends against #76590
@@ -156,7 +156,7 @@ Two directories are involved, and every command says which it means:
 commit them, so tooling *is* target. It is the only layout in which the doctor can reach exit 0. The
 separate-checkouts layout works for the worktree gate, both git hooks and the backstop, but the three
 coordination hooks are shims that resolve their script inside whatever repository the session is
-running in -- so a target that does not carry those files gets three hooks that are wired and resolve
+running in. A target that does not carry those files gets three hooks that are wired and resolve
 nothing.
 
 Run all of this from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is `1`,
@@ -312,23 +312,28 @@ Installed once, then invoked by the harness or by git.
 
 ## Where to go next
 
-**The model:** [Concepts](CONCEPTS.md) (worktree per session, one shared state root, a liveness fence
-that may only veto, exclusive-create over read-modify-write, no TTLs, the six knobs in
-`ccx.config.json`) then [Hooks](HOOKS.md) (harness versus git hooks, every control mapped to its
-event and fail-open or fail-closed posture).
+**The model.** Start with [Concepts](CONCEPTS.md): worktree per session, one shared state root, a
+liveness fence that may only veto, exclusive-create over read-modify-write, no TTLs, and the six
+knobs in `ccx.config.json`. Then [Hooks](HOOKS.md), which sets harness hooks against git hooks and
+maps every control to its event and its fail-open or fail-closed posture.
 
-**Running sessions:** start at [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) -- it is the
-entry point to the group, and it covers the three things no other page owns (which surface to run
-sessions on, the channels they have for reaching each other, and using one session as a coordinator).
+**Running sessions.** Start at [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md). It is the
+entry point to the group, and it covers the three things no other page owns:
+
+- which surface to run sessions on;
+- the channels they have for reaching each other;
+- using one session as a coordinator.
+
 Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](COORDINATION.md) -
 [Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -
 [PRs and merges](PR-AND-MERGE.md) - [Pruning](PRUNING.md).
 
 **Safety,** in descending order of how much actually ships:
-[Leak gate](LEAK-GATE.md) (a scanner you can run today, plus the blind spot no scanner can close) -
-[Usage awareness](USAGE-AWARENESS.md) (a design; ships no hook) -
-[Session mail](SESSION-MAIL.md) (a design for reaching the peers announce cannot; ships nothing, and
-is most useful as the list of ways the obvious implementations fail).
+
+- [Leak gate](LEAK-GATE.md) -- a scanner you can run today, plus the blind spot no scanner can close.
+- [Usage awareness](USAGE-AWARENESS.md) -- a design; ships no hook.
+- [Session mail](SESSION-MAIL.md) -- a design for reaching the peers announce cannot. It ships
+  nothing, and is most useful as the list of ways the obvious implementations fail.
 
 **In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list).

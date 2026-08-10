@@ -108,7 +108,7 @@ this is a mutex rather than a retry loop:
 ### One dependency environment per worktree
 
 **The trap.** Reusing one dependency environment across worktrees to save a minute of install time.
-For an editable or linked install this is worse than slow: the environment is bound to the **one
+For an editable or linked install this is worse than slow. The environment is bound to the **one
 source path** it was created from, so a test run from worktree B imports worktree A's code. Green
 here, red in CI, and no diff that explains it.
 
@@ -134,7 +134,7 @@ is not yours. Two rules in it are not obvious:
 - **Install from your lockfile, not from your version ranges.** A fresh worktree that re-resolves
   dependencies gets whatever the registry serves today, which is how a checkout ends up with a
   different formatter from CI. That is worse than misleading when the tool has a `--fix` mode wired
-  into a commit hook: it does not merely report differently, it **rewrites your source** to match a
+  into a commit hook. It does not merely report differently: it **rewrites your source** to match a
   version CI does not have.
 
 Two failure modes here are deliberately loud rather than silent:
@@ -200,9 +200,9 @@ The home branch is resolved in this order:
 3. the local branch matching the configured trunk (`origin/main` -> `main`)
 4. `main`, then `master`
 
-Step 3 exists so a project whose default branch is named something else still gets the right answer,
-and gets it from the same source every other script here uses rather than from a second, drifting
-list of names.
+Step 3 exists so a project whose default branch is named something else still gets the right answer.
+It gets that answer from the same source every other script here uses, rather than from a second,
+drifting list of names.
 
 **It refuses on a dirty primary.** Re-attaching would either carry someone else's uncommitted work
 onto another branch or lose it, and the script cannot tell whose work it is. The refusal points at
@@ -228,9 +228,9 @@ What it does, and equally what it refuses to do:
 | This session's own linked worktree is on a different branch from its recorded home | **Warn only.** Never auto-switch a linked worktree under the session standing in it. |
 
 **The dirty-tree refusal is the only safety property this hook has**, and it is the one thing about it
-worth checking: `bin/ccx-doctor.ps1` drifts a throwaway repository, leaves an uncommitted change in it,
+worth checking. `bin/ccx-doctor.ps1` drifts a throwaway repository, leaves an uncommitted change in it,
 and requires the backstop to decline **and to say why**. A repair there is `RED`. That negative control
-is load-bearing rather than decorative, because the positive one is not: drifting a *clean* fixture and
+is load-bearing rather than decorative, because the positive one is not. Drifting a *clean* fixture and
 watching it get repaired passes identically whether or not the dirty-tree test is still in the code.
 
 It **fails open on every error path** -- exit 0, no output. A backstop that wedges session startup gets
@@ -259,8 +259,8 @@ so deliberately re-branching a worktree -- a normal part of its lifecycle -- mak
 immediately. A detector that treated it as authoritative would "repair" an intentional change, and
 the remediation it would print is a branch switch that swaps every file under a live session.
 
-Concretely, in the audit that produced this rule, most of the live worktrees mismatched their record,
-the file had two writers (creation time, and bootstrap-on-first-sighting) with no update path, and the
+Concretely, in the audit that produced this rule, most of the live worktrees mismatched their record.
+The file had two writers, creation time and bootstrap-on-first-sighting, with no update path, and the
 printed remedy would have moved a session off its real branch. Three things follow:
 
 - **Prefer the authoritative source.** `git worktree list --porcelain` needs no sidecar at all. Use
@@ -273,16 +273,16 @@ printed remedy would have moved a session off its real branch. Three things foll
 **The bootstrap writer can race session setup, and the result is a warning that never stops.** When
 no record exists yet, the backstop bootstraps one from whatever branch the worktree is on at that
 moment. If that happens before the harness has finished moving a newly created worktree onto its
-session branch, "home" is captured as the pre-setup branch, and the mismatch warning then fires on
-every later session start, forever. Measured here on 2026-08-05: worktree created at 09:21:50,
-record written at 09:21:54, harness moved the worktree to its session branch at 09:23:10 -- the
-warning was stale by 76 seconds, not a hijack. This is the sharpest reason the detector may only
-warn: a harness-driven switch during session setup and a genuine hijack are identical in the record
-until you check the worktree's reflog for an agent tool call that caused it.
+session branch, "home" is captured as the pre-setup branch. The mismatch warning then fires on every
+later session start, forever. Measured here on 2026-08-05: worktree created at 09:21:50, record
+written at 09:21:54, harness moved the worktree to its session branch at 09:23:10 -- the warning was
+stale by 76 seconds, not a hijack. This is the sharpest reason the detector may only warn. A
+harness-driven switch during session setup and a genuine hijack are identical in the record until
+you check the worktree's reflog for an agent tool call that caused it.
 
 A near-identical git config key, `<prefix>.homeBranch`, exists alongside the file. They are not the
-same thing and they are one word apart: the **config key** is your deliberate override for the
-*primary's* home branch, read by `restore-primary.ps1` and the backstop; the **sidecar file** is a
+same thing and they are one word apart. The **config key** is your deliberate override for the
+*primary's* home branch, read by `restore-primary.ps1` and the backstop. The **sidecar file** is a
 per-worktree creation-time note. Both derive their name from `prefix`, read from the repository's own
 config by whoever is reading them, so renaming the prefix cannot split the writer and the reader onto
 two different names.
@@ -355,8 +355,8 @@ disconnected network drive, an unmounted volume, a harness-managed nested worktr
 about to come back to. `git worktree remove` already deregisters the one you removed; a blanket prune
 is a second, much wider action wearing the costume of a cleanup step.
 
-The related failure -- a removal that deregisters the worktree and then fails to delete the directory,
-leaving a folder git no longer recognizes -- and how to recover from it are covered in
+There is a related failure: a removal that deregisters the worktree and then fails to delete the
+directory, leaving a folder git no longer recognizes. How to recover from it is covered in
 [`docs/PRUNING.md`](PRUNING.md), which owns the unattended path.
 
 For bulk cleanup use `prune-merged.ps1`. It is a dry run by default, and its rule is
@@ -408,7 +408,7 @@ just told them everything was fine.
 **The rule.** Anchor on the primary -- never on `$PSScriptRoot/../..`, which is the checkout the
 *script* happens to live in. `Get-CcxPrimaryRoot` reads the first entry of
 `git worktree list --porcelain`, so every command here behaves identically from any checkout. Where a
-command genuinely must run from one specific place, it **refuses**: `prune-merged.ps1` exits
+command genuinely must run from one specific place, it **refuses**. `prune-merged.ps1` exits
 non-zero with `REFUSED: this is a linked worktree, not the primary checkout`, naming both paths,
 rather than reporting nothing to do. `remove.ps1` applies the same principle to the narrower case of
 standing inside the worktree you asked it to delete.
@@ -447,10 +447,10 @@ separate dependency environment. It feels total. Four things are still shared, a
   failed, and the rule fell through to its allow path.
 - **The harness's session record format is a vendor contract.** The liveness fence that stops the
   reaper touching an occupied worktree reads per-session records the harness writes. That schema can
-  change under you without notice; if it does, the fence reports itself unavailable and nothing is
+  change under you without notice. If it does, the fence reports itself unavailable and nothing is
   pruned, which is the intended direction of failure but is still an outage of the signal.
 - **Session listings do not see every session kind.** Sessions relocated into a worktree file their
-  transcript under a different key and drop out of the list of the window they were born in;
+  transcript under a different key and drop out of the list of the window they were born in.
   `sessions.ps1` is how you find them, and `-Rehome` is how you put one back.
 - **Nothing here can prove a session is gone.** There is no heartbeat. Every occupancy verdict is the
   absence of a veto, not a permission.

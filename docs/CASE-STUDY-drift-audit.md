@@ -59,8 +59,8 @@ Three consequences follow directly, and they are the three most expensive mistak
 it -- sometimes deliberately, since a control may ship inert on purpose. Track *inert-by-design*
 separately from *inert-by-accident*, re-run the installer as a distinct announced step, and never count
 merged code as coverage. On the repo this tooling was developed in, a coordination hook merged and sat
-unwired for hours while the settings file looked entirely correct, because a similarly-named entry from
-another project occupied the slot it wanted.
+unwired for hours while the settings file looked entirely correct. A similarly-named entry from
+another project had occupied the slot it wanted.
 
 **Establish behavior by driving input into the installed artifact, not by reading source.** The
 installed copy, the settings matcher and the source can all disagree with one another, and only one of
@@ -94,7 +94,7 @@ it. An audit that only looks for D1 will pass.
 
 Coverage drift has a structural cause worth naming: **enumerated coverage means every hole is silent.**
 A rule keyed on a list of tool names, or a list of command verbs, is unmatched at *both* the settings
-matcher and the rule body for anything not in the list -- the control never runs, and nothing anywhere
+matcher and the rule body for anything not in the list. The control never runs, and nothing anywhere
 says so. Prefer deny-by-default where you can. Where you cannot, ship a rule inventory and a `-Status`
 that asserts against an *expectation* rather than printing a bare count, and log every non-match you
 deliberately allow.
@@ -113,11 +113,11 @@ and the one that drifts is the one nobody is testing. Keep exactly one copy of a
 
 **False positives train sessions to route around the only control you have.** On the repo this tooling
 was developed in, a verb-scanning rule denied a read-only status command because a blocklisted word
-appeared in a prose line of a multi-line command, and denied a commit whose *message* contained one.
-Every such denial erodes compliance with the deny text -- which, on the shell path, is the only control
-there is. Scan per line, fold continuations, blank quoted spans, recurse into interpreter arguments,
-and ship ALLOW-asserting tests for the multi-line, echoed and message-containing cases. A gate that
-cries wolf gets routed around, and then you have nothing.
+appeared in a prose line of a multi-line command. It also denied a commit whose *message* contained
+one. Every such denial erodes compliance with the deny text, which on the shell path is the only
+control there is. Scan per line, fold continuations, blank quoted spans, recurse into interpreter
+arguments, and ship ALLOW-asserting tests for the multi-line, echoed and message-containing cases.
+A gate that cries wolf gets routed around, and then you have nothing.
 
 ---
 
@@ -128,16 +128,16 @@ cries wolf gets routed around, and then you have nothing.
 The obvious design for "don't build in the shared checkout" is to deny writes from sessions whose cwd
 is that checkout. It is wrong. Measured on the repo this tooling was developed in, over 30 days, **29%
 of write calls came from a session sitting in the shared checkout and landing inside a separate
-worktree by absolute path** -- already correct behavior. A cwd-keyed gate would have denied every one
-of them.
+worktree by absolute path**. That is already correct behavior, and a cwd-keyed gate would have denied
+every one of them.
 
 Key write-gating on the destination. A session may then stay where it is and simply write into its
 worktree: no `cd`, no relocation, no restart. The price is that writes into *another* session's
 worktree are allowed. Accept that explicitly, and know the deny text actively teaches it.
 
 There is a second, unobvious payoff. A target-path rule already contains a fan-out from a bad working
-directory: a subagent inherits its parent's cwd, but its writes are judged by where they land, so they
-are denied at the destination regardless of where the parent was standing.
+directory. A subagent inherits its parent's cwd, but its writes are judged by where they land, so
+they are denied at the destination regardless of where the parent was standing.
 
 ### 2. The gate's own enforcement surface must be governed
 
@@ -177,8 +177,8 @@ and a human must restart it elsewhere. That is a hard stop on the way sessions n
 
 Two rules, individually defensible, jointly a dead end. This is why `scripts/worktree/install-gate.ps1`
 ships the relocation rule as an opt-in `-EnterWorktreeGate` switch that is **off by default**, and says
-in the parameter's own comment why: it is a decision to make on purpose, not one that rides along with
-an unrelated install.
+in the parameter's own comment why. It is a decision to make on purpose, not one that rides along
+with an unrelated install.
 
 The corollary is **ship the cure before the prohibition.** If a prohibition removes the only path to
 the sanctioned behavior, the prohibition is the defect.
@@ -212,7 +212,7 @@ a subagent's process id is also what lets a parent session see what its fan-out 
 
 One control in this repository is an *instruction to the model* rather than an action: it resolves peers
 and asks the model to deliver a message. Whether the message was delivered is therefore recorded by the
-model, not by the hook -- it is the one control whose audit trail is written by the thing it is supposed
+model, not by the hook. It is the one control whose audit trail is written by the thing it is supposed
 to be evidence about. That is named as a permanent blind spot on every audit run rather than papered
 over. Where a control cannot receipt itself, say so explicitly, so nobody mistakes the trail for
 independent evidence.
@@ -246,17 +246,17 @@ against every config root's matchers), reporting three distinct states rather th
 
 Reading a control does not establish its behavior; feeding it does. `bin/ccx-doctor.ps1` pipes crafted
 `PreToolUse` payloads at the *installed* gate, attempts a blanket stage, attempts a commit claiming an
-unheld work item, attempts a push to a protected ref -- and requires a refusal in each case. Everything
+unheld work item, and attempts a push to a protected ref. It requires a refusal in each case. Everything
 runs against throwaway fixtures in the temp directory, with their own repositories, their own allowlist
 and their own state root, deleted on the way out.
 
 Each attack is paired with a **negative control**: an ordinary action the same control must *allow*. A
 script that refuses everything is not a working guard either, and more importantly a probe with no
 positive control cannot tell "the control refused correctly" from "the control refused because it could
-not load". That distinction is not academic -- the class of installer defect where the entry point is
-copied but the helpers it dot-sources or imports are not produces a control that refuses *everything*,
-for a reason unrelated to what it checks. Without a negative control that failure reads as perfect
-enforcement.
+not load". That distinction is not academic. There is a class of installer defect where the entry
+point is copied but the helpers it dot-sources or imports are not, and it produces a control that
+refuses *everything*, for a reason unrelated to what it checks. Without a negative control that
+failure reads as perfect enforcement.
 
 Attack results are downgraded to `??`, never `OK`, when the artifact under test is the source rather
 than an installed copy. Proving the rules work says nothing about whether anything is enforcing.
@@ -269,7 +269,7 @@ working directory and no tool input at all. Every path-keyed rule correctly allo
 reported the gate broken. The gate was fine. The probe was broken.
 
 `New-PreToolUsePayload` now throws on an empty tool input, and the attack block catches an abort and
-records `??` for the attacks that never fired -- so a canceled sequence can never read as a silent
+records `??` for the attacks that never fired. A canceled sequence can never read as a silent
 pass. **A probe that cannot build its own input must refuse to report a verdict rather than report the
 target's answer to an empty question.**
 
@@ -314,10 +314,17 @@ used to justify a new decision.
 ### Record rejected options with the specific blocking fact
 
 The structurally strongest answers to "sessions keep building in the shared checkout" get re-proposed
-every single time the gate leaks: an OS-level sandbox, filesystem ACLs, a bare-repository layout, a
-repository-level worktree lock, a native path-deny rule in the client's own permission system. Each is
-blocked by a concrete, statable fact -- platform availability, what the lock primitive actually prevents,
-or the fact that a nested worktree layout lives *inside* the checkout a path-deny would have to cover.
+every single time the gate leaks:
+
+- an OS-level sandbox;
+- filesystem ACLs;
+- a bare-repository layout;
+- a repository-level worktree lock;
+- a native path-deny rule in the client's own permission system.
+
+A concrete, statable fact blocks each one: platform availability, what the lock primitive actually
+prevents, or the fact that a nested worktree layout lives *inside* the checkout a path-deny would
+have to cover.
 Another is the loss of the deny *text*, which on this design carries most of the rule's value because
 it is the remediation channel.
 
@@ -336,8 +343,8 @@ Assert that the forbidden path never appears in the suggested-alternatives list.
 The single most damaging line in an audit report is a bare **Done**.
 
 The next session acts on the status. If a change is mostly done, the status must spell out what is
-*not* done, per item, in the same sentence: **"Mostly done -- X, Y; NOT done: Z."** An overstated status
-is worse than no status, because no status prompts a check and a false status ends one.
+*not* done, per item, in the same sentence: **"Mostly done -- X, Y; NOT done: Z."** An overstated
+status is worse than no status. No status prompts a check, and a false status ends one.
 
 The same discipline applies to the audit's own verdict. `bin/ccx-doctor.ps1` exits `0` only when every
 required control is installed *and* wired *and* refused every attack, `1` on any red, and **`2` when at
@@ -347,10 +354,10 @@ status tags are `OK`, `RED`, `OFF`, `??` and `--`, and `??` is not a rounding er
 
 ### Print what you scanned, and name your blind spots, on every run
 
-Every run prints a `WHAT WAS SCANNED` block -- config roots found, session records read, records that
-could not be placed, worktrees enumerated, which interpreter -- and a blind-spot block that prints
-**whether or not anything failed**. An operator who believes they are fenced when they are not is worse
-off than one who knows they are not.
+Every run prints a `WHAT WAS SCANNED` block: config roots found, session records read, records that
+could not be placed, worktrees enumerated, which interpreter. It also prints a blind-spot block,
+**whether or not anything failed**. An operator who believes they are fenced when they are not is
+worse off than one who knows they are not.
 
 ---
 

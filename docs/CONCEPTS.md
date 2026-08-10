@@ -218,8 +218,8 @@ shows up as a count going to zero instead of as a silent all-clear.
 
 `UNREADABLE` ranks with the possibly-live states, not with the gone ones, and it used to be reported
 as `DEAD`. A registry file caught mid-write has exactly that shape, which makes it the signature of a
-session that launched one second ago, so a session that had just started read as "nobody is there" to
-a caller about to delete its worktree.
+session that launched one second ago. A session that had just started therefore read as "nobody is
+there" to a caller about to delete its worktree.
 
 ### Liveness may only veto, never permit
 
@@ -379,7 +379,7 @@ No lock expires. No claim expires. Nothing is reaped on a timer. This is the mos
 questioned decision in the repository, so the reasoning is stated once, here.
 
 A lock that expires on a timer hands the critical section to a second process **while the first is
-still inside it**, silently, at the exact moment the operation is slowest, which is precisely when a
+still inside it**, silently, at the exact moment the operation is slowest. That is precisely when a
 timeout is most likely to be the wrong inference. Compare the two failure modes:
 
 | | Failure it prevents | Failure it causes |
@@ -458,7 +458,7 @@ cannot say what this points at", which callers read as "not governed".
 ### A prefix test is not a containment test
 
 `Test-CcxPathUnder` requires `$Path -eq $Root -or $Path.StartsWith("$Root/")`. **The `/` is the
-point.** A bare `StartsWith` is a prefix match on a *string*, not on a *directory*: a sibling worktree
+point.** A bare `StartsWith` is a prefix match on a *string*, not on a *directory*. A sibling worktree
 named `<primary>-<task>` has a path that literally starts with the primary's, so a raw prefix test
 claims every sibling is inside the primary.
 
@@ -484,7 +484,7 @@ data, two questions, two answers.
 trimming. They must match **character for character** across the two languages.
 
 Folding here is **unconditionally** lower-case, unlike path comparison, because this is a name we are
-*minting* rather than a path the filesystem already assigned: `Auth-Fix` and `auth-fix` must be the
+*minting* rather than a path the filesystem already assigned. `Auth-Fix` and `auth-fix` must be the
 same claim on every platform, or the claim does not exclude anything.
 
 Callers must reject `''` rather than substituting a default. A name that reduces to nothing is a
@@ -576,7 +576,7 @@ Two validation rules are worth knowing because they are enforced at load:
   to carry a disabled allocator.
 
 Three names are **not** derived from `prefix`, and knowing which is which matters when you rename
-anything: the gate's allowlist file is the fixed `~/.claude/hooks/ccx-gate.repos.txt`, and the two
+anything. The gate's allowlist file is the fixed `~/.claude/hooks/ccx-gate.repos.txt`. The two
 installer markers written into the user settings file are the fixed strings `ccx-coord` and
 `ccx-announce`. Those markers are on-disk identity, which is why they are literals rather than
 computed, and why **neither may ever be a substring of the other**. Ownership is tested by substring

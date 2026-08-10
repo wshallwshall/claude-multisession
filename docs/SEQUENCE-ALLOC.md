@@ -174,8 +174,8 @@ id collapses several hundred specs into far fewer reads.
 Every term above is derived from refs a routine cleanup can remove. **The sweep is only as good as
 the refs this clone happens to hold.** Measured on the repo this tooling was developed in: the floor
 computed over all refs was materially higher than the floor computed over origin's refs and local
-heads alone, because numbers lived on remote-tracking refs for a remote that `git remote -v` no
-longer listed. Drop those and the floor silently reverts to a lower value, and the allocator resumes
+heads alone. Numbers lived on remote-tracking refs for a remote that `git remote -v` no longer
+listed. Drop those and the floor silently reverts to a lower value, and the allocator resumes
 issuing numbers that are already in use -- no error, no signal.
 
 So the floor is persisted to `<state-root>/alloc/<kind>/.floor-highwater` and **may rise but never
@@ -300,9 +300,9 @@ all*. Two tools cannot both own that one file. A hook framework that finds a for
 rename it and invoke it from its own shim, and that chain has failed on Windows and blocked every
 commit in a repository until the shim was removed.
 
-So the installer does the next best thing: whenever `sequences` is configured, it prints in yellow
-that the sequence gate is **not** installed by it and that until you wire one, nothing at commit time
-stops two sessions using the same number. `bin/ccx-doctor.ps1` goes further and checks: it reports
+So the installer does the next best thing. Whenever `sequences` is configured, it prints in yellow
+that the sequence gate is **not** installed by it, and that until you wire one, nothing at commit
+time stops two sessions using the same number. `bin/ccx-doctor.ps1` goes further and checks: it reports
 the control as **OFF**, with the reason, rather than omitting it. An absent gate looks exactly like
 one that passed.
 
@@ -319,7 +319,7 @@ Verify by receipt, not by presence:
 pwsh -NoProfile -File bin/ccx-doctor.ps1
 ```
 
-The doctor reports whether any `pre-commit` in the resolved hooks directory invokes `seq_check`, and
+The doctor reports whether any `pre-commit` in the resolved hooks directory invokes `seq_check`. It
 separately fires a **read-only floor probe** at the allocator -- `-ShowFloor`, which never spends a
 number -- so a broken allocator is caught without corrupting the sequence to find out.
 

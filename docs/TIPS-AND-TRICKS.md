@@ -110,8 +110,8 @@ where the script will actually run, not the provenance.
 Almost every signal in this toolkit is something a peer has to *go and look at*: `overlap.ps1`
 walks git state, `presence.ps1` reads the session registry, `claim.ps1 -List` reads the claims
 directory. Nothing pushes. The one push channel (`announce-session.ps1`) fires on the first
-prompt at which a messageable peer exists -- one prompt in, so the announcement can carry
-**intent**, which is the entire value -- and it depends on a Desktop-only MCP.
+prompt at which a messageable peer exists. That is one prompt in, so the announcement can carry
+**intent**, which is the entire value. It depends on a Desktop-only MCP.
 
 Practical consequence: **say what you are about to build, out loud, in your first or second
 prompt.** A peer that learns your intent at merge time learns it too late.
@@ -158,7 +158,7 @@ pwsh -NoProfile -File scripts/hooks/collision_gate.ps1 -PathOverride src/app/ser
 ```
 
 Only **live** sessions block. A dormant worktree with changes cannot be racing you, so it is
-reported and allowed -- blocking on dormant trees would deny edits to every file any abandoned
+reported and allowed. Blocking on dormant trees would deny edits to every file any abandoned
 branch ever touched, and a gate that cries wolf gets uninstalled.
 
 ### The two id namespaces are not interchangeable
@@ -249,13 +249,13 @@ Do not reflexively broaden -- some of those names are things the user invokes de
 **Any agent-authored script defeats a command-string gate outright.** A `PreToolUse` gate inspects
 tool arguments; a file written by a shell command, an `-EncodedCommand` invocation, or a
 three-line script the model just wrote are all invisible to it. That is why the commit-time hooks
-in `scripts/coord/install-git-hooks.ps1` exist: `.git/hooks` lives in the common git directory, so
-one file governs every worktree at once and sees **every write route**, because it inspects the
-tree rather than a tool call.
+in `scripts/coord/install-git-hooks.ps1` exist. `.git/hooks` lives in the common git directory, so
+one file governs every worktree at once and sees **every write route**. It inspects the tree rather
+than a tool call.
 
 **Config-level disarm needs its own rule.** Linked worktrees share the object store *and the
 config*. A single config write that repoints hook resolution disables the commit-time gates for
-every worktree of the clone at once -- so a git-verb gate that does not cover `config` has a
+every worktree of the clone at once. A git-verb gate that does not cover `config` therefore has a
 whole-estate hole in it.
 
 **Use one shared target-resolution helper.** Two rules that each parse `-C` / `cd` / cwd
@@ -300,28 +300,32 @@ nothing can *prove* a session is gone. A DEAD/STALE/absent verdict is the **abse
 not a permission.
 
 **Log every deny.** For its entire life, one gate wrote its decision to stdout and exited 0 -- no
-log, no counter, no audit file. Nothing on the box could answer "how many drift events did this
-prevent", "is the false-positive rate one a day or one in a thousand", or "did that fix change
-anything", so every severity ranking about the whole machinery was an opinion.
+log, no counter, no audit file. Nothing on the box could answer:
+
+- how many drift events did this prevent?
+- is the false-positive rate one a day, or one in a thousand?
+- did that fix change anything?
+
+So every severity ranking about the whole machinery was an opinion.
 `worktree_gate.ps1` now appends timestamp, rule, tool, cwd and a rule-composed detail -- and
 deliberately **not** the raw command or file contents, so an argument carrying a secret cannot
 land in a plaintext log.
 
 **Test your deny *messages*, not just the decision.** A deny message here refused a write to the
 primary and then listed the primary **first** among worktrees you could reuse, displacing a real
-worktree off the suggestion cap -- because a filter compared a string to an object and was
-therefore always true. No test asserted on deny text. The message is a control surface: its whole
+worktree off the suggestion cap. A filter had compared a string to an object and was therefore
+always true. No test asserted on deny text. The message is a control surface: its whole
 job is steering the next action.
 
 **Write the contract down where both sides can see it.** `overlap.ps1` and `collision_gate.ps1`
-are version-locked on a named row contract, in a comment block in both files, with an explicit
-compatibility rule: adding a field is free; renaming one, or **changing what a field means**,
+are version-locked on a named row contract, in a comment block in both files. The compatibility
+rule is explicit: adding a field is free, and renaming one or **changing what a field means**
 requires editing both notes in the same commit. A field that keeps its name and changes its
 meaning produces no error anywhere.
 
-**Do not give one rule set two independent numberings.** If the prose calls something "rule 3"
-and the code's rule 3 is something else, a change description keyed to a number will not match
-the file it must also edit -- and the next session re-adds what you removed.
+**Do not give one rule set two independent numberings.** If the prose says "rule 3" and the code's
+rule 3 is something else, a change description keyed to a number will not match the file it must
+also edit. The next session re-adds what you removed.
 
 ---
 
@@ -394,9 +398,9 @@ Plant a violation. Watch the gate fail. *Then* trust the pass. Without that, "gr
 consistent with a dozen states that have nothing to do with your tree being clean.
 
 Also assert that the detector and rule counts are **non-zero**: a run that loaded zero rules
-exits 0 too. `ccx-doctor.ps1` builds this in -- every attack is paired with a negative control the
-same guard must allow, because a script that refuses everything is not a working guard either,
-and a probe with no positive control cannot tell "failed" from "not surfaced".
+exits 0 too. `ccx-doctor.ps1` builds this in. Every attack is paired with a negative control the
+same guard must allow, because a script that refuses everything is not a working guard either.
+A probe with no positive control cannot tell "failed" from "not surfaced".
 
 There is a harness-level version of the same trap, where the gate was fine and the probe was broken.
 The account, and the four rules that came out of it, are at
@@ -481,9 +485,9 @@ the fixed and the broken version is measuring something else.
 
 ### Re-measure a premise before you defend it
 
-A deny rule here rested on three claims. Re-measuring showed the first held, the second was
-already covered by a different rule, and the third -- the one that justified a hard deny rather
-than a warning -- was a single undocumented observation that did not reproduce. Single-observation
+A deny rule here rested on three claims. Re-measuring showed the first held, and the second was
+already covered by a different rule. The third -- the one that justified a hard deny rather than a
+warning -- was a single undocumented observation that did not reproduce. Single-observation
 justifications age badly, and policy built on them outlives the fact.
 
 Related: **label figures you cited but did not re-measure.** A number restated from a prior
@@ -585,7 +589,7 @@ pwsh -NoProfile -File scripts/quality/check-ascii.ps1 -Fix     # rewrite the saf
 
 It reports `file:line:column`, the code point as `U+XXXX`, the character's name and the ASCII text
 it suggests in its place. Names come from a curated table of the characters that actually turn up
-in this kind of work; anything outside it is described by its Unicode block and general category
+in this kind of work. Anything outside it is described by its Unicode block and general category
 and **said** to be undescribed, because a guessed name is worse than none. `-Fix` rewrites only the
 substitutions that cannot change meaning -- the dash family, arrows, the ellipsis, curly quotes,
 the non-breaking and zero-width spaces, the bullet, the multiplication sign and the section sign.
@@ -660,9 +664,9 @@ check that knows the branch is not merged.
 `<git-common-dir>/ccx-coord/`, beside the shared object store -- identical across every worktree of
 the clone, isolated per clone, and uncommittable by construction. That is correct, and it means
 pruning a worktree does **not** release its claims. Release from a branch that has proven the
-directory gone and deregistered -- evidence, never a timer -- matching on full normalized path
-equality, because releasing a *living* worktree's claim hands its key away and causes the
-duplicate build the registry exists to prevent.
+directory gone and deregistered: evidence, never a timer. Match on full normalized path equality.
+Releasing a *living* worktree's claim hands its key away and causes the duplicate build the
+registry exists to prevent.
 
 **Recovering a session that "disappeared".** Claude Code files a transcript under a slug derived
 from the session's **current** working directory. Relocate a live session into a worktree and the

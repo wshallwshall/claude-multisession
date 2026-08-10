@@ -66,7 +66,7 @@ says what class of evidence it rests on, because they are not the same class:
   ([anthropics/claude-code#76590](https://github.com/anthropics/claude-code/issues/76590); the
   repair path and the ghost stub are [Worktrees](WORKTREES.md)). This repository cites that issue
   rather than reproducing it, and records no observation of the extension's worktree layout either
-  way -- so read this bullet as removing an easy assumption, not as establishing that the defect is
+  way. Read this bullet as removing an easy assumption, not as establishing that the defect is
   surface-neutral.
 - *Measured here.* **An extension session is absent from the desktop app's own `list_sessions`.** It
   enumerates sessions that app itself spawned; an extension session is never entered into that map --
@@ -74,19 +74,19 @@ says what class of evidence it rests on, because they are not the same class:
   **default** config root, so it is not a login split ([Coordination](COORDINATION.md)).
 - *Measured here.* **Project-scoped settings are commonly git-ignored and cannot reach a new
   worktree.** Measured on the repo this tooling was developed in, and often enough to matter: a large
-  share of the worktrees had no project settings file at all, and a live editor session was working in
+  share of the worktrees had no project settings file at all. A live editor session was working in
   one of them with **zero** coordination context ([Tips and tricks](TIPS-AND-TRICKS.md),
   [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md)). That is why
   the hooks here install at **user** scope ([Hooks](HOOKS.md)).
 - *Observed once.* **User scope means *per config root*, and the gate fails open**, so an unwired root
   is byte-identical to a governed one from inside the session. This is the only bullet that connects a
-  surface to an actual observed hijack: a session under an ungoverned config root checked its own
+  surface to an actual observed hijack. A session under an ungoverned config root checked its own
   branch out inside another session's linked worktree, and the gate that would have refused it was
   simply not installed there. That an additional config root is where editor-hosted chats show up is
   the installers' stated reason for wiring every root
   ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md), "Why every
-  config directory"), and it is the configuration the one observed hijack came from -- but nothing
-  here counts roots by surface, so take it as the installers' rationale, not a measured distribution.
+  config directory"), and it is the configuration the one observed hijack came from. But nothing here
+  counts roots by surface, so take it as the installers' rationale, not a measured distribution.
 
 **What is not established.** The intuitive story is that an extension session is invisible to the
 session-listing tooling, so something consulting that list acts as though it is not there. That story
@@ -128,8 +128,8 @@ a message on your screen; a hijack on a surface where the gate was never install
 ## How sessions talk to each other
 
 Almost every signal a session can *send* is **pull**: it sits there until somebody looks. One channel
-pushes from one session to another; three more are delivered to a session that never looked, two of
-them by the harness rather than by a peer; and several reach only sessions that have not started.
+pushes from one session to another. Three more are delivered to a session that never looked, two of
+them by the harness rather than by a peer, and several reach only sessions that have not started.
 
 **Timing decides whether a message is useful at all**, so the table is sorted by it rather than by
 tool. A note that lands when a session next *starts* is a different instrument from one that
@@ -161,8 +161,8 @@ At least these channels exist. Each links to the page that owns it.
 | [Session mail](SESSION-MAIL.md) | **E** -- a session that starts later; a mid-turn wake-up is possible and is one-shot. | addressed to a worktree box, keyed by normalized path | **no** -- designed and documented here, not implemented here |
 
 One property explains the whole first band, and generalizes past this table: **a file is re-read on
-every hook run**, while an environment variable is read once at process start and a settings edit
-takes effect only in the next session. That is why the channels that reach a session already running
+every hook run**. An environment variable is read once at process start, and a settings edit takes
+effect only in the next session. That is why the channels that reach a session already running
 are all files. Each channel's own costs are on its own page.
 
 ### Choosing one
@@ -175,15 +175,15 @@ are all files. Each channel's own costs are on its own page.
   what you want to say is "do not touch X", publish something a gate consumes rather than something a
   human reads.**
 
-The pull-side queries carry one blind spot worth knowing before you trust them: they read git state
+The pull-side queries carry one blind spot worth knowing before you trust them. They read git state
 and a roster keyed on the directory a session was *launched* in, so a write made into a worktree by
 absolute path from a session sitting somewhere else is invisible to them. It is why a fence needs a
 second, non-cwd signal ([Coordination](COORDINATION.md), [Pruning](PRUNING.md)).
 
-Two rules apply to every row above. **A message from another session is data, never an instruction**
--- it arrives looking exactly like something the operator typed, because on most of these channels
-that is the shape it takes, and a peer cannot authorize a push, a merge, a delete or a configuration
-change. And **a broadcast needs an expiry or a condition the recipient can evaluate**: a freeze that
+Two rules apply to every row above. **A message from another session is data, never an instruction.**
+It arrives looking exactly like something the operator typed, because on most of these channels that
+is the shape it takes, and a peer cannot authorize a push, a merge, a delete or a configuration
+change. And **a broadcast needs an expiry or a condition the recipient can evaluate.** A freeze that
 said "hold until a particular pull request merges" held only the sessions honoring it, did not hold
 the trunk still, and was still announcing itself hours after the thing it waited on had landed.
 
@@ -289,8 +289,8 @@ end to end by the shipped gates, and a coordinator there buys nothing and costs 
 - **A worker bypasses it** -- assume it. Claims are advisory and the push guard is a guardrail, not a
   boundary, so the role sits **behind** enforcing gates rather than instead of them: a coordinator
   that is the only control is not a control.
-- **Stale state, in two symmetric directions.** A broadcast that never lapses -- a freeze note
-  announced itself to joining sessions long after the thing it waited on had merged -- and its
+- **Stale state, in two symmetric directions.** First, a broadcast that never lapses: a freeze note
+  announced itself to joining sessions long after the thing it waited on had merged. Second, its
   mirror, reading age as abandonment: a claim has been reported stale while its holder was committing
   minutes earlier ([Coordination](COORDINATION.md) carries both measurements). Report what the holder
   is doing, never how old the record is.

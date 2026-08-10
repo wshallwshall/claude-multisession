@@ -29,8 +29,8 @@ process* to put something into it.
 1. You run `bin/ccx-steer.ps1 "<message>"` from a second terminal. It writes the message to
    `<worktree>/.claude/steer.txt`.
 2. The session makes its next tool call. `scripts/hooks/steer-inject.ps1` fires, finds the file,
-   reads it, **deletes it**, and re-emits the text wrapped in an envelope that tells the model this
-   arrived via a side channel and should be acted on now rather than at the end of the turn.
+   reads it, **deletes it**, and re-emits the text wrapped in an envelope. The envelope tells the
+   model this arrived via a side channel and should be acted on now, not at the end of the turn.
 3. The session sees the note before that tool call is executed.
 
 ```powershell
@@ -109,8 +109,8 @@ makes it able to reach a live process:
 | File checked by a hook | **yes** | re-read on every tool call |
 
 The same reasoning is why the announce kill switch in this repo is the file
-`<state-root>/announce/OFF` and not only the `CCX_ANNOUNCE_DISABLE` variable: the variable stands down
-sessions started after you set it, which is precisely not the population misbehaving right now.
+`<state-root>/announce/OFF` and not only the `CCX_ANNOUNCE_DISABLE` variable. The variable stands
+down sessions started after you set it, which is precisely not the population misbehaving right now.
 
 **Rule: anything that must reach a session already in flight -- a steering note, an emergency
 off-switch -- is a file the hook checks on every run.** Environment variables and settings are for
@@ -148,7 +148,7 @@ If none of those produce a directory it **throws** rather than defaulting to the
 and it throws again if the resolved directory has no `.claude` in it.
 
 Both refusals are scar tissue. The hook only ever reads `<project root>/.claude/steer.txt`. An earlier
-version resolved against the current working directory and created `.claude` if it was missing, so
+version resolved against the current working directory and created `.claude` if it was missing. So
 running the command from the wrong place printed a cheerful "queued" message and dropped the note into
 a freshly created directory that nothing on the machine reads. The steering silently did not happen,
 and the only trace was a stray directory. A wrong-target invocation must fail loudly; a green no-op is
