@@ -417,12 +417,15 @@ Both concern a rule that once sat in the allocator and is deliberately **not** i
 They are worth knowing because the shape recurs.
 
 **Two different maximums got conflated, and the allocator bricked on correct input.** A guard meant
-to detect one band of a partitioned sequence encroaching on another read *the floor* -- the maximum
+to detect one band of a partitioned sequence encroaching on another read *the floor*, the maximum
 over everything swept. The first legitimate entry filed in the upper band therefore made **every**
-allocation in the repository throw a refusal. There were two measurements, not one: the floor
-answers "what must I not re-issue?" and must include every number from every band; the per-band
-maximum answers "how much runway does this band have?" and must not. The guard was not detecting a
-breach. It was detecting the partition being used exactly as designed.
+allocation in the repository throw a refusal.
+
+There were two measurements, not one. The floor answers "what must I not re-issue?" and must include
+every number from every band. The per-band maximum answers "how much runway does this band have?"
+and must not.
+
+The guard was not detecting a breach. It was detecting the partition being used exactly as designed.
 
 > **Rule.** Name each measurement by the question it answers, then check which one every consumer
 > reads. A guard that fires on correct input will be disabled, and it takes the real protection with

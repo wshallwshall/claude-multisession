@@ -253,12 +253,15 @@ a helper in `scripts/coord/_common.ps1`. A hook script that lives inside a check
 branch switch, and a hook whose script is missing lets the session proceed with nothing said.
 
 The backstop and the PreToolUse worktree gate read **one** allowlist,
-`~/.claude/hooks/ccx-gate.repos.txt`, written by both installers at one fixed name. There were once
-two: one installer rewrote its own unconditionally while the other seeded a second copy only if
-absent, and nothing kept them in sync. Adding a governed repository through one installer never
-reached the other, and uninstalling the gate left the backstop armed and still willing to run
-`git checkout` on the shared primary. They agreed only by luck. Deleting that file turns both off,
-immediately -- which is the point of making the kill switch a **file** rather than a settings edit.
+`~/.claude/hooks/ccx-gate.repos.txt`, written by both installers at one fixed name.
+
+There were once two. One installer rewrote its own unconditionally while the other seeded a second
+copy only if absent, and nothing kept them in sync. Adding a governed repository through one
+installer never reached the other, and uninstalling the gate left the backstop armed and still
+willing to run `git checkout` on the shared primary. They agreed only by luck.
+
+Deleting that file turns both off immediately, which is the point of making the kill switch a
+**file** rather than a settings edit.
 
 ### The sidecar home-branch record is wrong by design
 

@@ -133,10 +133,14 @@ copy of a safety check.
 **False positives train sessions to route around the only control you have.** On the repo this tooling
 was developed in, a verb-scanning rule denied a read-only status command because a blocklisted word
 appeared in a prose line of a multi-line command. It also denied a commit whose *message* contained
-one. Every such denial erodes compliance with the deny text, which on the shell path is the only
-control there is. Scan per line, fold continuations, blank quoted spans, recurse into interpreter
-arguments, and ship ALLOW-asserting tests for the multi-line, echoed and message-containing cases.
-A gate that cries wolf gets routed around, and then you have nothing.
+one.
+
+Every such denial erodes compliance with the deny text, which on the shell path is the only control
+there is.
+
+Scan per line, fold continuations, blank quoted spans, recurse into interpreter arguments, and ship
+ALLOW-asserting tests for the multi-line, echoed and message-containing cases. A gate that cries
+wolf gets routed around, and then you have nothing.
 
 ---
 

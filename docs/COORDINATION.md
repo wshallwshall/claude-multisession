@@ -940,8 +940,11 @@ installer, writing into the same user settings file, from deleting this one's ho
 
 The user-scope hooks fire in **every** repository on the machine, so each one first asks "is this
 repository governed?" by testing for **`ccx.config.json` at the repository root** before it writes a
-byte. That is deliberately *not* "does one of the scripts happen to exist". That test is true in a
-half-installed tree, and true in any fork that copied the scripts directory and opted into nothing.
-It is false in a repository that vendors the scripts elsewhere. The check is a direct presence test
-at the root, never a walk-up. A walk-up from an unrelated repository checked out *inside* a governed
-one would find the outer config and claim the inner repo.
+byte.
+
+That is deliberately *not* "does one of the scripts happen to exist", which is true in a
+half-installed tree, true in any fork that copied the scripts directory and opted into nothing, and
+false in a repository that vendors the scripts elsewhere.
+
+It is a direct presence test at the root, never a walk-up. A walk-up from an unrelated repository
+checked out *inside* a governed one would find the outer config and claim the inner repo.
