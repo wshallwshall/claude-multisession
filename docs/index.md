@@ -12,24 +12,20 @@ overwriting each other. Each session gets its own git worktree and branch; hooks
 commits and pushes that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git`
 and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
-**Why you should care.** Several sessions on one repository is real throughput. It stops being free
-the moment two of them collide in a way git cannot report as a conflict, and most of these
-collisions touch no shared bytes at all. Every branch merges clean, and the cost lands later, on
-work built from assumptions that had already stopped being true. What ships against that is a
-worktree per session and a set of gates that refuse the colliding edit, commit and push. Around them
-sit claims, cross-session locks, atomic sequence allocation, a channel for sessions to reach each
-other, and a reaper that declines rather than guesses. Not for you if you run one session at a time.
+**Why you should care.** Several sessions on one repository is real throughput, and it stops being
+free the moment two of them collide in a way git cannot report as a conflict. Most of those
+collisions touch no shared bytes at all, so every branch merges clean. The loss lands later, on work
+built from assumptions that had already stopped being true.
 
-One property shapes how you install this and how you check it afterwards. When something here
-breaks, it produces exactly the same output as when it works -- byte-identical to success.
+What ships against that:
 
-> A hook that is installed but reaches nothing exits 0 and prints nothing, which is what a healthy
-> hook does when there is no other session to find. A gate whose helper never loaded lets the edit
-> through, which is what a gate does when it checks and finds nothing wrong. You cannot tell the two
-> apart from the outside, because the difference was never written into the output.
+- a worktree per session, and gates that refuse the colliding edit, commit and push;
+- claims, cross-session locks and atomic sequence allocation, so two sessions cannot be handed the
+  same decision-record number;
+- a channel peers reach each other on before the work, and a reaper that declines rather than
+  guesses.
 
-So `ccx doctor` fires each control on purpose instead of reading a settings file, and you run it
-*before* installing anything as well as after. A green report you did not baseline is not evidence.
+Not for you if you run one session at a time.
 
 **How to use it.** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
 [What ships](#what-ships) - [Full docs](#where-to-go-next). Or have Claude Code evaluate it for you:
@@ -105,17 +101,15 @@ Three mechanisms touch that failure. Only the first prevents it:
 
 ## Limits, read before installing
 
-**Session discovery rests on a vendor surface this project does not own.** That single fact is the
-source of every limit below, and it is worth understanding once rather than meeting three times.
-Everything answering "who is live, and where" reads `<config-root>/sessions/<pid>.json` -- a record
-the *client* writes, whose shape, location and lifetime belong to the client. Three consequences:
+**Session discovery rests on a vendor surface this project does not own.** Everything answering "who
+is live, and where" reads `<config-root>/sessions/<pid>.json` -- a record the *client* writes, whose
+shape, location and lifetime belong to the client. Three consequences follow:
 
 - **Announce needs the desktop client.** It delivers through the `ccd_session_mgmt` MCP server, which
-  the desktop client provides and a plain CLI install does not. The hook does not send anything
-  itself; it resolves peers and asks the model to send. On a CLI-only host it still fires, still
-  finds peers, then instructs the model to call tools it does not have. Nothing is delivered and the
-  model says so. **If you are CLI-only, leave that one hook uninstalled** -- nothing else depends on
-  it.
+  a plain CLI install does not have. The hook never sends anything itself: it resolves peers and asks
+  the model to send. On a CLI-only host it fires, finds peers, then instructs the model to call tools
+  it does not have. Nothing is delivered and the model says so. **If you are CLI-only, leave that one
+  hook uninstalled** -- nothing else depends on it.
 - **The desktop app's own session list is incomplete.** Its `list_sessions` enumerates an in-memory
   map of sessions *that app itself spawned*. An editor-extension session is never entered into it --
   not filtered out, never registered -- so it is invisible there and cannot be messaged. Treat
@@ -158,11 +152,12 @@ Two directories are involved, and every command says which it means:
 | **target** | The repository you want governed. It gets the config file, the git hooks, and its primary checkout in the gate's allowlist. |
 
 **Use the vendored layout** -- copy `scripts/`, `bin/` and `ccx.config.json` into the target and
-commit them, so tooling *is* target. It is the only layout in which the doctor can reach exit 0. The
-separate-checkouts layout works for the worktree gate, both git hooks and the backstop, but the three
-coordination hooks are shims that resolve their script inside whatever repository the session is
-running in. A target that does not carry those files gets three hooks that are wired and resolve
-nothing.
+commit them, so tooling *is* target. It is the only layout in which the doctor can reach exit 0.
+
+The separate-checkouts layout works for the worktree gate, both git hooks and the backstop. It fails
+for the three coordination hooks, which are shims that resolve their script inside whatever
+repository the session is running in. A target not carrying those files gets three hooks that are
+wired and resolve nothing.
 
 Run all of this from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is `1`,
 because a session that can install these controls can remove them.
