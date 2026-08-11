@@ -32,13 +32,37 @@ standards.
 | **MUST**, **MUST NOT** | Absolute. Not meeting one is a defect, not a judgment call |
 | **SHOULD** | Ignore it only for a stated reason you have weighed |
 
-An identifier is a permanent name, never a position. A new rule takes the next free number in its
-section and is appended. Reword a rule freely under the same identifier; change what it demands and
-you allocate a new one.
+An identifier is a permanent name, never a position. Reword a rule freely under the same identifier;
+change what it demands and you allocate a new one.
 
 **`PD` outranks every other section.** Where a `PD` rule and an `HS` rule disagree about the same
 text, `PD` wins. The failure this ordering prevents is an editor satisfying a length rule by deleting
 a measurement.
+
+### The numbering is shared with another repository, and this page is not the whole of it
+
+**The next free number is the one above the highest number ISSUED IN EITHER SHEET, never the lowest
+one this page happens not to use.** The series here and the series in
+[secure-development-standards](https://github.com/wshallwshall/secure-development-standards) are one
+namespace. That repository's sheet was split from this one and kept counting, so the numbers above
+the end of each section below are not vacancies. They are occupied, one repository over.
+
+| Series | Issued here | Issued there | **Next free** |
+|---|---|---|---|
+| `B-<n>` | B-1 to B-10 | B-11 to B-17 | **B-18** |
+| `HS-<n>` | HS-1 to HS-16 | HS-17 spent on a superseded branch, HS-18, HS-19 | **HS-20** |
+| `PD-<n>` | PD-1 to PD-8 | PD-9 | **PD-10** |
+| `OPEN-<n>` | OPEN-1 to OPEN-7 | none | **OPEN-8** |
+
+Read from that repository's `origin/main` before allocating, not from a local clone: it runs
+concurrent sessions and a clone goes stale in the time one rule takes to write. Verified against
+`origin/main` there on 2026-08-10, at its commit `d5684de`.
+
+**Neither sheet can see the other move, and both have been wrong about it.** That page states this
+one issues `OPEN-1 to OPEN-6`, which was true when it was written and stopped being true when
+`OPEN-7` landed here. No check on either side could have caught it, which is the same reason `HS-13`
+and the cross-repository anchor ban exist. It is also why this table carries the date and the commit
+it was read at, rather than presenting itself as current.
 
 ---
 

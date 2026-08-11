@@ -559,6 +559,84 @@ class TheBlufConventionHasOneSpelling(unittest.TestCase):
         )
 
 
+class TheNextFreeIdentifierIsAboveEverythingThisPageIssues(unittest.TestCase):
+    """docs/HOUSE-STYLE.md declares the next free number in each series. Keep it true locally.
+
+    WHY THIS IS WORTH A TEST AT ALL. The numbering is one namespace shared with
+    secure-development-standards, and that repository's sheet reads this one to decide what is free.
+    Neither side can see the other move: its page states this one issues OPEN-1 to OPEN-6, which was
+    true when written and stopped being true the moment OPEN-7 landed here.
+
+    WHAT THIS CAN AND CANNOT CHECK. It cannot see the sibling -- that would mean fetching another
+    repository over a network this suite never touches, which is the same judgment that banned a
+    cross-repository anchor checker rather than building one. What it CAN check is the half that is
+    local and is the half that actually rots: a rule added HERE without bumping the declared next
+    free number, which hands the next session a number this page has already used. The sibling's
+    columns stay a dated, manually verified reading, which is why the page prints the date and the
+    commit it was read at.
+    """
+
+    # `| OPEN-1 | ... |` and `### PD-8: retired ...` are both definitions. The numbering table's own
+    # rows are NOT: their first cell is the literal `B-<n>`, which has no digits and cannot match.
+    DEFINED_IN_ROW = re.compile(r"^\|\s*`?(B|HS|PD|OPEN)-(\d+)`?\s*\|", re.M)
+    DEFINED_IN_HEADING = re.compile(r"^#{2,4}\s+`?(B|HS|PD|OPEN)-(\d+)`?\b", re.M)
+    # The fourth column of the numbering table, bolded: | `B-<n>` | ... | ... | **B-18** |
+    DECLARED_NEXT_FREE = re.compile(r"\|\s*\*\*(B|HS|PD|OPEN)-(\d+)\*\*\s*\|", re.M)
+
+    def setUp(self):
+        self.text = t.read(t.REPO_ROOT / "docs/HOUSE-STYLE.md")
+
+    def issued(self) -> dict:
+        highest = {}
+        for pattern in (self.DEFINED_IN_ROW, self.DEFINED_IN_HEADING):
+            for series, number in pattern.findall(self.text):
+                highest[series] = max(highest.get(series, 0), int(number))
+        return highest
+
+    def declared(self) -> dict:
+        return {s: int(n) for s, n in self.DECLARED_NEXT_FREE.findall(self.text)}
+
+    def test_the_page_declares_a_next_free_number_for_every_series_it_uses(self):
+        issued, declared = self.issued(), self.declared()
+        self.assertTrue(issued, "no rule identifiers parsed out of docs/HOUSE-STYLE.md at all")
+        missing = sorted(set(issued) - set(declared))
+        self.assertEqual(
+            [],
+            missing,
+            f"docs/HOUSE-STYLE.md issues {missing} rules but its numbering table declares no next "
+            "free number for them. The sibling repository reads that table to decide what it may "
+            "allocate, so a series missing from it is a series it will collide with.",
+        )
+
+    def test_every_declared_next_free_number_is_above_what_this_page_issues(self):
+        issued, declared = self.issued(), self.declared()
+        wrong = [
+            f"{series}: page issues up to {series}-{high}, but declares {series}-{declared[series]} free"
+            for series, high in sorted(issued.items())
+            if series in declared and declared[series] <= high
+        ]
+        self.assertEqual(
+            [],
+            wrong,
+            "the declared next free number is not above what this page already issues:\n  "
+            + "\n  ".join(wrong)
+            + "\nIf you added a rule, bump the `Next free` column in the numbering table in the same "
+            "commit. Its whole job is to be read by somebody who is about to allocate.",
+        )
+
+    def test_the_parsers_tell_a_definition_from_a_mention(self):
+        """Planted. Without this, both cases above pass against a parser that matches nothing."""
+        self.assertEqual(
+            [("OPEN", "1")], self.DEFINED_IN_ROW.findall("| OPEN-1 | The first screen MUST | x |")
+        )
+        self.assertEqual([("PD", "8")], self.DEFINED_IN_HEADING.findall("### PD-8: retired"))
+        # A numbering-table row defines nothing: the series cell is a placeholder, and the ranges
+        # and the next-free value live in later columns.
+        row = "| `B-<n>` | B-1 to B-10 | B-11 to B-17 | **B-18** |"
+        self.assertEqual([], self.DEFINED_IN_ROW.findall(row))
+        self.assertEqual([("B", "18")], self.DECLARED_NEXT_FREE.findall(row))
+
+
 class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
     """OPEN-2 and OPEN-7: the section exists, and it carries three labelled answers in order.
 
