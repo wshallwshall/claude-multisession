@@ -150,8 +150,10 @@ appeared in no count. A half-written record is what a session launched one secon
 
 **Rule.** `Get-WorktreeOccupancy` returns a **receipt**: `RootsExamined`, `RecordsExamined`,
 `RecordsUnplaceable`, `UnplaceableFiles`. `Available` needs a registry, a readable record, **and**
-no unplaceable record -- one could name *any* worktree. Gate destructive actions on it; print the
-receipt.
+no unplaceable record -- one could name *any* worktree, so it clears none.
+
+Callers about to destroy something must gate on `Available`, print the receipt, and **refuse when it
+is false**. Count what you **examined**, not what you found.
 
 `presence.ps1` follows the same rule. The availability receipt goes to **stderr** so stdout stays
 pure JSON, and an empty roster prints the literal `[]` rather than nothing.
@@ -788,9 +790,11 @@ pwsh -NoProfile -File scripts/hooks/collision_gate.ps1 -PathOverride <p>  # who 
 Two things make `-Status` trustworthy, and both make it *less* clever than it could be:
 
 - It answers from the **install receipt** (`ccx-coordination.receipt.json`, beside the settings
-  file) plus a **live re-resolution of every target script**. An entry in settings.json is a
-  **claim**; a resolving target is **evidence**. No receipt is reported as "anything below is
-  inference".
+  file) plus a **live re-resolution of every target script** -- never from "there is an entry in
+  settings.json".
+
+  An entry in settings.json is a **claim**; a receipt plus a target that actually resolves is
+  **evidence**. No receipt is reported as "anything below is inference", in those words.
 - It re-resolves using the shim's **own** resolution order, from the **current directory**. A
   status check that finds the target by a better route than the hook uses reports a healthy hook
   that does not work. **Model the mechanism you are auditing, not the one you wish it used.**
