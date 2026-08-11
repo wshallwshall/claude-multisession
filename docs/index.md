@@ -12,17 +12,24 @@ overwriting each other. Each session gets its own git worktree and branch; hooks
 commits and pushes that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git`
 and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
-**Why you should care.** When something here breaks, it produces exactly the same output as when it
-works -- byte-identical to success.
+**Why you should care.** Several sessions on one repository is real throughput. It stops being free
+the moment two of them collide in a way git cannot report as a conflict, and most of these
+collisions touch no shared bytes at all. Every branch merges clean, and the cost lands later, on
+work built from assumptions that had already stopped being true. What ships against that is a
+worktree per session and a set of gates that refuse the colliding edit, commit and push. Around them
+sit claims, cross-session locks, atomic sequence allocation, a channel for sessions to reach each
+other, and a reaper that declines rather than guesses. Not for you if you run one session at a time.
+
+One property shapes how you install this and how you check it afterwards. When something here
+breaks, it produces exactly the same output as when it works -- byte-identical to success.
 
 > A hook that is installed but reaches nothing exits 0 and prints nothing, which is what a healthy
 > hook does when there is no other session to find. A gate whose helper never loaded lets the edit
 > through, which is what a gate does when it checks and finds nothing wrong. You cannot tell the two
 > apart from the outside, because the difference was never written into the output.
 
-That is why `ccx doctor` exists, why you run it *before* installing anything as well as after, and
-why it fires each control on purpose instead of reading a settings file. A green report you did not
-baseline is not evidence. Not for you if you run one session at a time.
+So `ccx doctor` fires each control on purpose instead of reading a settings file, and you run it
+*before* installing anything as well as after. A green report you did not baseline is not evidence.
 
 **How to use it.** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
 [What ships](#what-ships) - [Full docs](#where-to-go-next). Or have Claude Code evaluate it for you:

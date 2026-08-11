@@ -8,9 +8,8 @@ that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git` 
 PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
 > **When something here breaks, it produces exactly the same output as when it works -- byte-identical
-> to success.** That one sentence explains the whole shape of this repository -- most of all why
-> `ccx doctor` exists and why you run it *before* installing anything as well as after. The full
-> statement and what it costs you are at the top of the
+> to success.** That is why `ccx doctor` exists, and why you run it *before* installing anything as
+> well as after. The full statement and what it costs you are on the
 > [documentation site](https://claude-multisession.pages.dev/).
 
 **Go:** [What problem this solves](#what-problem-this-solves) - [Install](INSTALL.md) -
