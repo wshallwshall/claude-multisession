@@ -377,11 +377,10 @@ developed in -- both populations were live at once:
 | **sibling** (default) | `<parent-of-primary>/<primary-leaf>-<name>` | `new.ps1` / `spawn.ps1` / `rescue.ps1` | `remove.ps1`, `prune-merged.ps1` |
 | **nested** | `<primary>/.claude/worktrees/<name>` | the harness itself -- its own worktree flag, the desktop app, isolated subagents | nothing here; it is not ours |
 
-`worktreeLayout` in `ccx.config.json` selects where **we** create worktrees. It does **not** change the
-fact that any path containing a `.claude/worktrees/` segment is excluded from destructive operations
-unconditionally, whatever the setting says. That exclusion is one named test
-(`Test-CcxHarnessWorktreePath`) rather than two inline regexes, because two rules depend on it and
-they pull in opposite directions:
+`worktreeLayout` in `ccx.config.json` selects where **we** create worktrees. Any path with a
+`.claude/worktrees/` segment is excluded from destructive operations unconditionally. That
+exclusion is one named test (`Test-CcxHarnessWorktreePath`), because two rules pull in opposite
+directions:
 
 - A **gate** protecting the primary must *not* govern a nested worktree. It sits under the primary's
   path, so a plain prefix test says "inside the primary" -- but a git verb there swaps only its own
@@ -392,29 +391,24 @@ they pull in opposite directions:
 
 Two more consequences worth knowing:
 
-- **"Sibling" is not a prefix match.** `<primary>-work/x` starts with `<primary>-` and is a sibling of
-  nothing. `Test-CcxSiblingWorktreePath` requires the same parent directory, a leaf of exactly
-  `<primary-leaf>-<something>`, and not a harness worktree. Even then it only says the path *looks*
-  like ours; whether it may be removed is answered by occupancy, cleanliness and merge state, never by
-  the name.
+- **"Sibling" is not a prefix match.** `<primary>-work/x` has the prefix and is a sibling of
+  nothing. `Test-CcxSiblingWorktreePath` requires the same parent and a leaf of
+  `<primary-leaf>-<something>`.
+  Even then it only *looks* like ours: removal turns on occupancy, cleanliness and merge state.
 - **A nested checkout is git-ignored inside its parent.** The parent therefore reads perfectly clean,
   and a `--force` removal of the parent deletes both -- leaving the nested worktree registered with no
   directory.
 
 ### A wrong-cwd run must refuse loudly, never green no-op
 
-**The trap.** A sweep run from a linked worktree instead of the primary enumerated the primary's
-siblings, found none from where it was standing, printed a green `No sibling worktrees to consider`
-and exited 0. That is a wrong-cwd run issuing a clean bill of health. Nobody re-runs a command that
-just told them everything was fine.
+**The trap.** A sweep run from a linked worktree instead of the primary found no siblings from where
+it was standing, printed a green `No sibling worktrees to consider` and exited 0 -- a wrong-cwd run
+issuing a clean bill of health. Nobody re-runs a command that said everything was fine.
 
-**The rule.** Anchor on the primary -- never on `$PSScriptRoot/../..`, which is the checkout the
-*script* happens to live in. `Get-CcxPrimaryRoot` reads the first entry of
-`git worktree list --porcelain`, so every command here behaves identically from any checkout. Where a
-command genuinely must run from one specific place, it **refuses**. `prune-merged.ps1` exits
-non-zero with `REFUSED: this is a linked worktree, not the primary checkout`, naming both paths,
-rather than reporting nothing to do. `remove.ps1` applies the same principle to the narrower case of
-standing inside the worktree you asked it to delete.
+**The rule.** Anchor on the primary, never on `$PSScriptRoot/../..`. `Get-CcxPrimaryRoot` reads the
+first entry of `git worktree list --porcelain`, so every command behaves the same anywhere.
+`prune-merged.ps1` exits non-zero with
+`REFUSED: this is a linked worktree, not the primary checkout`.
 
 The same reasoning is why the layout formula lives in exactly one place
 (`Get-CcxWorktreePath` in `scripts/coord/_common.ps1`). It was once duplicated in four scripts and
@@ -442,16 +436,13 @@ separate dependency environment. It feels total. Four things are still shared, a
 - **PowerShell 7, Windows-first.** The scripts are `#Requires -Version 7.3` and were exercised on
   Windows. `$env:USERPROFILE` is Windows-only, so every home-directory lookup here uses the
   null-safe idiom that falls back to the .NET accessor -- but Windows remains the tested platform.
-- **Path comparison folds case only where the filesystem does.** On Windows and macOS paths are
-  lower-cased before comparison; on a case-sensitive filesystem they are not, because there
-  `/x/Primary` and `/x/primary` really are two directories. The folded form is for **comparison
-  only** -- never pass it to git, to the filesystem, or into a message a human reads. This has already
-  cost one silent gate failure on Linux CI, where a lower-cased path was handed to `git -C`, git
-  failed, and the rule fell through to its allow path.
-- **The harness's session record format is a vendor contract.** The liveness fence that stops the
-  reaper touching an occupied worktree reads per-session records the harness writes. That schema can
-  change under you without notice. If it does, the fence reports itself unavailable and nothing is
-  pruned, which is the intended direction of failure but is still an outage of the signal.
+- **Paths fold case on Windows and macOS, not on a case-sensitive filesystem.** Use the folded form
+  for **comparison only**, never for git, the filesystem, or a human. One silent gate failure on
+  Linux CI: a lower-cased path went to `git -C`, git failed, and the rule fell through to allow.
+- **The harness's session record format is a vendor contract.** The liveness fence behind the reaper
+  reads per-session records the harness writes; that schema can change without notice. The fence
+  then reports itself unavailable and nothing is pruned -- the intended failure direction, and an
+  outage.
 - **Session listings do not see every session kind.** Sessions relocated into a worktree file their
   transcript under a different key and drop out of the list of the window they were born in.
   `sessions.ps1` is how you find them, and `-Rehome` is how you put one back.

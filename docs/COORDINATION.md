@@ -563,9 +563,8 @@ bracketed age and verify first.
 ### The audit trail is written by the thing being audited
 
 **Name this, do not paper over it.** The announce hook is an *instruction to the model*, not an
-action. Whether a message was actually delivered is therefore recorded **by the model**, into
-`<state-root>/announce/sent/<session>.tsv`, at the hook's request. It is the one control here whose
-receipt comes from the thing it is supposed to be evidence about.
+action. Delivery is recorded **by the model**, into `<state-root>/announce/sent/<session>.tsv`, at
+the hook's request. It is the one control whose receipt comes from what it is evidence about.
 
 Prefer a control that receipts itself; where you cannot, say so. Everything the hook decides
 *itself* -- `ANNOUNCED`, `NO_PEERS`, `NO_SESSION_ID`, `LOOKUP_FAILED`, `LOOKUP_KILLED`,
@@ -592,11 +591,9 @@ Three hooks in one `UserPromptSubmit` array:
 surfacing", "the server not being addressable" and "every call erroring with the error never reaching
 the model" produce identical bytes.
 
-**Rule.** Include a negative control that **must** fail. If your must-fail case and your under-test
-case produce the same output, the result is **untested**, not negative -- say so, and re-run against a
-known-good instance before trusting either answer. The `mcp_tool` route here is recorded as
-**untested, not impossible**; if it works, this whole design collapses to one hook entry and the
-model stops having to write its own delivery receipt.
+**Rule.** Include a negative control that **must** fail. If the must-fail and under-test cases
+produce the same output, the result is **untested**, not negative: re-run against a known-good one.
+The `mcp_tool` route is **untested, not impossible**; if it works, this collapses to one hook entry.
 
 `bin/ccx-doctor.ps1` follows the same rule for every attack it fires. Each is paired with an ordinary
 action the same control must **allow**, because a script that refuses everything is not a working
@@ -627,11 +624,9 @@ pwsh -NoProfile -File scripts/coord/install-coordination.ps1 -Only UserPromptSub
 
 ### The cost of an always-on hook, stated rather than discovered
 
-Measured on the repo this tooling was developed in: the shim costs roughly half a second on **every**
-user prompt in **every** repository on the machine. The peer lookup adds about a second on the
-prompts where it actually runs. Order cheap guards before expensive lookups: the opt-in check and the
-marker check both precede the roster call. Back off deliberately, at most once a minute for the first
-ten checks, then once every ten minutes, stopping after forty.
+Measured: the shim costs roughly half a second on **every** prompt in **every** repository. The peer
+lookup adds about a second where it runs. Order the opt-in and marker checks before the roster call.
+Back off: at most once a minute for ten checks, then every ten minutes, stopping after forty.
 
 Publish the per-prompt cost of any always-on hook. People who discover it themselves configure it
 away.
@@ -639,10 +634,10 @@ away.
 ### Honest gaps in the hook
 
 - **Delivery is unprovable from PowerShell.** See above.
-- **The `kind` filter is currently unexercised.** Every registry record measured on the development
-  host read `kind=interactive`, including a workflow-driven session. Do not read it as protection it
-  has never provided. It deliberately does *not* write a terminal state, because a wrong filter would
-  then produce evidence identical to a right one.
+- **The `kind` filter is unexercised.** Every registry record measured on the development host read
+  `kind=interactive`, including a workflow-driven one. Do not read it as protection it never
+  provided. It writes no terminal state: a wrong filter would produce evidence identical to a right
+  one.
 - **Whether the harness kills the hook process at its timeout, or merely stops waiting, is not
   observable from inside the hook.** The `checking` -> `LOOKUP_KILLED` ladder is best-effort and
   self-heals on a bounded clock rather than silencing the session forever.
@@ -653,12 +648,11 @@ away.
 
 **Trap.** A merge freeze went out as "hold until \<some pull request\> merges". Sessions held. It
 merged more than twelve hours after its auto-merge was armed -- and the freeze note was still
-announcing itself to every joining session hours afterwards.
+announcing itself hours afterwards.
 
-**Why it failed both ways.** The freeze did not hold the trunk still: the trunk advanced four times
-while the freeze was nominally in force, the first only minutes after the claim was taken. It held
-only the sessions honouring it -- the worst of both outcomes. And a predicate the recipient cannot
-evaluate does not expire.
+**Why it failed both ways.** The freeze did not hold the trunk still: it advanced four times while
+the freeze was in force, the first minutes after the claim was taken. It held only the sessions
+honouring it: the worst of both outcomes. A predicate the recipient cannot evaluate does not expire.
 
 **Rule.** Every broadcast carries either a hard expiry or a condition the **recipient** can check
 itself. Never a condition only the sender can observe.
@@ -682,17 +676,15 @@ edit.
 **Why it is wrong.** The agreement lived in prose; the gate reads git. A gate cannot honour a
 contract it cannot parse.
 
-**Rule.** Any coordination worth building must publish something the gate **consumes**, not only
-something a human reads. Concretely, in this repo: commit the file and go clean (the gate's
-`MatchedDirty` predicate then stops matching), or release the claim, or move the work to a different
-path. Do not expect a written agreement to change a mechanical verdict.
+**Rule.** Coordination must publish what the gate **consumes**, not only what a human reads. Here:
+commit the file and go clean (the gate's `MatchedDirty` stops matching), release the claim, or move
+the work to a different path. Do not expect a written agreement to change a mechanical verdict.
 
 ### Know what the gates still cannot see
 
 The commit-time claim gate closes the *pull* direction (a code-touching commit declaring an item must
 hold that item's claim for this worktree) and announce closes the *push* direction (peers learn intent
-early). **Neither stops two sessions building the same thing under two different names.** Accept that
-limit explicitly rather than assuming coverage.
+early). **Neither stops two sessions building the same thing under two different names.**
 
 ### A clean merge is not evidence that nobody duplicated your work
 
@@ -700,12 +692,9 @@ limit explicitly rather than assuming coverage.
 *adjacent* lines produce a three-way merge with nothing to reconcile, so git keeps both -- and the
 doubled fix ships green.
 
-Measured. Two sessions independently fixed one defect in `docs/index.md` about an hour apart, neither
-knowing about the other. One landed on main (`de72973`); the other sat unpushed (`8ba7696`). The
-rebase reported **no conflict**, because the two inserts were adjacent rather than overlapping. The
-result was two consecutive paragraphs telling a reader the same thing about the same document, with
-92 tests passing and the ASCII gate green. Nothing mechanical could have caught it: every gate was
-answering "do these lines overlap", and the question was "do these changes say the same thing".
+Measured. Two sessions independently fixed one defect in `docs/index.md` about an hour apart. One
+landed on main (`de72973`); the other sat unpushed (`8ba7696`). The rebase reported **no conflict**
+-- adjacent inserts, not overlapping. Two paragraphs said the same thing, with 92 tests passing.
 
 **A clean merge is the worse outcome of the two.** A conflict stops you and demands a decision; a
 clean merge ships. So the moment you learn a peer touched your file, read the resulting *text* --
