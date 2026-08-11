@@ -109,9 +109,9 @@ refuses with a message naming the file to edit, and the gate returns 0 without a
 | `indexRowPattern` | with `indexFile` | Regex recognizing one row. **Group 1 must capture the number.** |
 
 Both scripts validate this **before touching the registry**, and both name the file and the key in
-every message. `indexFile` and `indexRowPattern` must be given together: half a configuration
-silently drops a term from the floor, and a floor too low is the failure the allocator exists to
-prevent.
+every message. `indexFile` and `indexRowPattern` must be given together **or not at all**: half a
+configuration silently drops a whole term from the floor, and a floor that is **silently** too low
+is the **exact** failure the allocator exists to prevent.
 
 ### `indexRowPattern` is compiled multiline, and that was once a silent hole
 
@@ -155,9 +155,11 @@ the repo does not carry two lists of kinds that have to agree.
 `-Title` is required for a real allocation. It is recorded in the claim so a sibling session running
 `-List` can see what the number is for.
 
-An allocation prints the number, the directory, and a reminder to add the index row **in the same
-commit**. The claim records `number`, `kind`, `title`, `branch`, `worktree` and `claimed`, as UTF-8
-with **no BOM**: the gate reads it with `encoding="utf-8"`, and a BOM makes `json.loads` raise.
+A **successful** allocation prints the number, the directory to put it in, the pattern the path must
+match, a suggested filename, and a reminder to add the index row **in the same commit**.
+
+The claim records `number`, `kind`, `title`, `branch`, `worktree` and `claimed`, as UTF-8 with **no
+BOM**: the gate reads it with `encoding="utf-8"`, and a BOM makes `json.loads` raise.
 
 ---
 
@@ -185,7 +187,7 @@ share a blob, so de-duplicating by object id collapses several hundred specs int
 **The sweep is only as good as the refs this clone holds.** Measured on the repo this tooling was
 developed in, all refs gave a floor well above origin and local heads: numbers lived on
 remote-tracking refs for a remote no longer in `git remote -v`. Drop those and the floor silently
-reverts.
+reverts, and the allocator re-issues numbers already in use -- no error, no signal.
 
 So the floor is persisted to `<state-root>/alloc/<kind>/.floor-highwater` and **may rise but never
 fall**. When the computed floor comes in below the mark, `alloc.ps1` prints a loud NOTE naming both

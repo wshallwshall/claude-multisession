@@ -80,7 +80,10 @@ releases claims on *evidence* (the directory is gone **and** deregistered), neve
 
 **Never build a coordination registry you read, edit and write back.** Measured on the repo this
 tooling was developed in: eight concurrent PowerShell writers to one file lost four writes,
-silently. Every exclusion primitive here is an atomic exclusive create; the *failed create* is the
+silently.
+
+Every mutual-exclusion primitive here -- `claim.ps1`, `lock.ps1`, the allocator, the announce hook's
+concurrency guard -- is instead an atomic exclusive create, and the *failed create* is the mutual
 exclusion.
 
 ## Presence: who is here
@@ -159,9 +162,12 @@ That has to hold on **every** exit. The not-inside-a-repository path hid: `[]`, 
 Those are the same two bytes a completed fence emits having read every config root and found nobody.
 **A receipt on the paths you were thinking about is not a receipt.**
 
-**The receipt alone was still not enough.** `session-context.ps1` reads presence's **stdout only**.
-Handed `[]` it found no rows and silently omitted its LIVE-sessions section. The receipt sat correct
-on stderr, unread. `overlap.ps1` hit the identical trap with the collision gate.
+**The receipt alone was still not enough.** `session-context.ps1` -- the SessionStart banner whose
+entire job is telling a new session who else is live -- reads presence's **stdout only**.
+
+Handed `[]` it found no rows and silently omitted its "LIVE sessions in this repo right now"
+section. The receipt sat correct on stderr, unread. `overlap.ps1` hit the identical trap with the
+collision gate.
 
 Presence carries it in the **exit code** too: `0` means the roster is *complete* (including one
 listing nobody), `2` means it could not be completed. `2` fires **even when rows are listed**: a

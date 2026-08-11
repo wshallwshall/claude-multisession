@@ -212,9 +212,9 @@ another branch or lose it, and the script cannot tell whose work it is. The refu
 
 ### The SessionStart backstop, and the half-failed auto-worktree
 
-`worktree-selfheal.ps1`, installed by `install-selfheal.ps1`, is the unattended repair. The
-harness's auto-worktree can half-fail on Windows, flipping the **primary's** `HEAD` and leaving a
-"ghost" stub:
+`worktree-selfheal.ps1` is the unattended repair, **wired as a SessionStart hook** by
+`install-selfheal.ps1`. The harness's auto-worktree can half-fail on Windows, flipping the
+**primary's** `HEAD` **onto the session's branch** and leaving an **empty** "ghost" stub:
 [`anthropics/claude-code#76590`](https://github.com/anthropics/claude-code/issues/76590).
 
 What it does, and equally what it refuses to do:
@@ -392,8 +392,8 @@ directions:
 Two more consequences worth knowing:
 
 - **"Sibling" is not a prefix match.** `<primary>-work/x` has the prefix and is a sibling of
-  nothing. `Test-CcxSiblingWorktreePath` requires the same parent and a leaf of
-  `<primary-leaf>-<something>`.
+  nothing. `Test-CcxSiblingWorktreePath` requires the same parent directory, a leaf of **exactly**
+  `<primary-leaf>-<something>`, **and not a harness worktree**.
   Even then it only *looks* like ours: removal turns on occupancy, cleanliness and merge state.
 - **A nested checkout is git-ignored inside its parent.** The parent therefore reads perfectly clean,
   and a `--force` removal of the parent deletes both -- leaving the nested worktree registered with no
@@ -408,7 +408,11 @@ issuing a clean bill of health. Nobody re-runs a command that said everything wa
 **The rule.** Anchor on the primary, never on `$PSScriptRoot/../..`. `Get-CcxPrimaryRoot` reads the
 first entry of `git worktree list --porcelain`, so every command behaves the same anywhere.
 `prune-merged.ps1` exits non-zero with
-`REFUSED: this is a linked worktree, not the primary checkout`.
+`REFUSED: this is a linked worktree, not the primary checkout`, **naming both paths**, rather than
+reporting nothing to do.
+
+`remove.ps1` applies the same principle to the narrower case of standing inside the worktree you
+asked it to delete.
 
 The same reasoning is why the layout formula lives in exactly one place
 (`Get-CcxWorktreePath` in `scripts/coord/_common.ps1`). It was once duplicated in four scripts and

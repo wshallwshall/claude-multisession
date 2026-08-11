@@ -77,7 +77,8 @@ category, never the matched text.
 Wrong directory, not a repository, every path swallowed by a skip rule -- all of them exit `2` and
 say so, because exit `0` cannot tell "found nothing" from "looked at nothing".
 
-**2. Every named argument is accounted for by name.** `--path` accepts a file too. An argument that
+**2. Every named argument is accounted for by name.** `--path` is repeatable and takes a directory
+(a file is accepted and scanned too). An argument that
 scans zero files is named, with why, and the run exits `2` -- *even when others scanned fine*. The
 version it was ported from dropped file arguments silently, refusing only when **everything** went.
 
@@ -148,9 +149,16 @@ one-substring-per-line    # case-insensitive, non-letter boundaries -- this is w
                           # cannot see, because _ is a word character.
 ```
 
-**Presence is not sufficiency.** A partly loaded token source passes a gate that calls itself
-fail-closed, so `--require-tokens` requires every section non-empty and `--require-tokens=N` (or
-`CCX_MIN_DETECTORS=N`, or `names=7,literals=13`) floors each section, catching loss inside one.
+**Presence is not sufficiency.** A source that loads only *part* of its tokens is the dangerous
+case: it satisfies "tokens present", **prints no structural-only marker**, and passes a gate that
+calls itself fail-closed.
+
+So `--require-tokens` also requires every section to be non-empty, and `--require-tokens=N` (or
+`CCX_MIN_DETECTORS=N`, or `names=7,literals=13`) asserts a floor, which is what catches loss
+*within* a section.
+
+Per-section is strictly stronger than a bare total: a bare `N` is a total, so growth in a cheap
+section masks collapse in an expensive one.
 
 The expected count is supplied from **outside** the token file on purpose. A count carried inside it
 would be destroyed by the same mangling it exists to detect. The parser is built around that same
