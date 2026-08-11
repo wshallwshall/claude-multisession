@@ -11,20 +11,18 @@ blind to. Two sessions each compute the same next number correctly, from their o
 both use it. Not for you if your repository maintains no numbered sequence.
 
 **How to use it.** What a sequence *is* lives entirely in `ccx.config.json`. Decision records are the
-worked example in `examples/sequence-adr/`, but nothing about the mechanism is specific to them. The
+worked example in `examples/sequence-adr/`, but nothing in the mechanism is specific to them. The
 gate ships **unwired**, so read the doctor's status output before assuming it enforces anything.
 
 ---
 
 Some numbers are a shared resource that git cannot see. Decision records named `0001-*.md`,
-`0002-*.md`. Issues written as `## 58.` headings in one long file. Migration numbers, RFC numbers,
-schema versions -- anything where "the next one" is a scalar that two people can reach for at the
-same moment.
+`0002-*.md`. Issues written as `## 58.` headings in one file. Migration numbers, RFC numbers, schema
+versions -- anything where "the next one" is a scalar two people can reach for at once.
 
-This is the one collision class that every other control in this repository is blind to, and it is
-the reason `scripts/coord/alloc.ps1` and `scripts/hooks/seq_check.py` exist. Decision records are
-used as the worked example throughout -- see `examples/sequence-adr/` -- but nothing about the
-mechanism is specific to them. What a sequence *is* lives entirely in `ccx.config.json`.
+`scripts/coord/alloc.ps1` and `scripts/hooks/seq_check.py` exist for the one collision class every
+other control here is blind to. `examples/sequence-adr/` is the worked example, but nothing in the
+mechanism is specific to decision records. A sequence is defined entirely in `ccx.config.json`.
 
 ---
 
@@ -65,21 +63,18 @@ Neither half is sufficient alone.
 | **Allocator** | `scripts/coord/alloc.ps1` | Hands out a number nobody else can hold, by exclusively creating a file named after it | When you ask for a number |
 | **Gate** | `scripts/hooks/seq_check.py` | Refuses a commit that adds a number which is already taken, unallocated, or missing from the index | `pre-commit`, and again in CI with `--ci` |
 
-The allocator is a **test-and-set, not a read-modify-write**. It claims the number by exclusively
-creating `<state-root>/alloc/<kind>/<number>.json` with `FileMode::CreateNew` and
-`FileShare::None`; if a sibling session got there first, the create throws `IOException` and the loop
-moves to the next number. That throw *is* the mutual exclusion.
+**Test-and-set, not read-modify-write.** The allocator claims a number by creating
+`<state-root>/alloc/<kind>/<number>.json` with `FileMode::CreateNew` and `FileShare::None`; if a
+sibling got there first the create throws `IOException` and the loop moves on. That throw *is* the
+mutual exclusion.
 
-A shared list you read, edit and write back is not an alternative. Measured on the repo this tooling
-was developed in: eight concurrent PowerShell writers to one shared file lost **four** writes, with
-no error raised anywhere. Eight concurrent allocator processes against the exclusive-create scheme
-produced eight distinct numbers and zero collisions.
+A read-modify-write on a shared list is not an alternative. Measured on the repo this tooling was
+developed in: eight concurrent PowerShell writers to one file lost **four** writes with no error
+raised. Eight concurrent allocator processes produced eight distinct numbers and zero collisions.
 
-The registry lives beside the **shared object store** -- `<git-common-dir>/<prefix>-coord/alloc`,
-resolved by `Get-CcxStateRoot` in `scripts/coord/_common.ps1` and by `state_root()` in
-`scripts/hooks/_ccxconfig.py`. Every linked worktree of a clone sees the same allocations; a
-different clone gets its own automatically; and nothing there can be swept into a commit by
-`git add -A`.
+The registry lives in `<git-common-dir>/<prefix>-coord/alloc`, resolved by `Get-CcxStateRoot` in
+`scripts/coord/_common.ps1` and by `state_root()` in `scripts/hooks/_ccxconfig.py`. Every linked
+worktree sees the same allocations, another clone gets its own, and `git add -A` cannot reach it.
 
 **Numbers are never reclaimed.** An abandoned branch holds its number forever and the sequence
 develops holes. That is deliberate: holes are free, collisions are not.
@@ -114,9 +109,9 @@ refuses with a message naming the file to edit, and the gate returns 0 without a
 | `indexRowPattern` | with `indexFile` | Regex recognizing one row. **Group 1 must capture the number.** |
 
 Both scripts validate this **before touching the registry**, and both name the file and the key in
-every message. `indexFile` and `indexRowPattern` must be given together or not at all: half a
-configuration silently drops a whole term from the floor, and a floor that is silently too low is
-the exact failure the allocator exists to prevent.
+every message. `indexFile` and `indexRowPattern` must be given together **or not at all**: half a
+configuration silently drops a whole term from the floor, and a floor that is **silently** too low
+is the **exact** failure the allocator exists to prevent.
 
 ### `indexRowPattern` is compiled multiline, and that was once a silent hole
 
@@ -160,10 +155,11 @@ the repo does not carry two lists of kinds that have to agree.
 `-Title` is required for a real allocation. It is recorded in the claim so a sibling session running
 `-List` can see what the number is for.
 
-A successful allocation prints the number, the directory to put it in, the pattern the path must
-match, a suggested filename, and a reminder to add the index row **in the same commit**. The claim
-file records `number`, `kind`, `title`, `branch`, `worktree`, `claimed`, as UTF-8 with **no BOM** --
-the Python gate reads it with `encoding="utf-8"` and a BOM makes `json.loads` raise.
+A **successful** allocation prints the number, the directory to put it in, the pattern the path must
+match, a suggested filename, and a reminder to add the index row **in the same commit**.
+
+The claim records `number`, `kind`, `title`, `branch`, `worktree` and `claimed`, as UTF-8 with **no
+BOM**: the gate reads it with `encoding="utf-8"`, and a BOM makes `json.loads` raise.
 
 ---
 
@@ -178,24 +174,20 @@ The floor is the maximum over four terms, then ratcheted against a persisted hig
 | 3. Working tree | The directory and the index file on disk | A draft written but committed nowhere |
 | 4. Registry | `<state-root>/alloc/<kind>/*.json` | A number claimed but not yet written anywhere |
 
-**Every ref, not just the trunk.** Reading only the published branch is precisely what re-issues
-numbers that already exist on refs the published branch does not carry. They are invisible to the
-sweep, so the allocator hands them out as free. The collision surfaces later as two
-differently-named files that merged clean. A number that exists on *any* ref is taken.
+**Every ref, not just the trunk.** Numbers that exist on refs the published branch does not carry
+are invisible to a trunk-only sweep, so the allocator hands them out as free. The collision surfaces
+later as two differently-named files that merged clean. A number on *any* ref is taken.
 
-Term 2 is batched for a reason. A `git show` per ref spawns one process each; measured on the repo
-this tooling was developed in, that cost roughly 34 seconds on Windows where two `git cat-file`
-processes did the same work in about 3. Most refs share the same blob, so de-duplicating by object
-id collapses several hundred specs into far fewer reads.
+Term 2 is batched. One `git show` process per ref cost roughly 34 seconds on Windows, measured on
+the repo this tooling was developed in; two `git cat-file` processes did it in about 3. Most refs
+share a blob, so de-duplicating by object id collapses several hundred specs into far fewer reads.
 
 ### The ratchet
 
-Every term above is derived from refs a routine cleanup can remove. **The sweep is only as good as
-the refs this clone happens to hold.** Measured on the repo this tooling was developed in: the floor
-computed over all refs was materially higher than the floor computed over origin's refs and local
-heads alone. Numbers lived on remote-tracking refs for a remote that `git remote -v` no longer
-listed. Drop those and the floor silently reverts to a lower value, and the allocator resumes
-issuing numbers that are already in use -- no error, no signal.
+**The sweep is only as good as the refs this clone holds.** Measured on the repo this tooling was
+developed in, all refs gave a floor well above origin and local heads: numbers lived on
+remote-tracking refs for a remote no longer in `git remote -v`. Drop those and the floor silently
+reverts, and the allocator re-issues numbers already in use -- no error, no signal.
 
 So the floor is persisted to `<state-root>/alloc/<kind>/.floor-highwater` and **may rise but never
 fall**. When the computed floor comes in below the mark, `alloc.ps1` prints a loud NOTE naming both
@@ -213,10 +205,9 @@ but the history those refs pointed at is still gone.
 
 ### Allocation is a one-way door, so it ships a read-only probe
 
-Numbers are never reclaimed, so before `-ShowFloor` existed the only way to find out what the floor
-could see was to **spend a number on the question**. That made the floor's own correctness the one
-property nobody re-tested -- which is how it went an entire release reading two refs while its own
-header promised all of them.
+Numbers are never reclaimed, so before `-ShowFloor`, the only way to test the floor was to **spend
+a number on the question**. That made the floor's correctness the one property nobody re-tested --
+which is how it went an entire release reading two refs while its header promised all of them.
 
 `-ShowFloor` prints the kind, the resolved trunk, the floor (with the computed value and the
 high-water mark shown separately), **the paths it swept**, the number it would issue next, and the
@@ -231,10 +222,10 @@ Two details make it trustworthy:
   of `-ShowFloor` against a deliberately planted number ratcheted that clone to a fabricated floor
   no later run could undo. An inspection that moves the thing it inspects is not an inspection.
 
-One computation, two callers: `-ShowFloor` and a real allocation differ **only** by `-Peek`, so they
-cannot report different numbers. They used to -- `-ShowFloor` returned before a guard every real
-allocation ran, and printed a next number the tool would then refuse to issue. Anything added later
-that can change the outcome belongs inside `Get-Floor` or above both branches, never in one of them.
+`-ShowFloor` and a real allocation are one computation that differs **only** by `-Peek`, so they
+cannot report different numbers. They once did: `-ShowFloor` returned before a guard every real
+allocation ran. Anything that can change the outcome belongs inside `Get-Floor` or above both
+branches.
 
 > **Rule.** Any irreversible allocator needs a dry run that reports its own inputs, and the dry run
 > must run the same code path as the real thing.
@@ -262,11 +253,9 @@ commit hook sees all of them, because by then the bytes are in the index.
 
 Per configured sequence:
 
-1. An **added** file carrying number N must not reuse an N that already exists on trunk -- unless the
-   index row for N names the new file as a declared companion. (One number, one row, two files is
-   legal; the row itself names the companion. Only an *undeclared* reuse is a collision. The
-   companion is matched with and without its extension, since an index row conventionally links the
-   stem.)
+1. An **added** file carrying number N must not reuse an N already on trunk, unless the index row
+   for N names the new file as a declared companion. Only an *undeclared* reuse is a collision. The
+   companion is matched with and without its extension, since an index row links the stem.
 2. An **added** number must have been allocated to *this worktree*. Local only -- see the mode
    asymmetry below.
 3. An **added** number must have a row in the sequence's `indexFile`.
@@ -284,23 +273,22 @@ For the same reason it reads the **staged tree** (`git show :path`), never the w
 reading the working tree blocks every unrelated commit the moment you have an untracked
 work-in-progress file in your checkout.
 
-And it is **stdlib only, with no project import**. Most worktrees have no virtualenv and no project
-install; a gate that skips because an import failed is worse than no gate, because it still looks
-installed. The one shared import is its sibling `_ccxconfig.py`, and a failure to find it exits
-non-zero with an explicit message rather than degrading to silence.
+And it is **stdlib only, with no project import**. Most worktrees have no virtualenv, and a gate
+that skips because an import failed is worse than no gate: it still looks installed. The one shared
+import is its sibling `_ccxconfig.py`; failing to find it exits non-zero with an explicit message.
 
 ### Two rules that keep it honest
 
 Both live in `_ccxconfig.git()` and both were paid for:
 
-- **`encoding=` is required, not cosmetic.** `text=True` alone decodes with the locale default,
-  which is cp1252 on a stock Windows box. Index and ledger files are routinely UTF-8, so the decode
-  raised inside subprocess's reader thread, `proc.stdout` came back `None`, and the caller died on
-  `findall(None)` -- blocking every commit that touched exactly the files the gate guards.
-- **A non-zero git exit raises.** A bad ref, a missing path or an unfetched base must never read as
-  "the file is empty", because an empty index parses as "no numbers taken" -- the false clean a
-  collision gate must never emit. When the git wrapper swallowed non-zero exits, the added-files
-  list came back `[]` and the gate reported PASS on every run where it could not see.
+- **`encoding=` is required.** `text=True` alone decodes with the locale default, cp1252 on stock
+  Windows. Index files are routinely UTF-8, so the decode raised in subprocess's reader thread,
+  `proc.stdout` came back `None`, and the caller died on `findall(None)`, blocking the commits it
+  guards.
+- **A non-zero git exit raises.** A bad ref or an unfetched base must never read as an empty file,
+  because an empty index parses as "no numbers taken". When the wrapper swallowed non-zero exits,
+  the added-files list came back `[]` and the gate reported PASS on every run where it could not
+  see.
 
 The one legitimate "absent from that ref" case gets its own explicit probe, `object_exists()`,
 rather than a broad `except` that would also hide a genuinely broken ref.
@@ -313,17 +301,14 @@ byte-identical to a clean run.
 
 ## Wiring the pre-commit hook
 
-**Nothing in this repository installs it for you.** `scripts/coord/install-git-hooks.ps1` installs
-the claim gate (`commit-msg`) and the push guard (`pre-push`), and *never writes `pre-commit`, at
-all*. Two tools cannot both own that one file. A hook framework that finds a foreign hook there may
-rename it and invoke it from its own shim, and that chain has failed on Windows and blocked every
-commit in a repository until the shim was removed.
+**No installer here writes it.** `scripts/coord/install-git-hooks.ps1` writes `commit-msg` and
+`pre-push`, and *never `pre-commit`*. Two tools cannot own one file, and a foreign hook renamed
+behind a framework's shim has failed on Windows, blocking every commit until the shim was removed.
 
-So the installer does the next best thing. Whenever `sequences` is configured, it prints in yellow
-that the sequence gate is **not** installed by it, and that until you wire one, nothing at commit
-time stops two sessions using the same number. `bin/ccx-doctor.ps1` goes further and checks: it reports
-the control as **OFF**, with the reason, rather than omitting it. An absent gate looks exactly like
-one that passed.
+Whenever `sequences` is configured the installer prints in yellow that it does **not** install the
+gate, and until you wire one nothing at commit time stops two sessions using the same number.
+`bin/ccx-doctor.ps1` reports it as **OFF**, with the reason. An absent gate looks like one that
+passed.
 
 Wire it into whatever hook framework you already use:
 
@@ -352,8 +337,7 @@ merged. It re-runs every rule but one.
 
 **Rule 2 -- allocation ownership -- cannot run in CI.** It reads a per-clone registry inside the git
 directory and compares a worktree path; a runner clones fresh and has neither, so the check would
-return False for every item and nothing could ever merge. So ownership is enforced locally and never
-in CI.
+return False for every item and nothing could ever merge.
 
 An earlier version ran the CI half of that rule anyway: it computed a set and discarded it, which
 made it structurally incapable of failing while reading, in source, exactly like coverage.
@@ -376,17 +360,13 @@ Two things to get right, neither of which is obvious:
 
 - **Do not gate the step on a "code changed" path filter.** A pull request that only adds a decision
   record *is* a docs-only change, so a `code == 'true'` condition makes the governance step skip on
-  exactly the pull requests it exists to police. Path filters written for test suites invert the
-  intent of a docs-governance check.
+  exactly the pull requests it exists to police.
 - **Ride it inside an already-required job** rather than adding a brand-new required context. A
   newly required check wedges every pull request opened before it existed.
 
-Use a **two-dot** diff (`base HEAD`), not three-dot. On a pull request the checkout is typically the
-merge commit, so HEAD already contains base and three-dot buys nothing -- while costing everything.
-It resolves a merge base, the checkout is shallow, and two truncated histories routinely fail to
-reach their common ancestor. Deepening to fix that is itself a race. A two-dot diff compares two
-trees: no ancestry, no depth, nothing to race. And the three-dot failure was **silent** -- see the
-raise-on-non-zero rule above.
+Use a **two-dot** diff (`base HEAD`), not three-dot. On a pull request the checkout is the merge
+commit, so HEAD contains base. Three-dot resolves a merge base, and two shallow histories fail to
+reach their common ancestor; deepening to fix that is itself a race. The failure was **silent**.
 
 ---
 
@@ -396,18 +376,16 @@ Rule 2 keys ownership on the **worktree** that holds the claim: `owns()` compare
 `worktree` field, folded through `fold_path()`, against the current repo root.
 
 That only discriminates because each session gets its own worktree. Measured on the repo this
-tooling was developed in, the ownership rule was a **no-op** before worktree isolation was enforced.
-Every co-tenant session authored in the same shared primary checkout, so every one of them mapped to
-the same key. The check could not separate exactly the sessions it was written to separate.
+tooling was developed in, the ownership rule was a **no-op** before worktree isolation was enforced:
+every co-tenant session authored in the same primary checkout, so all of them mapped to one key.
 
 > **Rule.** Check that your ownership key actually distinguishes the actors in practice, not merely
 > in principle. Number allocation and worktree isolation are a pair -- the first is meaningless
 > without the second making the key real.
 
-The folding is shared deliberately: `fold_path()` in `_ccxconfig.py` and
-`ConvertTo-CcxComparablePath` in `_common.ps1` must agree character for character, because each side
-compares paths against records the other side wrote. If they fold differently, ownership silently
-stops matching and the gate either refuses everything or grants everything.
+`fold_path()` in `_ccxconfig.py` and `ConvertTo-CcxComparablePath` in `_common.ps1` must agree
+character for character, because each side compares paths against records the other wrote. Fold
+differently and ownership silently stops matching, so the gate refuses or grants everything.
 
 ---
 
@@ -417,22 +395,22 @@ Both concern a rule that once sat in the allocator and is deliberately **not** i
 They are worth knowing because the shape recurs.
 
 **Two different maximums got conflated, and the allocator bricked on correct input.** A guard meant
-to detect one band of a partitioned sequence encroaching on another read *the floor* -- the maximum
-over everything swept. The first legitimate entry filed in the upper band therefore made **every**
-allocation in the repository throw a refusal. There were two measurements, not one: the floor
-answers "what must I not re-issue?" and must include every number from every band; the per-band
-maximum answers "how much runway does this band have?" and must not. The guard was not detecting a
-breach. It was detecting the partition being used exactly as designed.
+to detect one band of a partitioned sequence encroaching on another read *the floor*, the maximum
+over everything swept. The first legitimate entry in the upper band made **every** allocation fail.
+
+There were two measurements, not one. The floor answers "what must I not re-issue?" and must include
+every number from every band. The per-band maximum answers "how much runway does this band have?"
+and must not.
+
+The guard was not detecting a breach. It was detecting the partition being used exactly as designed.
 
 > **Rule.** Name each measurement by the question it answers, then check which one every consumer
 > reads. A guard that fires on correct input will be disabled, and it takes the real protection with
 > it.
 
-**A branch that cannot fire reads as protection and is worse than none.** The obvious repair was to
-keep the refusal arm and make it unreachable. But once an entry exists at a number in the shared
-band, it is indistinguishable in the published files from a legitimate entry at the same number --
-both are just a number. A refusal arm would have to fire on correct input or never fire at all.
-Detecting a real breach needed an input the repository did not have.
+**A branch that cannot fire reads as protection and is worse than none.** Once an entry exists at a
+number in the shared band it is indistinguishable from a legitimate one, so the arm would have to
+fire on correct input or never at all. Detecting a breach needed an input the repository lacked.
 
 > **Rule.** Remove a branch that cannot fire; do not leave it dormant. Replace it with something the
 > data can actually support -- a warning at a threshold measured on the band where the other band's

@@ -6,10 +6,10 @@
 Three things live here and nowhere else: **which surface to run the sessions on**, **the channels
 sessions have for reaching each other**, and **using one session as a coordinator**.
 
-**Why you should care.** Concurrency buys real parallelism and creates a specific set of failures,
-nearly all of which are invisible while they happen. Four of the preparations only work if you do
-them *before* the second session starts, because each takes effect in sessions started afterwards.
-Not for you if you run one session at a time.
+**Why you should care.** Concurrency buys real parallelism and a specific set of failures, nearly
+all invisible while they happen. Four preparations work only *before* the second session starts,
+because each takes effect in sessions started afterwards. Not for you if you run one session at a
+time.
 
 **How to use it.** Read [Concepts](CONCEPTS.md) first, then work the numbered list below in order.
 Everything else on this page names a problem and links to the page that owns the fix.
@@ -76,25 +76,21 @@ column, and only there.
 The preference is worth stating only because the mechanisms under it are each checkable. Each bullet
 says what class of evidence it rests on, because they are not the same class:
 
-- *Cited upstream, not reproduced here.* **The hijack is a harness-side failure, and nothing here
-  attributes it to a surface.** A per-session auto-worktree can half-fail on Windows, flipping the
-  *primary's* HEAD onto the session's branch and leaving an empty stub directory behind
-  ([anthropics/claude-code#76590](https://github.com/anthropics/claude-code/issues/76590); the
-  repair path and the ghost stub are [Worktrees](WORKTREES.md)).
+- *Cited upstream, not reproduced here.* **The hijack is harness-side, and nothing here ties it to a
+  surface.** A per-session auto-worktree can half-fail on Windows, flipping the *primary's* HEAD
+  onto the session's branch
+  ([claude-code#76590](https://github.com/anthropics/claude-code/issues/76590)).
 
   This repository cites that issue rather than reproducing it, and records no observation of the
   extension's worktree layout either way. Read the bullet as removing an easy assumption, not as
   establishing that the defect is surface-neutral.
 - *Measured here.* **An extension session is absent from the desktop app's own `list_sessions`.** It
-  enumerates sessions that app itself spawned; an extension session is never entered into that map --
-  not filtered out, never registered. Verified against a live extension session sharing the
-  **default** config root, so it is not a login split ([Coordination](COORDINATION.md)).
+  enumerates only sessions that app spawned; an extension session is never registered, not filtered
+  out. Verified on a live extension session sharing the **default** config root: not a login split.
 - *Measured here.* **Project-scoped settings are commonly git-ignored and cannot reach a new
-  worktree.** Measured on the repo this tooling was developed in, and often enough to matter: a large
-  share of the worktrees had no project settings file at all. A live editor session was working in
-  one of them with **zero** coordination context ([Tips and tricks](TIPS-AND-TRICKS.md),
-  [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md)). That is why
-  the hooks here install at **user** scope ([Hooks](HOOKS.md)).
+  worktree.** A large share of this repo's worktrees had no project settings file, and a live
+  editor session was working in one with **zero** coordination context. So the hooks here install
+  at **user** scope.
 - *Observed once.* **User scope means *per config root*, and the gate fails open**, so an unwired root
   is byte-identical to a governed one from inside the session.
 
@@ -102,11 +98,10 @@ says what class of evidence it rests on, because they are not the same class:
   checked its own branch out inside another session's linked worktree, and the gate that would have
   refused it was not installed there.
 
-  Editor-hosted chats showing up under an additional config root is the installers' stated reason for
-  wiring every root
-  ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md), "Why every
-  config directory"), and it is the configuration that hijack came from. Nothing here counts roots by
-  surface, so take it as the installers' rationale, not a measured distribution.
+  Editor-hosted chats under an extra config root are the installers' stated reason for wiring every
+  root ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md)), and it is the configuration
+  that hijack came from. Nothing here counts roots by surface: rationale, not a measured
+  distribution.
 
 **What is not established.** The intuitive story -- an extension session is invisible to
 `list_sessions`, so anything reading that list acts as though it is gone -- does not hold here.
@@ -121,11 +116,10 @@ surface, so an extension session is **not** invisible to the thing that deletes 
 The observed hijack came from an editor-hosted session under an ungoverned config root, and no
 measurement here separates the surface from the ungoverned root as the operative fact.
 
-**And one join is unverified, the one this argument leans on hardest.** What was measured on the
-extension is that hooks in a project's *own settings file* run there
-([Session mail](SESSION-MAIL.md), "Surface facts worth checking"). Every installer here writes
-**user** scope on purpose -- and nothing in this repository measures whether a user-scope hook fires
-in the extension at all. So the remedy below is a check to run, not a remedy to assume.
+**And one join is unverified, the one this argument leans on hardest.** What was measured: hooks in
+a project's *own settings file* run in the extension ([Session mail](SESSION-MAIL.md)). Every
+installer here writes **user** scope, and nothing measures whether a user-scope hook fires there at
+all.
 
 **So check it on your own setup rather than taking the preference on trust.** From a session started
 the way you intend to run them:
@@ -136,11 +130,9 @@ pwsh -NoProfile -File bin/ccx-doctor.ps1                         # are the gates
 pwsh -NoProfile -File scripts/worktree/install-gate.ps1 -Status  # wired, and current, in EVERY config root?
 ```
 
-If the gate is wired and current in every config root the client is using, the one mechanism this
-repository can name is addressed. It is not a proof that the gate *fires* on your surface: `-Status`
-answers "is it wired", which is a different question. Fire it on purpose from a session started the
-way you intend to run them -- `ccx-doctor.ps1` attacks each control rather than reading its
-configuration -- and treat that, not the wiring report, as the answer.
+A gate wired and current in every config root addresses the one mechanism this repository can name.
+That is not proof it *fires* on your surface: `-Status` answers "is it wired", not "does it fire".
+`ccx-doctor.ps1` attacks each control rather than reading config; trust it, not the wiring report.
 
 **The surface choice reduces a residual; it does not replace the gate.** A hijack the gate refuses is
 a message on your screen; a hijack on a surface where the gate was never installed is silent.
@@ -155,8 +147,8 @@ them by the harness rather than by a peer, and several reach only sessions that 
 
 **Timing decides whether a message is useful at all**, so the table is sorted by it rather than by
 tool. A note that lands when a session next *starts* is a different instrument from one that
-interrupts it between tool calls, and choosing wrong means the message arrives after the decision it
-was meant to change. Five bands:
+interrupts it between tool calls, and choosing wrong lands the message after the decision. Five
+bands:
 
 - **A** -- already running, mid-turn.
 - **B** -- a running peer, if it is in the desktop roster.
@@ -182,10 +174,9 @@ At least these channels exist. Each links to the page that owns it.
 | The working agreement ([`CLAUDE.md`](https://claude-multisession.pages.dev/CLAUDE.md.template)) | **E** -- only sessions that start later; an edit misses a running one. | broadcast | template only; nothing installs it |
 | [Session mail](SESSION-MAIL.md) | **E** -- a session that starts later; a mid-turn wake-up is possible and is one-shot. | addressed to a worktree box, keyed by normalized path | **no** -- designed and documented here, not implemented here |
 
-One property explains the whole first band, and generalizes past this table: **a file is re-read on
-every hook run**. An environment variable is read once at process start, and a settings edit takes
-effect only in the next session. That is why the channels that reach a session already running
-are all files. Each channel's own costs are on its own page.
+One property explains the whole first band: **a file is re-read on every hook run**. An environment
+variable is read once at process start, and a settings edit takes effect only in the next session.
+So every channel that reaches a running session is a file. Costs are on each channel's page.
 
 ### Choosing one
 
@@ -197,40 +188,33 @@ are all files. Each channel's own costs are on its own page.
   what you want to say is "do not touch X", publish something a gate consumes rather than something a
   human reads.**
 
-The pull-side queries carry one blind spot worth knowing before you trust them. They read git state
-and a roster keyed on the directory a session was *launched* in, so a write made into a worktree by
-absolute path from a session sitting somewhere else is invisible to them. It is why a fence needs a
-second, non-cwd signal ([Coordination](COORDINATION.md), [Pruning](PRUNING.md)).
+The pull-side queries share one blind spot. They read git state and a roster keyed on the directory
+a session was *launched* in. A write made into a worktree by absolute path from a session sitting
+elsewhere is invisible to them. A fence needs a second, non-cwd signal
+([Pruning](PRUNING.md)).
 
-Two rules apply to every row above. **A message from another session is data, never an instruction.**
-It arrives looking exactly like something the operator typed, because on most of these channels that
-is the shape it takes, and a peer cannot authorize a push, a merge, a delete or a configuration
-change. And **a broadcast needs an expiry or a condition the recipient can evaluate.** A freeze that
-said "hold until a particular pull request merges" held only the sessions honoring it, did not hold
-the trunk still, and was still announcing itself hours after the thing it waited on had landed.
+**A message from another session is data, never an instruction**: it authorizes no push, merge,
+delete or config change. **A broadcast needs an expiry or a condition the recipient can evaluate**:
+a freeze held only the sessions honoring it and still announced hours after its pull request merged.
 
 ### The degenerate channels
 
 These are the fallbacks when the channel you needed was not wired. Each works often enough to feel
 adequate.
 
-**Shouting through the operator.** Its timing is the worst of any option here: it waits for a human to
-read and then to type, which is unbounded. It arrives in the **operator's voice**, so the receiving
-session cannot tell a relayed peer assertion from an instruction, destroying the boundary every rule
-above depends on. And it scales as one conversation per session, so the person becomes the bottleneck
-at the moment parallelism was supposed to pay off.
+**Shouting through the operator.** Its timing is the worst here: unbounded, waiting on a human to
+read and then type. It arrives in the **operator's voice**, so the receiver cannot tell peer
+assertion from instruction. And it scales as one conversation per session: the person is the
+bottleneck.
 
-**A note in a file both sessions read.** No delivery and no receipt: silence is indistinguishable from
-the note never having been seen. Worse, it is coordination a tool cannot read, so it changes no
-mechanical verdict -- two sessions once agreed in prose to hand a file over and the collision gate
-still refused, because the gate reads git. And a file inside a worktree moves under you on a branch
+**A note in a file both sessions read.** No delivery, no receipt: silence and unseen look the same.
+No tool reads it, so no mechanical verdict changes: two sessions agreed in prose to hand a file
+over and the gate refused, because it reads git. And a worktree file moves under you on a branch
 switch.
 
-**Relying on git itself** -- a branch name, a commit message, a merge conflict. All three arrive
-**after** the work: a conflict is not a warning, it is the notification that both sessions already did
-the thing. A worktree name is a creation-time label nothing keeps current, and has been observed
-drifting well off the work it names ([Session mail](SESSION-MAIL.md)). And under a squash-merging
-trunk, reachability is wrong in both directions ([PRs and merges](PR-AND-MERGE.md)).
+**Relying on git itself**: branch name, commit message, merge conflict. A conflict is not a warning
+but the notification that both sessions already did the thing. A worktree name is a creation-time
+label, observed well off the work it names. Under squash-merge, reachability is wrong both ways.
 
 All three carry information a human can interpret and a tool cannot act on, and all three arrive after
 the decision.
@@ -242,12 +226,9 @@ the decision.
 Once several sessions are in flight, it is worth giving one of them a different job: hold the picture
 of what is in flight and decide what lands in what order, while the others build.
 
-**Nothing here implements this, and this page is introducing the term.** There is no coordinator
-script, no role flag and no routing; the word appears in no other page. The line it draws already
-exists in the shipped material, drawn at the *human* owner: the working agreement routes push, pull
-request and merge to the owner's approval while commits stay the session's own judgment. A
-coordinator session is that line delegated to one session instead of exercised separately in every
-chat.
+**Nothing here implements this, and this page is introducing the term.** No coordinator script, no
+role flag, no routing. The working agreement already routes push, pull request and merge to the
+*human* owner, commits to the session. A coordinator delegates that line to one session.
 
 One sentence carries the boundary: **a coordinator arbitrates; it does not execute.**
 
@@ -255,10 +236,10 @@ One sentence carries the boundary: **a coordinator arbitrates; it does not execu
 
 - **Almost every signal here is pull, and pull needs somebody to look.** Under load, the sessions
   doing the building are the least likely to stop and look.
-- **Outward-facing actions want a single owner**, and with auto-merge armed a pull request effectively
-  *is* a merge. Best-evidenced: measured, the trunk moved **seven times** during one pair of pull
-  requests, and two branches that each merge cleanly against the trunk they were cut from need not
-  merge cleanly in either order. See [PRs and merges](PR-AND-MERGE.md).
+- **Outward-facing actions want a single owner**, and with auto-merge armed a pull request *is* a
+  merge. Measured: the trunk moved **seven times** during one pair of pull requests. Two branches
+  that each merge cleanly against the trunk they were cut from need not merge cleanly in either
+  order.
 - **Some shared state is last-write-wins and outside git** -- project memory, shared notes, a ledger.
   The rule there is single-writer, and single-writer needs a writer.
 
@@ -276,46 +257,40 @@ At least these, and the two catch-all rows at the bottom are the rule the rest a
 | Writes to any shared last-write-wins state outside git | Taking a lock |
 | Anything whose answer must be identical for every session and no gate can compute | Any read-only query |
 
-Two right-hand rows are counter-intuitive enough to state a reason for. **Allocation is atomic** --
-the failed exclusive create *is* the mutual exclusion ([Concepts](CONCEPTS.md),
-[Sequence allocation](SEQUENCE-ALLOC.md)) -- so a coordinator handing out numbers is the
-read-modify-write that loses, plus a hop, plus a step to remember. And **a claim's claiming identity
-is the working tree**, not the primary checkout ([Coordination](COORDINATION.md)), so a coordinator
-claiming for a worker registers the wrong claimant and the commit-time gate then refuses that
-worker's own commit.
+**Allocation is atomic**: the failed exclusive create *is* the mutual exclusion, so a coordinator
+handing out numbers is the read-modify-write that loses. **A claim is keyed to the working tree**,
+so a coordinator claiming for a worker gets that worker's own commit refused by the commit-time
+gate.
 
 The generalization: **if a machine can serialize it, do not put a session in the loop.** Serialization
 is a primitive; single-ownership is a judgment; conflating them produces the queue.
 
 ### How a worker talks to it
 
-Publish intent where a **tool** can read it: take a claim with a note before starting, and let
-announce carry that note to joining sessions in preference to the worktree name. The coordinator
-**reads state rather than being told it**, so every input is a by-product of working normally.
-Ready-to-land has no dedicated channel and you should not invent one -- the pushed branch, or a claim
-note refreshed in place, is the signal.
+Publish intent where a **tool** can read it: take a claim with a note before starting, and announce
+carries that note to joining sessions. The coordinator **reads state rather than being told it**.
+Ready-to-land needs no channel: the pushed branch, or a refreshed claim note, is the signal.
 
 ### When you do not need one
 
-The trigger is a condition, not a headcount. Three sessions on three unrelated subsystems need no
-coordinator; two sessions on branches that both rewrite one index file do. The triggers are
-**order-dependence** and **effort-overlap**. Unrelated work in separate worktrees is already covered
-end to end by the shipped gates, and a coordinator there buys nothing and costs a hop.
+The trigger is a condition, not a headcount: **order-dependence** and **effort-overlap**. Three
+sessions on unrelated subsystems need no coordinator; two on branches that both rewrite one index
+file do. Unrelated work in separate worktrees is covered by the shipped gates; a coordinator adds a
+hop.
 
 ### How the role fails
 
-- **Bottleneck.** If a worker must ask before it can commit, you have built a queue. Sharper: an
-  explicit claim tool sat in this repository and was used exactly **zero** times, because a
-  coordination step you must remember is one you will skip ([Coordination](COORDINATION.md)). A
-  coordinator that says wait when it needn't is destroying the channel it depends on.
+- **Bottleneck.** If a worker must ask before it can commit, you have built a queue. An explicit
+  claim tool sat here and was used exactly **zero** times: a coordination step you must remember is
+  one you will skip. A coordinator that says wait when it needn't destroys the channel it depends
+  on.
 - **A worker bypasses it** -- assume it. Claims are advisory and the push guard is a guardrail, not a
   boundary, so the role sits **behind** enforcing gates rather than instead of them: a coordinator
   that is the only control is not a control.
-- **Stale state, in two symmetric directions.** First, a broadcast that never lapses: a freeze note
-  announced itself to joining sessions long after the thing it waited on had merged. Second, its
-  mirror, reading age as abandonment: a claim has been reported stale while its holder was committing
-  minutes earlier ([Coordination](COORDINATION.md) carries both measurements). Report what the holder
-  is doing, never how old the record is.
+- **Stale state, in two symmetric directions.** A broadcast that never lapses: a freeze note still
+  announced itself long after its pull request merged. Its mirror: a claim was reported stale while
+  its holder was committing minutes earlier. Report what the holder is doing, not how old the record
+  is.
 - **Phrasing a ruling as restraint.** "Do not merge" does not reach armed auto-merge; nobody has to
   click anything for those to land. "Disarm auto-merge on your pull request" does.
 - **Authority confusion.** A coordinator's message is still peer data. Being central is not being

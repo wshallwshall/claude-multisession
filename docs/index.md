@@ -7,15 +7,13 @@ layout: default
 
 ## TLDR/BLUF
 
-**What this is.** A way to run several Claude Code sessions at once on one repository without them
-overwriting each other. Each session gets its own git worktree and branch; hooks refuse the edits,
-commits and pushes that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git`
-and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs nothing.
+**What this is.** Several Claude Code sessions on one repository, without overwriting each other.
+Each gets its own git worktree and branch; hooks refuse colliding edits, commits and pushes. Nothing
+beyond `pwsh`, `git` and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs nothing.
 
-**Why you should care.** Several sessions on one repository is real throughput, and it stops being
-free the moment two of them collide in a way git cannot report as a conflict. Most of those
-collisions touch no shared bytes at all, so every branch merges clean. The loss lands later, on work
-built from assumptions that had already stopped being true.
+**Why you should care.** Several sessions on one repository is real throughput until two collide in
+a way git cannot report as a conflict. Most such collisions touch no shared bytes, so every branch
+merges clean. The loss lands later, on work built from assumptions that had stopped being true.
 
 What ships against that:
 
@@ -28,30 +26,27 @@ What ships against that:
 Not for you if you run one session at a time.
 
 **How to use it.** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
-[What ships](#what-ships) - [Full docs](#where-to-go-next). Or have Claude Code evaluate it for you:
-[feed it this page](FEED-THIS-TO-CLAUDE-CODE.md). It will read your repository and tell you which of
-these collisions you actually have, usually faster than deciding from the docs.
+[What ships](#what-ships) - [Full docs](#where-to-go-next). Or have Claude Code
+[read this page](FEED-THIS-TO-CLAUDE-CODE.md): it reads your repository and names the collisions you
+have.
 
 ---
 
 ## The problem
 
-Point several agents at one working directory and they contend for the git index and overwrite each
-other's files. The sharp version is documented upstream in
-[anthropics/claude-code#76590](https://github.com/anthropics/claude-code/issues/76590), with a
+Several agents in one working directory overwrite each other's files --
+[claude-code#76590](https://github.com/anthropics/claude-code/issues/76590), with a
 [field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
-roughly fourteen sessions handed the same directory as their working directory.
+roughly fourteen sessions on one directory.
 
-One agent runs an ordinary `git checkout -B <branch> origin/main`. Git allows it -- that branch is
-not checked out anywhere. The shared working tree force-switches, swapping every file under whichever
-session was mid-task and dragging its uncommitted work onto the wrong branch. It is invisible while
-it happens, because each session believes it owns its directory.
+An agent runs `git checkout -B <branch> origin/main`. Git allows it: the branch is checked out
+nowhere. The shared tree force-switches, swapping every file under a mid-task session and dragging
+its uncommitted work onto the wrong branch. Nobody sees it: each session believes it owns its
+directory.
 
-That is the loudest collision, not the only one. Six more -- same file, same work in different files,
-same reserved number, same config lock, same shared list, same agent memory -- are tabulated with
-their measurements in the
+It is the loudest collision, not the only one: six more -- same file, same work in different files,
+same reserved number, same config lock, same shared list, same agent memory -- are tabulated in the
 [README](https://claude-multisession.pages.dev/README.md), *"What problem this solves"*.
-Start there if you are still deciding whether you have this problem.
 
 ## What you get
 
@@ -60,32 +55,26 @@ repository history -- and the coordination state keyed to it -- stays shared.
 [Worktrees](WORKTREES.md)
 
 **Edits that collide are refused, not merged.** A `PreToolUse` collision gate refuses an edit to a
-file another live session is already changing. Around it sit atomic claims, a cross-session lock,
-and atomic sequence-number allocation, so two sessions cannot mint the same decision-record number.
-Claims are advisory by design -- they cannot stop a session that refuses to look, which is why the
-commit-time gate sits behind them. [Coordination](COORDINATION.md)
+file another live session is already changing. Claims are advisory -- they cannot stop a session
+that refuses to look, so the commit-time gate sits behind them. [Coordination](COORDINATION.md)
 
 **Guardrails that hold whether the agent cooperates or not.** Two git hooks: `commit-msg` runs the
 claim gate, `pre-push` refuses a direct push to a protected ref. A worktree gate stops sessions
 building in the shared primary checkout. [Hooks](HOOKS.md)
 
-**Sessions that can reach each other.** Announce tells peers what you are about to touch *before* you
-start, rather than at the merge conflict afterwards. Steering changes a running session's course
-mid-task. Presence, occupancy and overlap answer -- separately -- who is live, which worktree each
-occupies, and what each is changing right now. [Coordination](COORDINATION.md),
+**Sessions that can reach each other.** Announce tells peers what you will touch *before* you start.
+Steering redirects a running session mid-task. Presence, occupancy and overlap answer separately:
+who is live, which worktree, what changes. [Coordination](COORDINATION.md),
 [Steering](STEERING.md)
 
 **Cleanup that refuses to guess.** A liveness registry tracks which sessions are actually alive; the
 reaper prunes worktrees that are merged **and** clean **and** unoccupied, and declines when it cannot
 tell which of those a worktree is. [Pruning](PRUNING.md)
 
-**Work too large for one context.** A coordinated set of sessions can cover a codebase at once, which
-extends to compliance work -- an OWASP ASVS 5.0 assessment runs to several hundred requirements, more
-than one session can hold. The write-up is candid that the obvious split is the wrong one. A session
-per chapter is a scheduling answer, and the collision that actually costs you is not two agents
-editing the same row but **two agents applying different unwritten rules**. Their verdicts cannot be
-reconciled afterwards, because neither recorded which rule it applied.
-[Running a large assessment](https://secure-development-standards.pages.dev/ASVS-ASSESSMENT.html)
+**Work too large for one context.** An OWASP ASVS 5.0 assessment runs to several hundred
+requirements, more than one session can hold. The cost is **different unwritten rules**: verdicts
+nobody can reconcile.
+[Large assessments](https://secure-development-standards.pages.dev/ASVS-ASSESSMENT.html)
 
 ### Which part defends against #76590
 
@@ -105,25 +94,22 @@ Three mechanisms touch that failure. Only the first prevents it:
 is live, and where" reads `<config-root>/sessions/<pid>.json` -- a record the *client* writes, whose
 shape, location and lifetime belong to the client. Three consequences follow:
 
-- **Announce needs the desktop client.** It delivers through the `ccd_session_mgmt` MCP server, which
-  a plain CLI install does not have. The hook never sends anything itself: it resolves peers and asks
-  the model to send. On a CLI-only host it fires, finds peers, then instructs the model to call tools
-  it does not have. Nothing is delivered and the model says so. **If you are CLI-only, leave that one
-  hook uninstalled** -- nothing else depends on it.
-- **The desktop app's own session list is incomplete.** Its `list_sessions` enumerates an in-memory
-  map of sessions *that app itself spawned*. An editor-extension session is never entered into it --
-  not filtered out, never registered -- so it is invisible there and cannot be messaged. Treat
-  `list_sessions` as authoritative for who can be **messaged**, and the on-disk records as the only
-  registry for who **exists**.
-- **A schema change degrades to "cannot tell", not to a wrong answer.** If a future client renames a
-  field or changes `startedAt`'s unit, every fence here reports that it cannot tell. That is designed
-  for in `scripts/coord/session-registry.ps1`, and the doctor prints how many records it read and
-  placed, so a schema change surfaces as a count going to zero rather than a silent all-clear.
+- **Announce needs the desktop client.** It delivers through `ccd_session_mgmt`, an MCP server a
+  plain CLI install lacks. The hook never sends: it asks the model to, so nothing is delivered and
+  the model says so. **If you are CLI-only, leave that one hook uninstalled** -- nothing else
+  depends on it.
+- **The desktop app's own session list is incomplete.** `list_sessions` enumerates only sessions
+  *that app itself spawned*; an editor-extension session is never registered, so it cannot be
+  messaged. It is authoritative for who can be **messaged**, the on-disk records for who **exists**.
+- **A schema change degrades to "cannot tell", not to a wrong answer.** Rename a field or change
+  `startedAt`'s unit and every fence says it cannot tell -- designed for in
+  `scripts/coord/session-registry.ps1`. The doctor prints records read and placed, so the change
+  surfaces as a count going to zero.
 
-**These are guardrails against the accidental action, not security boundaries.** The `PreToolUse`
-gates inspect tool arguments, so a file written by a shell command is invisible to them, and any
-agent-authored script defeats a command-string rule outright. `git commit --no-verify` and
-`git push --no-verify` bypass the git hooks. No CI-side enforcement ships.
+**Guardrails against accidents, not security boundaries.** The `PreToolUse` gates inspect tool
+arguments: a file a shell command writes is invisible, and an agent-authored script defeats a
+command-string rule. `--no-verify` on commit or push bypasses both git hooks. No CI-side enforcement
+ships.
 
 ### Requirements
 
@@ -134,11 +120,10 @@ agent-authored script defeats a command-string rule outright. `git commit --no-v
 | **`python` on `PATH`** (or `CCX_PYTHON`) | The installed git gates are OFF and say so on stderr. Needed by the three git-hook checkers and the leak gate. |
 | **`ccx.config.json` at the target repo root** | User-scope hooks stay inert in that repo. It is both the knob file and the opt-in marker. |
 
-Runs on PowerShell 7 for Linux and macOS, but the Windows paths are the exercised ones; self-marking
-in the roster and path case-folding degrade elsewhere. There is **no `ccx` executable on `PATH`** --
-where these docs say `ccx doctor`, that is shorthand for
-`pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`. MIT licensed
-([LICENSE](https://claude-multisession.pages.dev/LICENSE)).
+PowerShell 7 runs on Linux and macOS, but Windows is the exercised path; self-marking and path
+case-folding degrade elsewhere. **There is no `ccx` on `PATH`**: `ccx doctor` means
+`pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`.
+[MIT](https://claude-multisession.pages.dev/LICENSE)
 
 ---
 
@@ -155,9 +140,8 @@ Two directories are involved, and every command says which it means:
 commit them, so tooling *is* target. It is the only layout in which the doctor can reach exit 0.
 
 The separate-checkouts layout works for the worktree gate, both git hooks and the backstop. It fails
-for the three coordination hooks, which are shims that resolve their script inside whatever
-repository the session is running in. A target not carrying those files gets three hooks that are
-wired and resolve nothing.
+for the three coordination hooks: shims that resolve their script inside whatever repository the
+session runs in, so a target not carrying those files gets three wired hooks that resolve nothing.
 
 Run all of this from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is `1`,
 because a session that can install these controls can remove them.
@@ -206,10 +190,10 @@ pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name alerts
 pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name parser
 ```
 
-`spawn.ps1` creates an isolated worktree on its own branch and opens an editor window in it; `new.ps1`
-does the same without the editor. Neither takes a target flag -- they act on the primary of the
-repository you are standing in, so keep standing in the target. Now start a Claude Code session in
-each window and confirm the coordination is live:
+`spawn.ps1` creates an isolated worktree on its own branch and opens an editor window in it;
+`new.ps1` does the same without the editor. Neither takes a target flag: both act on the primary you
+are standing in, so stay in the target. Then start a session in each window and confirm
+coordination:
 
 ```powershell
 pwsh -NoProfile -File "$tooling/scripts/coord/presence.ps1"   # both sessions listed
@@ -232,9 +216,8 @@ pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target |
 
 **Give the sessions a working agreement.** Copy
 [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
-into the target as `CLAUDE.md` and edit it down to what is true there. The gates stop what they can
-see; this file is where you write down what they cannot. Keep it short enough that it stays true --
-an unmaintained working agreement is worse than none, because the next session acts on it anyway.
+into the target as `CLAUDE.md` and cut it to what is true there: it is where you write down what
+the gates cannot see. Keep it short: a stale one still gets acted on.
 
 [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) is the record
 of record for the installers: the annotated version of these steps, and how to prove each one is live
@@ -244,11 +227,10 @@ rather than merely merged.
 
 ## What ships
 
-Paths are relative to this checkout. Every one of them is also served by this site at the same path,
-so `scripts/coord/claim.ps1` is readable at
-[/scripts/coord/claim.ps1](https://claude-multisession.pages.dev/scripts/coord/claim.ps1) without a
-clone. They are on [GitHub](https://github.com/wshallwshall/claude-multisession) too, which is the
-better view where it is reachable.
+Paths are relative to this checkout, and the site serves each at the same path --
+[/scripts/coord/claim.ps1](https://claude-multisession.pages.dev/scripts/coord/claim.ps1) needs no
+clone. Also on [GitHub](https://github.com/wshallwshall/claude-multisession), the better view where
+reachable.
 
 ### Start here
 
@@ -312,10 +294,10 @@ Installed once, then invoked by the harness or by git.
 
 ## Where to go next
 
-**The model.** Start with [Concepts](CONCEPTS.md): worktree per session, one shared state root, a
-liveness fence that may only veto, exclusive-create over read-modify-write, no TTLs, and the six
-knobs in `ccx.config.json`. Then [Hooks](HOOKS.md), which sets harness hooks against git hooks and
-maps every control to its event and its fail-open or fail-closed posture.
+**The model.** [Concepts](CONCEPTS.md): worktree per session, one shared state root, a liveness
+fence that may only veto, exclusive-create over read-modify-write, no TTLs, the six knobs in
+`ccx.config.json`. Then [Hooks](HOOKS.md): every control's event and its fail-open or fail-closed
+posture.
 
 **Running sessions.** Start at [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md). It is the
 entry point to the group, and it covers the three things no other page owns:
@@ -340,10 +322,8 @@ Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](
 
 **The standards are a separate project now.**
 [secure-development-standards](https://secure-development-standards.pages.dev/) holds
-the set that used to live in this repository: a bar for code an agent wrote and a small team has to
-stand behind, plus the CI discipline and the assessment method that went with it. They ship no code
-and confer no certification. Their index is over there and is not mirrored here, because two copies
-of one list is the drift both projects are about.
+what used to live here: a bar for agent-written code a small team stands behind, plus its CI
+discipline and assessment method. They ship no code and no certification.
 
 **At the repository root:**
 [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) (record of

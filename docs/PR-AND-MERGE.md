@@ -5,11 +5,9 @@
 **What this is.** The merge-time counterpart to [WORKTREES.md](WORKTREES.md) and
 [PRUNING.md](PRUNING.md): getting several parallel branches to land in one trunk.
 
-**Why you should care.** The last mile is where parallelism stops being free. The trunk moves while
-you are looking at it, two branches append to the same file, and a queued pull request quietly stops
-progressing. Every one of those failures looks like something else. Being ahead of the trunk is not
-evidence of unmerged work, and reading it that way has destroyed commits. Not for you if only one
-branch is ever in flight.
+**Why you should care.** The last mile is where parallelism stops being free, and every failure
+there looks like something else. Being ahead of the trunk is not evidence of unmerged work, and
+reading it that way has destroyed commits. Not for you if only one branch is ever in flight.
 
 **How to use it.** Read the merge-signal section before trusting any "is it merged?" answer.
 [WORKTREES.md](WORKTREES.md) covers creating and living in worktrees, and
@@ -45,10 +43,9 @@ Every script resolves the trunk through one function, `Get-CcxTrunk` in
 | 3 | `git symbolic-ref --short refs/remotes/origin/HEAD` | What the remote says its default branch is -- the only source that survives a rename. |
 | 4 | First of `origin/main`, `origin/master`, `main`, `master` that resolves | Last resort. |
 
-It returns a **remote-tracking** ref where it can. A local `main` can lag its upstream silently, and
-branching new work off a stale local trunk is the most common way parallel sessions end up building
-on old code. If step 3 fails -- a clone made before the remote head was recorded -- fix it once with
-`git remote set-head origin -a` rather than hardcoding a branch name in a script.
+It returns a **remote-tracking** ref where it can. A local `main` lags its upstream silently, and
+branching off a stale one is how sessions build on old code. Step 3 fails on a clone made before the
+remote head was recorded; fix that once with `git remote set-head origin -a`.
 
 The examples below spell the trunk `origin/main`. Substitute yours.
 
@@ -66,17 +63,13 @@ and will happily report success on a check that answered "no".
 
 ### The trap: a branch cut from a pre-squash commit
 
-A branch was created from a commit that had been pushed to a pull request -- a commit made shortly
-after that same PR had already squash-merged. The three-dot diff and the code host's "Files changed" tab
-both reported roughly 13 files, 2,967 insertions and 19 deletions: an accurate account of what the
-branch adds, with no indication whatever that five of those files would conflict. The merge base was
-eleven squash-merged pull requests behind the trunk.
+A branch was cut from a commit pushed to an already-squash-merged PR. Three-dot diff and
+"Files changed" both showed roughly 13 files, 2,967 insertions, 19 deletions -- accurate, silent on
+the five files that would conflict. Its merge base was eleven squash-merged PRs behind the trunk.
 
-The mechanism is the squash. The branch's content reached the trunk as one *new* commit, so the
-branch's own commits are still not ancestors of the trunk. Branch again from one of them and you
-inherit a merge base from before the squash. `git diff origin/main...HEAD` *resolves the merge base*
-before diffing -- and the merge base is exactly the thing that is stale, so the diff cannot report the
-problem.
+The squash is the mechanism: the branch's content reached the trunk as one *new* commit, so its own
+commits never became ancestors. Branch from one and you inherit a pre-squash merge base -- and
+`git diff origin/main...HEAD` diffs against that base, so it cannot report the problem.
 
 The confirmation, once `--is-ancestor` has failed, is the two-dot form:
 
@@ -89,20 +82,17 @@ A non-zero **deletion** count from the two-dot form, on a branch that only adds 
 it means the trunk holds content your branch would remove.
 
 **Fix by merging, not rebasing.** `git merge origin/main` into the branch. The trunk's side of the
-squashed files is authoritative, and a rebase would replay your commits onto the trunk while asking
-you to re-resolve the squash seam once per commit (see [merge over rebase](#prefer-merge-over-rebase-when-every-commit-touches-one-block)).
+squashed files is authoritative; a rebase re-raises the squash seam once per commit
+(see [merge over rebase](#prefer-merge-over-rebase-when-every-commit-touches-one-block)).
 
 ### The staleness check that agrees with itself
 
 The tempting test is "compare the two-dot and three-dot diffs; if they match, the branch is fine."
 It is worthless, and worse than worthless because it feels like a measurement.
 
-Once `--is-ancestor` passes, the merge base **is** `origin/main` -- so the two forms are computing the
-same thing and *cannot* disagree. Measured minutes apart on one branch: while `--is-ancestor` was
-failing, two-dot reported 2 files / 52 insertions / 22 deletions against three-dot's 1 file / 50
-insertions with the deletions invisible; after the merge, the two forms were identical. The
-comparison only carries information in the window where `--is-ancestor` already told you there is a
-problem.
+Once `--is-ancestor` passes, the merge base **is** `origin/main` and the forms *cannot* disagree.
+Measured minutes apart: while `--is-ancestor` failed, two-dot gave 2 files / 52 insertions /
+22 deletions and three-dot 1 file / 50 insertions, deletions invisible; after the merge, identical.
 
 **Rule:** `--is-ancestor` is the load-bearing check; the diff comparison only confirms it. A test that
 agrees with itself in the healthy case is how a trap survives being checked for.
@@ -152,10 +142,9 @@ update loop rather than an unbounded one.
 
 ### A merge-watcher needs three arms, not two
 
-A poller that checks "merged?" and "failing?" will report "still running" right up to its timeout
-while nothing whatsoever is progressing. The outcome that happens most often is the third one: the
-trunk moved and the branch went `BEHIND` again. That state produces neither a merge nor a failure, so
-a two-armed watcher is *structurally* blind to it.
+A poller that checks only "merged?" and "failing?" reports "still running" to its timeout while
+nothing progresses. The commonest outcome is the third: the trunk moved and the branch went `BEHIND`
+again. That is neither a merge nor a failure, so a two-armed watcher is *structurally* blind.
 
 Poll for **merged / failing / went stale**, and act on the third:
 
@@ -280,10 +269,9 @@ stops claiming its files. See [COORDINATION.md](COORDINATION.md).
 
 ## Writing up the result: two true numbers can make a false sentence
 
-An earlier revision of this very document paired a **post-merge** three-dot reading with a
-**pre-merge** two-dot reading and presented them as one comparison -- so a diff that never proposed a
-revert was described as proposing one. Every published number was real. Only the **join** between
-them was false, and the join carried the whole argument.
+An earlier revision of this document paired a **post-merge** three-dot reading with a **pre-merge**
+two-dot reading as one comparison, so a diff that never proposed a revert was described as proposing
+one. Every number was real. Only the **join** was false, and it carried the whole argument.
 
 It survived its author's review, a second reviewer, an independent verification pass and a green CI
 run. Nothing checks joins. No linter, no test, no reviewer habit.
@@ -348,15 +336,13 @@ Stated plainly, because at merge time an assumption that is wrong is expensive:
   failed probe is reported as a failed probe rather than as "not merged".
 - **The push guard is a guardrail, not a security boundary.**
   [`scripts/hooks/push_guard.py`](https://claude-multisession.pages.dev/scripts/hooks/push_guard.py) refuses a direct push to anything in
-  `protectedRefs` (default `main` and `master`) and fails fast with an explanation, before the round
-  trip. `git push --no-verify` skips it, and it is installed per clone. Configure server-side
-  protection as well; this is only the part that tells you before you wait. The deliberate escape
-  hatch is `CCX_ALLOW_DIRECT_PUSH=1`, chosen to be distinct from `--no-verify` so it is greppable in
-  shell history.
+  `protectedRefs` (default `main` and `master`), locally and before the round trip. Limit:
+  `git push --no-verify` skips it, and it is installed per clone, so configure server-side
+  protection too. The escape hatch is `CCX_ALLOW_DIRECT_PUSH=1`, distinct from `--no-verify` so it
+  is greppable in shell history.
 - **An installed guard and a working guard are different claims.** These hooks are copied into place;
-  a hook whose helper files were not copied with it can refuse *every* push for a reason unrelated to
-  what it checks, and a hook that was never installed is a source file. Prove it by receipt before you
-  rely on it:
+  one whose helpers were not copied can refuse *every* push for reasons unrelated to what it checks,
+  and one never installed is just a source file. Prove it by receipt before you rely on it:
 
   ```powershell
   pwsh -NoProfile -File bin/ccx-doctor.ps1

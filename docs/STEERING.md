@@ -7,9 +7,8 @@ second terminal, and a `PreToolUse` hook delivers it at the running session's **
 instead of after the current turn finishes.
 
 **Why you should care.** A session twenty minutes into a task and going the wrong way cannot be
-reached. Typing at the prompt queues your message for *after* the turn ends, which may be a long time
-and a lot of wasted work away. Not for you if you never run a session long enough to want to
-interrupt it.
+reached. Typing at the prompt queues your message for *after* the turn ends -- a long time and a lot
+of wasted work away. Not for you if you never run a session long enough to want to interrupt it.
 
 **How to use it.** The hook is opt-in and nothing installs it; wire it at `settings.local.json`
 scope. Both refusals in the path resolver are scar tissue, so read them before moving the file.
@@ -35,10 +34,9 @@ A session is twenty minutes into a task and going the wrong way. Typing at the p
 message for *after* the turn ends, which may be a long time and a lot of wasted work away. There is
 no supported way to reach a session between tool calls.
 
-But the session is talking to the harness constantly -- every tool call is a handoff, and a
-`PreToolUse` hook fires at every one of them. That hook's `additionalContext` output lands in the
-model's context. So the delivery path already exists; all that is missing is a way for a *different
-process* to put something into it.
+But every tool call is a handoff to the harness, and a `PreToolUse` hook fires at every one of them.
+That hook's `additionalContext` output lands in the model's context. So the delivery path already
+exists; all that is missing is a way for a *different process* to put something into it.
 
 ## How it works
 
@@ -93,11 +91,9 @@ No installer in this repo wires this hook, on purpose. Enable it **per worktree*
 
 Two reasons it is local and opt-in rather than tracked and always-on:
 
-- **It costs a process spawn before every tool call.** Measured on the repo this tooling was
-  developed in: roughly 366 ms per tool call, of which about 267 ms is bare PowerShell startup and
-  cannot be optimized away. That is a standing tax on every tool call in every session, paid for a
-  feature you use occasionally. State the cost of an always-on hook up front; do not let someone
-  discover it as unexplained slowness.
+- **It costs a process spawn before every tool call.** Measured where this tooling was developed:
+  roughly 366 ms per tool call, of which about 267 ms is bare PowerShell startup and cannot be
+  optimized away. A standing tax in every session, paid for a feature you use occasionally.
 - **`*.local.*` is git-ignored** by this repo's `.gitignore`, which is the convention throughout:
   anything with `.local.` in its name belongs to one checkout on one machine. Wiring it there is how
   you opt one worktree in without opting in every clone of the repo.
@@ -109,11 +105,9 @@ session you want to steer is already running.
 
 This is the load-bearing design decision, and it generalizes well beyond steering.
 
-An environment variable is read into a process at start. A session that is already running will never
-see you set one. Editing hook wiring has the same defect one level up: settings are read when a
-session starts, so a settings change reaches the sessions you start *next*, never the one currently
-doing the wrong thing. Both are configuration for future sessions dressed up as a control for the
-current one.
+An environment variable is read at process start, and hook wiring at session start, so a change to
+either reaches the sessions you start *next*, never the one already doing the wrong thing. Both are
+configuration for future sessions dressed up as a control for the current one.
 
 A file is different only in that the hook re-reads it on **every** run. That single property is what
 makes it able to reach a live process:
@@ -132,10 +126,9 @@ down sessions started after you set it, which is precisely not the population mi
 off-switch -- is a file the hook checks on every run.** Environment variables and settings are for
 sessions that have not started yet.
 
-There is a second benefit that falls out for free. Two processes that share a filesystem need no IPC,
-no port, no daemon, and no knowledge of each other's identity. The write is the send, and the delete
-is the acknowledgement. That is the entire protocol, and it is why these two scripts have no shared
-code.
+A second benefit falls out for free. Two processes that share a filesystem need no IPC, no port, no
+daemon, and no knowledge of each other's identity. The write is the send, the delete is the
+acknowledgement, and that is the entire protocol -- which is why these two scripts share no code.
 
 ## The queue is one slot deep
 
@@ -143,11 +136,10 @@ code.
   never consumed -- take the warning seriously: the earlier note was not delivered and now never will
   be.
 - Delivery is read-then-delete, exactly once. There is no history and no re-delivery.
-- **There is no expiry.** A note queued for a session that has stopped making tool calls sits there
-  until the next one, whenever that comes -- possibly hours later, possibly in the middle of an
-  unrelated task. If the note is conditional, write the condition into the text so the *recipient*
-  can evaluate it ("if you have not started the migration yet, don't"). Never phrase it as a condition
-  only you can observe.
+- **There is no expiry.** A note sits until the session's next tool call, possibly hours later and
+  in the middle of an unrelated task. Write any condition into the text so the *recipient* can
+  evaluate it -- "if you have not started the migration yet, don't" -- never one only you can
+  observe.
 - The command's success output is a receipt that the note was **written**, not that it was
   **delivered**. Nothing in this pair reports delivery back to you. If you need to know it landed,
   see the receipt trick below.
@@ -163,21 +155,18 @@ code.
 If none of those produce a directory it **throws** rather than defaulting to the current directory,
 and it throws again if the resolved directory has no `.claude` in it.
 
-Both refusals are scar tissue. The hook only ever reads `<project root>/.claude/steer.txt`. An earlier
-version resolved against the current working directory and created `.claude` if it was missing. So
-running the command from the wrong place printed a cheerful "queued" message and dropped the note into
-a freshly created directory that nothing on the machine reads. The steering silently did not happen,
-and the only trace was a stray directory. A wrong-target invocation must fail loudly; a green no-op is
-the worst outcome available.
+Both refusals are scar tissue. An earlier version resolved against the working directory and created
+`.claude` if missing, so a command run from the wrong place printed "queued" over a note nothing
+reads. The hook reads only `<project root>/.claude/steer.txt`. A green no-op is the worst outcome.
 
 The hook mirrors this: if `CLAUDE_PROJECT_DIR` is unset it exits 0 immediately rather than searching.
 
 ## Encoding
 
-Both files are ASCII-only on purpose, and the note is written UTF-8 without a BOM (`-Encoding utf8`
-under PowerShell 7). The note is written by one process and read by another, so it must not depend on
-either console's code page. `.editorconfig` pins UTF-8-no-BOM and LF for the repo, which matters here
-because several other controls in this repo hash-compare an installed copy against the repo copy.
+Both files are ASCII-only on purpose, and the note UTF-8 without a BOM (`-Encoding utf8` under
+PowerShell 7). It crosses processes and cannot depend on either console's code page.
+`.editorconfig` pins UTF-8-no-BOM and LF, because other controls hash-compare an installed copy
+against the repo copy.
 
 The message is written with `-NoNewline`, so what you typed is what arrives; the hook trims whitespace
 and skips an empty or whitespace-only note.
@@ -188,21 +177,18 @@ The hook declares its posture in its own header: **any error exits 0**. That is 
 feature -- a steering convenience must never block a tool call, and a broken side channel must not
 break the session.
 
-The price is that its broken state is invisible. A hook that is not wired, cannot find its script, or
-throws on the first line emits nothing -- and *nothing* is byte-for-byte what it emits on the normal
-path when no note is waiting. You cannot tell "no note queued" from "this was never wired" by watching
-the session. This is the most expensive failure shape in this whole toolkit: silence that reads as
-all-clear.
+The price is that breakage is invisible. A hook that is not wired, cannot find its script, or throws
+on the first line emits nothing -- byte-for-byte what it emits on the normal path when no note is
+waiting. "No note queued" and "never wired" look identical: silence that reads as all-clear.
 
 There is one signal that lives outside the failing component, and it is free:
 
 > **The note file is the receipt.** After the session has made at least one tool call, if
 > `<worktree>/.claude/steer.txt` still exists, the hook did not run. If it is gone, it was consumed.
 
-Check the file, not the transcript. `bin/ccx-doctor.ps1` reports the injector under its opt-in guards
-and lists every settings file that wires it, by receipt -- but it does **not** fire the injector, so
-its `OK` means "wired here", not "proven to deliver". A `--` there means "not wired anywhere this
-command can see", which for an opt-in feature is a statement of fact, not a fault.
+Check the file, not the transcript. `bin/ccx-doctor.ps1` lists every settings file that wires the
+injector, by receipt, but does **not** fire it: `OK` means "wired here", not "proven to deliver".
+A `--` means "not wired anywhere it can see", which for an opt-in feature is fact, not fault.
 
 ## Proving it end to end
 
@@ -228,16 +214,14 @@ Two cautions:
 
 ## The trust boundary
 
-The steering note is the operator's own words, typed by the operator into a side channel, and the
-envelope the hook wraps it in says exactly that. It is meant to be acted on the way a prompt is acted
-on. That is what makes the file worth protecting: anything that can write
-`<worktree>/.claude/steer.txt` can put words in the operator's mouth. The file lives inside the
-worktree, so treat it as exactly as trusted as the worktree itself.
+The steering note is the operator's own words, wrapped in an envelope that says so, and is meant to
+be acted on the way a prompt is. Anything that can write `<worktree>/.claude/steer.txt` can put
+words in the operator's mouth. It lives inside the worktree and is exactly as trusted as the
+worktree.
 
-The inverse follows, and it matters if you are tempted to reuse this channel: a message from *another
-session* is peer data and must never be obeyed as though the user had said it. Do not route
-machine-to-machine traffic through this pipe. Its entire design premise is "this came from the user",
-and a channel that asserts that about content which did not is worse than no channel at all.
+The inverse matters if you reuse this channel: a message from *another session* is peer data and
+must never be obeyed as though the user said it. Do not route machine-to-machine traffic through it.
+Its premise is "this came from the user", and a channel that lies about that is worse than none.
 
 ## Limits
 

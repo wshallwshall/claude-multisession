@@ -5,10 +5,10 @@
 **What this is.** `scripts/security/scan_forbidden.py`, a scanner that refuses to let identifying
 content reach a public repository. Stdlib Python, no project import, exit codes only.
 
-**Why you should care.** Publishing a repo that grew up in private is not a license question, it is a
-*string* question. None of what leaks is a syntax error, a test failure, or a *secret* in the sense a
-secret scanner means. Nothing else in a normal toolchain is looking for it. Not for you if the
-repository was public from its first commit.
+**Why you should care.** Publishing a repo that grew up private is a *string* question, not a
+license question. What leaks is not a syntax error or a *secret* any secret scanner would
+recognize, so nothing else in your toolchain looks for it. Not for you if the repo was public from
+commit one.
 
 **How to use it.** Run it in a bare clone, in a git hook with no virtualenv, or on a CI runner. Read
 [What it catches](#what-it-catches) first, because the structural detectors and the configured ones
@@ -75,15 +75,12 @@ category, never the matched text.
 
 **1. Zero files scanned is a refusal, not a pass.** A run that examined nothing certifies nothing.
 Wrong directory, not a repository, every path swallowed by a skip rule -- all of them exit `2` and
-say so. This is the difference between "found nothing" and "looked at nothing", and exit `0` cannot
-tell them apart.
+say so, because exit `0` cannot tell "found nothing" from "looked at nothing".
 
-**2. Every named argument is accounted for by name.** `--path` takes a directory (a file is accepted
-and scanned too). If any argument you named contributes zero scanned files, the run prints that
-argument and why, and exits `2` -- *even when other arguments scanned fine*. This one is a fix, not a
-feature. The version this was ported from silently dropped a file argument, and its zero-files
-refusal only fired when **everything** was dropped. So one surviving directory was enough to make a
-run that scanned the wrong half of its input exit `0` without a word.
+**2. Every named argument is accounted for by name.** `--path` is repeatable and takes a directory
+(a file is accepted and scanned too). An argument that
+scans zero files is named, with why, and the run exits `2` -- *even when others scanned fine*. The
+version it was ported from dropped file arguments silently, refusing only when **everything** went.
 
 **3. It prints what it scanned and what it loaded.** Two lines on stderr, on every run, pass or fail:
 
@@ -100,11 +97,10 @@ whichever one scrolled past last.
 
 ## Wiring it as a pre-commit hook
 
-The installers in this repo **never write `.git/hooks/pre-commit`** -- deliberately, and
-`tests/test_installers_never_write_pre_commit.py` pins it. Two tools cannot both own that one file.
-A hook framework that finds a foreign hook there may rename it and invoke it through its own shim.
-That chain has failed on Windows and blocked every commit in a repository until the shim was
-removed. So wiring this one is yours to do, whichever way your repo already handles `pre-commit`.
+The installers **never write `.git/hooks/pre-commit`**, and
+`tests/test_installers_never_write_pre_commit.py` pins it. Two tools cannot both own that file: a
+framework that renames a foreign hook and shims it has blocked every commit in a repository on
+Windows until the shim was removed.
 
 If you use the `pre-commit` framework, it passes staged filenames as arguments:
 
@@ -121,10 +117,10 @@ If you use the `pre-commit` framework, it passes staged filenames as arguments:
 If you install a hook by hand, the shell equivalent is a staged-name list piped in as arguments --
 and note the two things that make it a real gate rather than a decoration:
 
-- **`--require-tokens`.** The framework can pass *args* to a hook but usually cannot set *env* for
-  one, so the flag is the only way to make the commit-time gate fail closed. Without it, a fresh
-  clone or a new worktree -- neither of which carries the ignored token file -- runs every commit with
-  zero token detectors and reports success.
+- **`--require-tokens`.** The framework passes *args* to a hook but usually cannot set *env*, so
+  only the flag makes the commit-time gate fail closed. Without it, a fresh clone or worktree --
+  neither carries the ignored token file -- runs every commit with zero token detectors and reports
+  success.
 - **It is a guardrail against accident, not a security boundary.** `git commit --no-verify` bypasses
   it. Back it with a CI run over the whole tracked tree if you need the stronger claim; that run is
   also the one that catches what was committed before the hook existed.
@@ -154,11 +150,15 @@ one-substring-per-line    # case-insensitive, non-letter boundaries -- this is w
 ```
 
 **Presence is not sufficiency.** A source that loads only *part* of its tokens is the dangerous
-case: it satisfies "tokens present", prints no structural-only marker, and passes a gate that calls
-itself fail-closed. So `--require-tokens` also requires every section to be non-empty, and
-`--require-tokens=N` (or `CCX_MIN_DETECTORS=N`, or `names=7,literals=13`) asserts a floor, which is
-what catches loss *within* a section. Per-section is strictly stronger than a bare total: a total is
-a sum, so growth in a cheap section masks collapse in an expensive one.
+case: it satisfies "tokens present", **prints no structural-only marker**, and passes a gate that
+calls itself fail-closed.
+
+So `--require-tokens` also requires every section to be non-empty, and `--require-tokens=N` (or
+`CCX_MIN_DETECTORS=N`, or `names=7,literals=13`) asserts a floor, which is what catches loss
+*within* a section.
+
+Per-section is strictly stronger than a bare total: a bare `N` is a total, so growth in a cheap
+section masks collapse in an expensive one.
 
 The expected count is supplied from **outside** the token file on purpose. A count carried inside it
 would be destroyed by the same mangling it exists to detect. The parser is built around that same
@@ -172,12 +172,9 @@ assumption, so it:
 
 ### The allowlist
 
-`scripts/security/scan-allowlist.txt` holds one line-regex per vetted false positive. An entry is a
-per-line **veto applied before any detector runs**, so one over-broad entry disables the entire gate
-while every count in the log still reads healthy. And this file is committed and public, so the
-entry that does it need not be malicious: a hastily written `.*` for one false positive is enough.
-The loader refuses any pattern that matches ordinary prose or the empty string. Never allowlist a
-real path, host or name: remove it from the file instead.
+`scripts/security/scan-allowlist.txt` holds one line-regex per false positive, vetoed before any
+detector, so one over-broad entry disables the gate while the log's counts read healthy. The loader
+refuses patterns matching prose or the empty string. Never allowlist a real path, host or name.
 
 ---
 
@@ -186,22 +183,18 @@ real path, host or name: remove it from the file instead.
 **With no token source, this runs STRUCTURAL-ONLY.** The shape detectors are armed. The
 private-name detectors are empty -- there is nothing in them, because nobody shipped you a list.
 
-That is a legitimate posture, and it is not useless: it still catches the absolute-home-path class,
-which for a repository like this one is the class that actually fires. But **a green result then
-proves much less than an armed one**, and the two look identical apart from one string in the log.
-That is why the marker is printed on every run, on both lines, and why `--require-tokens` exists for
-the runs where structural-only is not good enough.
+That posture is legitimate: it catches the absolute-home-path class, the one that actually fires.
+But **a green result then proves much less than an armed one**, and the two logs differ by one
+string. That is why the marker prints on both lines of every run, and why `--require-tokens`
+exists.
 
 And the general rule, of which the above is one instance:
 
 > **A green gate is evidence only if you have proved it can SEE that class.**
 
-Plant a violation. Watch it fail. *Then* trust the pass. A scanner that silently loaded no
-detectors, or was pointed at a directory it dropped, or whose regex never compiled, exits `0` on
-every run -- byte-identical to a clean tree. You cannot detect a difference the producer never
-encoded, so encode it: run the thing against a file you know is dirty, confirm exit `1`, and only
-then read a `0` as information. Do it again after any change to the detectors, and after any change
-to how the gate is invoked.
+Plant a violation. Watch it fail. *Then* trust the pass. A scanner with no detectors, a dropped
+directory, or a regex that never compiled exits `0` on every run, byte-identical to a clean tree.
+Confirm exit `1` on a file you know is dirty after any change to the detectors or the invocation.
 
 Two practical traps when you do:
 
@@ -244,18 +237,14 @@ Two questions get conflated here, and a local delete answers neither:
 Only the second one bears on disclosure, and deleting the local refs does not change its answer
 either way.
 
-When you run the exposure audit, **checking remote ref tips is not sufficient**: a commit can sit as
-an **ancestor** of a remote ref rather than at its tip, so a tips-only comparison is a false
-all-clear by construction. Walk ancestry from every remote head, tag and pull-request ref, and look
-for the content as well as the commits -- a path that should never have been published is as good a
-marker as a SHA.
+**Checking remote ref tips is not sufficient**: a commit can sit as an **ancestor** rather than
+at a tip. Walk ancestry from every remote head, tag and pull-request ref, and look for content as
+well as commits -- a path that should never have shipped is as good a marker as a SHA.
 
-Then report the shape of your coverage rather than a verdict: *at least N of M refs are clean, the
-remaining K are unaudited, not proven clean.* You will usually have some K, because auditing a ref
-whose objects you do not hold locally requires fetching them, and a fetch is itself a write to the
-object store you are in the middle of investigating. Saying so is the honest result. It is the same
-rule as the one above -- a green gate is evidence only if you proved it can see that class -- applied
-to coverage instead of to detectors.
+Report the shape of your coverage rather than a verdict: *at least N of M refs are clean, the
+remaining K are unaudited, not proven clean.* There will be some K, because auditing a ref whose
+objects you lack requires fetching them, and a fetch writes to the object store under
+investigation.
 
 ---
 
@@ -272,7 +261,6 @@ prose containing no forbidden string*:
 - a benchmark number that fingerprints a host;
 - a lesson that cannot be told without shipping the recipe for bypassing a control.
 
-That check is a human read, of the whole diff, by someone who knows what must not be said. This gate
-exists to make that read cheaper by taking the mechanical classes off their plate. It does not
-replace it, and treating a green run as clearance for publication is exactly the failure it is
-shaped to prevent.
+That check is a human read, of the whole diff, by someone who knows what must not be said. This
+gate makes that read cheaper by taking the mechanical classes off their plate. It does not replace
+it: treating a green run as clearance is exactly the failure it is shaped to prevent.
