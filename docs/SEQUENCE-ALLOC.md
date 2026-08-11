@@ -183,9 +183,9 @@ share a blob, so de-duplicating by object id collapses several hundred specs int
 ### The ratchet
 
 **The sweep is only as good as the refs this clone holds.** Measured on the repo this tooling was
-developed in, the floor over all refs was materially higher than over origin's refs and local heads
-alone: numbers lived on remote-tracking refs for a remote `git remote -v` no longer listed. Drop
-those and the floor silently reverts, and the allocator re-issues numbers already in use.
+developed in, all refs gave a floor well above origin and local heads: numbers lived on
+remote-tracking refs for a remote no longer in `git remote -v`. Drop those and the floor silently
+reverts.
 
 So the floor is persisted to `<state-root>/alloc/<kind>/.floor-highwater` and **may rise but never
 fall**. When the computed floor comes in below the mark, `alloc.ps1` prints a loud NOTE naming both

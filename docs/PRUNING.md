@@ -94,10 +94,10 @@ Every check that cannot reach a confident answer SKIPs. Nothing is ever traded f
 
 - Uncommitted tracked changes block, and so do **untracked files**. They are the one loss class with no
   recovery through git at all: not in the index, not in a stash, not in the reflog.
-- `--force` suppresses git's refusal on untracked and modified files -- the one that would have
-  prevented the incident, so the reaper proves cleanliness itself first. It deletes **ignored**
-  files too, invisible to `git status --porcelain`: unrecoverable, merely regenerable. It does
-  *not* override a git lock; that needs `-f -f`, which neither script passes.
+- `--force` suppresses the refusal that would have prevented the incident, so the reaper proves
+  cleanliness itself first. It deletes **ignored** files too, invisible to `git status --porcelain`
+  and only regenerable. It does *not* override a git lock; that needs `-f -f`, which neither script
+  passes.
 - A `git status` that exits non-zero, or a directory that has vanished, is **not clean**. Those states
   used to be indistinguishable from "no changes" and pointed straight at destruction.
 
@@ -132,8 +132,8 @@ vetoes its ancestor (`Get-WorktreeOccupants -IncludeNested`): removing the ances
 
 Signal 1 only sees where a session was **launched**. Over 30 days on the repo this tooling was
 developed in, about **29% of Edit/Write calls landed in a sibling worktree by absolute path, from a
-session sitting in the primary**. On one audit of that repo, signal 1 vetoed **none** of the
-siblings, including one a session was demonstrably building in.
+session in the primary**. One audit: signal 1 vetoed **none** of the siblings, one demonstrably in
+use.
 
 Because the two signals cover different populations, the run prints **how many candidates each one
 actually vetoed**, not just that it ran. "The fence ran" must never be allowed to imply "the fence
@@ -174,10 +174,10 @@ Candidate selection is now two stages:
 2. structural exclusions, each **printed as a non-candidate with its reason** rather than silently
    filtered out. A tool that silently filters cannot be checked.
 
-Exclusions, in order: nested inside another registered worktree (`Get-ContainingWorktrees`);
-harness-managed (`Test-CcxHarnessWorktreePath` -- any `.claude/worktrees/` segment,
-unconditionally); not a structural sibling (`Test-CcxSiblingWorktreePath` --
-**same parent directory**, leaf exactly `<primary-leaf>-<something>`); detached or bare.
+Exclusions, in order: nested in another registered worktree (`Get-ContainingWorktrees`);
+harness-managed (`Test-CcxHarnessWorktreePath`: any `.claude/worktrees/` segment); not a sibling
+(`Test-CcxSiblingWorktreePath`: **same parent**, leaf exactly `<primary-leaf>-<something>`);
+detached or bare.
 
 `-Name` cannot reach any of them either. A worktree that also *contains* a registered worktree is never
 removed even when unoccupied, because `--force` on the parent deletes the nested checkout and leaves it
@@ -340,10 +340,10 @@ later run until the directory is gone or re-registered. Two independent detector
 true alone:
 
 - the **ledger** written at the moment of the failure;
-- a **ledger-free** scan: an unregistered sibling carrying a `.git` **file** pointing into this
-  repo's worktree admin area. Not any unregistered `<primary>-*` directory: an unrelated folder
-  sharing the prefix is not an orphan. (A relative `gitdir:` resolves against the `.git` file's own
-  directory, not this process's cwd; resolving it wrongly reports an orphan as fine.)
+- a **ledger-free** scan: an unregistered sibling whose `.git` **file** points into this repo's
+  worktree admin area. The `<primary>-` prefix alone is not enough. A relative `gitdir:` resolves
+  against the `.git` file's directory, not this process's cwd; get that wrong and an orphan reports
+  as fine.
 
 The ledger is written only under `-Apply`. A dry run reports the same state without touching anything,
 and a repaired or fully deleted entry clears itself.

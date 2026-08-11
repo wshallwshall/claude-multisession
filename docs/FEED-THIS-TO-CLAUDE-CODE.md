@@ -63,10 +63,9 @@ questions.** Only if they decide to proceed do you prepare commands for them to 
 the installers yourself -- see the next section for why that is a wall rather than an obstacle.
 
 **Say so if the answer is no.** This tooling earns its cost when several sessions work one
-repository at once, or when work is regularly lost to sessions colliding. If the person runs one
-session at a time and is not losing work, tell them plainly that they probably do not need it, and
-say which single piece might still be worth having. An honest no is more useful than a setup they
-will abandon.
+repository at once, or when collisions regularly lose work. If neither is true, say plainly they
+probably do not need it, and name the single piece still worth having. An honest no beats an
+abandoned setup.
 
 You are working with two directories and they are not the same:
 
@@ -102,10 +101,10 @@ Read the target. Change nothing. Report what you find.
 1. **Preconditions.** PowerShell 7.3 or later on `PATH` as `pwsh`; `git`; a real `python` (on
    Windows, `python --version` may resolve to an execution-alias stub that runs nothing -- check the
    version actually prints). Name any that are missing; without them a setup could not proceed.
-2. **The target's identity.** Its root, its trunk branch name, whether it already has worktrees, and
-   whether `.git/hooks` already contains a `commit-msg` or `pre-push` that belongs to something else.
-   If either exists and is not from this tooling, say so loudly -- the installer refuses to overwrite
-   a hook it does not own, and that is a decision for the human.
+2. **The target's identity.** Its root, its trunk branch name, whether it has worktrees, and
+   whether `.git/hooks` holds a `commit-msg` or `pre-push` from something else. If either is there,
+   say so loudly: the installer refuses to overwrite a hook it does not own, so the human must
+   decide.
 3. **Existing state.** Is there already a `ccx.config.json` at the target root? A `CLAUDE.md`?
    Report what is there. Do not modify either.
 4. **Whether this suits the target at all.** It is Windows-first PowerShell. It runs on PowerShell 7
@@ -145,9 +144,8 @@ Only now, and only for the pieces they chose.
 4. **Verify what came back**, using the audit commands you are allowed to run. See below.
 5. **Offer a working agreement.** Copy
    [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
-   into the target as `CLAUDE.md` and edit it down to what is true here. Delete every rule the target
-   does not actually follow. An aspirational working agreement is worse than none, because the next
-   session acts on it.
+   into the target as `CLAUDE.md`, then delete every rule the target does not actually follow. An
+   aspirational agreement is worse than none: the next session acts on it.
 6. **STOP.** Ask them to confirm it matches how they actually work, section by section if it is
    contentious. You are guessing at their conventions; they are not.
 

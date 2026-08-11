@@ -2,18 +2,15 @@
 
 ## TLDR/BLUF
 
-**What this is.** Every rule below is one testable statement with a permanent identifier. Cite the
-identifier in a review comment the way a standard's rule is cited, so both sides point at the same
-sentence. What they demand: an opening carrying the three labels this section itself carries. Then
-sentences that each carry a fact, a number, a constraint or a link, and prose that never describes
-its own structure.
+**What this is.** Each rule is one testable statement with a permanent identifier, cited in a
+review comment. They demand an opening with the three labels this section carries. Then sentences
+each carrying a fact, a number, a constraint or a link, and prose that never describes its own
+structure.
 
-**Why you should care.** Applying them costs length, in the places where length was doing nothing --
-but the rules protect density explicitly, so this is not a licence to flatten precision into
-blandness. Not for you on generated files, nor on the `PD` section itself. The document these rules
-were derived from, `SECURE-DEVELOPMENT.md`, left with
-[the standards](https://github.com/wshallwshall/secure-development-standards) and answers to that
-repository's own house style now.
+**Why you should care.** Applying them costs length only where length was doing nothing. Not for
+you on generated files, on `PD` itself, or on `SECURE-DEVELOPMENT.md`, which left with
+[the standards](https://github.com/wshallwshall/secure-development-standards) and answers their
+house style now.
 
 **How to use it.** Read `PD` first, before touching anything: it is the list of things an editor MUST
 NOT cut. The one rule that named specific sections, `PD-8`, is a tombstone -- all four went with the
@@ -42,10 +39,9 @@ a measurement.
 ### The numbering is shared with another repository, and this page is not the whole of it
 
 **The next free number is the one above the highest number ISSUED IN EITHER SHEET, never the lowest
-one this page happens not to use.** The series here and the series in
-[secure-development-standards](https://github.com/wshallwshall/secure-development-standards) are one
-namespace. That repository's sheet was split from this one and kept counting, so the numbers above
-the end of each section below are not vacancies. They are occupied, one repository over.
+gap here.**
+[secure-development-standards](https://github.com/wshallwshall/secure-development-standards) kept
+counting after the split, so the numbers past each section are occupied, not vacant.
 
 | Series | Issued here | Issued there | **Next free** |
 |---|---|---|---|
@@ -58,11 +54,10 @@ Read from that repository's `origin/main` before allocating, not from a local cl
 concurrent sessions and a clone goes stale in the time one rule takes to write. Verified against
 `origin/main` there on 2026-08-10, at its commit `d5684de`.
 
-**Neither sheet can see the other move, and both have been wrong about it.** That page states this
-one issues `OPEN-1 to OPEN-6`, which was true when it was written and stopped being true when
-`OPEN-7` landed here. No check on either side could have caught it, which is the same reason `HS-13`
-and the cross-repository anchor ban exist. It is also why this table carries the date and the commit
-it was read at, rather than presenting itself as current.
+**Neither sheet can see the other move, and both have been wrong about it.** That page says this
+one issues `OPEN-1 to OPEN-6`, true until `OPEN-7` landed. No check on either side could catch it,
+so `HS-13` and the cross-repository anchor ban exist, and the table above carries a date and a
+commit.
 
 ---
 
@@ -140,18 +135,17 @@ pass that removes filler is the pass most likely to remove a measurement.
 
 ### PD-8: retired, and the identifier is kept rather than reissued
 
-PD-8 named four sections that look like filler and are not, so that an editor applying `OPEN-3` or
-`B-6` would leave them alone. All four were sections of the standards, and they left with them for
+PD-8 named four sections that look like filler and are not, so an editor applying `OPEN-3` or `B-6`
+leaves them alone. All four left with
 [secure-development-standards](https://github.com/wshallwshall/secure-development-standards).
-No section in this repository is under it, and PD-6 forbids reissuing an identifier, so this row
-stays here saying so.
+Nothing here is under it, and PD-6 forbids reissuing an identifier.
 
-WHAT IT DOES NOT DO IS FOLLOW THEM. That repository's house style is derived from what its own gates
-enforce, and carried no equivalent of this rule. Two of the four are held by tests that name them for
-other reasons: `test_rule_ids_are_stable.py` parses the `## Retired rules` section, and the selector
-test pins the sentinel on both sides. The status-check date line and the ASVS Part 1 to Part 2
-boundary marker are held by nothing at all. That is the exact condition PD-8 was written for, now
-true again one repository over, and a rule covering it is proposed there rather than assumed here.
+That repository does not follow them: its house style comes from its own gates and carried no
+equivalent of this rule. Two of the four are held by tests written for other reasons:
+`test_rule_ids_are_stable.py` parses `## Retired rules`, and the selector test pins the sentinel
+on both sides. The status-check date line and the ASVS Part 1 to Part 2 boundary marker are held by
+nothing at all. That is the exact condition PD-8 was written for, now true again one repository
+over, where a rule covering it is proposed rather than assumed.
 
 ---
 

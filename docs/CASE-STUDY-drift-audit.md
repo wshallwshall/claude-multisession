@@ -74,10 +74,8 @@ installed copy, the settings matcher and the source can all disagree with one an
 them decides anything.
 
 **A control that cannot distinguish "ran and resolved" from "ran and found nothing" is not
-installed, however it looks.** The hook that proved this ran for weeks printing a status message,
-and outlasted every other silent defect found the same day because it printed something. Full
-account:
-[put at least one signal outside the component being audited](TIPS-AND-TRICKS.md#put-at-least-one-signal-outside-the-component-being-audited).
+installed.** The hook that proved this printed a status message for weeks. Full account:
+[put a signal outside the component](TIPS-AND-TRICKS.md#put-at-least-one-signal-outside-the-component-being-audited).
 
 ---
 
@@ -286,11 +284,9 @@ change.
 The 29% figure quoted above is the sole quantitative justification for the target-path design of the
 whole gate. Nothing in this repository can recompute it, and nobody has asked whether it still holds.
 
-Keep a *cited, not re-measured -- treat with care* section, strike superseded claims rather than
-deleting them, and build the ability to recompute a load-bearing number. In this document that list
-is the 29% target-vs-cwd measurement, the 85-test count, and the per-prompt cost of the always-on
-coordination hooks. All were measured on the repo this tooling was developed in, none re-measured
-since; re-derive before reusing one.
+Keep a *cited, not re-measured* section; strike superseded claims, never delete them. Here: the 29%
+target-vs-cwd measurement, the 85-test count, the per-prompt cost of the always-on coordination
+hooks. All were measured on the repo this tooling was developed in, none since; re-derive first.
 
 ---
 

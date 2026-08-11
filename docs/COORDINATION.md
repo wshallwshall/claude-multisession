@@ -145,11 +145,10 @@ failed to read the registry at all.
 records that will not parse, and records with no `cwd`, were dropped by a silent `continue` and
 appeared in no count. A half-written record is what a session launched one second ago looks like.
 
-**Rule.** `Get-WorktreeOccupancy` returns a **receipt** with the rows: `RootsExamined`,
-`RecordsExamined`, `RecordsUnplaceable`, `UnplaceableFiles`. `Available` is set only with a config
-root carrying a registry, a readable record, **and** no unplaceable record -- one could name *any*
-worktree, so it clears none. Callers about to destroy something must gate on `Available`, print the
-receipt, and refuse when it is false. Count what you **examined**, not what you found.
+**Rule.** `Get-WorktreeOccupancy` returns a **receipt**: `RootsExamined`, `RecordsExamined`,
+`RecordsUnplaceable`, `UnplaceableFiles`. `Available` needs a registry, a readable record, **and**
+no unplaceable record -- one could name *any* worktree. Gate destructive actions on it; print the
+receipt.
 
 `presence.ps1` follows the same rule. The availability receipt goes to **stderr** so stdout stays
 pure JSON, and an empty roster prints the literal `[]` rather than nothing.
@@ -178,12 +177,11 @@ that signals on the one its caller ignores is documentation, not a control.
 
 ### Keep exactly one copy of the fence
 
-`presence.ps1` (a read-only roster), `scripts/worktree/sessions.ps1` (which **moves** a transcript)
-and `scripts/worktree/prune-merged.ps1` (which **deletes** a worktree) all need the same answer to
-"is this session alive". Two copies of a safety check drift, and the drifting copy is the untested
-one. So the fence lives once in `session-registry.ps1`, the cwd -> worktree matcher once in
-`occupancy.ps1`, and the path-comparison rule once in `_common.ps1`. Say so in a comment, or the
-next session re-forks it.
+`presence.ps1` (a roster), `scripts/worktree/sessions.ps1` (**moves** a transcript) and
+`scripts/worktree/prune-merged.ps1` (**deletes** a worktree) all need one answer to "is this session
+alive", and the drifting copy of a safety check is the untested one. So the fence lives once in
+`session-registry.ps1`, the cwd matcher in `occupancy.ps1`, path comparison in `_common.ps1`. Say so
+in a comment, or the next session re-forks it.
 
 ### Transcript mtime is not liveness
 
@@ -299,11 +297,10 @@ squash-landed, clean, was still credited with `tests/README.md`, because a *late
 that file. Two-dot reports it as differing again, so the landed branch is blamed for somebody else's
 edit.
 
-Deliberate. A dormant row has `MatchedDirty` false, and the gate requires `Live` **and**
-`MatchedDirty`, so it cannot block; `session-context.ps1` filters dormant rows from the banner. The
-cost is one line in a summary, not a refused edit. *"Is this difference mine?"* is not a question
-the two-dot form can answer, and buying it means walking history per file on every edit's hot path.
-**Over-reporting a dormant row is the safe direction.**
+Deliberate. A dormant row has `MatchedDirty` false and the gate requires `Live` **and**
+`MatchedDirty`, so it cannot block; `session-context.ps1` filters them from the banner. Buying
+*"is this difference mine?"* means walking history per file. **Over-reporting a dormant row is the
+safe direction.**
 
 ### Read-only means read-only
 
@@ -413,11 +410,10 @@ announcing a merge freeze to every joining session hours after the work it was w
 broadcast, and stamp the refresh time. (`claimed` is the claim's identity and never moves;
 `refreshed` is how old the *note* is.) Two mechanics make the refresh safe:
 
-- Write to a temp file and **`[IO.File]::Move(..., overwrite)`, not `Move-Item -Force`.** The claim
-  file's existence *is* the lock: any instant the name is absent, another worktree can claim your
-  key. `Move-Item -Force` is delete-then-rename and opens that window. Measured: 400 moves left the
-  destination absent on 2,559 of 154,506 polls. The same harness polled `[IO.File]::Move` with
-  overwrite 134,581 times and never saw it missing.
+- Write to a temp file and **`[IO.File]::Move(..., overwrite)`, not `Move-Item -Force`**: the claim
+  file's existence *is* the lock, and delete-then-rename leaves the name absent, free for another
+  worktree. Measured: 400 moves left it absent on 2,559 of 154,506 polls, 0 of 134,581 with
+  overwrite.
 - **Failing is the safe direction.** If the move cannot complete (a scanner or editor holding the
   destination), the old note survives, the claim stays yours, and the tool says so -- and explicitly
   says *do not `-Release`*.
@@ -566,11 +562,9 @@ bracketed age and verify first.
 action. Delivery is recorded **by the model**, into `<state-root>/announce/sent/<session>.tsv`, at
 the hook's request. It is the one control whose receipt comes from what it is evidence about.
 
-Prefer a control that receipts itself; where you cannot, say so. Everything the hook decides
-*itself* -- `ANNOUNCED`, `NO_PEERS`, `NO_SESSION_ID`, `LOOKUP_FAILED`, `LOOKUP_KILLED`,
-`UNATTENDED`, `DISABLED`, `BUDGET_EXHAUSTED`, `SETTLED`, `RECENT_CWD`, `ERROR` -- *is* receipted per
-session under `<state-root>/announce/receipts/`. It records **decisions, not heartbeats**: no code
-for the suppressed hot path, which would measure traffic rather than coordination.
+Its own decisions -- `ANNOUNCED`, `NO_PEERS`, `NO_SESSION_ID`, `LOOKUP_FAILED`, `LOOKUP_KILLED`,
+`UNATTENDED`, `DISABLED`, `BUDGET_EXHAUSTED`, `SETTLED`, `RECENT_CWD`, `ERROR` -- are receipted in
+`<state-root>/announce/receipts/`: **decisions, not heartbeats**, none for the suppressed hot path.
 
 The hook's own comment once said "hooks cannot call MCP". **Wrong**: `type: "mcp_tool"` is a
 documented handler on every event, its output treated like command-hook stdout. The real blocker:
@@ -709,15 +703,15 @@ git merge-tree <base> <ours> <theirs>        # OLD 3-arg form: exit 0 REGARDLESS
 git merge-tree --write-tree <ours> <theirs>  # exit 1 and names each conflicting path
 ```
 
-Measured on `rescue/secdev-readability` against `main`: the three-argument form exited 0 and printed
-no conflict markers; `--write-tree` exited 1 and named `docs/standards/SECURE-DEVELOPMENT.md` and its
-`.docx`. The old form's exit code is not a statement about mergeability. It is the third instrument
-in this file with that property, after `isRunning` and a two-dot diff read as a merge preview.
+Measured on `rescue/secdev-readability` against `main`: the three-argument form exited 0 with no
+conflict markers; `--write-tree` exited 1 and named `docs/standards/SECURE-DEVELOPMENT.md` and its
+`.docx`. The old form's exit code says nothing about mergeability -- the third such instrument
+here.
 
 **Nor is a two-dot diff a merge preview, and it fails in the more alarming direction.**
-`git diff <main> <branch>` compares two *trees*. Against a branch that is far behind, most of what it
-reports as deletions is simply `main`'s own later work, which the branch has never seen and a merge
-would never touch:
+`git diff <main> <branch>` compares two *trees*. Against a branch that is far behind, most of what
+it reports as deletions is `main`'s own later work, which the branch never saw and a merge would
+never touch:
 
 ```powershell
 git diff --stat main <branch>                # TREE comparison. Says nothing about merging.
@@ -725,9 +719,8 @@ git merge-tree --write-tree main <branch>    # the merge. This is the one that a
 ```
 
 Measured on the same branch, 63 commits behind: the two-dot diff reported 1,478 insertions and 3,247
-deletions across 46 files, including two entire test files. It was briefly read as what landing it
-would do. The actual merge touches **two** files. The alarming number was a fact about how stale the
-branch was, not about what merging it would destroy.
+deletions across 46 files, including two entire test files, and was briefly read as what landing it
+would do. The actual merge touches **two** files. The number measured staleness, not damage.
 
 The two errors point opposite ways: the old `merge-tree` under-reports danger, and a two-dot diff
 wildly over-reports it. Two different sessions made them, on the same branch, within an hour of each
@@ -736,11 +729,10 @@ other. Neither is a reading of the merge. **To ask what a merge would do, comput
 Even from the correct form, a silent pass means only that the lines do not collide -- never that the
 changes are not redundant.
 
-When it happens, resolve to **one** passage taking what each version had and the other lacked, rather
-than deleting one wholesale. In the case above each version was better on a different axis. One
-quoted the target document's heading verbatim; the other carried the framing that fitted the
-surrounding paragraph and the concrete consequence for a reader. Picking a winner would have thrown
-away half the work.
+When it happens, resolve to **one** passage taking what each version had and the other lacked,
+rather than deleting one wholesale. One quoted the target document's heading verbatim; the other
+carried the framing that fitted the surrounding paragraph. Picking a winner throws away half the
+work.
 
 This is the same shape as [`isRunning`](#the-id-rules-the-most-valuable-part-of-the-hook): an
 instrument answering a narrower question than the one being asked of it, and reporting success while
@@ -757,34 +749,28 @@ happened.
 Announce tells peers what you intend; overlap tells you what they have touched. Both inform. The
 gate is the only one that stops you, and worth keeping loud for that reason alone.
 
-**It happened three times in one evening, and it got bigger each time.** First a sentence: a landing
-page paraphrased a claim its source ruled out. Then the paragraph above. Then two sessions
-independently wrote *the same test* -- a relative-link and anchor checker, neither aware of the
-other, both landed, deduplicated in `4084ef2` by deleting 224 lines of the loser. The gate never
-fired for the third one, and could not have: the two implementations were in **different files**, so
-nothing about them collided.
+**Three times in one evening, bigger each time.** A landing page paraphrased a claim its source
+ruled out. Then the paragraph above. Then two sessions wrote *the same test*, deduplicated in
+`4084ef2` by deleting 224 lines. The gate could not fire: the implementations sat in **different
+files**.
 
-**That is what the WORK signal is for, and nobody ran it.** `overlap.ps1` reports two things, and the
-distinction is exactly this failure: FILES catches concurrent edits to the same path, WORK catches
-duplicate *effort* on different paths. Every session involved in all three episodes checked the first
-or nothing at all. A duplicate test in a new file is invisible to every mechanism here except WORK,
-and WORK only helps if you run it **before you start building**, not when you go to commit:
+**That is what the WORK signal is for, and nobody ran it.** FILES catches concurrent edits to the
+same path; WORK catches duplicate *effort* on different paths. A duplicate test in a new file is
+invisible to everything here except WORK, and only if you run it **before you start building**:
 
 ```powershell
 pwsh -NoProfile -File scripts/coord/overlap.ps1        # both signals, before you begin
 ```
 
-The gates are strong on *editing the same thing* and weak on *building the same thing*. The second is
-the more expensive of the two, and the one tool aimed at it is the one everybody skips. That is
-precisely the decay the WORK signal was designed to resist by needing no opt-in. Reading it is still
-a step you have to remember.
+The gates are strong on *editing the same thing* and weak on *building the same thing*. The second
+is the more expensive, and the one tool aimed at it is the one everybody skips -- the decay WORK was
+designed to resist by needing no opt-in. Reading it is still a step you have to remember.
 
 ## Proving any of this is live
 
-Every failure mode in this system is byte-identical to success. A wired hook that resolves nothing
-exits silently and writes nothing -- which looks exactly like a healthy hook with no peers. An
-announce hook has sat wired-but-resolving-nothing for hours while the settings file looked correct,
-because a similarly-named entry from another project occupied the slot.
+Every failure mode here is byte-identical to success: a wired hook resolving nothing exits
+silently, exactly like a healthy one with no peers. An announce hook sat wired-but-resolving-nothing
+for hours while settings looked correct: a similarly-named entry from another project held the slot.
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-doctor.ps1                                  # receipts + attacks
@@ -795,14 +781,13 @@ pwsh -NoProfile -File scripts/hooks/collision_gate.ps1 -PathOverride <p>  # who 
 
 Two things make `-Status` trustworthy, and both make it *less* clever than it could be:
 
-- It answers from the **install receipt** (`ccx-coordination.receipt.json`, beside the settings file)
-  plus a **live re-resolution of every target script** -- never from "there is an entry in
-  settings.json". An entry in settings.json is a **claim**; a receipt plus a target that actually
-  resolves is **evidence**. No receipt is reported as "anything below is inference", in those words.
-- It re-resolves using the shim's **own** resolution order, from the **current directory**, rather
-  than via the better helper available to it. A status check that finds the target by a better route
-  than the hook uses reports a healthy hook that does not work. **Model the mechanism you are
-  auditing, not the one you wish it used.**
+- It answers from the **install receipt** (`ccx-coordination.receipt.json`, beside the settings
+  file) plus a **live re-resolution of every target script**. An entry in settings.json is a
+  **claim**; a resolving target is **evidence**. No receipt is reported as "anything below is
+  inference".
+- It re-resolves using the shim's **own** resolution order, from the **current directory**. A
+  status check that finds the target by a better route than the hook uses reports a healthy hook
+  that does not work. **Model the mechanism you are auditing, not the one you wish it used.**
 
 `collision_gate.ps1 -PathOverride <path>` is also the read-only "who holds this path right now"
 query: no output means no live session holds it. It changes nothing.
@@ -810,9 +795,9 @@ query: no output means no live session holds it. It changes nothing.
 ### Blind spots that are printed on every run
 
 - **The collision gate's deny path cannot be proven by the doctor.** It needs a live peer worktree
-  holding an uncommitted change to the same file. What the doctor *can* prove is that the gate,
-  forced into its unresolvable path, emits its "could NOT check" context rather than the silence that
-  reads as all-clear.
+  holding an uncommitted change to the same file. The doctor *can* prove that the gate, forced into
+  its unresolvable path, emits its "could NOT check" context, not the silence that reads as
+  all-clear.
 - **Announce delivery cannot be proven at all** from PowerShell -- see the MCP dependency above.
 - **The session banner makes no decision**, so there is nothing to attack; receipt and resolution
   only.
@@ -848,11 +833,10 @@ query: no output means no live session holds it. It changes nothing.
 | `PreToolUse` (`Edit\|Write\|MultiEdit\|NotebookEdit`) | `scripts/hooks/collision_gate.ps1` | `ccx-coord` |
 | `UserPromptSubmit` | `scripts/hooks/announce-session.ps1` | `ccx-announce` |
 
-The two markers are separate on purpose, and **neither string contains the other, in either
-direction**. Ownership is tested by substring match, so a marker containing the other would be
-stripped by every managed event's removal loop. That is a constraint on any future rename -- pick a new
-pair and check both containments before you commit it. It is also what stops a sibling project's
-installer, writing into the same user settings file, from deleting this one's hooks.
+Both markers live in one user settings file sibling projects also write, and ownership is a
+substring match. The two are separate, and **neither contains the other, in either direction**: the
+containing one is stripped by every managed event's removal loop. Check both containments before a
+rename.
 
 ### Switches
 
