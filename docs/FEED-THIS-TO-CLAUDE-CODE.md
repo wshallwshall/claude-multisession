@@ -144,7 +144,8 @@ Only now, and only for the pieces they chose.
 4. **Verify what came back**, using the audit commands you are allowed to run. See below.
 5. **Offer a working agreement.** Copy
    [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
-   into the target as `CLAUDE.md`, then delete every rule the target does not actually follow. An
+   into the target as `CLAUDE.md` **and edit it down to what is true here.** Delete every rule the
+   target does not actually follow. An
    aspirational agreement is worse than none: the next session acts on it.
 6. **STOP.** Ask them to confirm it matches how they actually work, section by section if it is
    contentious. You are guessing at their conventions; they are not.

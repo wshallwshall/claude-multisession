@@ -94,10 +94,10 @@ Every check that cannot reach a confident answer SKIPs. Nothing is ever traded f
 
 - Uncommitted tracked changes block, and so do **untracked files**. They are the one loss class with no
   recovery through git at all: not in the index, not in a stash, not in the reflog.
-- `--force` suppresses the refusal that would have prevented the incident, so the reaper proves
-  cleanliness itself first. It deletes **ignored** files too, invisible to `git status --porcelain`
-  and only regenerable. It does *not* override a git lock; that needs `-f -f`, which neither script
-  passes.
+- `--force` suppresses git's refusal on untracked and modified files -- the one that would have
+  prevented the incident -- so the reaper proves cleanliness itself first. It deletes **ignored**
+  files too, invisible to `git status --porcelain`: unrecoverable, merely regenerable. It does *not*
+  override a git lock; that needs `-f -f`, which neither script passes.
 - A `git status` that exits non-zero, or a directory that has vanished, is **not clean**. Those states
   used to be indistinguishable from "no changes" and pointed straight at destruction.
 
@@ -175,8 +175,9 @@ Candidate selection is now two stages:
    filtered out. A tool that silently filters cannot be checked.
 
 Exclusions, in order: nested in another registered worktree (`Get-ContainingWorktrees`);
-harness-managed (`Test-CcxHarnessWorktreePath`: any `.claude/worktrees/` segment); not a sibling
-(`Test-CcxSiblingWorktreePath`: **same parent**, leaf exactly `<primary-leaf>-<something>`);
+harness-managed (`Test-CcxHarnessWorktreePath` -- any `.claude/worktrees/` segment,
+unconditionally); not a structural sibling (`Test-CcxSiblingWorktreePath` -- **same parent
+directory**, leaf exactly `<primary-leaf>-<something>`);
 detached or bare.
 
 `-Name` cannot reach any of them either. A worktree that also *contains* a registered worktree is never
