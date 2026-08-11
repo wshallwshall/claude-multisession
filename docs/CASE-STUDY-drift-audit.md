@@ -116,13 +116,17 @@ deliberately allow.
 
 The same class covers routes rather than names. `scripts/hooks/worktree_gate.ps1` inspects tool
 arguments, so a file written by a shell command is not seen at all, and **any agent-authored script
-defeats a command-string gate** -- a script invocation carries no `git` token. That is not an
-adversarial scenario; a sanctioned repair script is exactly that shape. Treat string-scanning gates as
-guardrails against accidents, never as boundaries, and say so in the file. This repository shares one
-command-splitting helper (`scripts/hooks/_command.ps1`) and one git-target resolver
-(`scripts/hooks/_gittarget.ps1`) between the hooks that parse commands. The reason is itself an audit
-finding: two hooks that each split commands their own way will disagree about what a command *is*,
-and the one that drifts is the one nobody is testing. Keep exactly one copy of a safety check.
+defeats a command-string gate** -- a script invocation carries no `git` token.
+
+That is not an adversarial scenario: a sanctioned repair script is exactly that shape. Treat
+string-scanning gates as guardrails against accidents, never as boundaries, and say so in the file.
+
+The hooks that parse commands share one command-splitting helper (`scripts/hooks/_command.ps1`) and
+one git-target resolver (`scripts/hooks/_gittarget.ps1`).
+
+The reason is itself an audit finding: two hooks that each split commands their own way will disagree
+about what a command *is*, and the one that drifts is the one nobody is testing. Keep exactly one
+copy of a safety check.
 
 ### On D3's opposite failure
 
