@@ -358,12 +358,17 @@ is offered for you to run deliberately. A stale ref costs nothing; a destroyed c
 
 **And it deletes the branch the worktree was *on*, never `-Name`.** `-Name` is the directory
 component and cannot contain `/`; a branch name can, and `new.ps1 -Name my-task -Branch
-feature/my-task` is a documented invocation. Asking git to delete `my-task` there fails with *branch
-not found* -- which is exactly why the refusal has to relay what git said instead of asserting a cause.
-It used to state one: that the branch held commits no other ref has. So the common namespaced case
-sent you looking for commits that do not exist, while the real branch quietly survived a run that read
-as a full cleanup. A **detached** worktree has no branch to delete at all, and the script now says so
-rather than guessing at one that happens to share the directory's name.
+feature/my-task` is a documented invocation.
+
+Asking git to delete `my-task` there fails with *branch not found*, which is why the refusal relays
+what git said instead of asserting a cause. It used to assert one: that the branch held commits no
+other ref has.
+
+So the common namespaced case sent you looking for commits that do not exist, while the real branch
+survived a run that read as a full cleanup.
+
+A **detached** worktree has no branch to delete at all, and the script says so rather than guessing
+at one that happens to share the directory's name.
 
 ### Never `git worktree prune` as cleanup
 

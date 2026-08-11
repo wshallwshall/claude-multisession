@@ -302,12 +302,14 @@ Squash-merge is why cleanup needs its own tooling. After the work is in the trun
 
 All three ask the same question -- "is this commit reachable from the trunk" -- and squash-merge is
 defined by making the answer no. So **being ahead of the trunk is not evidence of unmerged work**.
+
 [`scripts/worktree/prune-merged.ps1`](https://claude-multisession.pages.dev/scripts/worktree/prune-merged.ps1) carries three merge
 signals instead of one: nothing beyond the trunk, *or* a merged PR whose head is this exact tip, *or*
-the branch's own upstream ref is gone. The converse is worse and is the one that destroyed an
-occupied worktree: **zero commits beyond the trunk does not mean merged either** -- a branch created
-seconds ago looks exactly like that. Merge state is never sufficient on its own; see
-[PRUNING.md](PRUNING.md).
+the branch's own upstream ref is gone.
+
+The converse is worse, and it destroyed an occupied worktree: **zero commits beyond the trunk does
+not mean merged either** -- a branch created seconds ago looks exactly like that. Merge state is
+never sufficient on its own; see [PRUNING.md](PRUNING.md).
 
 ```powershell
 pwsh -NoProfile -File scripts/worktree/prune-merged.ps1            # dry run, prints the decision table
