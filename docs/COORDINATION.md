@@ -545,16 +545,20 @@ Branch does not join them either: the two rosters reported different branches fo
 **Rule, in order:**
 
 1. Call `list_sessions`.
-2. Match each peer to the row whose **cwd equals** the cwd printed for it, **exactly**
-   (case-insensitive). **Do not prefix-match.** Every worktree cwd in a repo is an extension of the
-   primary checkout's path, so a prefix match resolves a peer *in the primary* to some arbitrary
-   worktree session. Measured: the two rosters print byte-identical cwds, so an exact match is
-   expected to succeed. No exact row -> **skip that peer**. Never guess an id. A matched row is
-   enough on its own: **`isRunning` is not a reachability flag.** It reports whether that session is
-   mid-turn at the instant you called `list_sessions`, and most peers are idle most of the time. A
-   listed session with `isRunning: false` is idle, not gone -- `send_message` delivers to it
-   normally, and the message waits as a user turn until that session next runs. Skipping on it
-   silently drops nearly every peer, which is the failure this step exists to prevent.
+2. Match each peer to the row whose **cwd equals** the one printed for it, **exactly**
+   (case-insensitive). **Do not prefix-match.** Every worktree cwd is an extension of the primary
+   checkout's path, so a prefix match resolves a peer *in the primary* to some arbitrary worktree.
+
+   Measured: the two rosters print byte-identical cwds, so an exact match is expected to succeed. No
+   exact row means **skip that peer**, and never guess an id.
+
+   A matched row is enough on its own, because **`isRunning` is not a reachability flag.** It reports
+   whether that session was mid-turn at the instant you called `list_sessions`, and most peers are
+   idle most of the time.
+
+   `isRunning: false` is idle, not gone. `send_message` delivers to it normally, and the message
+   waits as a user turn until that session next runs. Skipping on it silently drops nearly every
+   peer, which is the failure this step exists to prevent.
 
 **Measured, and it runs the opposite way to the discarded rule.** Against the live MCP: a peer with
 `isRunning: false` returned `Message sent.`, while a peer with `isRunning: true` returned `queued

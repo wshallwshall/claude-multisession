@@ -327,11 +327,27 @@ class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
 BASELINE_LONG_SENTENCES = 290       # sentences over 30 words
 BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 
+# HS-20: a paragraph over 300 characters. A RATCHET, NOT A CAP, AND THE CORPUS IS RED BEHIND IT --
+# the number below is debt, not a clean bill. The rule was written on 2026-08-10 against a measured
+# corpus: 391 of 1,387 rendered-site paragraphs were over the limit, a shade under a third, so a
+# hard fail would have shipped disabled on day one for the reason this file's header states.
+#
+# THE FIX IS A REWRITE, NOT A SPLIT. Chopping a long paragraph in half satisfies the number and
+# changes nothing a reader experiences: the same prose arrives in two pieces. An over-long paragraph
+# here is treated as a signal that the writing wound up, restated itself, or narrated its own
+# reasoning before getting to the fact. What comes out is shorter because it says the same things in
+# fewer words -- never because a measurement, a date, a limit or a mechanism sentence was dropped.
+# PD-1 through PD-7 outrank this rule, and an editor who satisfies it by deleting a number has
+# broken the sheet rather than served it.
+BASELINE_FAT_PARAGRAPHS = 463       # paragraphs over 300 chars (HS-20)
+FAT_PARAGRAPH_LIMIT = 300
+
 # How far below baseline a metric may drift before the test asks for the baseline to be lowered.
 # Sized to each metric rather than shared: 40 is noise against 833 and most of the way to zero
 # against 49.
 LONG_SENTENCE_SLACK = 30
 FAT_CELL_SLACK = 5
+FAT_PARAGRAPH_SLACK = 25
 
 # A STOP INSIDE EMPHASIS IS STILL A STOP. This document set writes `**A claim.** The evidence.`
 # constantly, and the bare `(?<=[.!?])\s+` form never fired on it, because the character after the
@@ -345,15 +361,18 @@ FAT_CELL_SLACK = 5
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])(?:\*{1,2})?\s+")
 
 
-def _measure() -> tuple[int, int, int]:
-    """(sentences over 30 words, table cells over 40 words, words examined)."""
+def _measure() -> tuple[int, int, int, int]:
+    """(sentences over 30 words, table cells over 40 words, words examined, paragraphs over 300)."""
     long_sentences = 0
     fat_cells = 0
+    fat_paragraphs = 0
     words = 0
     for relpath in prose_files():
         text = t.read(t.REPO_ROOT / relpath)
         for joined, _ in paragraphs(text):
             words += len(joined.split())
+            if len(joined) > FAT_PARAGRAPH_LIMIT:
+                fat_paragraphs += 1
             for sentence in SENTENCE_SPLIT.split(joined):
                 if len(sentence.split()) > 30:
                     long_sentences += 1
@@ -364,7 +383,7 @@ def _measure() -> tuple[int, int, int]:
             for cell in stripped.strip("|").split("|"):
                 if len(cell.split()) > 40:
                     fat_cells += 1
-    return long_sentences, fat_cells, words
+    return long_sentences, fat_cells, words, fat_paragraphs
 
 
 class AListIsNotOneLongSentence(unittest.TestCase):
@@ -437,7 +456,7 @@ class TheReportedMetricsDoNotRegress(unittest.TestCase):
     """A ratchet, not a cap. The plan rejected all three as hard fails, with the measurement."""
 
     def test_it_reports_what_it_examined(self):
-        long_sentences, fat_cells, words = _measure()
+        long_sentences, fat_cells, words, _ = _measure()
         self.assertGreater(
             words,
             30_000,
@@ -452,7 +471,7 @@ class TheReportedMetricsDoNotRegress(unittest.TestCase):
         )
 
     def test_long_sentences_do_not_increase(self):
-        long_sentences, _, _ = _measure()
+        long_sentences, _, _, _ = _measure()
         self.assertLessEqual(
             long_sentences,
             BASELINE_LONG_SENTENCES,
@@ -469,7 +488,7 @@ class TheReportedMetricsDoNotRegress(unittest.TestCase):
         )
 
     def test_fat_table_cells_do_not_increase(self):
-        _, fat_cells, _ = _measure()
+        _, fat_cells, _, _ = _measure()
         self.assertLessEqual(
             fat_cells,
             BASELINE_FAT_TABLE_CELLS,
@@ -481,6 +500,26 @@ class TheReportedMetricsDoNotRegress(unittest.TestCase):
             BASELINE_FAT_TABLE_CELLS - FAT_CELL_SLACK,
             f"only {fat_cells} fat table cells remain, against a baseline of "
             f"{BASELINE_FAT_TABLE_CELLS}. Lower BASELINE_FAT_TABLE_CELLS to {fat_cells}.",
+        )
+
+    def test_fat_paragraphs_do_not_increase(self):
+        _, _, _, fat_paragraphs = _measure()
+        self.assertLessEqual(
+            fat_paragraphs,
+            BASELINE_FAT_PARAGRAPHS,
+            f"{fat_paragraphs} paragraphs now exceed {FAT_PARAGRAPH_LIMIT} characters, against a "
+            f"baseline of {BASELINE_FAT_PARAGRAPHS} (HS-20). Fix it by REWRITING the paragraph "
+            "shorter, not by splitting it in two -- a split satisfies the count and changes nothing "
+            "a reader experiences. PD-1 to PD-7 outrank this: never reach the number by deleting a "
+            "measurement, a date, a limit or a mechanism sentence.",
+        )
+        self.assertGreater(
+            fat_paragraphs,
+            BASELINE_FAT_PARAGRAPHS - FAT_PARAGRAPH_SLACK,
+            f"only {fat_paragraphs} paragraphs remain over {FAT_PARAGRAPH_LIMIT} characters, "
+            f"against a baseline of {BASELINE_FAT_PARAGRAPHS}. Lower BASELINE_FAT_PARAGRAPHS to "
+            f"{fat_paragraphs} in this file. This corpus is red behind the rule on purpose, so the "
+            "number is debt and tightening it is the point.",
         )
 
 

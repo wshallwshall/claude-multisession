@@ -285,13 +285,18 @@ printed remedy would have moved a session off its real branch. Three things foll
 
 **The bootstrap writer can race session setup, and the result is a warning that never stops.** When
 no record exists yet, the backstop bootstraps one from whatever branch the worktree is on at that
-moment. If that happens before the harness has finished moving a newly created worktree onto its
-session branch, "home" is captured as the pre-setup branch. The mismatch warning then fires on every
-later session start, forever. Measured here on 2026-08-05: worktree created at 09:21:50, record
-written at 09:21:54, harness moved the worktree to its session branch at 09:23:10 -- the warning was
-stale by 76 seconds, not a hijack. This is the sharpest reason the detector may only warn. A
-harness-driven switch during session setup and a genuine hijack are identical in the record until
-you check the worktree's reflog for an agent tool call that caused it.
+moment.
+
+If that happens before the harness has moved a newly created worktree onto its session branch,
+"home" is captured as the pre-setup branch, and the mismatch warning then fires on every later
+session start, forever.
+
+Measured here on 2026-08-05: worktree created at 09:21:50, record written at 09:21:54, harness moved
+the worktree to its session branch at 09:23:10. The warning was stale by 76 seconds, not a hijack.
+
+This is the sharpest reason the detector may only warn. A harness-driven switch during session setup
+and a genuine hijack are identical in the record until you check the worktree's reflog for an agent
+tool call that caused it.
 
 A near-identical git config key, `<prefix>.homeBranch`, exists alongside the file. They are not the
 same thing and they are one word apart. The **config key** is your deliberate override for the

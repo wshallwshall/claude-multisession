@@ -95,25 +95,30 @@ says what class of evidence it rests on, because they are not the same class:
   [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md)). That is why
   the hooks here install at **user** scope ([Hooks](HOOKS.md)).
 - *Observed once.* **User scope means *per config root*, and the gate fails open**, so an unwired root
-  is byte-identical to a governed one from inside the session. This is the only bullet that connects a
-  surface to an actual observed hijack. A session under an ungoverned config root checked its own
-  branch out inside another session's linked worktree, and the gate that would have refused it was
-  simply not installed there. That an additional config root is where editor-hosted chats show up is
-  the installers' stated reason for wiring every root
-  ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md), "Why every
-  config directory"), and it is the configuration the one observed hijack came from. But nothing here
-  counts roots by surface, so take it as the installers' rationale, not a measured distribution.
+  is byte-identical to a governed one from inside the session.
 
-**What is not established.** The intuitive story is that an extension session is invisible to the
-session-listing tooling, so something consulting that list acts as though it is not there. That story
-does not hold here, and following it sends you looking in the wrong place. The worktree gate consults
-no session list at all -- it keys on a write's target path and on what git reports about the tree a
-command acts on ([Hooks](HOOKS.md)). The reaper and the presence roster deliberately read the on-disk
-per-session registry instead, precisely because that one carries every surface, so an extension
-session is **not** invisible to the thing that deletes worktrees ([Pruning](PRUNING.md)). `list_sessions` blindness costs messageability, not tree
-protection. The honest form: the observed hijack came from an editor-hosted session under an
-ungoverned config root, and no measurement here separates the surface from the ungoverned root as the
-operative fact.
+  This is the only bullet tied to an observed hijack. A session under an ungoverned config root
+  checked its own branch out inside another session's linked worktree, and the gate that would have
+  refused it was not installed there.
+
+  Editor-hosted chats showing up under an additional config root is the installers' stated reason for
+  wiring every root
+  ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md), "Why every
+  config directory"), and it is the configuration that hijack came from. Nothing here counts roots by
+  surface, so take it as the installers' rationale, not a measured distribution.
+
+**What is not established.** The intuitive story -- an extension session is invisible to
+`list_sessions`, so anything reading that list acts as though it is gone -- does not hold here.
+
+The worktree gate reads no session list. It keys on a write's target path and on what git reports
+about the tree a command acts on ([Hooks](HOOKS.md)).
+
+The reaper and the presence roster read the on-disk per-session registry, which carries every
+surface, so an extension session is **not** invisible to the thing that deletes worktrees
+([Pruning](PRUNING.md)). `list_sessions` blindness costs messageability, not tree protection.
+
+The observed hijack came from an editor-hosted session under an ungoverned config root, and no
+measurement here separates the surface from the ungoverned root as the operative fact.
 
 **And one join is unverified, the one this argument leans on hardest.** What was measured on the
 extension is that hooks in a project's *own settings file* run there

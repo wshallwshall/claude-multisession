@@ -50,7 +50,7 @@ the end of each section below are not vacancies. They are occupied, one reposito
 | Series | Issued here | Issued there | **Next free** |
 |---|---|---|---|
 | `B-<n>` | B-1 to B-10 | B-11 to B-17 | **B-18** |
-| `HS-<n>` | HS-1 to HS-16 | HS-17 spent on a superseded branch, HS-18, HS-19 | **HS-20** |
+| `HS-<n>` | HS-1 to HS-16, HS-20 | HS-17 spent on a superseded branch, HS-18, HS-19 | **HS-21** |
 | `PD-<n>` | PD-1 to PD-8 | PD-9 | **PD-10** |
 | `OPEN-<n>` | OPEN-1 to OPEN-7 | none | **OPEN-8** |
 
@@ -118,6 +118,7 @@ sentence is still required, it is now told which slot to sit in.
 | HS-13 | A heading **MUST NOT** be renamed until the repository has been searched for its text | Standards cite headings by name, and only the link-adjacent form is gated |
 | HS-14 | Lines **SHOULD** wrap near 100 characters | The wrap |
 | HS-15 | A quantity **MUST** be the number where one exists, not a vague determiner | "139", not "nearly all" |
+| HS-20 | A paragraph **MUST NOT** exceed 300 characters. Rewrite it shorter; do **not** satisfy this by splitting one paragraph into two | A ratchet in `tests/test_prose_rules_hold.py`. The corpus is red behind it on purpose: 463 paragraphs were over the limit on 2026-08-10, and that number is debt that may not grow |
 | HS-16 | A markdown link **MUST** sit on one line, text and target both, and that outranks HS-14 | `tests/test_a_links_text_never_wraps.py`. `jekyll-relative-links` matches a link with a pattern whose `.` excludes a newline, so a wrapped one is never rewritten and the published site serves the raw `.md` while github.com renders it correctly. 35 links were in this state on 2026-08-07 |
 
 ---
