@@ -80,10 +80,11 @@ says what class of evidence it rests on, because they are not the same class:
   attributes it to a surface.** A per-session auto-worktree can half-fail on Windows, flipping the
   *primary's* HEAD onto the session's branch and leaving an empty stub directory behind
   ([anthropics/claude-code#76590](https://github.com/anthropics/claude-code/issues/76590); the
-  repair path and the ghost stub are [Worktrees](WORKTREES.md)). This repository cites that issue
-  rather than reproducing it, and records no observation of the extension's worktree layout either
-  way. Read this bullet as removing an easy assumption, not as establishing that the defect is
-  surface-neutral.
+  repair path and the ghost stub are [Worktrees](WORKTREES.md)).
+
+  This repository cites that issue rather than reproducing it, and records no observation of the
+  extension's worktree layout either way. Read the bullet as removing an easy assumption, not as
+  establishing that the defect is surface-neutral.
 - *Measured here.* **An extension session is absent from the desktop app's own `list_sessions`.** It
   enumerates sessions that app itself spawned; an extension session is never entered into that map --
   not filtered out, never registered. Verified against a live extension session sharing the

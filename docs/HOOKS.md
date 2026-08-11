@@ -63,13 +63,17 @@ Installers:
 | `scripts/coord/install-git-hooks.ps1` | claim gate, push guard | the clone's shared git hooks directory |
 
 Nothing installs `block-blanket-git-stage.ps1`, `steer-inject.ps1`, or `seq_check.py`. Wire those by
-hand. `.claude/settings.example.json` in this checkout is a real, tracked row for the blanket-stage
-guard, with the path left as a loud placeholder. `docs/STEERING.md` carries the equivalent for the
-steering injector at `settings.local.json` scope, which is where that one belongs. An `.example.`
-file is inert by construction -- the harness loads `settings.json` and `settings.local.json` only --
-so nothing in this repository can be mistaken for an installed control.
-`install-git-hooks.ps1` prints a warning about the sequence gate when sequences are configured,
-because an absent gate and a passing gate look the same from the outside.
+hand.
+
+`.claude/settings.example.json` is a real, tracked row for the blanket-stage guard, with the path
+left as a loud placeholder. `docs/STEERING.md` carries the equivalent for the steering injector at
+`settings.local.json` scope, where that one belongs.
+
+An `.example.` file is inert by construction, because the harness loads `settings.json` and
+`settings.local.json` only. Nothing here can be mistaken for an installed control.
+
+`install-git-hooks.ps1` warns about the sequence gate when sequences are configured, because an
+absent gate and a passing gate look the same from the outside.
 
 ---
 
@@ -196,12 +200,14 @@ call through **silently**, which is how a missing hook script reads as an allow.
 
 One further PowerShell trap, from the gate's own history: in a parameter default, write
 `$( if (...) {...} else {...} )` and not `( if ... )`. A bare paren opens a command-invocation group,
-PowerShell parses `if` as a command name, and the script dies before its first line. That version
-shipped, and the whole test suite missed it -- every test passed `-ReposFile` explicitly, and a
-parameter default is not evaluated when a value is supplied.
-`tests/test_worktree_gate_no_args.py` runs the script with no arguments at all, and requires it to
-deny a write into a governed root. That is the only outcome that proves the default both evaluated
-and resolved to the file the installer writes.
+PowerShell parses `if` as a command name, and the script dies before its first line.
+
+That version shipped, and the whole test suite missed it. Every test passed `-ReposFile` explicitly,
+and a parameter default is not evaluated when a value is supplied.
+
+`tests/test_worktree_gate_no_args.py` runs the script with no arguments at all and requires it to
+deny a write into a governed root. That is the only outcome proving the default both evaluated and
+resolved to the file the installer writes.
 
 ### The git-hook contract
 

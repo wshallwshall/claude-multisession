@@ -125,11 +125,14 @@ that flag `^` anchors to the start of the *string*, not of each line.
 
 This mattered because the two terms that use the pattern feed it differently. The all-refs term
 feeds it one line at a time, where it matched and looked correct. The working-tree term feeds it the
-whole file as one string, where `^` could never match past the first line. Measured on the repo this
-tooling was developed in: without `Multiline` the working-tree term found **none** of the index's
-rows. So the term that exists to catch a number written but committed *nowhere* had been finding
-nothing since the day it was written. The all-refs term hid it, by covering every number that had
-been committed somewhere -- which is every case except the one that term is for.
+whole file as one string, where `^` could never match past the first line.
+
+Measured on the repo this tooling was developed in: without `Multiline` the working-tree term found
+**none** of the index's rows. So the term that exists to catch a number written but committed
+*nowhere* had been finding nothing since the day it was written.
+
+The all-refs term hid it, by covering every number committed somewhere -- which is every case except
+the one that term is for.
 
 > **Rule.** When two terms of the same computation feed one matcher different shapes of input, the
 > stricter shape is the one to test. A term that is subsumed by a broader term in the common case

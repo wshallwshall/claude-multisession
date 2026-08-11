@@ -324,7 +324,7 @@ class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
 # this corpus but are not site pages: they live at the repository root, outside the Jekyll source, so
 # the site links them as raw `.md` rather than serving them. They are the obvious next chunk, and 68
 # is the figure to beat.
-BASELINE_LONG_SENTENCES = 290       # sentences over 30 words
+BASELINE_LONG_SENTENCES = 285       # sentences over 30 words
 BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 
 # HS-20: a paragraph over 300 characters. A RATCHET, NOT A CAP, AND THE CORPUS IS RED BEHIND IT --
@@ -339,7 +339,7 @@ BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 # fewer words -- never because a measurement, a date, a limit or a mechanism sentence was dropped.
 # PD-1 through PD-7 outrank this rule, and an editor who satisfies it by deleting a number has
 # broken the sheet rather than served it.
-BASELINE_FAT_PARAGRAPHS = 463       # paragraphs over 300 chars (HS-20)
+BASELINE_FAT_PARAGRAPHS = 455       # paragraphs over 300 chars (HS-20)
 FAT_PARAGRAPH_LIMIT = 300
 
 # How far below baseline a metric may drift before the test asks for the baseline to be lowered.

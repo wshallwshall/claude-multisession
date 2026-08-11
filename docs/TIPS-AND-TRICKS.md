@@ -603,13 +603,18 @@ pwsh -NoProfile -File scripts/quality/check-ascii.ps1 -Fix     # rewrite the saf
 ```
 
 It reports `file:line:column`, the code point as `U+XXXX`, the character's name and the ASCII text
-it suggests in its place. Names come from a curated table of the characters that actually turn up
-in this kind of work. Anything outside it is described by its Unicode block and general category
-and **said** to be undescribed, because a guessed name is worse than none. `-Fix` rewrites only the
-substitutions that cannot change meaning -- the dash family, arrows, the ellipsis, curly quotes,
-the non-breaking and zero-width spaces, the bullet, the multiplication sign and the section sign.
-Accented letters, emoji, box drawing and other symbols are reported with a suggestion and left
-alone, because replacing those changes meaning and that is a decision for a person.
+it suggests in its place.
+
+Names come from a curated table of the characters that turn up in this kind of work. Anything
+outside it gets its Unicode block and general category, and is **said** to be undescribed, because a
+guessed name is worse than none.
+
+`-Fix` rewrites only what cannot change meaning: the dash family, arrows, the ellipsis, curly
+quotes, the non-breaking and zero-width spaces, the bullet, the multiplication sign, the section
+sign.
+
+Accented letters, emoji, box drawing and other symbols are reported and left alone. Replacing those
+changes meaning, which is a decision for a person.
 
 Three properties of the checker that are instances of rules stated elsewhere in this file:
 

@@ -7,13 +7,16 @@ let several Claude Code sessions work in one repository at the same time without
 each other's work.
 
 **Why you should care.** Two sessions in two worktrees cannot overwrite each other's bytes. They can
-still edit the same file in parallel and discover it at merge, by which point both have built on
-divergent assumptions and someone's work is thrown away. Worse, they can build the *same thing* in
-*different files*, producing zero merge conflicts and two green pull requests, which nothing
-structural sees. Measured on the repo this tooling was developed in: three sessions independently
-fixed the same dependency advisory, and two of the three pull requests were closed as duplicates. Not
-for you if you run one session at a time, and not for a plain CLI install for announce specifically,
-which needs the desktop client.
+still edit one file in parallel and find out at merge, by which point both have built on divergent
+assumptions and someone's work is thrown away.
+
+Worse, they can build the *same thing* in *different files*, producing zero merge conflicts and two
+green pull requests, which nothing structural sees. Measured on the repo this tooling was developed
+in: three sessions independently fixed the same dependency advisory, and two of the three pull
+requests were closed as duplicates.
+
+Not for you if you run one session at a time, nor for a plain CLI install where announce is
+concerned, which needs the desktop client.
 
 **How to use it.** Start at [The pieces](#the-pieces), which routes each question to the single
 script that answers it. Then [Proving any of this is live](#proving-any-of-this-is-live), which is
@@ -817,13 +820,15 @@ instrument answering a narrower question than the one being asked of it, and rep
 it does.
 
 **The one mechanism here that prevents rather than reports.** In the episode above, every correction
-the two sessions made for each other arrived *after* the work was already done. The duplicate
-paragraph, the stale verification base, the wrong noun on the routing page: all were found by
-reading afterwards. The collision gate was the exception. When the second session tried to edit
-`docs/index.md` a third time, it refused, named the session holding the file and named its branch,
-and the edit never happened. Announce tells peers what you intend; overlap tells you what they have
-touched; both inform. The gate is the only one that stops you, and it is worth keeping loud for that
-reason alone.
+the two sessions made for each other arrived *after* the work was done: the duplicate paragraph, the
+stale verification base, the wrong noun on the routing page, all found by reading afterwards.
+
+The collision gate was the exception. When the second session tried to edit `docs/index.md` a third
+time, it refused, named the session holding the file and named its branch, and the edit never
+happened.
+
+Announce tells peers what you intend; overlap tells you what they have touched. Both inform. The
+gate is the only one that stops you, and worth keeping loud for that reason alone.
 
 **It happened three times in one evening, and it got bigger each time.** First a sentence: a landing
 page paraphrased a claim its source ruled out. Then the paragraph above. Then two sessions
