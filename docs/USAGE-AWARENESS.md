@@ -5,21 +5,20 @@
 **What this is.** The design, failure modes and rules for a hook that warns a session when the plan
 pool it bills is running out.
 
-**Why you should care.** The lessons are the sharpest instance in this repo of its recurring theme:
-**an instrument that answers a narrower question than the one you asked, while looking completely
-healthy.** Not for you as code -- **no such hook ships here**, because the mechanism depends on client
-internals that are undocumented and can change without notice.
+**Why you should care.** This repo's recurring theme at its sharpest: **an instrument that
+answers a narrower question than the one you asked, while looking completely healthy.** Not for
+you as code -- **no such hook ships here**: the mechanism depends on undocumented client
+internals.
 
 **How to use it.** Take the rules, not the implementation; those transfer and the code does not.
 Start with the purpose, which is preventing lost work at a hard cutoff and is not budgeting.
 
 ---
 
-A hook that warns a session when the plan pool it bills is running out is much harder to get right
-than it looks. **No such hook ships in this repo** -- the mechanism depends on client internals that
-are undocumented and can change without notice, so shipping one would be shipping a control that
-breaks silently. What ships is the design, the failure modes, and the rules, because those transfer
-and the code does not.
+A hook that warns a session when the pool it bills is running out is much harder to get right than
+it looks. **No such hook ships in this repo**: the mechanism depends on undocumented client
+internals that can change without notice, so shipping one would ship a control that breaks
+silently.
 
 The lessons here are the sharpest instance in this repo of its recurring theme: **an instrument that
 answers a narrower question than the one you asked, while looking completely healthy.**
@@ -30,10 +29,9 @@ answers a narrower question than the one you asked, while looking completely hea
 
 The purpose is **preventing lost work at a hard cutoff**. It is not budgeting.
 
-That distinction decides everything downstream. A budgeting tool wants accuracy and can be wrong
-quietly. A lost-work tool wants to fire *before* an agent is mid-refactor with nothing committed, and
-must **refuse to report** rather than report wrongly, because the whole point is that somebody acts on
-it.
+That decides everything downstream. A budgeting tool wants accuracy and can be wrong quietly. A
+lost-work tool wants to fire *before* an agent is mid-refactor with nothing committed, and must
+**refuse to report** rather than report wrongly, because the point is that somebody acts on it.
 
 When it fires, the correct response is not "stop". It is:
 
@@ -52,10 +50,9 @@ and wrong.
 > **A hook that is confidently wrong is worse than no hook. It converts "I should check" into
 > "I already know."**
 
-And the obvious repair is not a repair. Pointing the hardcoded value at a different account does not
-fix it; it relocates the same lie. A machine with several logins, where the client switches between
-them, has no correct constant: any hardcoded account is wrong for every session on the others, and
-wrong for all of them after the next switch.
+Pointing the hardcoded value at a different account does not fix it; it relocates the same lie. A
+machine with several logins the client switches between has no correct constant: any hardcoded
+account is wrong for every session on the others, and wrong for all of them after the next switch.
 
 **Resolve the pool per session, from the surface that actually knows which login the session bills.**
 If you cannot resolve it, say so.
@@ -82,12 +79,10 @@ If the two disagree, the result is **UNKNOWN**, not the number.
 
 Two design details matter more than they look:
 
-- **Check the slow-moving figure, not the fast one.** The weekly percentage moves by single points per
-  hour. The short-window figure does not: it drops to near zero the instant its window rolls, and was
-  observed going from 22 percent to 2 percent across a single sample. Cross-checking on the fast
-  figure would produce constant false disagreement; cross-checking on the slow one catches a
-  wrong-account reading by construction. The original bug -- one account's 93 against the other's 5 --
-  would have been caught on the first run.
+- **Check the slow-moving figure, not the fast one.** The short-window figure drops to near zero
+  when its window rolls -- 22 percent to 2 percent in one sample -- so it disagrees constantly. The
+  weekly one moves single points per hour and catches the original 93-against-5 bug on the first
+  run.
 - **Sample age is a validity condition.** Past a few missed sampling intervals, the second source is
   no longer evidence. Old enough, and it must stop being treated as a check at all.
 
@@ -132,10 +127,9 @@ unlabeled claim.
 
 **The one most likely to bite you, and the one two sessions here got wrong on the same day.**
 
-A percentage alone cannot answer "should I stop". **7 percent remaining with 7 minutes until the
-window resets is abundant. The same 7 percent with four hours left is scarce.** A rule that fires on
-the number alone will pause work that had no reason to pause, and will fail to fire when the number is
-comfortable but the reset is far away.
+A percentage alone cannot answer "should I stop". **7 percent with 7 minutes to reset is abundant.
+The same 7 percent with four hours left is scarce.** A rule that fires on the number alone pauses
+work for no reason, and stays quiet when the number looks comfortable but the reset is far away.
 
 A peer instructed a pause at a threshold, then retracted it after checking the clock: the window was
 minutes from resetting, which made the remaining budget effectively unlimited. Their own summary is
@@ -145,18 +139,16 @@ the better statement of it:
 > with a usage threshold and used the threshold to justify the priority.
 
 So: **evaluate the number together with its time-to-reset, and say which one drove the decision.**
-And note the corollary, which is the same shape as Rule 1: a percentage without its *account* does not
-answer the question either. A usage figure needs three things to mean anything -- the number, whose
-pool it is, and when the window rolls.
+The corollary has Rule 1's shape: a usage figure needs three things to mean anything -- the number,
+whose pool it is, and when the window rolls.
 
 ---
 
 ## Platform trap worth its own line
 
-On Windows, a directory can be **visible to an interpreter launched by full path and invisible to the
-same interpreter launched through an app-execution alias**, because of installer-level AppData
-virtualization. A hook that works when you test it by hand can read an empty directory when the client
-runs it.
+On Windows, a directory can be **visible to an interpreter launched by full path and invisible to
+the same interpreter launched through an app-execution alias**, because of installer-level AppData
+virtualization. A hook that works by hand can read an empty directory when the client runs it.
 
 Wire hooks by full interpreter path, and make a missing path report UNKNOWN rather than OK. "I could
 not find the data" and "the data says you are fine" must never produce the same output.

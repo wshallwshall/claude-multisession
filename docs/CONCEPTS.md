@@ -34,10 +34,9 @@ application of those three.
 
 ## 1. Worktree-per-session
 
-A git worktree is a second working directory backed by the same git directory: same history, same
-remotes, same object store, a different branch checked out and a different index. Two concurrent
-sessions in the *same* checkout fight over one working tree, and the fight is silent, one side's
-`git checkout` swaps the files out from under the other's edit.
+A git worktree is a second working directory on the same git directory: same history, remotes and
+objects, a different branch and index. Two sessions in one checkout fight over that tree silently --
+one side's `git checkout` swaps the files out from under the other's edit.
 
 So the unit of isolation is the worktree, and the unit of work is a branch.
 
@@ -62,10 +61,9 @@ The **primary** checkout is the main working tree of the clone, and it is the fi
 | `sibling` (default) | `<parent-of-primary>/<primary-leaf>-<name>` | this tooling, via `scripts/worktree/new.ps1` |
 | `nested` | `<primary>/.claude/worktrees/<name>` | the client itself, and this tooling if you configure it |
 
-`worktreeLayout` in `ccx.config.json` picks where **we** create worktrees. It does not change the
-fact that both populations exist on a real machine at the same time. `Get-CcxWorktreePath` owns the
-formula, once, because it used to be duplicated in four scripts and pattern-*matched* in a fifth,
-which is how a rule and its enforcement can disagree without either being wrong on its own.
+`worktreeLayout` in `ccx.config.json` picks where **we** create worktrees; both populations exist
+on a real machine anyway. `Get-CcxWorktreePath` owns the formula once: it was duplicated in four
+scripts and pattern-*matched* in a fifth, so rule and enforcement disagreed.
 
 > **Trap.** A nested checkout is git-ignored inside its parent, so the parent reads perfectly clean,
 > and `git worktree remove --force` on the parent deletes both, leaving the nested one registered
@@ -106,15 +104,13 @@ separate build environment. Three things are not isolated, and each has bitten:
 | the git hooks directory | one `pre-commit` / `commit-msg` / `pre-push` set governs **every** worktree at once, and sees every write route into the repo |
 | the AI coding assistant's own project memory | it lives outside the repo, one directory per machine, and last write wins. Reads are fine; coordinate writes, or let exactly one session own them |
 
-And one thing is isolated that you may wish were not: a project-scoped `.claude/settings.json` is
-usually git-ignored, so it is a creation-time snapshot that nothing refreshes and that several
-worktrees may simply not have. That is why the coordination hooks install at **user** scope. See
-[`INSTALL.md`](https://claude-multisession.pages.dev/INSTALL.md).
+The isolation you do not want: a project-scoped `.claude/settings.json` is git-ignored, a
+creation-time snapshot nothing refreshes and some worktrees lack. So the coordination hooks install
+at **user** scope. See [`INSTALL.md`](https://claude-multisession.pages.dev/INSTALL.md).
 
-Per-checkout environment setup, a virtualenv, a package install, a build, is deliberately not in
-`new.ps1`. It is whatever `setupHook` names, invoked with `CCX_WORKTREE_PATH`, `CCX_WORKTREE_NAME`,
-`CCX_PRIMARY_ROOT` and `CCX_BASE_REF` in the environment. That is what keeps the repository
-language-agnostic; see [`examples/worktree-setup.ps1.example`](https://claude-multisession.pages.dev/examples/worktree-setup.ps1.example).
+Environment setup is `setupHook`'s, not `new.ps1`'s: it runs with `CCX_WORKTREE_PATH`,
+`CCX_WORKTREE_NAME`, `CCX_PRIMARY_ROOT` and `CCX_BASE_REF` set. See
+[`examples/worktree-setup.ps1.example`](https://claude-multisession.pages.dev/examples/worktree-setup.ps1.example).
 
 ---
 
@@ -164,11 +160,9 @@ Resolving it correctly is fussier than it looks:
 This is the surprising half, and it is deliberate. **Remove a worktree and the claims it took are
 still there.** The state lives beside the shared object store, not in the checkout.
 
-That is a feature: it is what lets a claim survive a crashed session so a peer can see it. It is also
-why nothing here releases state on a timer. The reaper releases a claim only on **evidence**, the
-directory is gone *and* the worktree is deregistered, matched on full canonicalised path equality.
-Releasing a *living* worktree's claim hands its key away and causes the duplicate build the registry
-exists to prevent.
+The feature: a claim survives a crashed session for a peer to see, and nothing expires on a timer.
+The reaper releases only on **evidence** -- directory gone *and* worktree deregistered, matched on
+full canonicalised path equality -- because releasing a live claim hands its key away.
 
 ---
 
@@ -197,11 +191,9 @@ Config roots are discovered dynamically (`<home>/.claude*` directories that cont
 directory), because several logins can coexist on one machine and a session is only visible to the
 login that owns it.
 
-**This can break under you.** If a future client renames a field, moves the directory, or changes
-`startedAt`'s unit, every fence here degrades to "cannot tell" rather than to a confident wrong
-answer. That is the entire reason the states below distinguish *not alive* from *could not be
-evaluated*. And `bin/ccx-doctor.ps1` prints how many records it read and placed, so a schema change
-shows up as a count going to zero instead of as a silent all-clear.
+**This can break under you.** A renamed field or a changed `startedAt` unit degrades every fence to
+"cannot tell", not a confident wrong answer -- hence *not alive* versus *could not be evaluated*
+below. `bin/ccx-doctor.ps1` counts records read and placed, so a schema change reads as zero.
 
 ### It is not a pid check
 
@@ -226,10 +218,9 @@ shows up as a count going to zero instead of as a silent all-clear.
 | `DEAD` | no such pid | no |
 | not found | no record at all | no |
 
-`UNREADABLE` ranks with the possibly-live states, not with the gone ones, and it used to be reported
-as `DEAD`. A registry file caught mid-write has exactly that shape, which makes it the signature of a
-session that launched one second ago. A session that had just started therefore read as "nobody is
-there" to a caller about to delete its worktree.
+`UNREADABLE` ranks with the possibly-live states, not the gone ones; it used to report `DEAD`. A
+registry file caught mid-write has that shape, the signature of a session that launched one second
+ago -- and it read as "nobody is there" to a caller about to delete its worktree.
 
 ### Liveness may only veto, never permit
 
@@ -279,22 +270,18 @@ State these wherever the fence is consumed. They are not hypothetical.
 | a cwd recorded as a UNC path or an 8.3 short path | the match is a string compare on the canonicalised path, and neither spelling canonicalises to the worktree's own |
 | a session that never registered at all | nothing to read |
 
-The 29% figure is why a cwd-keyed signal alone is never sufficient for a destructive action. Anything
-that deletes needs a **second, independent, non-cwd signal**, and either signal must be able to veto
-on its own. It is also why the primary-checkout gate keys on the write's **target path** and never on
-the session's cwd: a cwd-keyed gate would have denied all 29% of those writes, every one of which was
-already correct.
+The 29% is why a cwd-keyed signal alone never licenses a destructive action: deleting needs a
+**second, independent, non-cwd signal**, either able to veto alone. It is why the primary-checkout
+gate keys on the write's **target path**: keying on cwd would deny all 29%, every one correct.
 
 Two further blind spots belong to the *tooling around* the fence rather than to the fence itself:
 
-- **The desktop client's `list_sessions` cannot see every session kind**, so it answers "who can be
-  messaged" and never "who exists". `<config-root>/sessions/<pid>.json` is the only registry carrying
-  every surface. The measurement, and what to do when the two rosters disagree, are at
-  [the two rosters answer different questions](COORDINATION.md#presence-who-is-here).
-- **Transcript mtime is not liveness.** A session running a long multi-agent workflow files its
-  output under a subdirectory and barely touches its own transcript; one verifiably-live session sat
-  idle by mtime for three times the threshold that was supposed to protect it. Consult the registry
-  **and** mtime, and refuse if either says live.
+- **The desktop client's `list_sessions` cannot see every session kind**: it answers "who can be
+  messaged", not "who exists". Only `<config-root>/sessions/<pid>.json` carries every surface.
+  Measured at [the two rosters answer different questions](COORDINATION.md#presence-who-is-here).
+- **Transcript mtime is not liveness.** A session in a long multi-agent workflow files output under
+  a subdirectory and barely touches its transcript; one verifiably-live session sat idle by mtime
+  for three times its threshold. Consult the registry **and** mtime; refuse if either says live.
 
 ### One copy of the fence, on purpose
 
@@ -376,10 +363,10 @@ instant in which the name does not exist is an instant another worktree can clai
 > survives and the claim stays yours. Losing the lock is not safe. Never orphan the temp file, it
 > lives in the claim registry.
 
-One PowerShell subtlety that cost a debugging session: an exception thrown by a .NET **method** is
-wrapped in a `MethodInvocationException`, so `catch [System.IO.IOException]` around that `Move` never
-matches. The failure escapes to `$ErrorActionPreference = "Stop"`, the cleanup never runs, and the
-temp file is orphaned. The catch there is untyped on purpose.
+A PowerShell trap: .NET **method** exceptions arrive wrapped in a `MethodInvocationException`, so
+`catch [System.IO.IOException]` around `Move` never matches. It escapes to
+`$ErrorActionPreference = "Stop"`, cleanup never runs, and the temp file is orphaned. That catch is
+untyped on purpose.
 
 ---
 
@@ -396,10 +383,9 @@ timeout is most likely to be the wrong inference. Compare the two failure modes:
 |---|---|---|
 | TTL | a wedged lock: visible, one command from fixed | a concurrent double-write nobody observes |
 
-The asymmetry decides it. So: no expiry, no reaper, no "probably dead". On timeout `Enter-CcxLock`
-fails **loudly** with the holder's identity and the manual override, rather than quietly deciding the
-holder is dead. **We retry; we never steal.** There is no reliable liveness signal to prove
-abandonment with, see section 3, so breaking a lock re-opens the exact race the lock exists to close.
+The asymmetry decides it: no expiry, no reaper, no "probably dead". On timeout `Enter-CcxLock`
+fails **loudly** with the holder's identity and the manual override. **We retry; we never steal.**
+No liveness signal proves abandonment (section 3), so breaking a lock re-opens the race it closes.
 
 The corresponding rule for claims: `-List` reports each holder's **liveness**, not the claim's age.
 
@@ -468,9 +454,8 @@ cannot say what this points at", which callers read as "not governed".
 ### A prefix test is not a containment test
 
 `Test-CcxPathUnder` requires `$Path -eq $Root -or $Path.StartsWith("$Root/")`. **The `/` is the
-point.** A bare `StartsWith` is a prefix match on a *string*, not on a *directory*. A sibling worktree
-named `<primary>-<task>` has a path that literally starts with the primary's, so a raw prefix test
-claims every sibling is inside the primary.
+point.** A bare `StartsWith` matches a *string*, not a *directory*: a sibling worktree named
+`<primary>-<task>` starts with the primary's path, so a raw prefix test claims it is inside.
 
 Where prefix matching is genuinely unavoidable, **longest prefix must win**, explicitly.
 
@@ -509,12 +494,9 @@ The reason is concrete: the Python commit-msg gate reads claim files with `encod
 makes `json.loads` raise, and that gate swallows a parse error into "not claimed", which silently
 disables the gate for that key. A cosmetic byte turns an enforced control into a decorative one.
 
-The mirror-image rule on the Python side: `encoding="utf-8"` on `subprocess.run` is **required, not
-cosmetic**. `text=True` alone decodes with the locale default, which is `cp1252` on a stock Windows
-box. So a UTF-8 index file (em dashes, arrows, emoji) raised inside subprocess's reader thread, and
-`proc.stdout` came back `None`. The caller died on the next call, blocking every commit that touched
-the files the gate guards. The gate's failure mode was the one it exists to prevent: silent, and
-worst on exactly the files it looks at.
+In Python, `encoding="utf-8"` on `subprocess.run` is **required**: `text=True` alone decodes with
+the locale default, `cp1252` on stock Windows. A UTF-8 index file raised in subprocess's reader
+thread, `proc.stdout` came back `None`, and every commit the gate guards failed silently.
 
 All hook output is **ASCII only**, in both languages, because a console that is not UTF-8 renders
 anything else as mojibake, and one convention across the set beats two.
@@ -531,10 +513,9 @@ Timestamps are written with `.ToString("o")`. Reading one back is where it goes 
 > **Rule.** Round-trip explicitly (`ConvertTo-Stamp` in `claim.ps1`): if the value came back as a
 > `[datetime]` or `[datetimeoffset]`, re-render it with `"o"`.
 
-The same coercion bites *keys*: a free-text claim key shaped like `2020-01-01T00:00:00` comes back
-through `[string]` as a local short-form date, producing a record naming a key nobody typed and that
-`-Release` cannot be spelled to match. Write the caller's current spelling, and let the folded
-filename be the real identity.
+The same coercion bites *keys*: a claim key shaped like `2020-01-01T00:00:00` comes back through
+`[string]` as a local short-form date, so the record names a key nobody typed and `-Release` cannot
+match. Write the caller's spelling; the folded filename is the identity.
 
 ---
 
@@ -585,18 +566,14 @@ Two validation rules are worth knowing because they are enforced at load:
   treat "no sequences" as an error; a repository that maintains no numbered sequence should not have
   to carry a disabled allocator.
 
-Three names are **not** derived from `prefix`, and knowing which is which matters when you rename
-anything. The gate's allowlist file is the fixed `~/.claude/hooks/ccx-gate.repos.txt`. The two
-installer markers written into the user settings file are the fixed strings `ccx-coord` and
-`ccx-announce`. Those markers are on-disk identity, which is why they are literals rather than
-computed, and why **neither may ever be a substring of the other**. Ownership is tested by substring
-match, so a marker like `ccx-coord-announce` would make one installer claim the other's hook entries.
-Rename any of the three once, in one commit, touching every reader.
+Three names are **not** derived from `prefix`: `~/.claude/hooks/ccx-gate.repos.txt` (the gate's
+allowlist) and the user-settings markers `ccx-coord` and `ccx-announce`. Ownership is tested by
+substring match, so **neither marker may ever be a substring of the other**. Rename one in one
+commit.
 
-`protectedRefs` is the exception to that pattern, and deliberately so: an explicitly **empty** list is
-*not* the same as an absent key. `[]` says "this repository protects nothing", disables the guard, and
-**prints why on stderr**, because a guard that is off must never look like a guard that passed. A
-missing key means nobody chose, and gets the defaults.
+`protectedRefs` is the exception: an explicitly **empty** list is *not* an absent key. `[]` says
+"this repository protects nothing", disables the guard and **prints why on stderr**: a guard that
+is off must never look like one that passed. A missing key means nobody chose: defaults.
 
 A corrupt config is fail-**closed** on the Python side: `load_config` raises rather than falling back
 to defaults nobody chose. A governed repository whose configuration cannot be read must stop.
@@ -624,16 +601,13 @@ edits do not, they take effect at launch. So the real switches are **files**:
 
 These are load-bearing and honest:
 
-1. **PowerShell 7 and Windows-first.** Most of the repository is PowerShell 7; a shell port is a
-   separate project. The Python part of the set -- the git-hook checkers, the leak gate and the one
-   substrate module they share -- is stdlib-only and portable. Case-folding and process start-time
-   reads degrade off Windows, and the doctor names that as a blind spot on every run.
+1. **PowerShell 7 and Windows-first.** A shell port is a separate project. The Python part --
+   git-hook checkers, leak gate, shared substrate -- is stdlib-only and portable. Case-folding and
+   process start-time reads degrade off Windows; the doctor names that blind spot on every run.
 2. **The client's session-record schema is a vendor contract**, see section 3. It can break under you.
-3. **The `ccd_session_mgmt` MCP server is desktop-only.** Announce delivery depends on it and it is
-   **absent on a plain CLI install**, where the hook still fires, still resolves peers, and then asks
-   the model to call tools it does not have. The model will say so and nothing is delivered. On a CLI
-   install, leave that hook uninstalled or create the OFF file. Nothing else in the repository depends
-   on that MCP.
+3. **The `ccd_session_mgmt` MCP server is desktop-only**, and announce delivery depends on it: on
+   a plain CLI install the hook still fires and asks the model for tools it does not have; nothing
+   is delivered. Leave that hook uninstalled there, or create the OFF file. Nothing else needs it.
 4. **`<git-common-dir>` as the state root.** Correct, deliberate, and not portable to a
    non-git-backed setup. Keep it, and keep its corollary in mind.
 5. **Windows path case-insensitivity** in the folding rule. This has already broken once on a
@@ -645,16 +619,13 @@ These are load-bearing and honest:
 
 Every failure mode in this system is **byte-identical to success**.
 
-A hook that is wired but resolves nothing prints the same output as a healthy hook with no peers. A
-fence that could not read the registry returns the same empty list as a fence that read it and found
-nobody. A gate whose helper files were not installed exits 0, exactly like a gate that saw nothing to
-deny. A control that was merged but never installed is a source artifact with green tests.
+A wired hook resolving nothing prints what a healthy one with no peers prints. A fence that could
+not read the registry returns the empty list of one that found nobody. A gate missing its helper
+files exits 0. A control merged but never installed is a source artifact with green tests.
 
-That is why so much of this repository is receipts rather than logic: print what you scanned, count
-what you examined, distinguish "found nothing" from "could not look", and name your blind spots on
-every run. And it is why `bin/ccx-doctor.ps1` exists and is the first command to run. It does not read
-settings to decide whether a control is live. It **fires each control on purpose and requires it to
-refuse**, with a paired negative control so a refusal for the wrong reason is not counted as success.
+This repository is receipts, not logic: print what you scanned, count what you examined, separate
+"found nothing" from "could not look", name your blind spots. `bin/ccx-doctor.ps1` does not read
+settings: it **fires each control and requires it to refuse**, with a paired negative control.
 
 Run it before you trust any of this.
 
