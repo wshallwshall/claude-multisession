@@ -60,6 +60,14 @@ A series spanning two clones is the case this allocator cannot take. Its state r
 design, so two repositories issuing from one series share no allocator, and the rule identifiers in
 [house style](HOUSE-STYLE.md) sit in exactly that position.
 
+**The same shape ships in third-party tooling.** [spec-kit](https://github.com/github/spec-kit), read
+at `main` on 2026-08-12, numbers a feature by scanning spec directories for the highest
+3-or-more-digit prefix and adding one. No lock, no atomic claim, in all three script parities.
+
+An opt-in `--timestamp` mode substitutes a `YYYYMMDD-HHMMSS` prefix and sidesteps the sequence. The
+default path is the unlocked scan, and the explicit `--number` path auto-increments on collision with
+no atomic protection either.
+
 ---
 
 ## The two halves

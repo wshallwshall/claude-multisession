@@ -319,6 +319,7 @@ Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](
 
 **In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list).
+[Correction chain case study](CASE-STUDY-correction-chain.md) covers one finding, four statements, three wrong.
 
 **The standards are a separate project now.**
 [secure-development-standards](https://secure-development-standards.pages.dev/) holds

@@ -472,11 +472,38 @@ fact.
 Related: **label figures you cited but did not re-measure.** A number restated from a prior
 document, in the present tense, reads as a fresh measurement.
 
+### Reconcile the parts against the total the tool already printed
+
+A per-section breakdown reported eight figures summing to **1202**. The same output, in the same
+buffer, carried the line `found 646 section citations`. A breakdown cannot exceed its own total.
+
+Cause: each listing row printed the section twice, once as a field and once inside the quoted
+citation, so a pattern without a trailing-space anchor matched both. Every figure was exactly 2x.
+
+This check needed no re-run, no second instrument and no adversary. It was reading one output
+against itself, and it was caught from a chat message by someone with no access to that terminal.
+
+### Two instruments, one answer
+
+Measured 2026-08-12: one section carries **61** citations. Two instruments agree on it -- a mutation
+run that renumbered the section and counted what broke, and a tally of the tool's own listing. The
+mutation run does not use the tool's counting pattern at all.
+
+Agreement across two methods is what made the figure usable. The 1202 above came from one instrument
+with no cross-check.
+
+Related: **a total is a fact about a (corpus, commit) pair.** The same tool reported 646 on one branch
+and 653 on another carrying two new citing files. Both were correct. Name the tree when you quote one.
+
 ### Measure adherence, do not assume a reminder works
 
 A `SessionStart` banner asked every session to work in a worktree. Measured here over 30 days:
 **44%** of all file writes still landed in the primary's tree. A banner produces no evidence either
 way. If a convention matters, enforce it mechanically -- and measure the enforcement.
+
+Recorded 2026-08-12, across two sessions on one repository: four times in one day, a written rule was
+not consulted at the moment it applied. A rule banning new glyph vocabulary was broken inside the one
+file that rule protects, on the day an audit was measuring it. Knowing a rule does not fire it.
 
 ### A green CI run is not evidence of the thing you gated
 
