@@ -1,0 +1,116 @@
+# Token accounting: what a usage meter measures, and what a plan buys
+
+## TLDR/BLUF
+
+**What this is.** Four measurements of one subscription tier's weekly usage meter, taken on
+2026-08-12, establishing what unit it counts and what a month of it is worth against published
+per-token API prices.
+
+**Why you should care.** The meter counts only the tokens that are not cache reads, so a percentage
+is a poor proxy for work done and a good one for cost. Not for you if you want a rate card: this is
+four samples of an undocumented meter, not vendor documentation.
+
+**How to use it.** Take the ratio, not the dollar figures. The unit finding transfers between
+workloads; the value depends entirely on how much cached context your sessions re-read.
+
+---
+
+## What was measured
+
+Four accounts on the same subscription tier, each billed at 200 USD per month, each running the same
+kind of work: long agentic coding sessions against one repository, with large cached contexts.
+
+Each account's tokens were summed from local session transcripts, which record a usage block on every
+assistant message. That sum was paired with the account's live weekly percentage, read at the same
+moment from the client's own usage endpoint.
+
+| Account | Weekly meter | Tokens in window | Non-cache-read | Raw per 1 percent | Non-cache-read per 1 percent |
+|---|---:|---:|---:|---:|---:|
+| A | 92 percent | 5,563,746,679 | 139,181,709 | 60,475,507 | 1,512,845 |
+| B | 93 percent | 3,666,611,235 | 125,727,276 | 39,425,927 | 1,351,906 |
+| C | 37 percent | 1,348,106,117 | 50,279,736 | 36,435,300 | 1,358,912 |
+| D | 97 percent | 2,779,391,470 | 102,320,610 | 28,653,520 | 1,054,852 |
+
+Each window is that account's current weekly period, which began between two and six days before the
+reading. Three of the four were near their end, so the extrapolation to a full window is short.
+
+## The meter counts non-cache-read tokens
+
+Raw tokens per 1 percent vary by a factor of 2.1 across the four rows, from 28,653,520 to 60,475,507.
+Non-cache-read tokens per 1 percent vary by 1.4, and two of the rows agree to within 0.5 percent:
+B at 1,351,906 and C at 1,358,912.
+
+**Working estimate: roughly 1.35 million non-cache-read tokens per 1 percent of a weekly window**,
+so a full weekly allowance is near 135 million and a month near 590 million. Cache reads are close
+to free against the meter, which matches their being priced at a tenth of fresh input on the API.
+
+Two consequences for anyone reading a percentage:
+
+- **A percentage moving fast does not mean much work went by.** A session re-reading a large cached
+  context burns raw tokens at forty times the rate it burns metered ones.
+- **A percentage is a cost signal, not a progress signal.** For progress, count output tokens or
+  completed steps.
+
+## What 200 USD per month buys
+
+Each account's window was priced at the published per-token rates for the model it ran: 5 USD per
+million input, 25 USD per million output, 6.25 USD per million cache write, 0.50 USD per million
+cache read. Scaled to a full window and then to 4.348 weeks.
+
+| Account | Raw tokens per month | API list value per month | Multiple on 200 USD |
+|---|---:|---:|---:|
+| A | 26.3 billion | 17,623 USD | 88x |
+| B | 17.1 billion | 12,607 USD | 63x |
+| C | 15.8 billion | 11,908 USD | 60x |
+| D | 12.5 billion | 9,323 USD | 47x |
+
+**The defensible number is B and C at 60x to 63x.** Both outliers have known causes, and neither is
+a workload difference the reader can expect to reproduce.
+
+- **A's 88x is cache amplification.** Its raw-to-metered ratio is 40 to 1, against 27 to 29 for the
+  other three. It re-read more cached context per unit of new work, and the meter did not charge for
+  it.
+- **D's 47x is an undercount, not a worse deal.** Its short-window meter showed active use on two
+  days when the local transcripts held nothing for it, so some of its spend happened on a surface
+  these files do not cover. Its true value is higher by an unmeasured amount.
+
+Per million tokens that works out near 0.013 USD raw, or 0.35 USD counting only non-cache-read
+tokens, against roughly 0.75 USD and 6.00 USD respectively at list price for this traffic mix.
+
+## What these numbers are not
+
+| Claim | Limit |
+|---|---|
+| The metering formula | Unknown. Four observations fitted to the simplest model explaining them |
+| The percentages | Integers. At 37 percent the quantisation alone is worth plus or minus 1.4 percent |
+| The extrapolation | Assumes the rest of a window resembles the measured part. Row C is a 2.7x extrapolation and is the weakest |
+| The dollar figures | A comparison against list price, not a bill. Batch pricing, longer cache lifetimes or a cheaper model all move it |
+| The coverage | Local transcripts on one machine only. Row D is the proof that this misses real spend |
+
+**A window's start is not its first use.** Two of the four opened between one and two days before any
+token was spent against them, so a window boundary cannot be inferred from observed activity.
+
+## Reproducing it
+
+The mechanism is the same one [USAGE-AWARENESS.md](USAGE-AWARENESS.md) describes and declines to
+ship: undocumented client internals that can change without notice. Nothing here is packaged, and
+the surfaces are named by shape rather than by path for that reason.
+
+Three surfaces, all local:
+
+1. **Session transcripts.** One JSON line per message, carrying a usage block with four counters:
+   input, output, cache write and cache read. Subagent transcripts nest under the parent session, so
+   a scan that reads only top-level files misses most of the volume.
+2. **The client's per-session account record.** Maps a session to the account it bills. Without it,
+   every number is a total over an unknown mixture of accounts, which is the failure
+   [USAGE-AWARENESS.md](USAGE-AWARENESS.md) is written around.
+3. **The live usage endpoint.** Supplies the percentage, and must be gated on an identity lookup so
+   a reading is provably about the account you think it is.
+
+Deduplicate messages by their request identifier before summing. Retries and streamed messages
+otherwise get counted twice.
+
+## Related
+
+- [USAGE-AWARENESS.md](USAGE-AWARENESS.md) -- reading a percentage safely, and why a threshold alone is not a decision
+- [TIPS-AND-TRICKS.md](TIPS-AND-TRICKS.md) -- the general form of an instrument answering a narrower question than the one asked
