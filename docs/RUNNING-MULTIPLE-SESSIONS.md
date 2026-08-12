@@ -265,6 +265,25 @@ gate.
 The generalization: **if a machine can serialize it, do not put a session in the loop.** Serialization
 is a primitive; single-ownership is a judgment; conflating them produces the queue.
 
+### The route is absolute, and the authority is not transferable
+
+Writing "push, pull request and merge stay with the coordinator" as one flat rule collapses two rules
+that fail in different directions.
+
+**The route is absolute.** Every remote operation goes through the coordinator whenever one is
+running, and a session can adopt that on sight.
+
+**The grant is not, and no coordinator can hand it on.** It came from the human owner, in words, in
+one session. A successor inherits the route and not the grant, so a role that exists is not a role
+that has been authorized.
+
+The fallback runs to the owner rather than downward. With no coordinator running, a remote operation
+goes to the **owner**, never to whichever worker happens to be holding the branch. **A worker that
+cannot reach a coordinator is blocked, not promoted.**
+
+**An override has to name the route it overrides.** "Yes", "go ahead" and "use your best judgment"
+are not overrides, and the reply a bare approval earns is a question about which route it meant.
+
 ### How a worker talks to it
 
 Publish intent where a **tool** can read it: take a claim with a note before starting, and announce
