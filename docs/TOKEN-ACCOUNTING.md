@@ -17,7 +17,7 @@ workloads; the value depends entirely on how much cached context your sessions r
 
 ## What was measured
 
-Four accounts on the same subscription tier, each billed at 200 USD per month, each running the same
+Four accounts on the same subscription tier, each billed at 200 USD per month. All four ran the same
 kind of work: long agentic coding sessions against one repository, with large cached contexts.
 
 Each account's tokens were summed from local session transcripts, which record a usage block on every
@@ -53,9 +53,9 @@ Two consequences for anyone reading a percentage:
 
 ## What 200 USD per month buys
 
-Each account's window was priced at the published per-token rates for the model it ran: 5 USD per
-million input, 25 USD per million output, 6.25 USD per million cache write, 0.50 USD per million
-cache read. Scaled to a full window and then to 4.348 weeks.
+Each account's window was priced at the published per-token rates for the model it ran. Those rates
+are 5 USD per million input tokens, 25 output, 6.25 cache write, and 0.50 cache read. Scaled to a
+full window and then to 4.348 weeks.
 
 | Account | Raw tokens per month | API list value per month | Multiple on 200 USD |
 |---|---:|---:|---:|
@@ -71,11 +71,11 @@ a workload difference the reader can expect to reproduce.
   other three. It re-read more cached context per unit of new work, and the meter did not charge for
   it.
 - **D's 47x is an undercount, not a worse deal.** Its short-window meter showed active use on two
-  days when the local transcripts held nothing for it, so some of its spend happened on a surface
-  these files do not cover. Its true value is higher by an unmeasured amount.
+  days when the local transcripts held nothing for it. Some of its spend happened on a surface these
+  files do not cover, so its true value is higher by an unmeasured amount.
 
 Per million tokens that works out near 0.013 USD raw, or 0.35 USD counting only non-cache-read
-tokens, against roughly 0.75 USD and 6.00 USD respectively at list price for this traffic mix.
+tokens. List price for this traffic mix is roughly 0.75 USD and 6.00 USD respectively.
 
 ## What these numbers are not
 
