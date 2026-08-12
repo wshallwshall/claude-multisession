@@ -63,6 +63,62 @@ Two rules go with that:
   goes to a box nobody reads.
 - **The hash gives injectivity; a readable slug is only so a human can tell boxes apart in a listing.**
 
+**Match that key exactly, never by prefix, and expect getting it wrong to be silent.** Measured
+2026-08-11: a message addressed to a peer's primary checkout instead of its worktree queued, reported
+success, and landed in a box nobody drains. Every observable said it had worked.
+
+---
+
+## The one TTL in the system
+
+A message expires. Nothing else here does, and the reasoning for that asymmetry is in
+[held state versus a message](CONCEPTS.md#the-rule-is-about-held-state-and-a-message-is-not-held-state).
+
+Pick the number against the delivery points rather than against a feeling about staleness. Delivery
+happens at `SessionStart` and at `Stop`, so a recipient that is closed or idle overnight receives
+nothing until somebody opens it.
+
+Measured 2026-08-11: at 720 minutes an ordinary overnight gap expired the message. It is now 4320,
+which spans a weekend and still refuses a three-day-old instruction.
+
+> **Expiry is the only point in this transport where a message is lost rather than merely late, and
+> it is reachable by doing nothing.**
+
+---
+
+## Which transport reaches whom
+
+| Transport | Reaches | Does not reach |
+|---|---|---|
+| The `SendMessage` tool | **Subagents of your own session** | Sibling top-level sessions |
+| The client's session-management tooling | Sibling sessions under the same login | Other logins |
+| A file mailbox | **Any login, any client**, and it survives on disk | Sessions in another clone -- the box hangs off the git common directory |
+
+**A failed send is evidence about your instrument before it is evidence about the channel.** Measured
+2026-08-11: a `SendMessage` failure became "the realtime channel cannot reach that peer".
+`SendMessage` addresses subagents, and the session-management tooling resolved it at once.
+
+The cross-login limit in that table is real and was established separately. The trap is that the
+wrong-instrument run reached a true-sounding conclusion, and that conclusion was then cited as though
+the run had established it.
+
+---
+
+## What covers which wake gap
+
+| The recipient is | Covered by |
+|---|---|
+| Mid-turn, or otherwise busy | A watcher armed at `Stop` |
+| Idle, within the watcher's own wait | The same watcher: one arming covers 900 seconds |
+| Idle for hours | **Nothing.** Extend the watcher, which is gated below, or use a per-session scheduled task, which fires while the prompt sits idle |
+| **Closed** | **Nothing technical.** A hook is a child process of a running client, so no process means no hook |
+
+The last row is structural rather than a gap waiting for a fix. Reaching a closed session means
+reaching the human who opens it.
+
+Arm the watcher at `Stop` and not at `SessionStart`. The drain already covers mail that arrived
+before you got here, and the gap is mail landing while a session sits at a prompt with nobody typing.
+
 ---
 
 ## Four failure modes, each measured
@@ -150,6 +206,26 @@ Everything below was a real finding, not a hypothetical.
 | **Prefix every body line so content cannot reach column 0** | Otherwise the body can forge the surrounding frame. This is structural. A denylist of framing tokens is a completeness claim, and has to be re-proved every time the surrounding tooling gains a new frame |
 | **Cap what the recipient is shown, and measure the cap as rendered** | Charging the raw body while the renderer added six bytes per line let a **34,539-byte** injection pass an **8,000-byte** cap while reporting "0 truncated" |
 
+**A length check in the send command is a courtesy, and the binding cap belongs in the drain.** A
+2000-character limit on the sender stops an honest mistake and nothing beyond it: whoever can write a
+file into the inbox never runs the sender's code.
+
+Say which of the two any given check is, at the point it fires. A courtesy that reads as a control is
+how a cap gets relied on from the wrong side of the trust boundary. The remedy the sender should
+print is to put long content in a file and mail the path.
+
+## Rules that made delivery observable
+
+- **The drain announces that it ran.** "The box is empty" beats silence, so a missing line means the
+  hook did not fire rather than that no mail arrived. Those two rendered identically while a hook sat
+  wired and resolving nothing.
+- **Queued is not delivered.** Delivery happens when the recipient's drain next runs, so confirm it
+  rather than inferring it from a successful send.
+- **A receipt records what was observed, not what was attempted.** The drain writes it at the moment
+  it emits. A receipt written by hand can assert a delivery that never happened.
+- **Every observation carries its as-of time.** An undated observation reads as current and is
+  unusable.
+
 ---
 
 ## The trust boundary is the OS account
@@ -170,7 +246,7 @@ Two consequences:
 
 ---
 
-## One unresolved risk, carried rather than closed
+## Two unresolved risks, carried rather than closed
 
 **Session ids are reused across launches.** This was measured, not assumed.
 
@@ -179,6 +255,22 @@ If a phantom ever carried the survivor's id it would mint an indistinguishable m
 silent loss, and nothing in the design could detect it.
 
 Measure this on your own surface. Do not reason it away.
+
+**A wake that arrives does not prove the session was free to receive it.** Measured 2026-08-11: a
+`Stop` hook carrying `async` and `asyncRewake`, sleeping 90 seconds and then exiting 2, reached the
+session 90 seconds after the turn ended, with no user input.
+
+That result does not separate the two cases it needs to. Either `async` was honored and an idle
+session was woken, or `async` was ignored and the turn was blocked inside the hook for the full 90
+seconds.
+
+The transcripts are byte-identical and the gap is the sleep duration under either reading, so the
+observation cannot discriminate. Weak evidence for the first: the harness surfaced it as a background
+notification, and backgrounding is gated on a flag that held here.
+
+It decides whether a longer watcher **wakes** a session or **hangs** it, which is why the wait stays
+at its 900-second default until somebody answers it. **The discriminator is whether the interface
+accepted input during that window -- something the human can see and the session cannot.**
 
 ---
 

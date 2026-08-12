@@ -52,6 +52,14 @@ It is not churn. It is a concurrency defect, and the workaround is the bug.
 > atomically, and enforce the allocation at commit time. When a symptom keeps recurring and the
 > remedy keeps being "redo it by hand", ask whether you are looking at a race.
 
+**It fires in sequences the allocator does not cover, too.** Measured 2026-08-11: a session checked
+that a rule identifier was free, composed the entry, then wrote it -- and a peer had taken that
+number in the gap. The check and the write were never one operation.
+
+A series spanning two clones is the case this allocator cannot take. Its state root is per-clone by
+design, so two repositories issuing from one series share no allocator, and the rule identifiers in
+[house style](HOUSE-STYLE.md) sit in exactly that position.
+
 ---
 
 ## The two halves
@@ -432,6 +440,7 @@ Stated plainly, because each one is a hole somebody will otherwise assume is cov
 | Two sessions can still build the same thing under two *different* numbers | Nothing structural sees duplicated work. That is what claims and announce are for -- see `docs/COORDINATION.md`. |
 | The high-water ratchet cannot restore history | It stops re-issue. The commits those refs pointed at are still gone. |
 | Numbers are never reclaimed | Sequences develop holes. Accepted by design. |
+| A series shared across two clones cannot be allocated here | The state root is per-clone on purpose, so two repositories issuing from one number series have no allocator in common. The rule identifiers in `docs/HOUSE-STYLE.md` are in that state, and the control there is a dated table rather than a gate. |
 
 ---
 

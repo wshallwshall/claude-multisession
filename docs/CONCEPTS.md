@@ -389,6 +389,26 @@ No liveness signal proves abandonment (section 3), so breaking a lock re-opens t
 
 The corresponding rule for claims: `-List` reports each holder's **liveness**, not the claim's age.
 
+### The rule is about held state, and a message is not held state
+
+The heading says anywhere, and one thing in this model does expire: a message. That is not an
+exception to the rule so much as the reason it has to be stated precisely.
+
+Expiry on **held state** hands a critical section to a second process while the first is still in
+it. Expiry on a **message** does the reverse: it stops a stale instruction from being acted on. A
+three-day-old "hold the trunk" is better refused than obeyed.
+
+Which is already the standing requirement for a broadcast, one that
+[must carry a hard expiry or a recipient-evaluable predicate](COORDINATION.md#a-broadcast-needs-an-expiry-or-a-recipient-evaluable-predicate).
+
+**The part that is not closed.** Message expiry is silent in both directions: the recipient is never
+told a message existed, and the sender is never told it went unread. That is the failure the table
+above rejects TTLs for -- one nobody observes.
+
+Measured 2026-08-11, on the implementation behind [session mail](SESSION-MAIL.md), which ships no
+script here: the mail TTL was 720 minutes, so an ordinary overnight gap expired a message. It is now
+4320. **A longer TTL lowers the frequency and does not touch the silence.**
+
 > **Trap.** Age was the original signal and it was actively misleading. A claim was labeled
 > `STALE ~21h` and recommended for release; its holder had committed **two minutes earlier**.
 > Following the tool's own recommendation would have freed the key for a second session to start

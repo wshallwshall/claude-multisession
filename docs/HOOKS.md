@@ -143,6 +143,28 @@ Markers are on-disk identity. `install-coordination.ps1` finds its own entries b
 contain the other**, or one uninstall silently removes the other's hook. A rename orphans every
 install.
 
+**Check that, rather than reading it.** Measured 2026-08-11 on the implementation behind
+[session mail](SESSION-MAIL.md): four markers, every ordered pair, both directions, none contained
+another.
+
+The near miss the rule exists for is suffixing a marker already in use. A `ccx-mail-urgent` contains
+`ccx-mail`, so installing the second strips the first's row and disarms it.
+
+### Backgrounding is gated, so `asyncRewake` alone can block the session
+
+A hook that waits -- a watcher rather than a gate -- needs `async` **and** `asyncRewake`, not
+`asyncRewake` by itself. Backgrounding is gated on `isInteractive || hasStreamingInput`, so under
+`claude -p` the hook takes the synchronous path and holds the session for its whole timeout.
+
+Emit the pair only for the rows asking for it. **A `PreToolUse` gate that returns asynchronously is a
+gate that does not gate**, so every existing row keeps its exact shape.
+
+Give the harness timeout headroom over the script's own wait: 1200 seconds against a 900-second
+watcher. A watcher killed at its timeout is indistinguishable from one that found nothing.
+
+Measured 2026-08-11 against harness v2.1.221, on the implementation behind
+[session mail](SESSION-MAIL.md).
+
 ---
 
 ## The output contract
@@ -203,6 +225,29 @@ and a parameter default is not evaluated when a value is supplied.
 `tests/test_worktree_gate_no_args.py` runs the script with no arguments at all and requires it to
 deny a write into a governed root. That is the only outcome proving the default both evaluated and
 resolved to the file the installer writes.
+
+### A shim ending in `break` discards the one exit code that carries
+
+Exit 2 is the code the harness reads, so a hook that signals through it depends on every wrapper
+between it and the harness preserving it. The shared re-resolving shim ends `& $s; break`, and exits
+0.
+
+Measured 2026-08-11 on the implementation behind [session mail](SESSION-MAIL.md), driving a stub
+script in place of the hook:
+
+| Shim spelling | Stub exits | Process exit code |
+|---|---|---|
+| `exit $LASTEXITCODE` | 2 | 2 |
+| `exit $LASTEXITCODE` | 0 | 0 |
+| `& $s; break` | 2 | **1** |
+| `exit $LASTEXITCODE` | script absent | 0 |
+
+Row three is the one to read. The shared shim does not merely fail to forward 2, it reports **1**. So
+the payload is discarded *and* logged as a hook error, which reads as a broken hook rather than a
+dropped signal.
+
+Row four is the negative control. Outside a repo nothing ran, so the fall-through has to reach
+`exit 0` rather than forward a stale code: put the `exit` **inside** the `Test-Path` branch.
 
 ### The git-hook contract
 

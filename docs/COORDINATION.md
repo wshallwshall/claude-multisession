@@ -404,6 +404,9 @@ Claims do not expire and there is no reaper. An abandoned claim is a stale note 
 in one command. An auto-expiring claim silently re-opens the race it exists to prevent, at the moment
 you are least able to notice.
 
+The carve-out is a message rather than a claim, and the reasoning for it is in
+[held state versus a message](CONCEPTS.md#the-rule-is-about-held-state-and-a-message-is-not-held-state).
+
 ### A record you can only replace by deleting is a record you cannot safely correct
 
 **Trap.** `-Take -Note` on a key you already hold accepted the new note, reported success, and threw
@@ -515,6 +518,23 @@ characters. Branch does not join them: the rosters reported different branches f
 returned `Message sent.`, `isRunning: true` returned `queued ... will be processed after the
 in-flight turn`. So **true** delays delivery and **false** delivers immediately. The old rule was
 inverted.
+
+**Observations from 2026-08-11 disagree with that row, and none of them settles it.** A send to a peer
+reporting `isRunning: false` returned the *queued* string rather than `Message sent`. The recipient,
+running turns of its own, did not see it across two of them.
+
+It arrived alongside a later send from the same sender, whose transcript records two calls with
+different bodies and no re-send. Late delivery is what happened, rather than a repeat.
+
+**The flag does not decide the string.** In one tool block, two peers both reporting `isRunning: true`
+returned different values: one `queued`, one `Message sent`. Over five sends, `true` produced both.
+
+One sender, against an earlier measurement on another build. **Re-measure before relying on either
+direction, and record more than the flag** -- at minimum whether the peer was mid-turn.
+
+**What survives all of it.** The return value reports what happened to your call. Peer receipt is
+established by the peer's reply and by nothing else, which costs no instrumentation and cannot go
+stale.
 
 **Attempt the send and let the return value be the evidence.** It answers what the flag only
 gestures at, and costs one call. A wrong id fails loudly (`Session <id> not found.`), so a failure

@@ -377,6 +377,14 @@ There is a harness-level version of the same trap, where the gate was fine and t
 The account, and the four rules that came out of it, are at
 [establishing what a hook actually does](HOOKS.md#establishing-what-a-hook-actually-does).
 
+The hole opens in an ad-hoc check too. Measured 2026-08-11: three tokens were grepped against a ref
+to establish that a commit carried no classifier, and the result was zero. Re-run against a ref that
+had to match, the same predicate also returned zero.
+
+**The conclusion was true and the evidence was empty.** That is the more durable of the two failures.
+A false conclusion gets caught by whatever it breaks; a true one resting on nothing never does. Run
+the predicate against a known positive before you trust its zero.
+
 ### A gate cannot see a policy judgment
 
 "This content does not belong in this repository" is not a token class. No scanner catches it, no
@@ -431,6 +439,15 @@ context.
 Verify installation **by receipt**, never by reading a settings file. An entry in `settings.json`
 is a *claim*; a receipt plus a target that re-resolves is *evidence*. `install-coordination.ps1
 -Status` answers from its receipt plus a live re-resolution of every shim target.
+
+### An installer with no row for a hook is a hook that runs nowhere
+
+Worse than a stale copy, because every other signal is healthy. Measured 2026-08-11: a watcher was
+written, verified against the harness and documented, while `install-coordination.ps1` carried no row
+for it. It had been armed nowhere since the day it was written.
+
+Source, tests and documentation all agreed the hook existed. None of the three is a record of it
+being armed.
 
 ### Put at least one signal outside the component being audited
 

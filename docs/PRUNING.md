@@ -71,6 +71,21 @@ Signal 3 is scoped: `-Base origin/<parent>` points at the *parent's* upstream, s
 makes a never-pushed child report `[gone]`. `gone` means *the remote ref is absent* -- a closed PR
 and a `push --delete` produce it too. Remove the **worktree**, never delete the **branch**.
 
+### A two-dot diff answers a different question, and the answer looks identical
+
+`git diff --name-only main branch` compares the two tips. Where the trunk has moved, every file the
+trunk gained since the branch was cut shows up, and none of those is the branch's work.
+
+Three dots compares against the **merge base**, which is the question you meant to ask: what did this
+branch change?
+
+Measured 2026-08-11, closing a stale branch: two dots reported **85 files**, three dots reported
+**zero**, and the branch was tree-identical to its base. Nothing about "85" announces that the
+question was wrong.
+
+> **Rule.** Make three dots the default and justify two, rather than writing another caution. A
+> caution competes with muscle memory and loses. A default is what muscle memory reaches for.
+
 ### The converse trap is the one that destroyed a worktree
 
 Signal 1 answering **zero** is not "merged". A branch created seconds ago has no commits beyond the
