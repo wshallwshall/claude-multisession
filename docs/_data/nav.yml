@@ -26,6 +26,14 @@
 
 - group: Start here
   items:
+    # FIRST ITEM OF THE FIRST GROUP, which is what makes this the first link in the sidebar on every
+    # page: _layouts/default.html renders site.data.nav in file order, group by group, and takes the
+    # first item of the first group as the first anchor in the nav element. Moving this entry down,
+    # or adding a group above this one, silently demotes it -- the layout has no notion of a pinned
+    # row, so position in this file is the whole of the mechanism.
+    - label: The CHORUS framework
+      title: "The CHORUS Framework: Lesson Learned the Hard Way"
+      path: /CHORUS.html
     - label: Overview
       title: claude-multisession
       path: /
