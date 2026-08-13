@@ -277,6 +277,18 @@ class SourceLinksResolve(unittest.TestCase):
                 # and appends the filename per iteration.
                 if any(p.startswith(target + "/") for p in served):
                     continue
+                # OPEN-8, and the narrowest form of it that works. A page published in its author's
+                # own words carries the author's own URLs, and appending `.html` to one is editing
+                # the page. The extensionless form is not broken: Cloudflare Pages serves /WORKTREES
+                # from WORKTREES.html by clean-URL fallback. MEASURED against the live site on
+                # 2026-08-12, not assumed -- /WORKTREES and /USAGE-AWARENESS both returned the real
+                # page, which is why this is an accepted form here rather than a tolerated defect.
+                #
+                # The `.md` is not a typo: `served` holds published paths, so a rendered page appears
+                # in it as WORKTREES.md. Requiring a hit means a mistyped target still fails, because
+                # nothing resolves it -- the exemption is for the missing suffix, not for the link.
+                if relpath in t.AUTHORED_VERBATIM and target + ".md" in served:
+                    continue
                 offenders.append(f"{relpath}: /{target}")
 
         self.assertNotEqual(
@@ -666,6 +678,15 @@ class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
             if f.startswith("docs/") and f.endswith(".md") and f not in self.NOT_A_PAGE
         ]
 
+    def pages_under_the_open_rules(self) -> list[str]:
+        """Rendered pages minus the OPEN-8 exemptions.
+
+        OPEN-2 and OPEN-7 both demand specific words in a specific place, so neither can be applied
+        to a page published in its author's own words without editing those words. OPEN-8 names the
+        pages that are, and t.AUTHORED_VERBATIM is its only list.
+        """
+        return [f for f in self.rendered_pages() if f not in t.AUTHORED_VERBATIM]
+
     def test_the_scan_actually_reads_the_rendered_pages(self):
         """The empty-match guard. Every assertion below passes trivially over an empty list."""
         pages = self.rendered_pages()
@@ -676,8 +697,38 @@ class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
             "measuring nothing. If docs/ really shrank this far, lower the number deliberately.",
         )
 
+    def test_the_open_8_exemption_is_real_tracked_and_named_in_the_house_style(self):
+        """An exemption nobody can see is the failure mode of every exemption.
+
+        Three ways this one could rot silently, and each is asserted rather than trusted:
+        a path that no longer exists (the page renamed, the carve-out now covering nothing while
+        reading as though it still applies); a path outside the set of pages the OPEN rules bind
+        at all, which would be a carve-out from nothing; and t.AUTHORED_VERBATIM growing without
+        docs/HOUSE-STYLE.md naming the addition, which is how a one-page exception becomes a
+        general permission nobody voted for.
+        """
+        pages = set(self.rendered_pages())
+        house_style = t.read(t.REPO_ROOT / "docs" / "HOUSE-STYLE.md")
+        for relpath in t.AUTHORED_VERBATIM:
+            self.assertIn(
+                relpath,
+                pages,
+                f"OPEN-8 exempts {relpath}, which is not a tracked rendered page. Either the file "
+                "was renamed and the exemption points at nothing, or it was never added with "
+                "`git add`. Remove the entry or fix the path.",
+            )
+            self.assertIn(
+                relpath,
+                house_style,
+                f"OPEN-8 exempts {relpath} in tests/_ccxtest.py, and docs/HOUSE-STYLE.md does not "
+                "name it. The rule and its list have to be readable in the same place: name the "
+                "file under OPEN-8 there, with the reason it is published unedited.",
+            )
+
     def test_every_rendered_page_carries_the_section(self):
-        missing = [f for f in self.rendered_pages() if BLUF_HEADING not in t.read(t.REPO_ROOT / f)]
+        missing = [
+            f for f in self.pages_under_the_open_rules() if BLUF_HEADING not in t.read(t.REPO_ROOT / f)
+        ]
         self.assertEqual(
             [],
             missing,
@@ -690,7 +741,7 @@ class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
 
     def test_every_rendered_page_carries_the_three_answers_in_order(self):
         offenders = []
-        for relpath in self.rendered_pages():
+        for relpath in self.pages_under_the_open_rules():
             text = t.read(t.REPO_ROOT / relpath)
             at = -1
             for label in self.THREE_ANSWERS:

@@ -48,11 +48,12 @@ counting after the split, so the numbers past each section are occupied, not vac
 | `B-<n>` | B-1 to B-10 | B-11 to B-17 | **B-18** |
 | `HS-<n>` | HS-1 to HS-16, HS-20 | HS-17 spent on a superseded branch, HS-18, HS-19 | **HS-21** |
 | `PD-<n>` | PD-1 to PD-8 | PD-9 | **PD-10** |
-| `OPEN-<n>` | OPEN-1 to OPEN-7 | none | **OPEN-8** |
+| `OPEN-<n>` | OPEN-1 to OPEN-8 | none | **OPEN-9** |
 
-Read from that repository's `origin/main` before allocating, not from a local clone: it runs
-concurrent sessions and a clone goes stale in the time one rule takes to write. Verified against
-`origin/main` there on 2026-08-10, at its commit `d5684de`.
+Read from that repository's `origin/main`, not a local clone: it runs concurrent sessions and a
+clone goes stale in the time one rule takes to write. Checked there on 2026-08-12 at commit
+`d393aad`, before `OPEN-8` was taken. Its one `OPEN` mention cites this page's range, as
+`OPEN-1 to OPEN-6`.
 
 **Neither sheet can see the other move, and both have been wrong about it.** That page says this
 one issues `OPEN-1 to OPEN-6`, true until `OPEN-7` landed. No check on either side could catch it,
@@ -75,6 +76,28 @@ orientation sections were deleted for restating the page rather than opening it.
 | OPEN-5 | An opening **SHOULD** link rather than summarise, where the target says it already | A link, not a paraphrase |
 | OPEN-6 | A page longer than roughly 2,000 words **SHOULD** name its own starting point | One link, in the `How to use it` slot |
 | OPEN-7 | The three answers **MUST** be labelled, verbatim and in order: `**What this is.**`, `**Why you should care.**`, `**How to use it.**`, each opening its own paragraph | `tests/test_docs_do_not_drift.py` pins all three, in order, on every rendered page |
+| OPEN-8 | A page published in its author's own words is exempt from `OPEN-2`, `OPEN-7` and the prose ratchets, and **MUST** be named in `AUTHORED_VERBATIM` in `tests/_ccxtest.py`. It stays bound by every rule that does not require rewriting the author: ASCII, `HS-16`, and every link resolving | One tuple, one entry. `tests/test_docs_do_not_drift.py` fails when it names a file this page does not |
+
+### OPEN-8 names one file, and that is the whole of the exemption
+
+`docs/CHORUS.md` is the only page under it: a document its author asked to publish unedited. Four
+gates were red against it before this rule existed -- `OPEN-2`, `OPEN-7`, the source-link scan, and
+`HS-20` at 94 paragraphs against a baseline of 88.
+
+**The exemption is a tuple of exact paths, never a pattern.** `AUTHORED_VERBATIM` in
+`tests/_ccxtest.py` is its only definition, and three tests in two files read it rather than
+repeating the filename. Adding a second page is a diff someone approves, which is the point.
+
+**It is an exclusion, not a raised baseline.** Moving `BASELINE_FAT_PARAGRAPHS` from 88 to 94 would
+also have gone green, and would have handed every other page six paragraphs of new headroom. The
+ratchet still measures what it measured before.
+
+An exempt page may write `/WORKTREES` without `.html`, but only where `WORKTREES.md` is a page the
+site serves, so a mistyped target still fails. That form is not broken: the host resolves it by
+clean-URL fallback, measured on 2026-08-12 against `/WORKTREES` and `/USAGE-AWARENESS`.
+
+What OPEN-8 does not touch: the ASCII gate, `HS-16`, every link resolving, and the site building.
+An exempt page is still one a reader has to be able to load.
 
 ### What OPEN-1 and OPEN-2 demanded before 2026-08-10
 

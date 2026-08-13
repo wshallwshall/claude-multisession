@@ -34,6 +34,20 @@ ALL_INSTALLERS = (GIT_HOOK_INSTALLER, GATE_INSTALLER, COORD_INSTALLER, SELFHEAL_
 CLAIM_CHECK = REPO_ROOT / "scripts" / "hooks" / "claim_check.py"
 PUSH_GUARD = REPO_ROOT / "scripts" / "hooks" / "push_guard.py"
 
+# OPEN-8: the pages published in an author's own words, exempt from the house style rules that would
+# require rewriting those words. THIS TUPLE IS THE ONLY DEFINITION -- docs/HOUSE-STYLE.md states the
+# rule and names the same file, and three tests in two files read this constant rather than repeating
+# the filename. A second hard-coded copy is how an exemption stops being reviewable.
+#
+# It is deliberately a tuple of exact repository-relative paths and not a pattern. A pattern would
+# admit the next page whose author did not want to be edited, and the point of OPEN-8 is that adding
+# to this list is a visible diff someone has to approve.
+#
+# WHAT IT DOES NOT EXEMPT, because an exemption wider than its reason is the failure this repository
+# is about: the ASCII gate, the link-wrapping rule, every link resolving, and the site building. An
+# exempt page is still a page a reader has to be able to load.
+AUTHORED_VERBATIM = ("docs/CHORUS.md",)
+
 # The coordination surfaces a human or a tool reads for an all-clear. Grouped here because what they
 # have in common is the failure mode, not the directory: each one has an exit path that means "I could
 # not tell" and used to render byte-identically to "I looked, and it is clear".

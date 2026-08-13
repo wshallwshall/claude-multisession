@@ -76,13 +76,24 @@ def tracked_files() -> list[str]:
 
 
 def prose_files() -> list[str]:
-    """Tracked markdown that is prose. Word copies are generated and are not edited."""
+    """Tracked markdown that is prose. Word copies are generated and are not edited.
+
+    OPEN-8 pages are excluded for the same reason: they are not edited either. Every rule measured
+    over this corpus -- sentence length, table cell width, paragraph length -- is satisfied only by
+    rewriting the sentence, and a page published in its author's words has no such edit available.
+
+    EXCLUDED RATHER THAN ABSORBED INTO THE BASELINES, and the difference matters. Raising
+    BASELINE_FAT_PARAGRAPHS from 88 to 94 would also have gone green, and would have handed every
+    OTHER page six paragraphs of new headroom against a rule the corpus is deliberately red behind.
+    The ratchet stays at 88, measuring exactly what it measured before.
+    """
     return [
         f
         for f in tracked_files()
         if f.endswith(".md")
         and (f.startswith(("docs/", "README", "INSTALL")))
         and "/word/" not in f
+        and f not in t.AUTHORED_VERBATIM
     ]
 
 
