@@ -93,6 +93,9 @@
     - label: Drift audit case study
       title: "Case study: auditing a multi-session estate as one system"
       path: /CASE-STUDY-drift-audit.html
+    - label: Correction chain case study
+      title: "Case study: a finding that took four passes and two sessions"
+      path: /CASE-STUDY-correction-chain.html
 
 - group: Contributing
   items:
