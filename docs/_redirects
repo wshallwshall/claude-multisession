@@ -1,0 +1,18 @@
+# Cloudflare Pages redirect rules. One line per moved URL: from, to, status.
+#
+# THIS IS NOT scripts/site/build_redirect.py, AND THE TWO ANSWER DIFFERENT HOSTS. That script
+# generates a stub per page on the RETIRED github.io host, for links written before the move on
+# 2026-08-10. This file forwards a URL that moved WITHIN this site, on the host serving it now.
+# Neither one can do the other's job: the old host is not this project's deploy target, and this
+# file is not served from it.
+#
+# A REAL 301 RATHER THAN A META-REFRESH STUB, which is the one place this improves on that script's
+# reasoning. docs/assets/style.css allows a script only when "the answer it filtered was complete
+# before any script ran", which is why the stubs carry a meta refresh AND a visible link. A rule
+# here needs neither: the redirect is the HTTP response, so it is complete for a reader with
+# JavaScript disabled, for a crawler, and for curl.
+#
+# /CHORUS was live from 01:33 on 2026-08-13 and was renamed to /KORUS at 15:06 the same day, in #48.
+# It is named in #45, in this repository's history, and in anything anyone saved in those 13 hours.
+/CHORUS     /KORUS     301
+/CHORUS.md  /KORUS.md  301

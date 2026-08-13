@@ -75,6 +75,18 @@ markdown: kramdown
 # No `exclude:` key on purpose. Setting it REPLACES Jekyll's defaults rather than adding to them,
 # and there is nothing under docs/ that should not be served.
 
+# `include:` IS set, for exactly one file, and it is what makes _redirects reach the site at all.
+# Jekyll does not copy a file whose name begins with an underscore -- that is how _layouts and _data
+# stay out of the output -- so docs/_redirects would be read by nothing and published nowhere, and
+# the forward would be a file in the repository rather than a rule on the host. Cloudflare Pages
+# reads _redirects from the root of what is uploaded, which is _site.
+#
+# This REPLACES Jekyll's default include list, the same trap the exclude comment above describes.
+# The default is `[".htaccess"]`, nothing here serves Apache, and no .htaccess is tracked, so the
+# replacement costs nothing. Adding a second entry here means writing both.
+include:
+  - _redirects
+
 # One layout for every page, applied through front-matter defaults so that the 14 existing
 # documents keep zero front matter.
 #
