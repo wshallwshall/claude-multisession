@@ -2,126 +2,111 @@
 
 ## TLDR/BLUF
 
-**What this is.** A leader's account of the continuous integration this repository runs, for the
-person funding it rather than building it. It moves the definition of *done* off the author's
-confidence and onto a check with an exit code.
+**What this is.** A guide to the continuous integration this repository runs, written for the people
+who fund that work rather than build it. It moves the definition of *done* off the confidence of
+whoever wrote the change and onto an automated check that ends in a pass or a fail.
 
-**Why you should care.** Agent output defeats review by being plausible, not by looking wrong.
-Sessions pushing into one trunk also produce defects that merge with no conflict marker. Not for you
-if you want a workflow file to copy: none is written out here.
+**Why you should care.** What an AI assistant produces defeats review by being plausible, not by
+looking wrong. Sessions pushing into one main branch -- the trunk -- also produce defects that merge
+with no conflict marker. Not for you if you want a workflow file to copy. None is written out here.
 
-**How to use it.** Take the questions in [what to ask your team for](#what-to-ask-your-team-for) to
-your next meeting with your team, and give the pipeline itself to an engineer.
+**How to use it.** Bring the five questions in
+[what to ask your team for](#what-to-ask-your-team-for) to your next engineering meeting. Hand the
+pipeline itself to an engineer.
 
 ---
 
-## What this kind of CI is
+## Why review stopped being enough
 
-**A gate is a deterministic check with an exit code**, never an instruction to the assistant to be
-careful. No change merges on the assistant's own assurance.
+Slop is confident, well-formed, wrong output, and it survives a read.
 
-Both rules belong to [AI-assisted development](https://secure-development-standards.pages.dev/standards/AI-ASSISTED-DEVELOPMENT.html).
+A usage hook built early in this work told a session it had used 93% of its weekly allowance, while
+the account that session drew on sat at 5%. The number and the account name were both neatly
+formatted, confident and wrong. [Usage awareness](USAGE-AWARENESS.md) says why no such hook ships
+here.
 
-**A written reminder is not a control, and the difference was measured.** A session-start banner
-asked every session to work in an isolated checkout. Measured over 30 days on the repo this tooling
-was developed in, 44% of writes from sessions sitting in the shared checkout landed there.
+The categories of error have not moved; the volume of output has, and
+[The CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html) makes
+that point. Reviewer hours did not rise with the volume, so attention per change fell.
 
-That figure has not been re-measured, and nothing in the repository can recompute it. Treat it as
-cited rather than current: [README](https://claude-multisession.pages.dev/README.md).
+**[external]**, not measured here. Developers with an AI assistant wrote less secure code while
+being more confident that it was secure, on a 2022-generation model (Perry et al., ACM CCS 2023).
 
-So *done* stops meaning an author who can walk you through the change. It means a set of checks that
-ran, that could have failed, and that named what they examined.
+Re-baseline that finding against
+[Code quality](https://secure-development-standards.pages.dev/standards/CODE-QUALITY.html) before
+you cite it.
 
-## Three states a control can be in
+The answer is a check that can fail rather than more reading, and
+[CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html) makes
+that case.
 
-A control that runs is not a control that can fail. A control that can fail is not one anybody has
-proved can fail. Only the third state supports an attestation, and all three look identical on a
-dashboard.
-
-| State | What you may attest | What it is worth |
-|---|---|---|
-| It runs | The job executed and exited zero | Nothing about the code. A check that cannot go red produces this forever |
-| It can fail | The logic has a red path somewhere in it | Nobody has driven that path with a real defect |
-| It has been proved able to fail | A planted defect turned it red, on this artifact, on this date | The only state an attestation can rest on |
-
-In a hook-and-installer system, a control can be absent, unwired, wired to a dead script, or failing
-open. All four print what a healthy quiet run prints: exit zero, no output, work proceeds. A
-dashboard cannot separate them.
-
-A shipped version of this repository's worktree gate crashed on the value it uses when a caller
-omits an argument. Every test supplied that argument explicitly, so the failing line never ran. The
-suite stayed green. A test that runs the gate with no arguments now pins it.
-
-**A pass is evidence only after the same check has been made to fail on purpose.** In the drift
-audit of 2026-08-04, each shipped gate fix was proved by 5 mutations, one at a time, each required
-to go red.
-
-An adversarial review of those fixes surfaced 3 regressions, pinned in their own test file:
-[Drift audit case study](CASE-STUDY-drift-audit.md).
-
-## The defect class review cannot see
+## The defect class that review cannot see
 
 Two sessions each compute the next free identifier from their own isolated checkout. Both are
 correct. The branches merge with no conflict, and no line disagrees with any other line.
 
-Human review cannot catch that by construction, because each half is right on its own. On the repo
-this tooling was developed in, the collision fired 3 separate times:
-[Sequence allocation](SEQUENCE-ALLOC.md).
+Human review cannot catch this, by construction, because each half is right on its own. In the
+repository where this tooling was built, that collision fired three separate times, and
+[Sequence allocation](SEQUENCE-ALLOC.md) is the record.
 
-One identifier was claimed by 3 concurrent branches and surfaced only after merge:
-[CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html), *"Reserve
-globally unique identifiers from a shared registry, never by scanning"*.
+Three concurrent branches claimed one identifier, and the clash showed up only after the merge.
+[CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) states the
+rule: *"Reserve globally unique identifiers from a shared registry, never by scanning"*.
 
-A separate checkout per session, a file lock, code review and a green pipeline on each branch are
-each individually blind to it. The catch has to be central or it does not happen.
+Four defences are each individually blind to it: a separate checkout per session, a file lock, code
+review, and a green pipeline on each branch. A central check catches it, or nothing does.
 
-An allocator that creates a file only if it does not exist produced 8 distinct numbers across 8
-concurrent processes, with 0 collisions. Rewriting one shared list instead lost 4 of 8 writes and
-raised no error.
+An allocator that hands out the next number by creating a file only if it does not exist produced
+eight distinct numbers across eight concurrent processes, with zero collisions. Rewriting one shared
+list lost four of the eight writes and raised no error.
 
-Duplicated work has the same shape. Two sessions fixed one defect an hour apart, the rebase reported
-no conflict, and the doubled fix shipped with 92 tests passing.
+Duplicated work fails the same way. Two sessions fixed one defect an hour apart, and the rebase --
+replaying one branch onto the other -- reported no conflict. The doubled fix shipped with 92 tests
+passing.
 
-Elsewhere, 3 sessions fixed one dependency advisory: 3 branches, 0 textual conflicts, and 2 of the 3
-pull requests closed as duplicates. [Coordination](COORDINATION.md) carries both.
+Elsewhere, three sessions fixed one dependency advisory. Those three branches produced zero textual
+conflicts, and two of the three pull requests closed as duplicates;
+[Coordination](COORDINATION.md) records both incidents.
 
-**A green branch is not a green combination.** Measured on the repo this tooling was developed in,
-the trunk moved 7 times during one pair of pull requests. Two independently green branches need not
-merge cleanly in either order.
+**A green branch is not a green combination.** Back in the repository where this tooling was built,
+the trunk moved seven times while a single pair of pull requests was open. Two branches that are
+green on their own can still break when combined, in either order.
 
-**A branch check asserts a property of the branch.** Nothing asserts a property of the combination
-until it is on the trunk, so a check that runs after merge matters more with parallel sessions.
+**A check on a branch tells you about that branch alone.** Nothing tests the merged result until it
+lands on the trunk, so a check that runs after the merge earns its keep as soon as sessions run in
+parallel.
 
-## How this reduces slop
+## What a gate is, and what it replaces
 
-Slop is not a defect category. It is confident, well-formed, wrong output, and it survives a read.
+**A gate is a deterministic check with an exit code.** It gives the same answer every time it runs,
+and it ends in a pass or a fail rather than an opinion. A gate is never an instruction to the
+assistant to be careful, and no change merges on the assistant's own assurance.
 
-An early usage hook measured during this work reported 93 percent weekly into a session whose pool
-sat at 5 percent. The number and the account name were formatted, confident and wrong. No such hook
-ships here: [Usage awareness](USAGE-AWARENESS.md).
+[AI-assisted development](https://secure-development-standards.pages.dev/standards/AI-ASSISTED-DEVELOPMENT.html)
+states both the definition and the no-merge rule.
 
-[The CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html) makes
-the volume point: the categories of error have not moved, the amount of output has.
+**A written reminder is not a control.** A session-start banner asked every session to work in its
+own checkout. Measured over 30 days, in the repository where this tooling was built, 44% of writes
+from sessions sitting in the shared checkout landed there anyway.
 
-Reviewer hours did not rise with the volume, so attention per change fell. The answer is a check
-that can fail rather than more reading:
-[CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html).
+Nothing in the repository can recompute that figure, and it has not been re-measured, so treat the
+[README](https://claude-multisession.pages.dev/README.md) number as cited rather than current.
 
-The prose gate on this documentation set caught its own authors. The pass that gave 18 pages a
-standard opening wrote 8 of those openings over the 30-word limit, and the check named all 8 before
-the work landed. Measured 2026-08-10.
+*Done* no longer means an author who can walk you through the change. It means a set of checks that
+ran, that could have failed, and that named what they examined.
 
-A second check found 15 of the 18 rendered pages carried no summary section on 2026-08-10, with
-nothing recording that they were missing it. Every page was green either way until a test pinned it.
+The prose gate on this documentation set caught its own authors. One editing sweep gave eighteen
+pages a standard opening and wrote eight of those openings over the 30-word limit. The check named
+all eight on 2026-08-10, before the work landed.
 
-**[external]**, not measured here. Developers with an AI assistant wrote less secure code while more
-confident it was secure, on a 2022-generation model (Perry et al., ACM CCS 2023). Re-baseline it:
-[Code quality](https://secure-development-standards.pages.dev/standards/CODE-QUALITY.html).
+A second check found that fifteen of the eighteen rendered pages carried no summary section on
+2026-08-10, and no record anywhere said they were missing one. Every page passed with or without a
+summary until a test made the omission fail.
 
-Closing that confidence gap is what a gate does. It does not make the assistant better, and it does
-not make the reviewer faster.
+A gate closes the gap between how correct output looks and how correct it is. It does not make the
+assistant better or the reviewer faster.
 
-## What a gate answers, and what it does not
+## What a gate answers, and what it leaves open
 
 | What goes wrong | What answers it |
 |---|---|
@@ -131,65 +116,108 @@ not make the reviewer faster.
 | A branch that was green before the trunk moved | Revalidation against the current trunk |
 | The same intent implemented twice | A claim register declared before work starts, checked at commit |
 
-That last row is the residue. A register records what a session declared, so two sessions building
-the same thing under two names still pass. A gate decides a property of one artifact, and cannot see
-that two artifacts do the same work: [Coordination](COORDINATION.md).
+The ratchet in the first row is a limit set at today's measured figure that may fall but never rise.
 
-The gate added after that measurement keys on the write's target path rather than the session's
-working directory: [Tips and tricks](TIPS-AND-TRICKS.md).
+The gate behind the third row arrived after that 44% measurement. It checks where a write is going
+rather than where the session happens to be sitting: [Tips and tricks](TIPS-AND-TRICKS.md).
+
+That last row is the one a gate leaves open. A register records only what a session declared, so two
+sessions building the same thing under two names both pass.
+
+A gate decides a property of one change at a time, and two changes doing the same work each look
+correct alone: [Coordination](COORDINATION.md) states the limit.
 
 ## What it costs
 
-With up-to-date-with-base enforced and no merge queue, the trunk takes at most one merge per
-pipeline cycle. A low-urgency merge therefore costs every sibling branch a full cycle, and one
-broken blocking check stops every session rather than one.
+Suppose every branch must be current with the trunk before it merges, and no merge queue lines the
+branches up for you. The trunk then accepts at most one merge per pipeline cycle -- one full run of
+the checks.
 
-A changed gate also makes every already-green branch unverified. The sequencing rule is owned by
-[CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html), under
-*"Sequence the queue deliberately"*.
+A low-urgency merge therefore costs every other branch in flight a full cycle. One broken check that
+blocks merges stops every session, not one. A changed gate also makes every already-green branch
+unverified.
+
+[CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) states the
+sequencing rule, under *"Sequence the queue deliberately"*.
 
 Do that arithmetic with your own two numbers, pipeline cycle time and sessions in flight, before you
-buy another seat. Nothing here measures a ceiling for you.
+buy another seat, because nothing here measures a ceiling for you.
 
-The costs a single stream of work already carries are set out at
-[CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html),
-under *"What it buys you, and what it costs"*.
+[CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html) sets
+out the costs a single stream of work already carries, under *"What it buys you, and what it
+costs"*.
 
-**False positives are the expensive failure.** On the repo this tooling was developed in, a
-verb-scanning rule denied a read-only status command over a blocklisted word in a prose line. A gate
-sessions route around protects nothing.
+**False positives are the expensive failure.** In the repository where this tooling was built, a
+rule that scanned for verbs denied a read-only status command. The blocklisted word it matched sat
+in a line of prose. A gate that sessions learn to route around protects nothing.
 
-No speed claim is available. Nothing in either repository measures a productivity gain, and that
-page refuses the benefit claims a budget usually rests on. Fund this on auditability, continuity and
-reviewability.
+No speed claim is available here. Nothing in either repository measures a productivity gain, and CI
+enforcement refuses the benefit claims a budget usually rests on. Fund this on auditability,
+continuity and reviewability.
+
+## How to tell whether a control is real
+
+A control that runs may have no way to go red at all. A control with a red path may never have been
+driven down it. Only the third state supports an attestation, and all three look identical on a
+dashboard.
+
+| State | What you may attest | What it is worth |
+|---|---|---|
+| It runs | The job executed and exited zero | Nothing about the code. A check that cannot go red produces this forever |
+| It can fail | The logic has a red path somewhere in it | Nobody has driven that path with a real defect |
+| It has been proved able to fail | A planted defect turned it red, on this artifact, on this date | The only state an attestation can rest on |
+
+Controls here are installed by a script and fired by hooks. One can therefore be missing, wired to
+nothing, wired to a dead script, or failing open -- waving work through when the check errors. All
+four look exactly like a healthy quiet run: exit zero, no output, work proceeds.
+
+A dashboard shows all four as the same green.
+
+This repository's worktree gate keeps each session in its own checkout. A shipped version of it
+crashed on its own default value, the one it uses when a caller omits an argument.
+
+Every test supplied that argument explicitly, so the failing line never ran and the suite stayed
+green. A test that runs the gate with no arguments now pins it.
+
+**A pass is evidence only after the same check has been made to fail on purpose.** In the drift
+audit of 2026-08-04, each shipped gate fix was proved by five mutations, applied one at a time, each
+one required to go red.
+
+An adversarial review of those fixes found three regressions, held in place by a test file of their
+own. [Drift audit case study](CASE-STUDY-drift-audit.md) records the audit and the review.
 
 ## What a green pipeline does not prove
 
-Green is a claim about what ran. Each limit here passes a clean pipeline, and each has a named
-mechanism.
+Green is a claim about what ran. Every limit below survives a clean pipeline run, and each one has a
+named mechanism.
 
-- **A green leak gate proves less than it looks.** Without a token source configured, this
-  repository's CI run arms shape detectors only, and states that a pass then says nothing about
-  private names: [the leak gate](LEAK-GATE.md).
-- **A skipped job is not a passed job.** Where steps are gated on whether code changed, a
-  documentation-only pull request skips them, including the step policing documentation.
-- **A dry run proves absence of error, not correctness of output.** Valid-but-wrong output passes
-  it, which is the slop class a pipeline is structurally blind to:
+- **A green leak gate proves less than it appears to.** With no token source configured, this
+  repository's CI run switches on only the detectors that match a generic shape, not the ones that
+  match your private names. [The leak gate](LEAK-GATE.md) says a pass then proves nothing about
+  those names.
+- **A skipped job reports green having run nothing.** When steps only run if code changed, a
+  documentation-only pull request skips all of them, including the step that polices documentation.
+- **A dry run proves that nothing errored, not that the output is right.** Running a change without
+  letting it take effect passes valid-but-wrong output, and that is the slop a pipeline is
+  structurally blind to:
   [CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html).
-- **A scanner cannot see a policy judgment.** A design note detailed enough to attack the system it
-  describes carries no forbidden string: [the leak gate](LEAK-GATE.md) states that limit.
-- **The assistant's outbound queries pass no scanner.** A commit-time content scan is not a live
-  interceptor of an outbound query, so that channel is human discipline only:
-  [AI-assisted development](https://secure-development-standards.pages.dev/standards/AI-ASSISTED-DEVELOPMENT.html).
-- **A test can bind the wrong copy.** On the repo this tooling was developed in, 85 tests passed
-  while enforcement ran from an installed copy days behind source. That count is cited rather than
-  re-measured, so re-derive it: [Drift audit case study](CASE-STUDY-drift-audit.md).
+- **A scanner cannot see a policy judgment.** A design note can carry enough detail for someone to
+  attack the system it describes and still contain no forbidden string, and
+  [the leak gate](LEAK-GATE.md) states that limit.
+- **The assistant's outbound queries pass no scanner.** A commit-time scan cannot intercept a query
+  as the assistant sends it, so that channel is human discipline alone, as
+  [AI-assisted development](https://secure-development-standards.pages.dev/standards/AI-ASSISTED-DEVELOPMENT.html)
+  states.
+- **A test can exercise the wrong copy.** In the repository where this tooling was built, 85 tests
+  passed while enforcement ran from an installed copy days behind source.
+  [Drift audit case study](CASE-STUDY-drift-audit.md) records that count, cited rather than
+  re-measured, so re-derive it.
 
 ## What to ask your team for
 
-The general control-owner questions are already written at
-[The CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html).
-These five are the ones concurrency and agent authorship add.
+[The CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html)
+already carries the general questions for a control owner. These five are the ones that concurrency
+and AI-written code add.
 
 | Ask | What a healthy answer sounds like |
 |---|---|
@@ -209,7 +237,7 @@ configuration, because the server-side setting moves faster than prose describin
 | The collision class git cannot report | [Sequence allocation](SEQUENCE-ALLOC.md) |
 | Why a clean merge is not evidence nobody duplicated your work | [Coordination](COORDINATION.md) |
 | Proving a control is live rather than installed | [Drift audit case study](CASE-STUDY-drift-audit.md) |
-| Fail-open versus fail-closed, and declaring which you chose | [Hooks](HOOKS.md) |
+| Fail-open versus fail-closed -- letting work through when the check itself errors, or refusing it -- and declaring which you chose | [Hooks](HOOKS.md) |
 | What a content scanner permanently cannot see | [The leak gate](LEAK-GATE.md) |
 | What a pipeline buys, what it costs, and what to ask about it | [CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html) |
 | The two-page version written for a security owner | [CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html) |
@@ -217,26 +245,25 @@ configuration, because the server-side setting moves faster than prose describin
 | How much AI-written code a human must actually read | [Review depth](https://secure-development-standards.pages.dev/standards/REVIEW-DEPTH.html) |
 | Whether any of this reaches your team at all | [Which standards apply](https://secure-development-standards.pages.dev/standards/WHICH-STANDARDS-APPLY.html) |
 
-You do not need to read anything below this line. It is written to Claude Code.
+Everything below this line is addressed to Claude Code. You do not need to read any of it.
 
 ---
 
 ## For Claude Code
 
-Everything from here is addressed to you, Claude Code.
+### Audit first, then stop
 
-## What you are being asked to do
-
-**Audit before you build.** Somebody has read the half above and wants this in the repository you
-are sitting in. Report what is there before you propose anything.
+**Audit before you build.** Somebody has read the half above and wants this repository gated the
+same way. Establish the five rows in the table below, and report all five before you propose
+anything.
 
 **Say so if the answer is no.** A repository running one session at a time needs the receipt rules
-and none of the concurrency gates, and that is a real answer.
+-- each run printing what it examined -- and none of the concurrency gates. That is a real answer.
 
 **Read the server-side configuration, never a document about it.** Branch protection moves faster
 than the prose describing it, and a required-check count you recall is stale.
 
-**Produce commands, do not run them.** Installers and protection changes belong to the human.
+**Produce commands, do not run them.** Installers and branch-protection changes belong to the human.
 
 | Establish this | How |
 |---|---|
@@ -246,89 +273,98 @@ than the prose describing it, and a required-check count you recall is stale.
 | How many sessions push here | Ask the human; the answer sets the cycle cost |
 | What allocates shared identifiers | Read the allocator, or report that there is none |
 
-Then **STOP and report.** Do not write a gate until they have chosen one.
+**Stop and report.** Do not write a gate until the human has chosen one.
 
-## Build in this order
+### Build in this order
 
-1. **Make one existing check print what it examined.** Until a run reports how many units it
-   scanned, no later green result is evidence about anything.
+1. **Make one existing check print how many units it scanned, and where it looked.** Until a run
+   reports that count, no later green result is evidence about anything.
 2. **Refuse a pass on zero units.** This repository's Tests step greps the runner output for
-   `Ran [1-9][0-9]* tests` and exits 1 when that line is absent.
+   `Ran [1-9][0-9]* tests` and exits `1` when that line is absent. Match the pattern to the runner
+   the target repository actually uses.
 3. **Plant a violation of every blocking check and watch each go red.** Do this before adding a new
    check, because an unarmed gate is cheaper to add than to find later.
-4. **Add the concurrency gates.** Allocation that creates a file only if it does not exist, a
-   same-commit registration check, a work-claim register checked at commit, and a refusal to push to
-   protected refs.
-5. **Move the authoritative copy server-side.** A local hook is advisory once a session can remove
-   it, and the merge gate is the one nobody can skip.
+4. **Add four concurrency gates.**
+   - Allocation that reserves a number by creating a file only if it does not exist.
+   - A check that the index row for that number lands in the same commit as the number.
+   - A work-claim register, declared before work starts and checked at commit.
+   - A refusal to push to protected refs.
+5. **Make the server-side check the authoritative one, not the local hook.** A local hook is
+   advisory once a session can remove it, and the merge gate is the one nobody can skip.
 6. **Add a check that runs on the trunk after merge.** A branch-level pass asserts nothing about the
    combination.
 
-## Gate shapes, and the receipt each owes
+### Gate shapes, and the receipt each owes
 
-| Gate | Shape | Receipt it must emit |
+| Gate | How it must behave | Receipt it must emit |
 |---|---|---|
 | Test suite | Fails the run when the runner reports no tests executed | The count of tests executed |
-| Content scanner | Exit 0 clean, 1 found, 2 usage error or nothing scanned | What it loaded and what it scanned |
-| Control audit | Exit 0 proven, 1 red, 2 undetermined | One row per control, undetermined tagged as such |
-| Identifier registry | Creates a file only if it does not exist; two-dot diff in CI mode | The allocation record the change claims |
+| Content scanner | Exits `0` when clean, `1` when a forbidden string is found, `2` on a usage error or an empty scan | What it loaded, and what it scanned |
+| Control audit | Exits `0` proven, `1` red, `2` undetermined | One row per control, undetermined tagged as such |
+| Identifier registry | Creates a file only if it does not exist; two-dot diff in CI mode | The allocation record for the identifier the change claims |
 | Prose ratchet | Seeded at today's measured figure, never at zero | The corpus scanned, and the current figure |
 
-Shipped instances readable in this repository:
+Read these three shipped instances before you write a new gate:
 
 - `.github/workflows/gates.yml` refuses a pass when the runner reports no tests executed.
-- `scripts/security/scan_forbidden.py` prints what it loaded and what it scanned, and exits 2 on an
-  empty scan.
-- `bin/ccx-doctor.ps1` exits 0 only when every required control is installed, wired and refused its
-  attack, 1 on any red, and 2 when a check could not be determined.
+- `scripts/security/scan_forbidden.py` prints what it loaded and what it scanned, and exits `2` on
+  an empty scan.
+- `bin/ccx-doctor.ps1` exits `0` only when every required control is installed, wired, and proved by
+  refusing a planted attack; `1` on any red; `2` when a check could not be determined.
 
-**Use three outcomes, not two.** Exit 0 proven, 1 failed, 2 undetermined. A skip that exits 0 is a
-pass nobody granted.
+**Use three outcomes, not two: exit `0` proven, `1` red, `2` undetermined.** A skip that exits `0`
+is a pass nobody granted.
 
 **Seed a ratchet at the measured figure, not at zero.** A hard limit set at zero on day one ships
-disabled. The live baselines are constants in `tests/test_prose_rules_hold.py`; read them there
-rather than copying them.
+disabled.
 
-## Verify before you report success
+The live baselines are constants in `tests/test_prose_rules_hold.py`. Read a baseline from that file
+each time you need one, and never quote one from memory or from this page.
+
+### Verify before you report success
 
 - **Drive the artifact that enforces, not the copy in the repository.** A test bound to the source
   copy says nothing about an installed one.
-- **Mutate the shipped artifact one change at a time and require each mutation to go red.** Five
-  mutations per fixed gate, audit date 2026-08-04; an adversarial review of those fixes then
-  surfaced 3 regressions.
+- **Mutate the shipped artifact one change at a time and require each mutation to go red.** The
+  2026-08-04 audit ran five mutations per fixed gate, and an adversarial review of those fixes
+  surfaced three regressions. Mutate until every branch has been driven, not until you reach five.
 - **Run the entry point with no arguments.** A default value is a code path no test that passes the
   argument will ever reach.
-- **Pair every positive with a negative control.** A search returning zero proves nothing until the
-  same predicate returns non-zero on input that has to match.
-- **Run the suite the way CI runs it**, from CI's working directory and with CI's path arguments.
+- **Pair every positive with a negative control, so a zero is worth something.** A search returning
+  zero proves nothing until the same predicate returns non-zero on input that has to match.
+- **Run the suite from CI's working directory, with CI's path arguments.** A run from the wrong
+  directory can find nothing and still exit clean.
 - **Read what your instrument defaulted to.** Latest-attempt filters, scoped discovery and page
   sizes each answer a narrower question and report no error.
 - **Enumerate sibling paths for every control you add.** The other operating system, the counterpart
   destructive verb, the adjacent route: an assistant implements where it was prompted.
-- **Neutralise caller-supplied values in any refusal message you write.** A branch name accepts
-  semicolons and pipes, and a newline in a path forges a second remediation block.
+- **Neutralise every caller-supplied value before it reaches a refusal message.** A branch name
+  accepts semicolons and pipes, and a newline in a path forges a second remediation block.
 
-## What you must never claim
+### What you must never claim
 
 - **You cannot claim a speed or productivity gain.** None is measured in either repository. Report
   auditability, continuity and reviewability instead.
-- **You cannot claim a gate can fail** unless you made it fail. Say the deny path is unproven.
-- **You cannot claim a control is enforcing** from a green test run. Name the copy you exercised.
+- **You cannot claim a gate can fail unless you made it fail.** Report the deny path as unproven in
+  the same place you report the pass.
+- **You cannot claim a control is enforcing from a green test run.** Name the copy you exercised.
 - **You cannot claim coverage from a scoped run.** State the paths you scanned beside the count.
 - **You cannot claim a required-check count from memory.** Read it out of the configuration on the
   day you write the sentence.
 - **You cannot claim a fix is unique.** A clean merge is not evidence that no other session did the
   same work an hour earlier.
-- **Do not source a number from popular statistics about AI-written code.** Headline percentages
-  that did not reconcile with their own sources were dropped here after checking.
+- **You cannot claim a headline percentage about AI-written code.** Percentages that did not
+  reconcile with their own sources were dropped here after checking, so do not source a number from
+  popular statistics.
 
-## Where the detail lives
+### Where the detail lives
 
-Do not reconstruct these from memory. Read them when they become relevant.
+Read the page a row names before you act on that row's subject. Do not reconstruct any of it from
+memory.
 
 | For | Read |
 |---|---|
-| Every rule this section compresses, with its incident | [CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) |
+| Every rule the handoff half above compresses, with the incident behind it | [CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) |
 | Sorting a control set into blocking and advisory | [CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html) |
 | Controls for AI-assisted work, and what a gate is | [AI-assisted development](https://secure-development-standards.pages.dev/standards/AI-ASSISTED-DEVELOPMENT.html) |
 | Adoption order, and reporting-only before blocking | [Adopting these](https://secure-development-standards.pages.dev/standards/ADOPTING-THESE.html) |
