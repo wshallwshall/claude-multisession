@@ -1,5 +1,9 @@
 # The KORUS Framework: Lesson Learned the Hard Way
 
+> **Take a copy:**
+> [markdown](https://claude-multisession.pages.dev/KORUS.md)
+> or [Word document](https://claude-multisession.pages.dev/word/KORUS.docx).
+
 Hello, I'm a senior developer working on a major project since late May, 2026.
 (See MessageFoundry.org). This is a personally written summary of what I've learned.
 

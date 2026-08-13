@@ -313,7 +313,13 @@ class TheWriteCollisionFigureNamesItsDenominator(unittest.TestCase):
     # Everything git tracks that is text. Deliberately NOT a figure-bearing allowlist: an allowlist
     # decides in advance where the defect is allowed to be, and this one already shipped in a
     # template and three scripts nobody would have listed.
-    SKIPPED_SUFFIXES = (".png", ".jpg", ".gif", ".ico", ".pdf", ".woff", ".woff2")
+    # Binary, so t.read decodes none of them. `.docx` joined the list when docs/word/KORUS.docx was
+    # committed: this scan reads EVERY tracked file, so a new binary format reaches it as a
+    # UnicodeDecodeError rather than as a finding, and the run errors instead of reporting. The
+    # error is the correct behaviour of an unlisted format -- a scan that silently swallowed an
+    # unreadable file would be the failure this suite exists to catch -- so the fix is to name the
+    # format here, and only formats this repository actually tracks are named.
+    SKIPPED_SUFFIXES = (".png", ".jpg", ".gif", ".ico", ".pdf", ".woff", ".woff2", ".docx")
 
     # This file plants the defective sentence on purpose, in the negative control below. Scanning
     # it would make the gate fail on its own test data. Named rather than pattern-excluded so the
