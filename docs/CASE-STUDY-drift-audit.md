@@ -139,8 +139,8 @@ wolf gets routed around, and then you have nothing.
 ### 1. Gate on the write's target path, never the session's cwd
 
 The obvious design -- deny writes from sessions whose cwd is the shared checkout -- is wrong.
-Measured over 30 days, **29% of write calls came from a session sitting in the shared checkout and
-landing inside a separate worktree by absolute path**. Correct behavior, and a cwd-keyed gate
+Measured over 30 days, **29% of the write calls made by sessions sitting in the shared checkout
+landed inside a separate worktree by absolute path**. Correct behavior, and a cwd-keyed gate
 denies it.
 
 Key write-gating on the destination. A session may then stay where it is and simply write into its

@@ -45,11 +45,11 @@
     WHAT IT CANNOT SEE -- state this wherever it is consumed:
       * A session that writes into a worktree BY ABSOLUTE PATH from somewhere else. Records carry the
         cwd a session was launched in, and on the repository this tooling was developed in, measured
-        over a month, about 29% of writes came from a session sitting in the primary checkout and
-        landed in a sibling worktree. Those are invisible here, so a cwd-keyed fence alone is not
-        sufficient protection for a destructive action. In one audit, not a single sibling worktree
-        drew a veto -- including the one a session was demonstrably building in at that moment. A
-        caller that destroys things needs a second, non-cwd signal; this one alone is not enough.
+        over a month, 29% of the writes made by sessions sitting in the primary checkout landed in
+        a sibling worktree. Those are invisible here, so a cwd-keyed fence alone is not sufficient
+        protection for a destructive action. In one audit, not a single sibling worktree drew a
+        veto -- including the one a session was demonstrably building in at that moment. A caller
+        that destroys things needs a second, non-cwd signal; this one alone is not enough.
       * A cwd recorded as a UNC path (\\host\C$\...) or an 8.3 short path: the match is a string
         compare on the canonicalised path, and neither spelling canonicalises to the worktree's own.
       * A session that never registered at all.

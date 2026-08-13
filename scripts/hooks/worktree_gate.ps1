@@ -23,7 +23,7 @@
       4  the EnterWorktree tool (opt-in matcher), which relocates a live session.
 
     KEYED ON THE TARGET PATH, NEVER ON THE SESSION'S cwd. Measured on the repo this was developed in,
-    over 30 days: 29% of Edit/Write calls came from a session sitting in the primary but wrote into a
+    over 30 days: 29% of the Edit/Write calls made by sessions sitting in the primary wrote into a
     sibling worktree by absolute path -- i.e. already correct. A cwd-keyed gate would have denied all
     of them. Only the DESTINATION matters.
 
