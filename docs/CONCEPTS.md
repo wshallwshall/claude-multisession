@@ -266,7 +266,7 @@ State these wherever the fence is consumed. They are not hypothetical.
 
 | Blind spot | Why |
 |---|---|
-| a session writing into a worktree **by absolute path** from somewhere else | records carry the cwd a session was *launched* in. Measured on the repo this tooling was developed in, over a month, about **29% of writes** came from a session sitting in the primary and landed in a sibling worktree |
+| a session writing into a worktree **by absolute path** from somewhere else | records carry the cwd a session was *launched* in. Measured on the repo this tooling was developed in, over a month, **29% of the writes made by sessions sitting in the primary** landed in a sibling worktree |
 | a cwd recorded as a UNC path or an 8.3 short path | the match is a string compare on the canonicalised path, and neither spelling canonicalises to the worktree's own |
 | a session that never registered at all | nothing to read |
 

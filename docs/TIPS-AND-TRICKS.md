@@ -215,11 +215,10 @@ printed `[]`. Always emit the empty array; put the "I could not look" receipt on
 ignored -- which leaves the hook looking installed while permitting everything.
 
 **Gate on the write's TARGET path, never on the session's cwd.** Measured here over 30 days:
-**29%** of Edit/Write calls came from a session in the primary and wrote into a sibling worktree by
-absolute path -- already correct. A cwd-keyed gate would deny every one. Only the destination
-matters.
+**29%** of Edit/Write calls by primary-seated sessions wrote into a sibling worktree by absolute
+path -- already correct. A cwd-keyed gate would deny every one. Only the destination matters.
 
-**Conversely, a cwd-keyed *fence* misses most of the work.** The same 29% is invisible to any
+**Conversely, a cwd-keyed *fence* is blind to that entire class.** The same 29% is invisible to any
 occupancy check that maps a recorded cwd onto a worktree. That is why `prune-merged.ps1` requires
 **two independent occupancy signals** and treats recent git-metadata mtime as the load-bearing
 one.
@@ -498,8 +497,11 @@ and 653 on another carrying two new citing files. Both were correct. Name the tr
 ### Measure adherence, do not assume a reminder works
 
 A `SessionStart` banner asked every session to work in a worktree. Measured here over 30 days:
-**44%** of all file writes still landed in the primary's tree. A banner produces no evidence either
-way. If a convention matters, enforce it mechanically -- and measure the enforcement.
+**44%** of file writes by primary-seated sessions landed in that primary's tree. A banner produces
+no evidence either way. If a convention matters, enforce it mechanically and measure it.
+
+The counts and the denominator are in the
+[README](https://claude-multisession.pages.dev/README.md), which is the record for this figure.
 
 Recorded 2026-08-12, across two sessions on one repository: four times in one day, a written rule was
 not consulted at the moment it applied. A rule banning new glyph vocabulary was broken inside the one

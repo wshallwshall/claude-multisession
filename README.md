@@ -66,14 +66,18 @@ The number collision fired **three times** on the repo this tooling was develope
 class that a worktree, a file lock and `git merge-tree` are *all* blind to.
 
 Two design facts that fall out of measuring rather than guessing, both on the repo this tooling was
-developed in, over 30 days:
+developed in. Over 30 days, 166 sessions ran with their cwd in the shared primary. Both percentages
+below are shares of the Edit/Write calls **those** sessions made, not of every write on the machine:
 
-- **A banner asking sessions to use worktrees does not work.** 44% of all file writes from sessions
-  running in the shared primary landed in the primary's own tree. If a convention matters, enforce
-  it with a hook; a reminder produces no evidence either way.
-- **Gate on the write's target path, never the session's cwd.** 29% of writes came from a session
-  *sitting* in the primary and landing inside a sibling worktree by absolute path -- already correct
-  behavior that a cwd-keyed gate would have denied every one of.
+- **A banner asking sessions to use worktrees does not work.** 6,075 of those calls (44%) landed in
+  the primary's own tree. If a convention matters, enforce it with a hook; a reminder produces no
+  evidence either way.
+- **Gate on the write's target path, never the session's cwd.** Another 4,010 of them (29%) landed
+  inside a sibling worktree by absolute path -- already correct behavior that a cwd-keyed gate
+  would have denied every one of.
+
+This page is the record for both figures. Neither has been re-measured, and nothing in this
+repository can recompute them.
 
 ---
 

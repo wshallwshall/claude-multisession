@@ -1,4 +1,4 @@
-"""Pin the three ways this documentation set can go wrong without anyone noticing.
+"""Pin the four ways this documentation set can go wrong without anyone noticing.
 
 THE FAILURE THIS EXISTS FOR. Publishing docs/ as a site turned two of these from theory into
 something that already happened once.
@@ -37,6 +37,12 @@ something that already happened once.
      copy the site publishes itself, and the pin moved with them.
   3. A DOC CLAIM ABOUT A CONTROL CAN OUTLIVE THE CONTROL. The CLAUDECODE case is the live
      example: the sentence was not wrong when written, it was wrong about what the code tests.
+  4. ONE MEASUREMENT CAN BE STATED OVER TWO DENOMINATORS. Found 2026-08-12: the write-collision
+     figure was scoped to sessions seated in the shared primary in README.md and stated over all
+     file writes in docs/TIPS-AND-TRICKS.md. Both wordings entered in the root commit, so there
+     was no drift to bisect and nothing was ever "changed" -- the corpus shipped inconsistent. A
+     percentage whose denominator is left implicit is the shape to watch: each sentence reads well
+     alone, and only a side-by-side comparison no reader performs exposes it.
 
 WHAT THIS PROVES, AND WHAT IT DOES NOT. These cases read source. They prove the install block still
 exists where the pattern can see it and that README does not carry a second copy that disagrees,
@@ -238,6 +244,204 @@ class TheInstallProcedureHasOneCopy(unittest.TestCase):
             "A reader follows exactly one of these. Either drop the block from README.md and point "
             "at the landing page, or make the two character-identical in this same commit.",
         )
+
+
+class TheWriteCollisionFigureNamesItsDenominator(unittest.TestCase):
+    """The 44% and the 29% are two numerators over ONE denominator. Pin that every copy says so.
+
+    THE FAILURE THIS EXISTS FOR, measured 2026-08-12 and not hypothetical. The same measurement was
+    stated over two different denominators in this repository: README.md scoped it to the writes
+    made by sessions seated in the shared primary, and docs/TIPS-AND-TRICKS.md stated it over all
+    file writes. Both entered in the root commit, so there was no drift signal and nothing to
+    bisect. Review did not catch it in the eight days either wording survived, because each
+    sentence reads perfectly well alone -- the defect is only visible when two files are held side
+    by side, which is precisely what no reader does.
+
+    WHAT SETTLED IT. The repo this tooling was developed in records the raw counts, and is the only
+    place the two numerators appear together, which is the only context in which a shared
+    denominator has to be made explicit: 166 sessions
+    ran with their cwd in the shared primary, 6,075 of their Edit/Write calls (44%) landed in that
+    primary's tree and 4,010 (29%) landed in a sibling worktree by absolute path. Both rows are
+    scoped to those sessions, so the two percentages share one denominator of roughly 13,800 calls,
+    and roughly 27% of that population landed outside the repository altogether. The figures are
+    cited, not re-measured; nothing here can recompute them.
+
+    WHY THIS IS A BAN ON THE LOOSE FORM rather than a requirement for the exact new wording, which
+    is the same choice TheBlufConventionHasOneSpelling makes and for the same reason. The scope can
+    be carried by an attribution clause, by a lead-in sentence that both figures hang off, or by a
+    noun phrase, and pinning one spelling would go red on a rewording that harms no reader. What
+    must never come back is the bare "N% of writes", whose denominator a reader supplies for
+    themselves and supplies wrongly.
+
+    THE CORPUS IS WIDER THAN prose_files(). The figure also ships in CLAUDE.md.template, which is
+    copied into a consumer's own repository, and in three PowerShell scripts, one of which prints
+    it to an operator at runtime. A gate blind to the copies that leave this repository would be
+    the false green most worth having here.
+    """
+
+    # "N% of writes" and its spellings. The percentage may be bolded; "the" and "all" are optional
+    # noise. Matching the NOUN rather than the number keeps the pattern from firing on unrelated
+    # percentages elsewhere in the corpus.
+    #
+    # THE NOUN LIST IS AN ALLOWLIST AND THEREFORE A HOLE, stated rather than left to be discovered:
+    # "44% of edits", "44% of tool calls" or a spelled-out "forty-four percent" are unmatched and
+    # would pass. It covers the four spellings the corpus actually uses. Widen it when a fifth
+    # appears; do not assume the absence of a failure is coverage.
+    WRITE_SHARE = re.compile(
+        r"\*{0,2}\d+\s*%\*{0,2}\s+of\s+(?:the\s+|all\s+)*"
+        r"(?:file\s+writes|Edit/Write\s+calls|write\s+calls|writes)\b"
+    )
+
+    # What must follow: an attribution, AND the population actually named, within a short window.
+    #
+    # ATTRIBUTION ALONE IS NOT ENOUGH, and an earlier draft of this gate made exactly that mistake.
+    # "29% of writes by other sessions" satisfies a by-plus-sessions pattern and names a DIFFERENT
+    # population, so the gate would have blessed a sentence with the wrong denominator. Requiring
+    # the primary to be named is what makes this a check on the denominator rather than on grammar.
+    ATTRIBUTION = re.compile(r"\s*\*{0,2}\s*(?:by|from|made\s+by)\b")
+    POPULATION = re.compile(
+        r"primary-seated|shared\s+primary|shared\s+checkout|primary\s+checkout|in\s+the\s+primary",
+        re.I,
+    )
+    SESSIONS = re.compile(r"\bsessions?\b", re.I)
+    SCOPE_WINDOW = 120
+
+    # The one file that carries the counts and the population.
+    OWNER = "README.md"
+    COUNTS = ("166", "6,075", "4,010")
+
+    # Everything git tracks that is text. Deliberately NOT a figure-bearing allowlist: an allowlist
+    # decides in advance where the defect is allowed to be, and this one already shipped in a
+    # template and three scripts nobody would have listed.
+    SKIPPED_SUFFIXES = (".png", ".jpg", ".gif", ".ico", ".pdf", ".woff", ".woff2")
+
+    # This file plants the defective sentence on purpose, in the negative control below. Scanning
+    # it would make the gate fail on its own test data. Named rather than pattern-excluded so the
+    # exemption is one file and cannot silently grow to cover a real copy.
+    SELF = "tests/test_docs_do_not_drift.py"
+
+    def corpus(self) -> list[str]:
+        return [
+            path
+            for path in tracked_files()
+            if not path.endswith(self.SKIPPED_SUFFIXES) and path != self.SELF
+        ]
+
+    def is_scoped(self, text: str, end: int) -> bool:
+        """Does the figure ending at `end` name the population it is a share of?"""
+        if not self.ATTRIBUTION.match(text, end):
+            return False
+        window = " ".join(text[end:end + self.SCOPE_WINDOW].split())
+        return bool(self.POPULATION.search(window) and self.SESSIONS.search(window))
+
+    def test_no_copy_states_the_figure_over_an_unscoped_denominator(self):
+        unscoped = []
+        scanned = 0
+        for path in self.corpus():
+            text = t.read(t.REPO_ROOT / path)
+            scanned += 1
+            for hit in self.WRITE_SHARE.finditer(text):
+                if not self.is_scoped(text, hit.end()):
+                    line = text.count("\n", 0, hit.start()) + 1
+                    unscoped.append(f"{path}:{line}: {hit.group(0)!r}")
+
+        self.assertEqual(
+            [],
+            unscoped,
+            f"scanned {scanned} tracked files; these state a share of writes without naming the "
+            "population it is a share OF:\n  " + "\n  ".join(unscoped) + "\n"
+            "The 44% and the 29% are shares of the Edit/Write calls made by sessions seated in the "
+            "shared primary, NOT of every write on the machine. Say whose writes, or the next "
+            "reader supplies a denominator and supplies it wrongly.",
+        )
+
+    def test_the_owner_still_carries_the_counts(self):
+        """The empty-match guard, on the file it can defend.
+
+        Without this, the ban above passes perfectly once the figure is deleted everywhere -- which
+        is how a duplication gate normally rots. It sits on the owning file for the reason
+        TheInstallProcedureHasOneCopy records: a guard on a pointing file fails the moment the
+        pointing works.
+        """
+        readme = t.read(t.REPO_ROOT / self.OWNER)
+        missing = [count for count in self.COUNTS if count not in readme]
+        self.assertEqual(
+            [],
+            missing,
+            f"{self.OWNER} is the record for this measurement and no longer states {missing}. "
+            "Either the counts moved, in which case move this guard and the links in "
+            "docs/TIPS-AND-TRICKS.md and docs/CI-FOR-LEADERS.md with them, or a digit was dropped "
+            "-- which PD-1 requires a reason for in the commit message.",
+        )
+
+    def test_the_owner_declares_the_denominator_before_it_states_a_figure(self):
+        """README carries the figures in bullets that do not each repeat the scope, by design.
+
+        That is what makes it the owner rather than a fourth copy -- the population is stated once
+        and both bullets hang off it. The ban above cannot see that arrangement, because the
+        bullets never use the "N% of writes" construction it matches. So the owner needs its own
+        check, or the one file the whole fix rests on is the one file nothing inspects.
+        """
+        readme = t.read(t.REPO_ROOT / self.OWNER)
+        first = readme.find("44%")
+        self.assertNotEqual(-1, first, f"{self.OWNER} no longer states the 44% figure at all.")
+
+        lead_in = " ".join(readme[max(0, first - 500):first].split())
+        for token in ("166", "shared primary", "Edit/Write calls"):
+            self.assertIn(
+                token,
+                lead_in,
+                f"the 500 characters before {self.OWNER}'s first figure no longer contain "
+                f"{token!r}, so the bullets below it now state a percentage whose denominator the "
+                "reader has to guess. Either restore the lead-in that declares the population, or "
+                "scope each bullet individually and retire this case.",
+            )
+
+    def test_the_pattern_rejects_the_wording_it_exists_to_reject(self):
+        """The negative controls. A pattern that fires on nothing passes everything."""
+        rejected = {
+            "the historical defect": "44% of all file writes still landed in the primary's tree",
+            "attribution without a population": "29% of writes by other sessions landed there",
+            "population without an attribution": "29% of writes; the shared primary sessions did it",
+        }
+        for name, sentence in rejected.items():
+            hit = self.WRITE_SHARE.search(sentence)
+            self.assertIsNotNone(hit, f"the pattern no longer recognises a claim at all: {name}")
+            self.assertFalse(
+                self.is_scoped(sentence, hit.end()),
+                f"{name!r} is now accepted as scoped. The pattern was broadened until it stopped "
+                "discriminating, which is a green that means nothing.",
+            )
+
+        accepted = (
+            "44% of file writes by primary-seated sessions landed in that primary's tree",
+            "29% of the write calls made by sessions sitting in the shared checkout landed there",
+            "44% of writes from sessions sitting in the shared checkout landed there",
+        )
+        for sentence in accepted:
+            hit = self.WRITE_SHARE.search(sentence)
+            self.assertIsNotNone(hit, "the pattern no longer recognises a share-of-writes claim")
+            self.assertTrue(
+                self.is_scoped(sentence, hit.end()),
+                f"a corrected wording in the corpus is rejected: {sentence!r}. Widen POPULATION "
+                "rather than deleting the case.",
+            )
+
+    def test_the_scan_reaches_the_copies_that_leave_this_repository(self):
+        """Name what was scanned. A corpus that quietly excludes the shipped copies reads green."""
+        corpus = self.corpus()
+        for shipped in (
+            "CLAUDE.md.template",
+            "scripts/hooks/worktree_gate.ps1",
+            "scripts/coord/occupancy.ps1",
+            "scripts/worktree/prune-merged.ps1",
+        ):
+            self.assertIn(
+                shipped,
+                corpus,
+                f"{shipped} carries this figure into a consumer's repository or onto an operator's "
+                "terminal, and the scan above cannot see it.",
+            )
 
 
 def published_path(tracked_relpath: str) -> str:

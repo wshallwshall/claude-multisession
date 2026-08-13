@@ -59,8 +59,8 @@
     WHAT THE FENCE CANNOT SEE (printed on every run, because a fence believed to be wider than it is
     is worse than no fence):
       * a session that writes into this worktree BY ABSOLUTE PATH from somewhere else. Measured on
-        the repo this was developed in, over 30 days, 29% of Edit/Write calls came from a session
-        sitting in the primary and landed in a sibling. On a later run of that same repo signal 1
+        the repo this was developed in, over 30 days, 29% of the Edit/Write calls made by sessions
+        sitting in the primary landed in a sibling. On a later run of that same repo signal 1
         vetoed NONE of the sibling worktrees, including one a session was demonstrably building in.
         Signal 2 is what stood between that session and this script;
       * a cwd recorded as a UNC (\\host\C$\...) or 8.3 short path -- the match is a normalised string
@@ -755,7 +755,7 @@ $fenceVetoed = $fenceVetoedAtDecision
 # PRINT YOUR BLIND SPOTS. On every run, in the receipt as well as on the terminal: a fence believed to
 # be wider than it is, is worse than no fence, because it is trusted.
 $blindSpots = @(
-    'a session writing into a worktree by absolute path from elsewhere (29% of writes, measured on the repo this was developed in)',
+    'a session writing into a worktree by absolute path from elsewhere (29% of the writes by primary-seated sessions, measured on the repo this was developed in)',
     'a cwd recorded as a UNC or 8.3 short path',
     'a session that never registered',
     'a session that only edits files and runs no git command (invisible to signal 2 as well)'

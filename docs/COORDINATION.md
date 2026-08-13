@@ -208,9 +208,9 @@ from "never registered".
 State this wherever it is consumed:
 
 - **A session writing into a worktree by absolute path from elsewhere.** Records carry the cwd a
-  session was *launched* in. Measured over a month: about 29% of writes came from the primary
-  checkout into a sibling worktree. Invisible here: **a cwd-keyed fence alone cannot guard a
-  destructive action.**
+  session was *launched* in. Measured over a month: 29% of writes by primary-seated sessions landed
+  in a sibling worktree. Invisible here: **a cwd-keyed fence alone cannot guard a destructive
+  action.**
 - A cwd recorded as a UNC path or an 8.3 short path: the match is a string compare on the
   canonicalised path, and neither spelling canonicalises to the worktree's own.
 - A session that never registered at all.

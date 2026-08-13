@@ -146,9 +146,8 @@ vetoes its ancestor (`Get-WorktreeOccupants -IncludeNested`): removing the ances
 (default 36). Not the working files: a test run churns those, so their mtimes would veto everything.
 
 Signal 1 only sees where a session was **launched**. Over 30 days on the repo this tooling was
-developed in, about **29% of Edit/Write calls landed in a sibling worktree by absolute path, from a
-session in the primary**. One audit: signal 1 vetoed **none** of the siblings, one demonstrably in
-use.
+developed in, **29% of Edit/Write calls by primary-seated sessions landed in a sibling worktree by
+absolute path**. One audit: signal 1 vetoed **none** of the siblings, one demonstrably in use.
 
 Because the two signals cover different populations, the run prints **how many candidates each one
 actually vetoed**, not just that it ran. "The fence ran" must never be allowed to imply "the fence
