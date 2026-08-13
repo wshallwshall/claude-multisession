@@ -90,6 +90,9 @@
     - label: Tips and tricks
       title: Tips and tricks
       path: /TIPS-AND-TRICKS.html
+    - label: CI for leaders
+      title: "CI for leaders: what done means when the author cannot vouch for the change"
+      path: /CI-FOR-LEADERS.html
     - label: Drift audit case study
       title: "Case study: auditing a multi-session estate as one system"
       path: /CASE-STUDY-drift-audit.html
