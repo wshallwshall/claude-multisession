@@ -3,8 +3,8 @@
 Hello, I'm a senior developer working on a major project since late May, 2026.
 (See MessageFoundry.org). This is a personally written summary of what I've learned.
 
-Since things with an acronym are more trusted, Claude suggests the following be call KORUS:
-Keep One Repo, Unblock Sessions.
+Since things with an acronym are more trusted, Claude suggests the following be called
+**KORUS: Keep One Repo, Unblock Sessions**.
 
 ## BLUF/TLDR
 
