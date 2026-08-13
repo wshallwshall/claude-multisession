@@ -33,7 +33,7 @@ Here is the shape of what I've learned.
 
    2. Two build sessions, each running four sub-session build tasks.
 
-   3. A coordinator session, which handles all external repo work (pushes, merges, etc.)
+   3. A lander session, which handles all external repo work (pushes, merges, etc.)
 
 5. Use worktrees with hooks enforcing Claude Code's behavior.
 
@@ -143,9 +143,9 @@ which may be a significant enhancement once it is out of beta. For now, your bui
 [dynamic workflows](https://code.claude.com/docs/en/workflows). See
 [Run agents in parallel - Claude Code Docs](https://code.claude.com/docs/en/agents).
 
-### 3. Coordinator Session
+### 3. Lander Session
 
-Coordinator handles all external git repo work, including pushing and merging. It should have
+Lander handles all external git repo work, including pushing and merging. It should have
 authority to handle these independently. This is needed because multisession coding creates merge
 conflicts when the repo's head is constantly changing. This is especially true with larger
 codebases, which created extended CI times.
@@ -167,7 +167,7 @@ Claude Code for Desktop contains an almost hidden method for your sessions to ta
 Combined with the coordination methods listed in
 [Coordination](https://claude-multisession.pages.dev/COORDINATION), the sessions can build your
 project without conflict -- mostly. When there is a conflict, the build sessions can talk with the
-Coordinator and Dispatcher and find solutions. Also see
+Lander and Dispatcher and find solutions. Also see
 [Message your other Claude Code sessions - Claude Code Docs](https://code.claude.com/docs/en/cross-session-messaging)
 
 ## 9. Don't Hit Usage Limits: It Causes Lost Work

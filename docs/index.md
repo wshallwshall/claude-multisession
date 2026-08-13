@@ -304,7 +304,7 @@ entry point to the group, and it covers the three things no other page owns:
 
 - which surface to run sessions on;
 - the channels they have for reaching each other;
-- using one session as a coordinator.
+- using one session as a lander.
 
 Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](COORDINATION.md) -
 [Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -

@@ -4,7 +4,7 @@
 
 **What this is.** The entry point to running more than one Claude Code session in one repository.
 Three things live here and nowhere else: **which surface to run the sessions on**, **the channels
-sessions have for reaching each other**, and **using one session as a coordinator**.
+sessions have for reaching each other**, and **using one session as a lander**.
 
 **Why you should care.** Concurrency buys real parallelism and a specific set of failures, nearly
 all invisible while they happen. Four preparations work only *before* the second session starts,
@@ -20,7 +20,7 @@ More than one Claude Code session in one repository at the same time buys real p
 creates a specific set of failures, nearly all of which are invisible while they happen.
 
 Three things live here and nowhere else: **which surface to run the sessions on**, **the channels
-sessions have for reaching each other**, and **using one session as a coordinator**. Everything else
+sessions have for reaching each other**, and **using one session as a lander**. Everything else
 names the problem and links to the page that owns the fix.
 
 Read [Concepts](CONCEPTS.md) first. A worktree per session, one shared state root every worktree of a
@@ -59,7 +59,7 @@ column, and only there.
 | Two sessions reach for the same next number in a shared sequence | Two records numbered `0004`. Git merges both cleanly and nothing in the graph can see it. | [Sequence allocation](SEQUENCE-ALLOC.md) -- atomic allocation plus a commit-time gate; neither half suffices alone, and no installer wires the commit-time half |
 | A session is a long way into the wrong approach | Typing at its prompt only queues your message for after the turn. | [Steering](STEERING.md) -- a note delivered at the target session's next tool call |
 | A peer cannot be reached at all | An editor-extension session, or one under a different login, is invisible to the realtime channel. | [Session mail](SESSION-MAIL.md) -- designed and documented there, **not shipped** |
-| Two sessions write the same last-write-wins state outside git | Project memory, a shared note, a ledger. One write vanishes with no error anywhere. | **No shipped mechanism.** Named in [Worktrees](WORKTREES.md) and [Concepts](CONCEPTS.md) as something a worktree does not isolate; the remedy is single-writer convention. An accepted residual -- see [coordinator](#using-a-coordinator-session). |
+| Two sessions write the same last-write-wins state outside git | Project memory, a shared note, a ledger. One write vanishes with no error anywhere. | **No shipped mechanism.** Named in [Worktrees](WORKTREES.md) and [Concepts](CONCEPTS.md) as something a worktree does not isolate; the remedy is single-writer convention. An accepted residual -- see [lander](#using-a-lander-session). |
 | Several branches all have to land in one trunk | "Can't merge" is four different states with three different fixes. | [PRs and merges](PR-AND-MERGE.md) -- read the state before touching the branch; it also owns what squash-merge does to reachability |
 | Cleanup deletes a worktree a session is still working in | Or it half-fails, stranding commits in no ref and no reflog. | [Pruning](PRUNING.md) -- merged AND clean AND NOT occupied, two occupancy signals either of which may veto, and an orphan ledger |
 | Everything is green and you cannot tell whether any of it is running | Every failure mode here is byte-identical to success. | [Hooks](HOOKS.md) for the event map and each control's posture; the instrument is `bin/ccx-doctor.ps1`; [the drift audit](CASE-STUDY-drift-audit.md) for the method |
@@ -221,16 +221,16 @@ the decision.
 
 ---
 
-## Using a coordinator session
+## Using a lander session
 
 Once several sessions are in flight, it is worth giving one of them a different job: hold the picture
 of what is in flight and decide what lands in what order, while the others build.
 
-**Nothing here implements this, and this page is introducing the term.** No coordinator script, no
+**Nothing here implements this, and this page is introducing the term.** No lander script, no
 role flag, no routing. The working agreement already routes push, pull request and merge to the
-*human* owner, commits to the session. A coordinator delegates that line to one session.
+*human* owner, commits to the session. A lander delegates that line to one session.
 
-One sentence carries the boundary: **a coordinator arbitrates; it does not execute.**
+One sentence carries the boundary: **a lander arbitrates; it does not execute.**
 
 ### Why the role exists
 
@@ -247,9 +247,9 @@ One sentence carries the boundary: **a coordinator arbitrates; it does not execu
 
 At least these, and the two catch-all rows at the bottom are the rule the rest are instances of.
 
-| Routes through the coordinator | Does **not** route through it |
+| Routes through the lander | Does **not** route through it |
 |---|---|
-| Pushing a branch to the remote | **Committing** -- the worker's own judgment, at logical stops, one layer each. A coordinator asked before a commit is a queue. |
+| Pushing a branch to the remote | **Committing** -- the worker's own judgment, at logical stops, one layer each. A lander asked before a commit is a queue. |
 | Opening a pull request | Editing, running tests, iterating on its own branch |
 | Merging, and arming or disarming auto-merge | Creating its own worktree -- already serialized by a mutex |
 | The **order** decision: which of two branches on the same ground lands first, and who re-syncs after | **Allocating a sequence number** |
@@ -257,9 +257,9 @@ At least these, and the two catch-all rows at the bottom are the rule the rest a
 | Writes to any shared last-write-wins state outside git | Taking a lock |
 | Anything whose answer must be identical for every session and no gate can compute | Any read-only query |
 
-**Allocation is atomic**: the failed exclusive create *is* the mutual exclusion, so a coordinator
+**Allocation is atomic**: the failed exclusive create *is* the mutual exclusion, so a lander
 handing out numbers is the read-modify-write that loses. **A claim is keyed to the working tree**,
-so a coordinator claiming for a worker gets that worker's own commit refused by the commit-time
+so a lander claiming for a worker gets that worker's own commit refused by the commit-time
 gate.
 
 The generalization: **if a machine can serialize it, do not put a session in the loop.** Serialization
@@ -267,19 +267,19 @@ is a primitive; single-ownership is a judgment; conflating them produces the que
 
 ### The route is absolute, and the authority is not transferable
 
-Writing "push, pull request and merge stay with the coordinator" as one flat rule collapses two rules
+Writing "push, pull request and merge stay with the lander" as one flat rule collapses two rules
 that fail in different directions.
 
-**The route is absolute.** Every remote operation goes through the coordinator whenever one is
+**The route is absolute.** Every remote operation goes through the lander whenever one is
 running, and a session can adopt that on sight.
 
-**The grant is not, and no coordinator can hand it on.** It came from the human owner, in words, in
+**The grant is not, and no lander can hand it on.** It came from the human owner, in words, in
 one session. A successor inherits the route and not the grant, so a role that exists is not a role
 that has been authorized.
 
-The fallback runs to the owner rather than downward. With no coordinator running, a remote operation
+The fallback runs to the owner rather than downward. With no lander running, a remote operation
 goes to the **owner**, never to whichever worker happens to be holding the branch. **A worker that
-cannot reach a coordinator is blocked, not promoted.**
+cannot reach a lander is blocked, not promoted.**
 
 **An override has to name the route it overrides.** "Yes", "go ahead" and "use your best judgment"
 are not overrides, and the reply a bare approval earns is a question about which route it meant.
@@ -287,24 +287,24 @@ are not overrides, and the reply a bare approval earns is a question about which
 ### How a worker talks to it
 
 Publish intent where a **tool** can read it: take a claim with a note before starting, and announce
-carries that note to joining sessions. The coordinator **reads state rather than being told it**.
+carries that note to joining sessions. The lander **reads state rather than being told it**.
 Ready-to-land needs no channel: the pushed branch, or a refreshed claim note, is the signal.
 
 ### When you do not need one
 
 The trigger is a condition, not a headcount: **order-dependence** and **effort-overlap**. Three
-sessions on unrelated subsystems need no coordinator; two on branches that both rewrite one index
-file do. Unrelated work in separate worktrees is covered by the shipped gates; a coordinator adds a
+sessions on unrelated subsystems need no lander; two on branches that both rewrite one index
+file do. Unrelated work in separate worktrees is covered by the shipped gates; a lander adds a
 hop.
 
 ### How the role fails
 
 - **Bottleneck.** If a worker must ask before it can commit, you have built a queue. An explicit
   claim tool sat here and was used exactly **zero** times: a coordination step you must remember is
-  one you will skip. A coordinator that says wait when it needn't destroys the channel it depends
+  one you will skip. A lander that says wait when it needn't destroys the channel it depends
   on.
 - **A worker bypasses it** -- assume it. Claims are advisory and the push guard is a guardrail, not a
-  boundary, so the role sits **behind** enforcing gates rather than instead of them: a coordinator
+  boundary, so the role sits **behind** enforcing gates rather than instead of them: a lander
   that is the only control is not a control.
 - **Stale state, in two symmetric directions.** A broadcast that never lapses: a freeze note still
   announced itself long after its pull request merged. Its mirror: a claim was reported stale while
@@ -312,7 +312,7 @@ hop.
   is.
 - **Phrasing a ruling as restraint.** "Do not merge" does not reach armed auto-merge; nobody has to
   click anything for those to land. "Disarm auto-merge on your pull request" does.
-- **Authority confusion.** A coordinator's message is still peer data. Being central is not being
+- **Authority confusion.** A lander's message is still peer data. Being central is not being
   authorized.
 - **State that lives only in one context.** Whatever it decides must end up in a claim, a number, a
   branch or a gate; a cleared context takes the rest with it.
