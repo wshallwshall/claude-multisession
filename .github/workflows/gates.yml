@@ -53,12 +53,103 @@ jobs:
         with:
           fetch-depth: 0
 
+      # pandoc, PINNED BY VERSION AND DIGEST. tests/test_word_copy_tracks_the_markdown.py rebuilds
+      # docs/word/KORUS.docx from docs/KORUS.md and compares the two, so the converter is a
+      # dependency of the suite rather than an optional extra -- that file FAILS rather than skips
+      # when pandoc is missing, because the artifact it guards is published and a skip prints beside
+      # the passes. Neither runner image is contracted to ship it, and a version an image happens to
+      # ship is not the version the committed copy was verified against.
+      #
+      # INSTALLED BEFORE THE VERSION RECEIPT, deliberately. $GITHUB_PATH takes effect in the NEXT
+      # step, so installing here is what lets the receipt below name pandoc beside pwsh, python and
+      # git. The one failure this gate produces that is NOT a stale document is a converter
+      # difference, and the failing test tells the reader to check the version first -- the receipt
+      # is where they will look.
+      #
+      # WHY PINNED, AND NOT "the latest release". The committed .docx was produced by ONE converter,
+      # verified against pandoc 3.10 on 2026-08-13. A different one can emit different text from
+      # identical markdown, which would redden the document on a commit that changed nothing -- and
+      # no edit to the markdown would fix it, because the markdown is not what is wrong. An unpinned
+      # install makes this gate unsatisfiable at a moment nobody chose. Same rule as the checkout
+      # above: pin what you cannot audit, by digest and never by tag.
+      - name: pandoc (pinned, digest verified)
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=3.10
+          case "$RUNNER_OS" in
+            Linux)
+              asset="pandoc-${version}-linux-amd64.tar.gz"
+              sha=e0f8af62d0f267d22baa5bcefe6d5dda3a097ccc60de794b759fe03159923244
+              ;;
+            Windows)
+              asset="pandoc-${version}-windows-x86_64.zip"
+              sha=bb808d00fd58762299d64582a9b4c3e4b106cd929e62c5f19bcdcb496f1e54ae
+              ;;
+            *)
+              echo "no pinned pandoc for RUNNER_OS='$RUNNER_OS'. Refusing to guess: an unverified"
+              echo "converter would make the Word-copy comparison meaningless rather than absent."
+              exit 1
+              ;;
+          esac
+
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 3 -O "https://github.com/jgm/pandoc/releases/download/${version}/${asset}"
+
+          # Verified in python rather than with sha256sum, so this step assumes only the interpreter
+          # the suite already needs. The digest is PRINTED whether it matches or not -- a check that
+          # reports only pass/fail cannot be told apart from one that examined nothing.
+          python -c "
+          import hashlib, sys
+          path, expected = sys.argv[1], sys.argv[2]
+          actual = hashlib.sha256(open(path, 'rb').read()).hexdigest()
+          print(f'  asset    : {path}')
+          print(f'  expected : {expected}')
+          print(f'  actual   : {actual}')
+          sys.exit(0 if actual == expected else 'DIGEST MISMATCH -- refusing to install this file.')
+          " "$asset" "$sha"
+
+          case "$RUNNER_OS" in
+            Linux)
+              tar xzf "$asset"
+              ;;
+            Windows)
+              # python rather than unzip or 7z: Git Bash ships neither reliably, and the interpreter
+              # is already a hard requirement of the step this one exists to feed.
+              python -c "import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall('.')" "$asset"
+              ;;
+          esac
+
+          # LOCATED, not assumed. The layout inside the archive differs between the platforms and is
+          # not promised by the project. Hard-coding it would turn a moved directory into a confusing
+          # "pandoc: command not found" two steps later instead of a clear failure here. Plain globs,
+          # so this depends on no tool beyond the shell.
+          exe=""
+          for candidate in ./pandoc-*/bin/pandoc ./pandoc-*/pandoc.exe ./pandoc-*/pandoc; do
+            if [ -f "$candidate" ]; then exe="$candidate"; break; fi
+          done
+          if [ -z "$exe" ]; then
+            echo "no pandoc binary found inside ${asset}. Its layout changed; fix this step rather"
+            echo "than letting the suite discover the absence as a missing-converter failure."
+            exit 1
+          fi
+
+          # sed, not head: with `pipefail` set, `head -1` can close the pipe early and fail the step
+          # on the very command that proves the install worked.
+          "$exe" --version | sed -n '1p'
+
+          bindir="$(cd "$(dirname "$exe")" && pwd)"
+          # Windows resolves PATH itself and will not follow a bash-style /d/a/_temp path.
+          if [ "$RUNNER_OS" = "Windows" ]; then bindir="$(cygpath -w "$bindir")"; fi
+          echo "$bindir" >> "$GITHUB_PATH"
+
       - name: Versions actually used
         shell: pwsh
         run: |
           "pwsh   : $($PSVersionTable.PSVersion)"
           "python : $(python --version)"
           "git    : $(git --version)"
+          "pandoc : $(pandoc --version | Select-Object -First 1)"
 
       # RECEIPTS, not assurances. Each gate below prints what it examined. A check that reports only
       # pass/fail cannot be distinguished from one that examined nothing.
