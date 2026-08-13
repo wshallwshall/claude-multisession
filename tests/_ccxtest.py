@@ -46,7 +46,7 @@ PUSH_GUARD = REPO_ROOT / "scripts" / "hooks" / "push_guard.py"
 # WHAT IT DOES NOT EXEMPT, because an exemption wider than its reason is the failure this repository
 # is about: the ASCII gate, the link-wrapping rule, every link resolving, and the site building. An
 # exempt page is still a page a reader has to be able to load.
-AUTHORED_VERBATIM = ("docs/CHORUS.md",)
+AUTHORED_VERBATIM = ("docs/KORUS.md",)
 
 # The coordination surfaces a human or a tool reads for an all-clear. Grouped here because what they
 # have in common is the failure mode, not the directory: each one has an exit path that means "I could

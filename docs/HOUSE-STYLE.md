@@ -80,7 +80,7 @@ orientation sections were deleted for restating the page rather than opening it.
 
 ### OPEN-8 names one file, and that is the whole of the exemption
 
-`docs/CHORUS.md` is the only page under it: a document its author asked to publish unedited. Four
+`docs/KORUS.md` is the only page under it: a document its author asked to publish unedited. Four
 gates were red against it before this rule existed -- `OPEN-2`, `OPEN-7`, the source-link scan, and
 `HS-20` at 94 paragraphs against a baseline of 88.
 

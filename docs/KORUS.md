@@ -1,10 +1,10 @@
-# The CHORUS Framework: Lesson Learned the Hard Way
+# The KORUS Framework: Lesson Learned the Hard Way
 
 Hello, I'm a senior developer working on a major project since late May, 2026.
 (See MessageFoundry.org). This is a personally written summary of what I've learned.
 
-Since things with an acronym are more trusted, Claude suggests the following be call CHORUS:
-Coordinated Handoffs, One Repo, Unblocked Sessions.
+Since things with an acronym are more trusted, Claude suggests the following be call KORUS:
+Keep One Repo, Unblock Sessions.
 
 ## BLUF/TLDR
 
@@ -12,7 +12,7 @@ The following is a framework developed during months of Claude Code work. This d
 site provide a starting point for new projects. This framework contains technical elements
 supporting better AI coding.
 
-## CHORUS for Multi-session AI-Coding
+## KORUS for Multi-session AI-Coding
 
 Here is the shape of what I've learned.
 
