@@ -306,6 +306,9 @@ entry point to the group, and it covers the three things no other page owns:
 - the channels they have for reaching each other;
 - using one session as a lander.
 
+[Desktop accounts](DESKTOP-ACCOUNTS.md) is the setup step before any of that if you run more than
+one Claude account: one desktop instance per account, and the config root each one adds.
+
 Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](COORDINATION.md) -
 [Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -
 [PRs and merges](PR-AND-MERGE.md) - [Pruning](PRUNING.md).
