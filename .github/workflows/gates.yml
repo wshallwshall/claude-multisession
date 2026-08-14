@@ -28,7 +28,13 @@ permissions:
 concurrency:
   # One run per ref. A newer push makes an in-flight run irrelevant, and several sessions push here.
   group: gates-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancelling is right on a BRANCH and wrong on MAIN. On main the ref is constant, so back-to-back
+  # merges cancel the gate outright -- commit 2bcc3b5 sits on main with conclusion `cancelled` and no
+  # verdict at all. Once `gates` is a REQUIRED check that is worse than an advisory one, because the
+  # settings UI then asserts enforcement while nothing actually ran.
+  # Same form and same reasoning as site-build.yml, where a cancelled run leaves a deployment
+  # half-applied; here it leaves a merge ungated.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   gates:
