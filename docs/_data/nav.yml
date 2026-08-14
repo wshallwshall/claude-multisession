@@ -57,6 +57,9 @@
     - label: Running multiple sessions
       title: "Running multiple sessions"
       path: /RUNNING-MULTIPLE-SESSIONS.html
+    - label: Desktop accounts
+      title: "Several desktop instances, one per Claude account"
+      path: /DESKTOP-ACCOUNTS.html
     - label: Worktrees
       title: Worktrees
       path: /WORKTREES.html
