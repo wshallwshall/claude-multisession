@@ -68,6 +68,31 @@ An opt-in `--timestamp` mode substitutes a `YYYYMMDD-HHMMSS` prefix and sidestep
 default path is the unlocked scan, and the explicit `--number` path auto-increments on collision with
 no atomic protection either.
 
+Re-verified against `specify-cli` 0.16.4 on 2026-08-15: `Get-HighestNumberFromSpecs` still takes the
+highest prefix and adds one, under no lock. The rest of that framework is in
+[Spec Kit 0.16.4, evaluated](FRAMEWORK-spec-kit.md).
+
+**Two projects reached this layout independently.** `examples/sequence-adr/` numbers records at
+`docs/adr/NNNN-slug.md`, flat and project-scoped. `panaversity/spec-kit-plus`, a fork adding the ADR
+command upstream lacks, stores them at `history/adr/NNNN-slug.md`.
+
+Same shape, different tree. The fork settles the scope question the same way and leaves the
+concurrency one open: it auto-numbers, and nothing in it allocates atomically or gates the index.
+
+### The index is gated, and that is the auditability half
+
+`seq_check.py` refuses three things: a number already taken, a number never allocated, and a number
+missing from the index. The third reads as pedantry until the record is evidence rather than notes.
+
+Whoever reviews a set of decisions reads the index. A record that exists and is unlisted is one
+nobody assessed, and its absence never announces itself.
+
+So the gate is what makes the set claimable. Without it, "these are the decisions" is an assertion
+about a directory nobody enumerated.
+
+That is the shape a citation count takes when reported without its filter, measured in
+[Spec Kit 0.16.4, evaluated](FRAMEWORK-spec-kit.md).
+
 ---
 
 ## The two halves
