@@ -324,6 +324,36 @@ Set an exit condition when you start. If `specify` and `clarify` produce a docum
 padding rather than as decisions you would defend, stop and build directly. A commitment with no
 exit condition becomes permanent by default.
 
+### Check the gap is a gap in your organisation
+
+Reported on 2026-08-15 by a team evaluating both ADR extensions for regulated work. `adrkit` was
+ruled out on the pins above. `arch-governance` was recommended, then declined, and not on quality.
+
+That team already ran a control scorecard. Each cell carries the control id, a rationale, a
+last-verified date, a commit sha, the review method, and anchors pinning the exact source text a
+citation must still match. Every one of the extension's six checks had a counterpart in it.
+
+Adopting it would have placed a second, weaker, one-day-old citation convention beside a mature one.
+That is this site's own subject at organisational scale: two things describing one thing, with
+nothing keeping them agreed.
+
+**A Spec-Kit-shaped hole is not always a hole in your organisation.** Check what already satisfies
+the requirement before installing something to satisfy it again.
+
+### A generated record is not evidence
+
+`adrkit` declares `effect: read-write`, and its draft command scaffolds records from the plan
+artifact the agent just produced. That is a design property rather than a defect, and it is the one
+to weigh hardest where the record is the deliverable.
+
+A decision record exists to show a human evaluated something. Generating them at volume from the
+agent's own plan produces a trail that looks complete and attests to nothing. That is worse than a
+gap: a gap is honest, and a hollow record is a claim.
+
+The same distinction decides whether tooling is worth it at all. "The body above `## Amendments` is
+frozen" is a statement about behaviour; a check that the body is unchanged since first commit is
+evidence of it. Where an auditor reads the difference, only the second one counts.
+
 ---
 
 ## Where the evidence runs out

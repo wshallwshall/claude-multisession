@@ -7,7 +7,7 @@ Deliberately at the repository root, not under `docs/`: it is operational, not a
 under `docs/` are bound by `OPEN-2`, `OPEN-7` and the prose ratchets, and a handoff should not have
 to satisfy them.
 
-Last updated 2026-08-15.
+Last updated 2026-08-15, after the third revision of the ADR brief.
 
 ---
 
@@ -100,6 +100,27 @@ requires `speckit_version >=0.13.0,<0.16.0`, so it is not certified for 0.16.x, 
 `adr` CLI. `arch-governance` requires `>=0.1.0` and needs Python 3.11+ and `uv`. Both are
 `verified: false`, 0 downloads, 0 stars.
 
+**What the originating team decided, reported 2026-08-15.** Six decision records written by hand at
+`docs/adr/NNNN-title.md`, statuses `Accepted` and `Superseded` only, body frozen above
+`## Amendments`, each carrying a line naming what it is evidence for. About an hour, no
+dependencies.
+
+`adrkit` ruled out. `arch-governance` recommended, then **declined on duplication rather than
+quality**: the team already ran a control scorecard whose cells carry a rationale, a last-verified
+date, a commit sha, the review method, and anchors pinning the exact source text a citation must
+still match, and every one of the extension's six checks had a counterpart in it.
+
+That reversal is the most transferable thing in the brief and is now on the Spec Kit page. **A
+Spec-Kit-shaped hole is not always a hole in your organisation**, and a second convention beside a
+mature one is this repository's own subject at organisational scale.
+
+**One design property worth carrying separately.** `adrkit` is `effect: read-write` and drafts
+records from the plan artifact the agent just wrote. Where the record is the deliverable, generating
+them at volume yields a trail that looks complete and attests to nothing. A gap is honest; a hollow
+record is a claim. The same line separates a convention from evidence: "the body above
+`## Amendments` is frozen" is a statement about behaviour, and a check that the body is unchanged
+since first commit is proof of it.
+
 ---
 
 ## 4. Outstanding work, in priority order
@@ -127,6 +148,14 @@ satisfy. The framing is sound; the **control identifiers are unverified and are 
 checks**. Two are known risks: ASVS 5.0 reorganised its chapters, so a `V1` citation carried over
 from 4.0 may be stale, and ISO 27001's secure engineering control moved to `A.8.27` in the 2022
 revision from `A.14.2.5` in 2013.
+
+**Its own author marks it unverified**, in the source brief: the framing "came from the sending
+project's owner and was taken as given... nothing in this research verified it". Do not publish it
+as established on the strength of having been handed it twice.
+
+The context behind it, which is not itself a claim needing verification: the sending project is a
+pilot for building ASVS L3 applications in healthcare, so the record is the deliverable rather than
+documentation about the deliverable.
 
 It belongs in
 [secure-development-standards](https://secure-development-standards.pages.dev/), which owns
