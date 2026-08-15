@@ -203,6 +203,26 @@ If you run several sessions on one repository, the state mechanics above are not
 it. Fail-closed resolution and a committed state file are both better behaved than the framework the
 sibling page covers.
 
+### Whether orchestration replaces it
+
+They are not substitutes, because they fail in opposite directions. A fan-out across subagents
+returns data and leaves nothing behind: those contexts end with the run. BMAD is sequential in one
+context, and its whole output is files on disk.
+
+So the question is what has to outlive the sitting. Breadth in one campaign is orchestration's
+answer. Continuity across sittings, seats, and people who never open the agent is a framework's.
+
+**Combining them is the case where the absent lock stops being inert.** BMAD's personas never run
+concurrently, so its state file has one writer by construction. Fan-out manufactures the second, in
+the same directory, against the same `sprint-status.yaml`.
+
+Subagents share a working directory unless each is given its own worktree, and that isolation is
+opt-in. So the default arrangement is the one that races.
+
+**Limit: this reasons from measured mechanics, not from an observed failure.** The absent lock and
+the shared working directory are both established above. Nobody here has watched two subagents race
+that file.
+
 ---
 
 ## Where the evidence runs out
