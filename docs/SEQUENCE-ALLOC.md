@@ -68,6 +68,10 @@ An opt-in `--timestamp` mode substitutes a `YYYYMMDD-HHMMSS` prefix and sidestep
 default path is the unlocked scan, and the explicit `--number` path auto-increments on collision with
 no atomic protection either.
 
+Re-verified against `specify-cli` 0.16.4 on 2026-08-15: `Get-HighestNumberFromSpecs` still takes the
+highest prefix and adds one, under no lock. The rest of that framework is in
+[Spec Kit 0.16.4, evaluated](FRAMEWORK-spec-kit.md).
+
 ---
 
 ## The two halves

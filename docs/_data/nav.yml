@@ -111,6 +111,17 @@
       title: "Case study: a finding that took four passes and two sessions"
       path: /CASE-STUDY-correction-chain.html
 
+# Evaluations of third-party frameworks, one page each. The naming follows the CASE-STUDY-* series
+# already in "In practice": a shared prefix, then a kebab-case name, so a second evaluation is
+# FRAMEWORK-<name>.md and sorts beside this one in docs/. Each page is scoped to what a reader
+# running CONCURRENT SESSIONS needs from that framework -- the general tool review is upstream's
+# job, and duplicating it here would be the drift HS-3 exists to prevent.
+- group: Other frameworks
+  items:
+    - label: Spec Kit
+      title: "Spec Kit 0.16.4, evaluated"
+      path: /FRAMEWORK-spec-kit.html
+
 - group: Contributing
   items:
     - label: House style
