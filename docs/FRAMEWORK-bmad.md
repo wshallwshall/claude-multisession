@@ -186,6 +186,32 @@ added to the agent's surface whose context cost was not measured here.
 **Practitioner criticism was not researched.** The Spec Kit page could weigh cost against
 correctness because discussion threads had been read. Nothing equivalent backs this page.
 
+### No durable decision record, but it fails differently
+
+Measured against the installed tree on 2026-08-15. No skill among the 49 is an ADR command. The only
+occurrence of `ADR` anywhere in the install is a row in
+`bmad-advanced-elicitation/assets/methods.csv`, an elicitation technique rather than a store.
+
+`bmad-create-architecture/SKILL.md` contains no occurrence of `docs/adr`, `decision record`,
+`superseded` or `immutable`.
+
+**Its artifacts are project-scoped, which is where it differs from the sibling page.** A PRD and an
+architecture document describe the project rather than one feature. BMAD is on the right side of the
+scope axis where Spec Kit's `research.md` is on the wrong one.
+
+It is on the same side of the other two. Those documents are regenerated and edited in place, with
+no id, status, supersedes or superseded-by, so nothing records that a decision was replaced rather
+than revised.
+
+| | BMAD artifact | Spec Kit artifact | A decision record |
+|---|---|---|---|
+| Scope | per project | per feature | per project |
+| Lifecycle | regenerated | regenerated | immutable once accepted |
+| Correction | edit in place | edit in place | supersede, keeping the original |
+
+Neither framework ships the mechanism [Sequence allocation](SEQUENCE-ALLOC.md) covers: a
+project-scoped store whose numbers are handed out atomically and whose index is gated.
+
 ---
 
 ## A decision rule

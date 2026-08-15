@@ -110,6 +110,9 @@
     - label: Correction chain case study
       title: "Case study: a finding that took four passes and two sessions"
       path: /CASE-STUDY-correction-chain.html
+    - label: Refuted-but-true case study
+      title: "Case study: a claim three verifiers refuted, and the source confirms"
+      path: /CASE-STUDY-refuted-but-true.html
 
 # Evaluations of third-party frameworks, one page each. The naming follows the CASE-STUDY-* series
 # already in "In practice": a shared prefix, then a kebab-case name, so a second evaluation is

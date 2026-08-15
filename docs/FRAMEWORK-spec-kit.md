@@ -251,6 +251,40 @@ The documented criticism is about cost rather than correctness. It reports specs
 generated text that reads as progress, and hours spent correcting generated specs on brownfield
 multi-module systems. None of it disputes a mechanical fact above.
 
+### No durable decision record
+
+There is no ADR command and no project-scoped decision store. Confirmed three ways on 2026-08-15:
+`templates/commands/` holds no `adr.md`, a repository search for `docs/adr` returns 0, and `adr`,
+`architecture decision` and `supersede` appear 0 times in `plan-template.md`.
+
+Checked at `main`, `v0.16.0` and `v0.16.4`, where the files are byte-identical. This is not version
+drift behind a main-branch citation.
+
+`research.md` carries Decision, Rationale and Alternatives considered, and no id, date, status,
+supersedes or consequences. It has an ADR's content and none of its lifecycle:
+
+| | Spec Kit artifact | A decision record |
+|---|---|---|
+| Scope | per feature | per project |
+| Lifecycle | regenerated as the spec evolves | immutable once accepted |
+| Correction | edit in place | supersede, keeping the original |
+
+`plan.md` is not the fallback. Its Complexity Tracking table is the one place a rejected alternative
+is recorded, and it is populated only when the Constitution Check fails. In the healthy case it is
+empty.
+
+The constitution is the only project-scoped, dated, version-tracked slot in stock Spec Kit, and its
+check runs twice: before Phase 0 research and again after Phase 1 design. Both passes are prompt
+instruction, and v0.16.4's template gives the second one nowhere to record a verdict.
+
+The first-class ADR command that exists lives in a fork, `panaversity/spec-kit-plus`, which stores
+records at `history/adr/NNNN-slug.md`: flat, project-scoped, auto-numbered, outside the specs tree.
+[Sequence allocation](SEQUENCE-ALLOC.md) reaches the same layout independently.
+
+**Sourced from one research pass whose kill list contained at least one false negative.** See
+[a claim three verifiers refuted](CASE-STUDY-refuted-but-true.md) before treating anything that pass
+rejected as settled.
+
 ---
 
 ## A decision rule
