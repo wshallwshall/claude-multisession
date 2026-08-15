@@ -281,7 +281,18 @@ The first-class ADR command that exists lives in a fork, `panaversity/spec-kit-p
 records at `history/adr/NNNN-slug.md`: flat, project-scoped, auto-numbered, outside the specs tree.
 [Sequence allocation](SEQUENCE-ALLOC.md) reaches the same layout independently.
 
-**Sourced from one research pass whose kill list contained at least one false negative.** See
+Two community extensions address the gap, both read from the catalog on 2026-08-15 and both
+`verified: false` with 0 downloads and 0 stars:
+
+| Extension | `speckit_version` | Also needs |
+|---|---|---|
+| `adrkit` | `>=0.13.0,<0.16.0`, so **not certified for 0.16.x** | An `adr` CLI, `npm install -g @adrkit/cli` |
+| `arch-governance` | `>=0.1.0`, which admits 0.16.x | Python 3.11+, `uv` |
+
+`arch-governance` is the one compatible with the version this page covers. Its catalog entry calls
+itself read-only while its `effect` field says `read-write`, so do not repeat either as fact.
+
+**Sourced partly from one research pass whose kill list contained at least one false negative.** See
 [a claim three verifiers refuted](CASE-STUDY-refuted-but-true.md) before treating anything that pass
 rejected as settled.
 

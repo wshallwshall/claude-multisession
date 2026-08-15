@@ -133,6 +133,27 @@ Three checks worth spending, in descending order of yield:
 
 ---
 
+## A second kill, audited, and it failed a different way
+
+The same pass killed `0-3`: *"adrkit keeps ADRs in `docs/adr/NNNN-title.md` with a status lifecycle
+and supersession-cycle linting."* Read against that tool's own README on 2026-08-15:
+
+| Conjunct | What the source says |
+|---|---|
+| Defaults to `docs/adr` | True. `ADRKIT_DIR` defaults to `docs/adr` |
+| Names files `NNNN-title.md` | Unstated. No naming convention documented |
+| Status lifecycle, supersession linting | Not described anywhere |
+
+So the verdict was defensible and the claim still lost a true fact. **A compound claim is only as
+verifiable as its weakest conjunct**, and one boolean discards the parts that held.
+
+This is the failure the arch-governance kill does not cover, and it needs a different fix: split a
+claim into atomic assertions before verifying it, so a verifier can reject the unsupported half
+without taking the confirmed half with it.
+
+Both failures share a cause. A verdict field narrower than the thing being judged forces a verifier
+to round its answer, and the rounding always goes the same way.
+
 ## The narrower lesson
 
 Adversarial verification is still worth running. This pass killed 12 claims that deserved it, and
