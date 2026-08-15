@@ -79,6 +79,20 @@ command upstream lacks, stores them at `history/adr/NNNN-slug.md`.
 Same shape, different tree. The fork settles the scope question the same way and leaves the
 concurrency one open: it auto-numbers, and nothing in it allocates atomically or gates the index.
 
+### The index is gated, and that is the auditability half
+
+`seq_check.py` refuses three things: a number already taken, a number never allocated, and a number
+missing from the index. The third reads as pedantry until the record is evidence rather than notes.
+
+Whoever reviews a set of decisions reads the index. A record that exists and is unlisted is one
+nobody assessed, and its absence never announces itself.
+
+So the gate is what makes the set claimable. Without it, "these are the decisions" is an assertion
+about a directory nobody enumerated.
+
+That is the shape a citation count takes when reported without its filter, measured in
+[Spec Kit 0.16.4, evaluated](FRAMEWORK-spec-kit.md).
+
 ---
 
 ## The two halves

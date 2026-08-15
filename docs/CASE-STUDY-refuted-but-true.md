@@ -147,9 +147,9 @@ and supersession-cycle linting."* Read against that tool's own README on 2026-08
 So the verdict was defensible and the claim still lost a true fact. **A compound claim is only as
 verifiable as its weakest conjunct**, and one boolean discards the parts that held.
 
-This is the failure the arch-governance kill does not cover, and it needs a different fix: split a
-claim into atomic assertions before verifying it, so a verifier can reject the unsupported half
-without taking the confirmed half with it.
+This is the failure the arch-governance kill does not cover, and it needs a different fix. Split a
+claim into atomic assertions before verifying, so a verifier can reject the unsupported half without
+taking the confirmed one with it.
 
 Both failures share a cause. A verdict field narrower than the thing being judged forces a verifier
 to round its answer, and the rounding always goes the same way.

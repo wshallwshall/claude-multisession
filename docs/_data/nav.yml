@@ -158,6 +158,9 @@
     - label: Spec Kit
       title: "Spec Kit 0.16.4, evaluated"
       path: /FRAMEWORK-spec-kit.html
+    - label: BMAD
+      title: "BMAD 6.11.0, evaluated"
+      path: /FRAMEWORK-bmad.html
 
 - group: Contributing
   items:

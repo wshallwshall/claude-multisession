@@ -49,7 +49,7 @@ Eight commits, all pushed. `git log --grep='Claude-Session: .*01VwhjHSMA753Yv54B
 | Landed | State |
 |---|---|
 | `docs/FRAMEWORK-spec-kit.md` | Live in nav under "Other frameworks" |
-| `docs/FRAMEWORK-bmad.md` | **On disk, deliberately NOT in nav.** See section 4 |
+| `docs/FRAMEWORK-bmad.md` | Live in nav under "Other frameworks" |
 | `docs/CASE-STUDY-refuted-but-true.md` | Live in nav under "In practice" |
 | `HS-21` in `docs/HOUSE-STYLE.md` | Issued; numbering table moved to `HS-22` |
 | `tests/test_a_series_answers_one_set_of_questions.py` | Gates HS-21. 9 tests |
@@ -131,24 +131,12 @@ since first commit is proof of it.
 
 ## 4. Outstanding work, in priority order
 
-**a. BMAD's three unresearched rows, then its nav entry.** The page states "not established" for the
-persona order, which published claims are false at 6.11.0, and practitioner-reported cost. Its
-decision-record row and everything in section 3 are measured and done. The owner chose to hold the
-nav entry until those rows are filled; adding it is one entry in `docs/_data/nav.yml` beside the
-Spec Kit row.
+**a. BMAD's remaining two gaps.** The page is now in the nav and its rows are filled from the
+research journal. What stays unestablished and says so: the documented persona order, and whether
+the activation-cost figures in upstream issue #1343 apply to 6.11.0, since that issue names no
+version and the skill consolidation postdates it.
 
-A `/deep-research` run against exactly those gaps completed and its 80KB journal is at
-`~/.claude/projects/<project>/<session>/subagents/workflows/wf_ba0f23e8-3cb/journal.jsonl`. **That
-path dies with the container.** The one result sampled from it re-verified install-flag
-documentation that had already been measured directly, so re-running a targeted pass is probably
-cheaper than mining it.
-
-**b. An auditability paragraph for `docs/SEQUENCE-ALLOC.md`.** `seq_check.py` refuses a colliding,
-unallocated, **or unindexed** number. The third refusal reads as pedantry until it is framed as
-auditability: a decision record that exists but is missing from the index is invisible to whoever
-reviews it. This needs no external citations and is ready to write.
-
-**c. The compliance mapping, held deliberately.** Material was supplied claiming OWASP ASVS 5.0,
+**b. The compliance mapping, held deliberately.** Material was supplied claiming OWASP ASVS 5.0,
 NIST SSDF, HIPAA/HITRUST, ISO 27001 and SOC 2 each require documented design rationale that ADRs
 satisfy. The framing is sound; the **control identifiers are unverified and are what an auditor
 checks**. Two are known risks: ASVS 5.0 reorganised its chapters, so a `V1` citation carried over
@@ -158,6 +146,12 @@ revision from `A.14.2.5` in 2013.
 **Its own author marks it unverified**, in the source brief: the framing "came from the sending
 project's owner and was taken as given... nothing in this research verified it". Do not publish it
 as established on the strength of having been handed it twice.
+
+**Verification was attempted from this container on 2026-08-15 and is blocked.** `owasp.org` is
+refused by the network egress proxy (`EGRESS_BLOCKED`), so the ASVS chapter structure cannot be read
+from the canonical source here. A guessed path into the `OWASP/ASVS` GitHub repository returned 404.
+Do not repeat those two attempts. Either find the correct path inside that repository, which is
+reachable, or verify from a machine without the egress restriction.
 
 The context behind it, which is not itself a claim needing verification: the sending project is a
 pilot for building ASVS L3 applications in healthcare, so the record is the deliverable rather than

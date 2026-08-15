@@ -16,7 +16,8 @@ gitignored. Its project-root resolution is fail-closed, which is the one place i
 than Spec Kit. Not for you if you want a tutorial: read the upstream docs.
 
 **How to use it.** If you run concurrent sessions, start at
-[How it holds state](#how-it-holds-state). Two rows of this page are unresearched and say so.
+[How it holds state](#how-it-holds-state). What is measured and what is researched is marked
+throughout, and two rows remain unestablished and say so.
 
 ---
 
@@ -121,6 +122,24 @@ sessions at once.
 agent session.** Nothing here is a claim about what an agent does with the state, only about what
 the scripts do to it.
 
+### Somebody built the concurrency story separately
+
+The strongest corroboration is an artifact that exists. `thbst16/bmad-parallel-development` is a
+third-party Claude Code skill for running BMAD stories in parallel across git worktrees, found by a
+research pass on 2026-08-15.
+
+Core BMAD ships no such thing. That skill's rules read as manual compensations for its absence.
+
+Story files must be created on main before worktrees exist, one agent takes one story, phases run
+sequentially, and cleanup is mandatory before the next set.
+
+Its state is a hand-maintained bash file mapping story ids to branches, and its worktrees are
+created by a shell script. **That script is the only place git is invoked at all**, and it is
+external to BMAD rather than one of its agents.
+
+That is independent evidence for the measurement above. Isolation comes from a human naming stories
+into disjoint modules and from separate directories, not from any mechanism the framework provides.
+
 ---
 
 ## Install and initialise
@@ -146,8 +165,8 @@ npx bmad-method@6.11.0 install --yes --tools claude-code --modules bmm --directo
 
 ## The flow
 
-**Not established.** The documented persona order was to come from a research pass that was stopped
-before it reported, so this page does not state one.
+**The documented persona order is still not established.** A research pass read the changelog and the
+release feed and surfaced no upstream statement of a phase sequence, so this page states none.
 
 What the installed tree shows is the skill set enumerated above, which names six agent personas
 directly: analyst, architect, dev, pm, ux-designer, plus the party-mode aggregator. Artifact-shaped
@@ -156,16 +175,44 @@ skills sit beside them for PRD, architecture, epics and stories, sprint planning
 That is an inventory, not an order. Do not infer a sequence from it: the Spec Kit page records that
 upstream's own core-versus-optional grouping is not an execution order either.
 
+### The persona set moved in the release before this one
+
+From the changelog, read at `main` on 2026-08-15. v6.11.0 shipped 2026-08-09 and renamed
+`bmad-quick-dev` to `bmad-build`, and `bmad-dev-auto` to `bmad-build-auto`.
+
+The same release consolidated three developer personas into one Developer agent and retired the
+tech-writer persona. It also merged three research skills into `bmad-deep-recon` and merged the
+editorial skills into one `bmad-review`, then deprecated `bmad-create-story` and `bmad-dev-story`.
+
+**Measured against the install: both sides of every one of those renames ship together.**
+`bmad-quick-dev` and `bmad-build` are both present, as are `bmad-dev-auto` and `bmad-build-auto`,
+the three editorial skills alongside `bmad-review`, and both deprecated story skills.
+
+So the 49-skill surface counted above carries superseded names as well as current ones. A reader
+following a tutorial written before 2026-08-09 finds the old skill directory still installed.
+
 ---
 
 ## What failed verification
 
-**Not established.** No verification pass ran against published BMAD material, so this page kills no
-claims and should not be read as endorsing any.
+No adversarial pass ran, so nothing here is a vote. These are claims a research pass found
+contradicted by a primary source, each with the source named.
 
-The Spec Kit pass found 9 of 25 claims false, 3 of them true in an earlier release. BMAD 6.11.0
-shipped the day this page was written, and its `rollback` tag points a major version back at 4.39.0.
-Treat any BMAD write-up predating mid-2026 as unverified here.
+| Published claim | What the source shows |
+|---|---|
+| The project folder is `.bmad-core/` | v6 installs to `_bmad/`. **Upstream's own `docs/core-architecture.md` still describes the v4 layout**, so the stale text is in the canonical repo |
+| Claude Code artifacts land in `.claude/commands/` | Measured: they land in `.claude/skills/bmad-<name>/` |
+| `bmad-quick-dev` and `bmad-dev-auto` are the current skills | Renamed at v6.11.0. Both old and new names install |
+| Barry, Quinn and Bob are the developer personas | Consolidated into one Developer agent at v6.11.0 |
+| Config lives in `core-config.yaml` | v6.11.0 moved configuration to a layered TOML system |
+
+The v4 user guide most tutorials cite now returns 404, because v6 restructured the docs tree. That
+is the mechanism behind the whole table: the material did not become wrong, its subject moved and
+the old text stayed reachable through forks and reposts.
+
+`rollback` on npm still points a major version back at 4.39.0, so a reader can install the layout
+those tutorials describe and find them correct. Treat any BMAD write-up that does not name a version
+as describing an unknown one.
 
 ---
 
@@ -183,8 +230,32 @@ document, break them into stories, and review each.
 Against those, two measured costs: 3.0MB and 248 files committed into the repository, and 49 skills
 added to the agent's surface whose context cost was not measured here.
 
-**Practitioner criticism was not researched.** The Spec Kit page could weigh cost against
-correctness because discussion threads had been read. Nothing equivalent backs this page.
+### The reported cost is the context window
+
+From upstream's own tracker, read 2026-08-15. Issue #1343, opened 2026-01-16, reports BMAD agents
+consuming over 67% of a 200K context window **at activation**, before any work begins.
+
+| Agent | Activation cost reported |
+|---|---|
+| TEA | ~172,750 tokens, 86% of the window |
+| SM | ~22,130 tokens, 11% |
+| DEV | ~19,830 tokens, 10% |
+
+TEA's knowledge base alone is cited at 571KB, or roughly 143K tokens, and the issue's stated goal is
+to bring typical sessions under 30%. Issue #1235 reports excessive token usage in workflows
+separately.
+
+**The issue names no version**, which is worth carrying: the skill consolidation at v6.11.0 cut the
+core count from fourteen to eight, so these figures may predate it. They are the hardest numbers
+published and they are unpinned.
+
+**This is cost criticism, not correctness criticism.** No source found reports the framework
+producing wrong output. It reports the framework eating the window before the work starts, which is
+the same shape the Spec Kit page records for that tool.
+
+One reception datum, worth its caveat. An independent comparison logs eight Hacker News submissions
+between 2025-08 and 2026-03, scoring 4, 2, 2, 2, 2, 2, 1 and 1 with no comments on any. That is
+against tens of thousands of GitHub stars. Forum quality, and it measures discussion, not use.
 
 ### No durable decision record, but it fails differently
 
@@ -216,8 +287,7 @@ project-scoped store whose numbers are handed out atomically and whose index is 
 
 ## A decision rule
 
-Only the part supported by measurement is stated. The rest waits on the research this page did not
-get.
+Stated only where measurement or a named source supports it.
 
 Use it where the executable helpers earn their place: sprint status tracked in a file that survives
 a crashed write, and review skills you would otherwise write yourself.
@@ -255,14 +325,16 @@ that file.
 
 | Question | Status |
 |---|---|
-| The documented persona order and phase boundaries | Not established. The research pass was stopped before reporting |
-| Which published claims about BMAD are false for 6.11.0 | Not established. No verification pass ran |
-| Practitioner-reported cost: context, bloat, brownfield difficulty | Not established |
-| The context cost of 49 skills on an agent's surface | Not measured. The same gap the Spec Kit page records for 10 |
+| The documented persona order and phase boundaries | Not established. No upstream statement of a sequence was found |
+| Whether the reported activation costs apply to 6.11.0 | Not established. Issue #1343 names no version, and the skill consolidation postdates it |
+| The context cost of these 49 skills on Claude's own surface | Not measured. Distinct from BMAD's agent activation figures |
+| Brownfield versus greenfield difficulty | Not established. The cost material found is about context, not codebase shape |
 | Behaviour under a live agent session | Not measured. The scripts were run directly |
+| How it interacts with `CLAUDE.md` and pre-existing skills | Not established. The same gap the Spec Kit page records |
 
-Four of the nine lens rows are therefore thinner than their counterparts on the sibling page. The
-volume of measured install detail above should not disguise that.
+Two rows stay thinner than their counterparts on the sibling page: the flow, which states no persona
+order, and the cost figures, which are unpinned to a version. The volume of measured detail above
+should not disguise either.
 
 ---
 
@@ -272,13 +344,16 @@ volume of measured install detail above should not disguise that.
 |---|---|
 | Version measured | 6.11.0, `latest` on npm on 2026-08-15 |
 | Install measured | `--tools claude-code --modules bmm`, non-interactive |
-| Established by running it | Sizes, counts, state paths, resolution behaviour, the worktree case |
+| Established by running it | Sizes, counts, state paths, resolution behaviour, the worktree case, the renamed skills shipping together |
 | Established by reading installed source | `_atomic_write` semantics, the absence of a lock |
-| Established by verification | Nothing. No pass ran |
+| Established by a research pass | The changelog renames, the activation-cost figures, the parallel-development skill |
 
-Everything on this page came from the installed tree or from `npm view`. No blog post, tutorial or
-model recollection contributed to it, which is why the unresearched rows are empty rather than
-plausible.
+The measured half came from the installed tree and `npm view`. The researched half names its source
+in every case, and no claim rests on model recollection.
+
+**The research half used a refutation harness whose kill lists are not reliable.** See
+[a claim three verifiers refuted](CASE-STUDY-refuted-but-true.md). Nothing above is stated because a
+verifier rejected its opposite; each researched row names a document instead.
 
 To re-check, in descending order of reliability:
 
