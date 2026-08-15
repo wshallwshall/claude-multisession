@@ -132,16 +132,24 @@
 #   6. What it does not give you      measured against adopting the practices without the tool
 #   7. A decision rule                use when, skip when
 #   8. Where the evidence runs out    named gaps, not filled
-#   9. Provenance                     figures, source tiers, the re-check ladder
+#   9. Provenance, and how to re-check    figures, source tiers, the re-check ladder
 #
 # ROW 2 IS WHY THESE PAGES ARE ON THIS SITE and is why it sits second rather than in the middle. The
 # general tool review is upstream's job. What no upstream will write is what the framework does when
 # several sessions hold several worktrees of one repository, and "nothing collides, here is what was
 # checked" is a legitimate answer to it -- an absent row is not.
 #
-# This is a NOTE, not a rule. It becomes an HS-<n> in docs/HOUSE-STYLE.md once the order has survived
-# being applied to a second framework; a rule written now would pin a shape tested once, and the
-# numbering table would have to be bumped for it.
+# THIS IS NOW HS-21 IN docs/HOUSE-STYLE.md, gated by
+# tests/test_a_series_answers_one_set_of_questions.py against the tuple in tests/_ccxtest.py, which
+# is the only definition of the order. It was promoted on 2026-08-15, after the order had been
+# applied to a second framework. The list above is a note for whoever writes the next page; the test
+# asserts it still matches the constant, because a note that has drifted is wrong at the one moment
+# anyone reads it.
+#
+# EXTRA SECTIONS ARE ALLOWED. A page may open with `## TLDR/BLUF` and add its own, as the Spec Kit
+# page does with `## How the claims were graded`. What it may not do is omit one: an absent section
+# reads as "this framework has no such property", where a section saying "not established" reads as
+# what it is. Four of the BMAD page's nine rows are in that state today.
 - group: Other frameworks
   items:
     - label: Spec Kit

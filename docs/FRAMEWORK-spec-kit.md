@@ -59,7 +59,9 @@ prompt telling the model to read three files and append findings to a fourth.
 
 ---
 
-## Feature state is a file, not a branch
+## How it holds state
+
+### Feature state is a file, not a branch
 
 2 of the 9 claims killed below get this mechanic wrong, because it changed. It is also the one that
 matters for running several sessions on one repository.
@@ -154,7 +156,7 @@ None of these appear in the upstream documentation. All were measured on 2026-08
 
 ---
 
-## The command flow
+## The flow
 
 Two sequences are documented. Verified against `main`, against the tag `v0.16.0`, and against that
 tag's `templates/commands` tree.
@@ -201,7 +203,7 @@ mechanical difference between this and ad-hoc prompting.
 
 ---
 
-## The nine claims that failed verification
+## What failed verification
 
 Each appears in currently published material. 3 of the 9 were true in an earlier release, which is
 why a stale guide does not read as stale.
