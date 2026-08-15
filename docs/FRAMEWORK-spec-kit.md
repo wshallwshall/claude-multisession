@@ -59,6 +59,64 @@ prompt telling the model to read three files and append findings to a fourth.
 
 ---
 
+## Feature state is a file, not a branch
+
+2 of the 9 claims killed below get this mechanic wrong, because it changed. It is also the one that
+matters for running several sessions on one repository.
+
+- The active feature resolves from `.specify/feature.json`, key `feature_directory`.
+- `SPECIFY_FEATURE_DIRECTORY` overrides it. `Get-FeaturePathsEnv` documents its priority as the
+  environment variable, then `feature.json`, then an error.
+- It does **not** resolve from the checked-out branch. `git checkout` alone does not retarget the
+  commands, and `Get-CurrentBranch` invokes no git command.
+- `create-new-feature` creates `specs/<NNN-slug>/` and `spec.md`, then saves that state. It runs no
+  `git checkout -b`.
+- Branch creation happens only through an optional `before_specify` hook or the opt-in git
+  extension, and the branch name does not dictate the spec directory name.
+
+Three variables must not be conflated: `SPECIFY_FEATURE` is a name label,
+`SPECIFY_FEATURE_DIRECTORY` is the directory, and `SPECIFY_INIT_DIR` is the project.
+
+**Exactly one feature is active at a time.** The directory scheme supports `specs/001-*` beside
+`specs/002-*`, but each run targets one, and switching is a state-file edit rather than a checkout.
+
+### It resolves per worktree, until the worktree has no `.specify/`
+
+Measured on 2026-08-15 against `specify-cli` 0.16.4, using the shipped resolver in a real repository
+with git worktrees. The PowerShell and bash parities implement the same walk.
+
+`Get-RepoRoot` tries `SPECIFY_INIT_DIR`, then `Find-SpecifyRoot`, then falls back to the script's own
+location. `Find-SpecifyRoot` walks parent directories from the current one until it finds a
+`.specify/` directory. Nothing in that chain consults git.
+
+| Case | Measured result |
+|---|---|
+| Worktree whose branch carries the scaffold | Resolves to itself. Its own `feature.json`, no sharing |
+| Worktree on a branch predating `specify init` | Resolves to the first ancestor holding `.specify/` |
+| Two such worktrees nested under the primary | Both resolve to the primary and share one `feature.json` |
+
+So the answer is per worktree, conditionally. `.specify/` is committed, so any worktree whose branch
+includes the scaffold commit gets its own copy, and `feature.json` is gitignored and stays local to
+that checkout. Sessions do not collide.
+
+**A branch that predates the scaffold has no `.specify/`, and the walk escapes the worktree.** Two
+sessions in that state both bound to the primary's pointer. The second overwrote the first, and the
+first was never told.
+
+`git status` was clean in both worktrees throughout, because the pointer is gitignored and lives
+outside their trees. This is the collision class the [landing page](index.md) opens on: no shared
+bytes, so every branch merges clean, and the loss lands later.
+
+**Limit: this was measured on Linux with the bash parity, and the PowerShell walk was read rather
+than run.** Nothing here is a claim about a live agent session, only about the resolver those
+commands call.
+
+The mitigation is the branch, not a setting. A worktree cut from a branch that carries `.specify/`
+resolves to itself, which was the control case above. Sequence allocation has the same shape and is
+covered in [Sequence allocation](SEQUENCE-ALLOC.md).
+
+---
+
 ## Install and initialise
 
 ```
@@ -140,64 +198,6 @@ code, and appends unmet work to `tasks.md`. It never edits or deletes code.
 Outcomes are binary. Either it reports converged with `tasks.md` byte-for-byte unchanged, or it
 appends N tasks and you run `implement` then `converge` again. That termination condition is the
 mechanical difference between this and ad-hoc prompting.
-
----
-
-## Feature state is a file, not a branch
-
-2 of the 9 claims killed below get this mechanic wrong, because it changed. It is also the one that
-matters for running several sessions on one repository.
-
-- The active feature resolves from `.specify/feature.json`, key `feature_directory`.
-- `SPECIFY_FEATURE_DIRECTORY` overrides it. `Get-FeaturePathsEnv` documents its priority as the
-  environment variable, then `feature.json`, then an error.
-- It does **not** resolve from the checked-out branch. `git checkout` alone does not retarget the
-  commands, and `Get-CurrentBranch` invokes no git command.
-- `create-new-feature` creates `specs/<NNN-slug>/` and `spec.md`, then saves that state. It runs no
-  `git checkout -b`.
-- Branch creation happens only through an optional `before_specify` hook or the opt-in git
-  extension, and the branch name does not dictate the spec directory name.
-
-Three variables must not be conflated: `SPECIFY_FEATURE` is a name label,
-`SPECIFY_FEATURE_DIRECTORY` is the directory, and `SPECIFY_INIT_DIR` is the project.
-
-**Exactly one feature is active at a time.** The directory scheme supports `specs/001-*` beside
-`specs/002-*`, but each run targets one, and switching is a state-file edit rather than a checkout.
-
-### It resolves per worktree, until the worktree has no `.specify/`
-
-Measured on 2026-08-15 against `specify-cli` 0.16.4, using the shipped resolver in a real repository
-with git worktrees. The PowerShell and bash parities implement the same walk.
-
-`Get-RepoRoot` tries `SPECIFY_INIT_DIR`, then `Find-SpecifyRoot`, then falls back to the script's own
-location. `Find-SpecifyRoot` walks parent directories from the current one until it finds a
-`.specify/` directory. Nothing in that chain consults git.
-
-| Case | Measured result |
-|---|---|
-| Worktree whose branch carries the scaffold | Resolves to itself. Its own `feature.json`, no sharing |
-| Worktree on a branch predating `specify init` | Resolves to the first ancestor holding `.specify/` |
-| Two such worktrees nested under the primary | Both resolve to the primary and share one `feature.json` |
-
-So the answer is per worktree, conditionally. `.specify/` is committed, so any worktree whose branch
-includes the scaffold commit gets its own copy, and `feature.json` is gitignored and stays local to
-that checkout. Sessions do not collide.
-
-**A branch that predates the scaffold has no `.specify/`, and the walk escapes the worktree.** Two
-sessions in that state both bound to the primary's pointer. The second overwrote the first, and the
-first was never told.
-
-`git status` was clean in both worktrees throughout, because the pointer is gitignored and lives
-outside their trees. This is the collision class the [landing page](index.md) opens on: no shared
-bytes, so every branch merges clean, and the loss lands later.
-
-**Limit: this was measured on Linux with the bash parity, and the PowerShell walk was read rather
-than run.** Nothing here is a claim about a live agent session, only about the resolver those
-commands call.
-
-The mitigation is the branch, not a setting. A worktree cut from a branch that carries `.specify/`
-resolves to itself, which was the control case above. Sequence allocation has the same shape and is
-covered in [Sequence allocation](SEQUENCE-ALLOC.md).
 
 ---
 

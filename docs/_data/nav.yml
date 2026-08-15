@@ -117,20 +117,31 @@
 # running CONCURRENT SESSIONS needs from that framework -- the general tool review is upstream's
 # job, and duplicating it here would be the drift HS-3 exists to prevent.
 #
-# BEFORE ADDING THE SECOND PAGE, FIX THE LENS. FRAMEWORK-spec-kit.md took its shape from the source
-# material it was written from, not from a set of questions chosen in advance. That is fine for one
-# page and worthless for two: the value of a series is that a reader can compare across it, and they
-# cannot compare two pages that answer different questions in different orders.
+# THE SECTION ORDER IS THE LENS, AND EVERY PAGE HERE ANSWERS IT IN THIS ORDER. A series is worth
+# more than its pages only if a reader can compare across it, and two pages answering different
+# questions in different orders cannot be compared. FRAMEWORK-spec-kit.md originally took its shape
+# from the source material it was written from; it was reordered onto this lens on 2026-08-15,
+# before a second page existed, because retrofitting a page already read and linked is the more
+# expensive direction.
 #
-# So the work is to decide the questions and their order FIRST -- what it installs, what it costs,
-# how it holds state, where it collides with a worktree per session, what failed verification, when
-# to skip it -- then write the second page to that shape and retrofit this one in the same commit.
-# Doing it in the other order means retrofitting a page that has already been read and linked, which
-# is the more expensive direction and the reason this note is here rather than in a backlog.
+#   1. What it is, measured           size on disk, and whether anything installed can fail a build
+#   2. How it holds state             and what happens to that under a worktree per session
+#   3. Install and initialise         commands, flags, traps found by running it
+#   4. The flow                       phases, order, and what each artifact carries
+#   5. What failed verification       killed claims, with votes
+#   6. What it does not give you      measured against adopting the practices without the tool
+#   7. A decision rule                use when, skip when
+#   8. Where the evidence runs out    named gaps, not filled
+#   9. Provenance                     figures, source tiers, the re-check ladder
 #
-# This is a NOTE, not a rule. It becomes an HS-<n> in docs/HOUSE-STYLE.md only once the question set
-# exists and has survived being applied twice -- a rule written before that would be pinning a shape
-# nobody has tested, and the numbering table would have to be bumped for it.
+# ROW 2 IS WHY THESE PAGES ARE ON THIS SITE and is why it sits second rather than in the middle. The
+# general tool review is upstream's job. What no upstream will write is what the framework does when
+# several sessions hold several worktrees of one repository, and "nothing collides, here is what was
+# checked" is a legitimate answer to it -- an absent row is not.
+#
+# This is a NOTE, not a rule. It becomes an HS-<n> in docs/HOUSE-STYLE.md once the order has survived
+# being applied to a second framework; a rule written now would pin a shape tested once, and the
+# numbering table would have to be bumped for it.
 - group: Other frameworks
   items:
     - label: Spec Kit
