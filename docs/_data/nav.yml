@@ -116,6 +116,21 @@
 # FRAMEWORK-<name>.md and sorts beside this one in docs/. Each page is scoped to what a reader
 # running CONCURRENT SESSIONS needs from that framework -- the general tool review is upstream's
 # job, and duplicating it here would be the drift HS-3 exists to prevent.
+#
+# BEFORE ADDING THE SECOND PAGE, FIX THE LENS. FRAMEWORK-spec-kit.md took its shape from the source
+# material it was written from, not from a set of questions chosen in advance. That is fine for one
+# page and worthless for two: the value of a series is that a reader can compare across it, and they
+# cannot compare two pages that answer different questions in different orders.
+#
+# So the work is to decide the questions and their order FIRST -- what it installs, what it costs,
+# how it holds state, where it collides with a worktree per session, what failed verification, when
+# to skip it -- then write the second page to that shape and retrofit this one in the same commit.
+# Doing it in the other order means retrofitting a page that has already been read and linked, which
+# is the more expensive direction and the reason this note is here rather than in a backlog.
+#
+# This is a NOTE, not a rule. It becomes an HS-<n> in docs/HOUSE-STYLE.md only once the question set
+# exists and has survived being applied twice -- a rule written before that would be pinning a shape
+# nobody has tested, and the numbering table would have to be bumped for it.
 - group: Other frameworks
   items:
     - label: Spec Kit
