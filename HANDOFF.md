@@ -87,6 +87,12 @@ residual window is two writers in one worktree.
 Spec Kit. `load_central_config` requires `_bmad/config.toml` and does not walk parents, so the case
 that silently mis-binds Spec Kit produces a named error.
 
+**`/speckit-converge` measures artifact drift, not implementation completeness.** Reported from one
+v0.16.4 build on 2026-08-15: 22 requirements, 65 tasks, 85 tests through the full flow, then converge
+three times. 24 findings, 2 changed application code, and none was a feature that did not work. The
+loop terminates when the artifacts stop moving, not when the code becomes right. This corrected live
+text on the Spec Kit page, which had repeated the command's own description.
+
 **Spec Kit's feature numbering is still unlocked at 0.16.4.** `Get-HighestNumberFromSpecs` takes the
 highest prefix and adds one. This re-verifies the claim `docs/SEQUENCE-ALLOC.md` already carried
 from a 2026-08-12 reading.
