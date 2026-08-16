@@ -26,7 +26,13 @@
     <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
   </head>
 
-  <body>
+  {%- comment -%}
+    data-baseurl is how assets/site.js finds /search.json without a second definition of the prefix.
+    _config.yml's baseurl is empty today and was not always: on the old host the site sat in a
+    subdirectory named after the repository, and every href needed that prefix. Reading it from the
+    body rather than hardcoding "/" is what keeps the search box working if that ever changes again.
+  {%- endcomment -%}
+  <body data-baseurl="{{ site.baseurl }}">
     <a class="skip-link" href="#content">Skip to content</a>
 
     <header class="site-header">
@@ -176,5 +182,13 @@
         {%- endif %}
       </div>
     </footer>
+
+    {%- comment -%}
+      DEFERRED, AND LAST. Everything this file adds is an enhancement over content that is already
+      complete in the HTML above, so nothing here blocks the first paint and nothing here is on the
+      path to a link, a heading or a command. See the file's own header for the three constraints
+      that survived the no-script rule's retirement on 2026-08-16.
+    {%- endcomment -%}
+    <script src="{{ '/assets/site.js' | relative_url }}" defer></script>
   </body>
 </html>

@@ -122,7 +122,16 @@ class TheForwarderAnswersForEveryOldUrl(unittest.TestCase):
         )
 
     def test_no_stub_runs_a_script(self):
-        """The house rule from docs/assets/style.css, applied to the tempting exception."""
+        """A forwarding stub has to name its destination without running anything.
+
+        THIS USED TO CITE THE SITE-WIDE NO-SCRIPT RULE IN docs/assets/style.css, and that rule was
+        retired on 2026-08-16 -- the site now ships assets/site.js. This check is unchanged, because
+        it never really rested on that rule: it rests on what a stub IS. A stub's entire content is
+        the address of the page that moved, so a stub that needs script to produce that address has
+        no content at all for a reader who has script disabled, and the tempting one-file version --
+        a single 404 page reading its own path and rewriting it -- cannot even name which document
+        was wanted. Nothing on this site's own pages depends on that argument; this file's do.
+        """
         scripted = []
         with tempfile.TemporaryDirectory() as tmp:
             dest = build_into(tmp)

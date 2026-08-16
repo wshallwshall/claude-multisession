@@ -1,0 +1,43 @@
+---
+layout: null
+---
+{%- comment -%}
+  THE SEARCH INDEX, built by Jekyll and served as one static file on this origin.
+
+  IT IS PAGE-LEVEL AND NOT HEADING-LEVEL, AND THAT IS A DELIBERATE REFUSAL rather than a shortcut.
+  Heading-level results need an anchor per heading, and an anchor computed HERE would be computed by
+  Liquid's `slugify`, while the anchors on the page are computed by kramdown. The two disagree --
+  tests/test_internal_links_resolve.py measured 19 disagreements over 766 headings, every one of them
+  a heading containing `--`, which kramdown folds into an en dash and drops. A search result carrying
+  a slug from the wrong slugifier still returns 200 and still renders: it just lands the reader at
+  the top of the page instead of at the heading it promised, reported by nobody. That is the exact
+  failure shape this repository exists to refuse, so the index does not compute anchors at all.
+
+  WHAT IS INDEXED: the title, the URL, and the page's FULL text with markup stripped.
+
+  IT WAS THE FIRST 900 CHARACTERS FOR ABOUT TEN MINUTES, and the first query run against it is why
+  it is not. Searching "collision" returned the landing page and Sequence allocation, and did not
+  return Coordination or Quickstart -- the two pages the word is actually about -- because on those
+  pages it first appears past the truncation. A search that misses the main page for a term is worse
+  than no search at all: it answers confidently and it answers wrong, which is the failure shape
+  this whole repository is about.
+
+  THE COST OF THE FULL TEXT IS PAID BY THE READER WHO SEARCHES, AND ONLY THEM. assets/site.js
+  fetches this lazily on the first focus of the search box rather than on page load, so it is off
+  the critical path for every reader who never uses it.
+{%- endcomment -%}
+{%- comment -%}
+  FILTERED IN THE LOOP RATHER THAN BY `where_exp`. Liquid 4.0.4, which is what the pinned
+  github-pages gem resolves to, parses no `or` inside a where_exp string and fails the whole build
+  with "Expected end_of_string but found id". An `if` takes `or` perfectly well.
+{%- endcomment -%}
+[
+{%- assign written = 0 -%}
+{%- for p in site.pages -%}
+{%- if p.url == '/' or p.url contains '.html' -%}
+{%- if written > 0 %},{% endif -%}
+{%- assign written = written | plus: 1 %}
+{"t":{{ p.title | default: p.name | jsonify }},"u":{{ p.url | jsonify }},"x":{{ p.content | strip_html | normalize_whitespace | jsonify }}}
+{%- endif -%}
+{%- endfor %}
+]
