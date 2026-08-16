@@ -48,36 +48,9 @@ PUSH_GUARD = REPO_ROOT / "scripts" / "hooks" / "push_guard.py"
 # exempt page is still a page a reader has to be able to load.
 AUTHORED_VERBATIM = ("docs/KORUS.md",)
 
-# HS-21: the questions every page in the framework series answers, in the order it answers them.
-# THIS TUPLE IS THE ONLY DEFINITION. docs/HOUSE-STYLE.md states the rule and cites this file;
-# docs/_data/nav.yml carries the same list as a note for whoever adds the next page, and the test
-# asserts that note still matches. Three places name it, one place defines it.
-#
-# WHY AN ORDER IS WORTH GATING AT ALL. A series is worth more than its pages only if a reader can
-# compare across it, and two pages answering different questions in different orders cannot be
-# compared. FRAMEWORK-spec-kit.md originally took its shape from the source material it was written
-# from; it was reordered onto this list on 2026-08-15, before a second page existed, because
-# retrofitting a page already read and linked is the more expensive direction.
-#
-# ROW 2 IS WHY THESE PAGES ARE ON THIS SITE, which is why it sits second rather than in the middle.
-# The general tool review is upstream's job. What no upstream writes is what a framework does when
-# several sessions hold several worktrees of one repository.
-#
-# EXTRA SECTIONS ARE ALLOWED AND ABSENT ONES ARE NOT. A page may carry `## TLDR/BLUF` and whatever
-# else it needs; what it may not do is omit one of these. An omitted section reads as "this
-# framework has no such property", which is a claim. A section saying "not established" reads as
-# what it is.
-FRAMEWORK_SECTIONS = (
-    "What it is, measured",
-    "How it holds state",
-    "Install and initialise",
-    "The flow",
-    "What failed verification",
-    "What it does not give you",
-    "A decision rule",
-    "Where the evidence runs out",
-    "Provenance, and how to re-check",
-)
+# HS-21: retired 2026-08-16. See docs/HOUSE-STYLE.md for the tombstone. The constant and the test
+# that read it (test_a_series_answers_one_set_of_questions.py) are both gone; this comment is the
+# only place the nine-section order is still written down, kept for anyone tracing the history.
 
 # The coordination surfaces a human or a tool reads for an all-clear. Grouped here because what they
 # have in common is the failure mode, not the directory: each one has an exit path that means "I could

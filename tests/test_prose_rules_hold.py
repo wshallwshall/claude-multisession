@@ -101,6 +101,15 @@ RULE_ROW = re.compile(r"^\|\s*`?(?:B|HS|PD|OPEN|SD|CP)-\d+`?\s*\|")
 FENCE = re.compile(r"^\s*(```|~~~)")
 LIST_MARKER = re.compile(r"^(?:[-*+]|\d+\.)\s+")
 
+# A raw HTML block, kramdown's own rule: a paragraph starting with '<' is markup, not prose, and
+# runs until the next blank line -- matching how a fenced fence code block is excluded below, for
+# the same reason. A hand-authored inline SVG diagram is the case that surfaced this: its attribute
+# text (an aria-label, a multi-line figcaption) reads as sentences to a scanner that does not know
+# the tag around it is not prose. Only the block's OPENING line has to start with '<'; a wrapped
+# attribute or caption continuation line does not, which is why this tracks state rather than
+# testing each line on its own the way FENCE-adjacent checks above do.
+HTML_BLOCK_START = re.compile(r"^<[a-zA-Z!]")
+
 
 def scannable_lines(text: str) -> list[tuple[int, str]]:
     """Prose lines only: no code fences, and no rule-definition rows.
@@ -158,13 +167,26 @@ def paragraphs(text: str) -> list[tuple[str, list[tuple[int, int]]]]:
         current.clear()
 
     inside = False
+    inside_html = False
     for n, line in enumerate(text.split("\n"), 1):
         if FENCE.match(line):
             inside = not inside
             flush()
             continue
         stripped = line.strip()
-        if inside or not stripped or stripped.startswith(("|", "#", ">")) or RULE_ROW.match(line):
+        if inside:
+            continue
+        if not stripped:
+            inside_html = False
+            flush()
+            continue
+        if inside_html:
+            continue
+        if HTML_BLOCK_START.match(stripped):
+            inside_html = True
+            flush()
+            continue
+        if stripped.startswith(("|", "#", ">")) or RULE_ROW.match(line):
             flush()
             continue
         marker = LIST_MARKER.match(stripped)
@@ -424,6 +446,47 @@ class AListIsNotOneLongSentence(unittest.TestCase):
         """`--` is this corpus's em dash and `**` opens a lede. Neither begins a list."""
         for text in ("-- the aside continues\nand wraps here\n", "**Trap.** The gate is advisory\nand wraps\n"):
             self.assertEqual(1, len(paragraphs(text)), f"{text!r} was split as a list")
+
+
+class RawHtmlIsNotProse(unittest.TestCase):
+    """Planted, for the same reason as the list class above: an inline SVG diagram is markup, and a
+    scanner that does not know that reads its coordinates and its aria-label as run-on sentences.
+    Surfaced by docs/FRAMEWORK-bmad.md's comparison diagram, whose figcaption alone was long enough
+    to fail on its own before this exclusion existed."""
+
+    def test_an_svg_block_is_excluded(self):
+        text = (
+            "Prose before.\n\n"
+            '<svg viewBox="0 0 10 10">\n'
+            '  <text x="1" y="1">label</text>\n'
+            "</svg>\n\n"
+            "Prose after.\n"
+        )
+        units = paragraphs(text)
+        self.assertEqual(2, len(units))
+        self.assertEqual("Prose before.", units[0][0])
+        self.assertEqual("Prose after.", units[1][0])
+
+    def test_a_wrapped_attribute_stays_excluded(self):
+        """The opening line starts with '<'; a wrapped aria-label or figcaption continuation does
+        not, and still has to stay out -- this is why the state persists to the next blank line
+        rather than testing each line for a leading '<' on its own."""
+        text = (
+            '<figcaption>A sentence that keeps going\n'
+            "onto a second line with no leading angle bracket at all.</figcaption>\n\n"
+            "Real prose paragraph.\n"
+        )
+        units = paragraphs(text)
+        self.assertEqual(1, len(units))
+        self.assertEqual("Real prose paragraph.", units[0][0])
+
+    def test_a_less_than_sign_starting_a_sentence_is_not_swallowed(self):
+        """Guards the exclusion from being too broad: '<' beginning ordinary prose (a comparison,
+        not a tag) must still be measured."""
+        text = "<100ms is the budget, and the gate enforces it.\n"
+        units = paragraphs(text)
+        self.assertEqual(1, len(units))
+        self.assertIn("budget", units[0][0])
 
 
 class ABoldLedeEndsASentence(unittest.TestCase):

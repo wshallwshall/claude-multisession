@@ -155,7 +155,7 @@ Resolving it correctly is fussier than it looks:
 > reason: a swallowed git failure does not read as a failure, it reads as an empty result, which
 > downstream code cheerfully treats as "no worktrees", "no refs", or "the repository root is `''`".
 
-### The corollary: state outlives the worktree
+### The corollary: State outlives the worktree
 
 This is the surprising half, and it is deliberate. **Remove a worktree and the claims it took are
 still there.** The state lives beside the shared object store, not in the checkout.
@@ -493,7 +493,7 @@ Note the asymmetry: longest-match is right for a *roster* (report the innermost 
 for a *destructive caller* (the ancestor's `--force` removal takes the nested tree with it). Same
 data, two questions, two answers.
 
-### Name folding: the filename is the mutex
+### Name folding: The filename is the mutex
 
 `ConvertTo-CcxSafeName` / `safe_name()` fold free text to `[a-z0-9._-]`, collapsing runs to `-` and
 trimming. They must match **character for character** across the two languages.
@@ -539,7 +539,7 @@ match. Write the caller's spelling; the folded filename is the identity.
 
 ---
 
-## 7. `ccx.config.json`: six knobs, and nothing else
+## 7. `ccx.config.json`: Six knobs, and nothing else
 
 One file at the repository root. It is **both** the configuration and the **opt-in marker**: the
 user-scope hooks run in every repository on the machine, so "is this repo governed?" has to be
