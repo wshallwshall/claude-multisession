@@ -52,9 +52,9 @@ Upstream, this is [claude-code#76590](https://github.com/anthropics/claude-code/
 a [field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
 roughly fourteen sessions on one directory.
 
-**Claude Code now blocks much of that itself.** A session started with `--worktree` is refused any
-edit or command that resolves into the main checkout. What it does not do is stop two isolated
-sessions colliding with each other -- [which half you need](FAQ.md).
+**Claude Code now blocks much of that itself**, for a session started with `--worktree` and for Bash.
+It does not stop two isolated sessions colliding with each other. For PowerShell it checks only
+where the command runs, not where git points -- [which half you need](FAQ.md).
 
 ## What it looks like when it works
 
