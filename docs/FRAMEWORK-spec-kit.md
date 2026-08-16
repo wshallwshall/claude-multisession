@@ -125,7 +125,7 @@ Two sequences are documented, verified against `main`, `v0.16.0`, and that tag's
 core and appears in neither sequence. `clarify`, `checklist` and `analyze` are grouped optional and
 sit inside the full path. Read the table above, not the grouping.
 
-### Stage 1: the constitution
+### Stage 1: The constitution
 
 **The goal.** One rules document that every later step is checked against.
 
@@ -139,7 +139,7 @@ feature work starts.
 coding and debugging step checks against it, twice: before Phase 0 research and again after Phase 1
 design.
 
-### Stage 2: specify, then clarify
+### Stage 2: Specify, then clarify
 
 **The goal.** A spec that says WHAT and WHY, with its gaps closed before work fans out.
 
@@ -156,7 +156,7 @@ against the constitution, asks targeted questions in chat, and folds your answer
 **Nothing enforces that division except a self-check inside the skill prompt.** CI never sees it, so
 a leaky spec produces an over-constrained document rather than an error.
 
-### Stage 3: plan, then tasks
+### Stage 3: Plan, then tasks
 
 **The goal.** HOW the feature gets built, plus the ordered work items to hand out.
 
@@ -170,7 +170,7 @@ Tracking` table records any rejected alternative, populated only when the consti
 `specs/<NNN-slug>/tasks.md`, written by `tasks`. A KORUS dispatcher should read both before
 splitting work across build sessions.
 
-### Stage 4: implement
+### Stage 4: Implement
 
 **The goal.** Working code, one task at a time, inside one build session's worktree.
 
@@ -185,7 +185,7 @@ tracked issues afterward.
 review checklist from the spec. `analyze` checks plan and tasks against the constitution and writes
 `specs/<NNN-slug>/analysis.md`. Both are sized for production features; skip them on a short build.
 
-### Stage 5: handling requirement changes
+### Stage 5: Handling requirement changes
 
 **The goal.** Update the documents and let the code follow. Do not prompt the agent to "just fix the
 code."
@@ -199,7 +199,7 @@ code."
 **What happens next.** The agent diffs the new spec against the current plan and produces a targeted
 checklist rather than a full rewrite.
 
-### Stage 6: converge, not "fix-findings"
+### Stage 6: Converge, not "fix-findings"
 
 **The goal.** Close the loop: find the work the documents say is unmet, and land it.
 

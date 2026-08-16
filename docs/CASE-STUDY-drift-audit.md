@@ -1,4 +1,4 @@
-# Case study: auditing a multi-session estate as one system
+# Case study: Auditing a multi-session estate as one system
 
 ## TLDR/BLUF
 

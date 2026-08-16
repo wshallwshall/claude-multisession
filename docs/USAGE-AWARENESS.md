@@ -1,4 +1,4 @@
-# Usage awareness: knowing when to stop, without lying about it
+# Usage awareness: Knowing when to stop, without lying about it
 
 ## TLDR/BLUF
 
@@ -36,7 +36,7 @@ When it fires, the correct response is not "stop". It is:
 2. Push branches, or otherwise get the work somewhere that survives the session ending.
 3. Write a handoff for whoever picks it up, including yourself in four hours.
 
-## Rule 1: a percentage is meaningless without its account
+## Rule 1: A percentage is meaningless without its account
 
 This is the failure that forced the design. An early version hardcoded which account to read. It
 reported **93 percent weekly** into a session whose actual pool was at **5 percent**. Both the
@@ -52,7 +52,7 @@ session on the others, and wrong for all of them after the next switch.
 **Resolve the pool per session, from the surface that actually knows which login the session bills.**
 If you cannot resolve it, say so.
 
-## Rule 2: several signals look authoritative and are wrong
+## Rule 2: Several signals look authoritative and are wrong
 
 Each of these was checked and each was wrong for the case it appeared to answer:
 
@@ -67,7 +67,7 @@ Each of these was checked and each was wrong for the case it appeared to answer:
 **That last row is the general one.** If your evidence for "which account is this" is a side effect
 of your own polling, you have built a loop that confirms whatever it did last.
 
-## Rule 3: cross-check against an independent sample, and refuse when they disagree
+## Rule 3: Cross-check against an independent sample, and refuse when they disagree
 
 The reading is checked against a second, independently maintained sample for the same organization.
 If the two disagree, the result is **UNKNOWN**, not the number.
@@ -81,7 +81,7 @@ Two design details matter more than they look:
 - **Sample age is a validity condition.** Past a few missed sampling intervals, the second source is
   no longer evidence. Old enough, and it must stop being treated as a check at all.
 
-## Rule 4: never print a band beside an account unless you established both
+## Rule 4: Never print a band beside an account unless you established both
 
 An UNKNOWN result names the pool by an opaque identifier and says the usage could not be determined.
 It never names a login as "this session's" on the strength of a token file.
@@ -90,7 +90,7 @@ Half-established results are where confident wrongness comes from. If you know t
 the number, say that. If you know a number but not whose it is, that number is unusable. Do not
 print it next to a name to make the output look complete.
 
-## Rule 5: the diagnostics are the payload when something fails
+## Rule 5: The diagnostics are the payload when something fails
 
 A summary filter kept only lines containing the words for the two window names. It silently dropped
 every refusal message the underlying tool produced -- exactly the sentences explaining *why* the
@@ -99,7 +99,7 @@ reading failed -- leaving an UNKNOWN with an empty reason.
 **A filter written for the success case will strip the failure case.** When you filter output, check
 what a failing run actually prints before deciding what to keep.
 
-## Rule 6: a warning path must not be able to kill itself
+## Rule 6: A warning path must not be able to kill itself
 
 Three constraints, each learned:
 
@@ -112,13 +112,13 @@ Three constraints, each learned:
   subprocess on every prompt during an upstream outage, inside a hook with a 30-second budget. The
   failure mode of "retry until it works" is a hook that times out forever.
 
-## Rule 7: cache per pool, never in one unlabeled slot
+## Rule 7: Cache per pool, never in one unlabeled slot
 
 A single shared cache slot lets the first writer in a refresh window define what every later reader
 reports, whatever account that reader asked about. **Key the cache by pool.** An unlabeled cache is
 an unlabeled claim.
 
-## Rule 8: a threshold is not a decision
+## Rule 8: A threshold is not a decision
 
 **The one most likely to bite you, and the one two sessions here got wrong on the same day.**
 

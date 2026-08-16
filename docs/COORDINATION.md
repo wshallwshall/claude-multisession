@@ -83,7 +83,7 @@ Every mutual-exclusion primitive here instead uses an **atomic exclusive create*
 file that must not already exist, and the *failed create* is the exclusion. That covers `claim.ps1`,
 `lock.ps1`, the sequence allocator and the announce hook's concurrency guard.
 
-## Presence: who is here
+## Presence: Who is here
 
 **The goal.** Find out which sessions are alive in this repository right now, on any surface.
 
@@ -227,7 +227,7 @@ State this wherever it is consumed:
 It *does* see editor-extension sessions, because the match is purely path-based and the launching
 surface is irrelevant to it.
 
-## Overlap: what they are touching
+## Overlap: What they are touching
 
 **The goal.** Before you start a chunk of work, find out what the other sessions have already
 touched: the files, and the subjects they are working on.
@@ -374,7 +374,7 @@ Another session's task subjects are untrusted free text. `overlap.ps1` strips co
 collapses whitespace and caps the length before that text reaches its JSON or a hook's deny message.
 It is quoted to a human; it is never acted on.
 
-## Claims: what is being built
+## Claims: What is being built
 
 **The goal.** Say what you are about to build, under a key other sessions can see, before you build
 it.
@@ -468,7 +468,7 @@ An unreadable claim file is *not knowing whose it is*: neither attributable nor 
 unreadable records separately and leave them in place. "No claims directory" and "a directory with
 nothing wrong" both give an empty problem list, so say "did not scan" when the source is absent.
 
-## Locks: one operation at a time
+## Locks: One operation at a time
 
 **The goal.** Stop two sessions running the same operation at the same moment.
 
@@ -515,7 +515,7 @@ Nothing here is worth that. It is also why the file carries no `#Requires` line.
 failure is raised *before* the body runs and exits non-zero, the outcome the rest of the file
 avoids.
 
-### The id rules: the most valuable part of the hook
+### The id rules: The most valuable part of the hook
 
 There are **two id namespaces in play and they share no characters.**
 
@@ -656,7 +656,7 @@ The `mcp_tool` route is **untested, not impossible**; if it works, this collapse
 action the same control must **allow**, because a script that refuses everything is not a working
 guard either.
 
-### Turning it off: the kill switch must be a file
+### Turning it off: The kill switch must be a file
 
 **Trap.** Disabling a `UserPromptSubmit` hook by editing settings, or by setting an environment
 variable.

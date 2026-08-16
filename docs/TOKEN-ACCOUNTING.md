@@ -1,4 +1,4 @@
-# Token accounting: what a usage meter measures, and what a plan buys
+# Token accounting: What a usage meter measures, and what a plan buys
 
 ## TLDR/BLUF
 

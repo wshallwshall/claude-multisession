@@ -1,4 +1,4 @@
-# Case study: a finding that took four passes and two sessions
+# Case study: A finding that took four passes and two sessions
 
 ## TLDR/BLUF
 

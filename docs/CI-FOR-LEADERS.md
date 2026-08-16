@@ -1,4 +1,4 @@
-# CI for leaders: what done means when the author cannot vouch for the change
+# CI for leaders: What done means when the author cannot vouch for the change
 
 ## TLDR/BLUF
 

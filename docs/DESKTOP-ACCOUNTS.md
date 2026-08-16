@@ -158,7 +158,7 @@ across instances here: it follows from the mechanism under [Limits](LIMITS.md).
   instance you meant.
 - **Each instance is a full Electron app.** Memory cost scales with the number of them.
 
-### Limit: this is not a trust boundary
+### Limit: This is not a trust boundary
 
 A separate Windows user account per identity gives a separate credential store and registry hive, at
 the cost of fast user switching and a duplicated environment. `--user-data-dir` was chosen because

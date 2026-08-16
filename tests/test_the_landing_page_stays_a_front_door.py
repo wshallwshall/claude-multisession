@@ -1,4 +1,4 @@
-"""HS-22: the landing page routes the reader, and the pages it routes to still hold the content.
+"""HS-23: the landing page routes the reader, and the pages it routes to still hold the content.
 
 THE FAILURE THIS EXISTS FOR, measured on 2026-08-16 rather than imagined. docs/index.md had grown to
 3,143 words. It carried the install procedure, the requirements table, the vendor-surface limits and
@@ -71,7 +71,7 @@ class TheLandingPageRoutesRatherThanExplains(unittest.TestCase):
         self.assertLessEqual(
             words,
             WORD_CAP,
-            f"docs/index.md is {words} words, against a cap of {WORD_CAP} (HS-22). It reached 3,143 "
+            f"docs/index.md is {words} words, against a cap of {WORD_CAP} (HS-23). It reached 3,143 "
             "before the rule existed, one correct section at a time. Move whatever grew to the page "
             "that owns it -- QUICKSTART.md, LIMITS.md or SCRIPTS.md -- and link to it. PD-1 to PD-7 "
             "outrank this rule: never reach the number by deleting a fact.",
@@ -84,7 +84,7 @@ class TheLandingPageRoutesRatherThanExplains(unittest.TestCase):
             opening,
             f"the first {OPENING_CHARS} characters of docs/index.md do not link to QUICKSTART.md. A "
             "reader deciding whether to try this needs the route to the first command inside the "
-            "opening, which is the half of HS-22 that a word count cannot see.",
+            "opening, which is the half of HS-23 that a word count cannot see.",
         )
 
     def test_the_landing_page_carries_no_script_inventory(self):

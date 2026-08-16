@@ -226,7 +226,7 @@ Two practical traps when you do this:
 
 ---
 
-## What this gate never looks at: the ref store
+## What this gate never looks at: The ref store
 
 This gate scans **files**. A repository is more than its files, and private history can sit in a
 clone in a place no file scan reaches.
