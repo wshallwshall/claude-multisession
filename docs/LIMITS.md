@@ -10,7 +10,7 @@ vendor surface this project does not own. Read them before you trust a green rep
 you have not installed anything yet, in which case start at [Quickstart](QUICKSTART.md).
 
 **How to use it.** Check the requirements table, then read the limit that matches your setup. The
-CLI-only row is the one that changes what you install.
+CLI-only limit is the one that changes what you install.
 
 ---
 
@@ -38,12 +38,12 @@ case-folding degrade elsewhere.
 |---|---|---|
 | **Windows, PowerShell 7.3+** | The exercised path. In CI as `windows-latest` | Nothing known. This is the platform the defaults assume |
 | **Linux, PowerShell 7.3+** | In CI as `ubuntu-latest` | Path comparison stops folding case, and roster self-marking degrades. Both are named in the note under Requirements above |
-| **macOS** | **Not tested.** It is not in the CI matrix | Not established. Nothing here reports on macOS either way, so treat it as unmeasured rather than working |
+| **macOS** | **Not tested.** It is not in the CI matrix | `ccx doctor` prints its non-Windows blind spot there, but nothing in CI covers macOS. Treat it as unmeasured rather than working |
 | **Windows PowerShell 5.1** | Unsupported | `#Requires -Version 7.3` refuses to start most scripts there, and `powershell.exe` is a separate executable from `pwsh` |
 
 CI is not the doctor. Those runners execute the ASCII gate, the leak scan, a parse of every shipped
 `.ps1` and the test suite on both platforms. They do not run `ccx doctor`, and the workflow's own
-header says why: it needs a live second session and a peer worktree.
+header says why: some controls it fires need a live second session and a peer worktree.
 
 So a green Linux run says the scripts parse and the suite passes there. Whether the hooks, the
 gates and the roster behave on Linux in a real session is not established by it.
@@ -80,8 +80,8 @@ a flaky test or a corrupted fixture, blamed on anything but concurrency.
 This is unsolved in this project rather than handled quietly. There is no control to install and
 nothing to switch on. Two habits are the whole of it, and both are yours to apply:
 
-- **Give each worktree its own environment.** `new.ps1` runs the per-checkout bootstrap named by
-  `setupHook` in `ccx.config.json`, and warns when it cannot find that file.
+- **Give each worktree its own environment.** `scripts/worktree/new.ps1` runs the per-checkout
+  bootstrap named by `setupHook` in `ccx.config.json`, and warns when it cannot find that file.
   [Worktrees](WORKTREES.md) gives the contract the hook receives.
 - **Choose ports and database names per worktree, by hand.** Nothing derives them for you. A setup
   hook that writes one port into every checkout has moved the collision, not removed it.
@@ -117,8 +117,8 @@ altogether:
 | Agent credentials with no bypass permission | Bypass is a permission. Withhold it from the token the agent pushes with |
 
 **Nothing in this repository configures any of that for you.** Those are settings on your hosting
-provider, `bin/ccx-doctor.ps1` does not read them, and this repository's own `gates` workflow treats
-its check as advisory rather than required.
+provider, `bin/ccx-doctor.ps1` does not read them, and this repository's own `gates` check is
+advisory: nothing requires it before a merge.
 
 ## Everything here fails the same way it succeeds
 
@@ -129,9 +129,9 @@ That is why `bin/ccx-doctor.ps1` exists, and why you run it *before* installing 
 after. It never infers: it prints WHAT WAS SCANNED and BLIND SPOTS ON THIS RUN, and a skip is never
 a pass (exit 2).
 
-At least one deny path is not self-testable. The collision gate's needs a live peer worktree holding
-an uncommitted change to the same file, so the doctor proves only that the gate refuses to go
-*silent*, and prints that as a blind spot every run.
+At least one deny path is not self-testable. The collision gate's refusal needs a live peer worktree
+holding an uncommitted change to the same file. The doctor proves the gate speaks up when it cannot
+check, not that it denies, and prints that gap as a blind spot every run.
 
 ## Related
 
