@@ -317,8 +317,8 @@ Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](
 
 - [Leak gate](LEAK-GATE.md) -- a scanner you can run today, plus the blind spot no scanner can close.
 - [Usage awareness](USAGE-AWARENESS.md) -- a design; ships no hook.
-- [Session mail](SESSION-MAIL.md) -- a design for reaching the peers announce cannot. It ships
-  nothing, and is most useful as the list of ways the obvious implementations fail.
+- [Session mail](SESSION-MAIL.md) -- how to build the lane that reaches the peers announce cannot.
+  Ships nothing here: a step-by-step guide, not an installed tool.
 
 **In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
 [Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list).
