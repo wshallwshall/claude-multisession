@@ -104,15 +104,6 @@
     - label: CI for leaders
       title: "CI for leaders: what done means when the author cannot vouch for the change"
       path: /CI-FOR-LEADERS.html
-    - label: Drift audit case study
-      title: "Case study: auditing a multi-session estate as one system"
-      path: /CASE-STUDY-drift-audit.html
-    - label: Correction chain case study
-      title: "Case study: a finding that took four passes and two sessions"
-      path: /CASE-STUDY-correction-chain.html
-    - label: Refuted-but-true case study
-      title: "Case study: a claim three verifiers refuted, and the source confirms"
-      path: /CASE-STUDY-refuted-but-true.html
 
 # Evaluations of third-party frameworks, one page each. The naming follows the CASE-STUDY-* series
 # already in "In practice": a shared prefix, then a kebab-case name, so a second evaluation is
@@ -161,12 +152,6 @@
     - label: BMAD
       title: "BMAD 6.11.0, evaluated"
       path: /FRAMEWORK-bmad.html
-
-- group: Contributing
-  items:
-    - label: House style
-      title: "House style: what a page here has to do"
-      path: /HOUSE-STYLE.html
 
 - group: The standards
   items:
