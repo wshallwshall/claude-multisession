@@ -70,7 +70,7 @@
       title: Steering a running session
       path: /STEERING.html
     - label: Session mail
-      title: "The async lane: reaching sessions the realtime channel cannot"
+      title: "Session mail for a KORUS build"
       path: /SESSION-MAIL.html
     - label: Sequence allocation
       title: Sequence allocation
