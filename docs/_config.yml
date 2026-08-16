@@ -5,9 +5,27 @@
 # `--source`. A _config.yml at the repository root would be ignored, and the build would still go
 # green, so treat the location of this file as load-bearing.
 
-title: claude-multisession
+# THE SITE IS NAMED FOR THE METHOD, AND THE REPOSITORY IS NAMED FOR THE TOOLING. Those were the same
+# name until 2026-08-16, when the title was `claude-multisession` and a reader arriving to learn
+# KORUS met a PowerShell inventory instead. The framework page was 1,268 words of the site's 76,000.
+#
+# `title` is read in four places and is the only definition: _layouts/default.html prints it in the
+# header and builds every `<title>` from it, and the layout's own `page.title == site.title` test is
+# what keeps the landing page from carrying its title twice. The REPOSITORY, the Cloudflare Pages
+# project and the hostname are all still `claude-multisession`, and `.github/workflows/site-build.yml`
+# compares `url` below against the project name before it deploys -- so renaming this line is safe and
+# renaming `url` is not.
+title: KORUS
 description: >-
-  Coordination tooling for running several Claude Code sessions at once against one repository.
+  KORUS: run four Claude Code sessions against one repository without them overwriting each other.
+  The build shape, the setup, and the tooling that enforces it.
+
+# ONE DEFINITION, READ IN TWO PLACES, AND THE SECOND ONE IS A GATE. _layouts/default.html prints
+# this beside the title in the header AND appends it to the landing page's `<title>`. That second use
+# is load-bearing: site-build.yml checks that every page's `<title>` carries that page's leading H1,
+# and the landing page's H1 is `# KORUS`, which is a substring of "KORUS - <tagline>" and would not
+# be a substring of a tagline written only in the header. Change the H1 and this line together.
+tagline: Four Claude Code sessions, one repository
 
 # WHERE THIS SITE LIVES, AND WHY IT IS NOT GITHUB PAGES. It was served from
 # wshallwshall.github.io/claude-multisession until 2026-08-10. The reader this site is written for

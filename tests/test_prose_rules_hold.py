@@ -83,9 +83,13 @@ def prose_files() -> list[str]:
     rewriting the sentence, and a page published in its author's words has no such edit available.
 
     EXCLUDED RATHER THAN ABSORBED INTO THE BASELINES, and the difference matters. Raising
-    BASELINE_FAT_PARAGRAPHS from 88 to 94 would also have gone green, and would have handed every
-    OTHER page six paragraphs of new headroom against a rule the corpus is deliberately red behind.
-    The ratchet stays at 88, measuring exactly what it measured before.
+    BASELINE_FAT_PARAGRAPHS from 88 to 94 would also have gone green at the time, and would have
+    handed every OTHER page six paragraphs of new headroom against a rule the corpus was then red
+    behind. The ratchet stayed at 88, measuring exactly what it had measured before.
+
+    That reasoning is now load-bearing in a way it was not on the day it was written: the paragraph
+    baseline reached 0 on 2026-08-16, so absorbing an exempt page's paragraphs would not merely have
+    loosened a ratchet, it would have made the cap unreachable.
     """
     return [
         f
@@ -353,17 +357,36 @@ class TheBannedPatternsCatchWhatTheyExistToCatch(unittest.TestCase):
 # sentences: eight of the openings were written over 30 words, and the failure named them before the
 # work landed rather than after.
 #
-# 68 OF THE REMAINING 290 ARE IN README.md AND INSTALL.md, which neither sweep touched. They are in
+# 68 OF THE REMAINING 290 WERE IN README.md AND INSTALL.md, which neither sweep touched. They are in
 # this corpus but are not site pages: they live at the repository root, outside the Jekyll source, so
-# the site links them as raw `.md` rather than serving them. They are the obvious next chunk, and 68
-# is the figure to beat.
-BASELINE_LONG_SENTENCES = 181       # sentences over 30 words
-BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
+# the site links them as raw `.md` rather than serving them. They were named here as the obvious next
+# chunk, and 68 as the figure to beat. That chunk was taken on 2026-08-16, below.
+#
+# 181 -> 59 AND 19 -> 11 ON 2026-08-16, in the pass that rebuilt the site as a KORUS how-to guide.
+# Every page under docs/ was rewritten for a reader rather than for completeness, and README.md and
+# INSTALL.md were swept for the first time. The two figures moved for the same reason and by the same
+# means: a sentence carrying two independent claims became two sentences, and a paragraph that
+# narrated its own reasoning before reaching the fact lost the narration.
+#
+# NOTHING WAS REACHED BY DELETION, and that was checked rather than asserted. Every numeric token and
+# every link target in the pre-pass revision was diffed against the post-pass one. Three pages came
+# back with a token missing; two were deliberate (a range rewritten as `HS-20 to HS-23`, a date
+# restated twice and now stated once) and the third was a real loss -- the ASVS large-assessment link
+# dropped when the landing page was split -- which was restored to the page that now owns that case.
+BASELINE_LONG_SENTENCES = 58        # sentences over 30 words
+BASELINE_FAT_TABLE_CELLS = 11       # table cells over 40 words
 
-# HS-20: a paragraph over 300 characters. A RATCHET, NOT A CAP, AND THE CORPUS IS RED BEHIND IT --
-# the number below is debt, not a clean bill. The rule was written on 2026-08-10 against a measured
-# corpus: 391 of 1,387 rendered-site paragraphs were over the limit, a shade under a third, so a
-# hard fail would have shipped disabled on day one for the reason this file's header states.
+# HS-20: a paragraph over 300 characters. THE BASELINE IS NOW ZERO, SO THIS IS A CAP RATHER THAN A
+# RATCHET, and the next paragraph written over the limit fails the run rather than being absorbed.
+#
+# It did not start that way, and the history is the argument for the mechanism. The rule was written
+# on 2026-08-10 against a measured corpus: 391 of 1,387 rendered-site paragraphs were over the limit,
+# a shade under a third, so a hard fail would have shipped disabled on day one for the reason this
+# file's header states. It shipped as a ratchet at 88 instead, and the debt was paid down to nothing
+# on 2026-08-16.
+#
+# TREAT A FAILURE HERE AS A CAP BEING HIT, NOT AS A NUMBER TO RAISE. Raising it re-opens the debt
+# this took two sweeps to clear, and the corpus can no longer absorb a paragraph silently.
 #
 # THE FIX IS A REWRITE, NOT A SPLIT. Chopping a long paragraph in half satisfies the number and
 # changes nothing a reader experiences: the same prose arrives in two pieces. An over-long paragraph
@@ -372,7 +395,20 @@ BASELINE_FAT_TABLE_CELLS = 19       # table cells over 40 words
 # fewer words -- never because a measurement, a date, a limit or a mechanism sentence was dropped.
 # PD-1 through PD-7 outrank this rule, and an editor who satisfies it by deleting a number has
 # broken the sheet rather than served it.
-BASELINE_FAT_PARAGRAPHS = 88       # paragraphs over 300 chars (HS-20)
+#
+# 88 -> 15 ON 2026-08-16, and the corpus is no longer meaningfully red behind this rule. Every page
+# under docs/ now carries ZERO paragraphs over the limit; all 15 that remain are in README.md and
+# INSTALL.md, the two files that live at the repository root and had never been swept.
+#
+# THE RULE WENT UP BEFORE IT CAME DOWN, which is the part worth keeping. The same pass that fixed the
+# corpus first made it worse -- 88 to 110 -- because four new pages and a batch of rewrites each added
+# a paragraph or two over the limit, and every one of them read fine in isolation. The ratchet named
+# all 22 with their line numbers before the work landed. Nothing else would have: this defect is
+# invisible to review, because the offending paragraph is never the one you are looking at.
+#
+# 15 -> 0 the same day, once the last two files were swept. Every page in the corpus is now under
+# the limit, including README.md and INSTALL.md.
+BASELINE_FAT_PARAGRAPHS = 0        # paragraphs over 300 chars (HS-20). A CAP now, not a ratchet.
 FAT_PARAGRAPH_LIMIT = 300
 
 # How far below baseline a metric may drift before the test asks for the baseline to be lowered.

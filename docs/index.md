@@ -1,336 +1,180 @@
 ---
-title: claude-multisession
+title: KORUS
 layout: default
 ---
 
-# claude-multisession
+# KORUS
 
 ## TLDR/BLUF
 
-**What this is.** Several Claude Code sessions on one repository, without overwriting each other.
-Each gets its own git worktree and branch; hooks refuse colliding edits, commits and pushes. Nothing
-beyond `pwsh`, `git` and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs nothing.
+**What this is.** A way to run four Claude Code sessions against one repository at once without them
+overwriting each other. KORUS is the build shape -- a dispatcher, two builders and a lander -- and
+`claude-multisession` is the tooling that enforces the parts a convention cannot.
 
-**Why you should care.** Several sessions on one repository is real throughput until two collide in
-a way git cannot report as a conflict. Most such collisions touch no shared bytes, so every branch
-merges clean. The loss lands later, on work built from assumptions that had stopped being true.
+**Why you should care.** Four sessions is real throughput until two collide in a way git cannot
+report as a conflict. Those collisions touch no shared bytes, so every branch merges clean and the
+loss lands later. Not for you if you run one session at a time.
 
-What ships against that:
-
-- a worktree per session, and gates that refuse the colliding edit, commit and push;
-- claims, cross-session locks and atomic sequence allocation, so two sessions cannot be handed the
-  same decision-record number;
-- a channel peers reach each other on before the work, and a reaper that declines rather than
-  guesses.
-
-Not for you if you run one session at a time.
-
-**How to use it.** [Quickstart](#quickstart) - [Limits](#limits-read-before-installing) -
-[What ships](#what-ships) - [Full docs](#where-to-go-next). Or have Claude Code
-[read this page](FEED-THIS-TO-CLAUDE-CODE.md): it reads your repository and names the collisions you
-have.
+**How to use it.** [Quickstart](QUICKSTART.md) installs it and ends with you watching a collision
+get refused. [Run a KORUS build](KORUS-BUILD.md) is the four-session shape.
+[The KORUS framework](KORUS.md) is the account it all came from.
 
 ---
 
-## The problem
+## What goes wrong without it
 
-Several agents in one working directory overwrite each other's files --
-[claude-code#76590](https://github.com/anthropics/claude-code/issues/76590), with a
-[field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
-roughly fourteen sessions on one directory.
+Two sessions are running. Session A is halfway through a refactor, with uncommitted work in the
+tree. Session B decides it needs a fresh branch:
 
-An agent runs `git checkout -B <branch> origin/main`. Git allows it: the branch is checked out
-nowhere. The shared tree force-switches, swapping every file under a mid-task session and dragging
-its uncommitted work onto the wrong branch. Nobody sees it: each session believes it owns its
-directory.
+```powershell
+git checkout -B feature/parser origin/main
+```
 
-It is the loudest collision, not the only one: six more -- same file, same work in different files,
+Git allows it. The branch is checked out nowhere, so that is a legal command. The shared tree
+force-switches, every file under session A becomes a different commit's file, and A's uncommitted
+work is now on the wrong branch.
+
+**Nothing on either screen says so.** Each session believes it owns the directory.
+
+That is the loudest failure, not the only one. Six more -- same file, same work in different files,
 same reserved number, same config lock, same shared list, same agent memory -- are tabulated in the
 [README](https://claude-multisession.pages.dev/README.md), *"What problem this solves"*.
 
+The one that costs most is the quietest. Two sessions build the *same thing* in *different files*:
+zero conflicts, two green pull requests, one of them thrown away.
+
+Upstream, this is [claude-code#76590](https://github.com/anthropics/claude-code/issues/76590), with
+a [field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
+roughly fourteen sessions on one directory.
+
+## What it looks like when it works
+
+<figure role="group">
+<svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two session lanes on a shared timeline. Session A edits service.py and leaves the change uncommitted. Session B then reaches for the same file and the collision gate refuses the edit before it runs, naming who holds the file. Session B edits parser.py instead, and both branches land.">
+  <defs>
+    <marker id="ix-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <text x="12" y="52" font-size="12" font-weight="bold" fill="currentColor">Session A</text>
+  <line x1="100" y1="46" x2="780" y2="46" stroke="currentColor" stroke-width="1" marker-end="url(#ix-arrow)" />
+  <rect x="120" y="26" width="200" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="220" y="43" font-size="11" text-anchor="middle" fill="currentColor">edits service.py</text>
+  <text x="220" y="59" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">left uncommitted</text>
+  <text x="12" y="158" font-size="12" font-weight="bold" fill="currentColor">Session B</text>
+  <line x1="100" y1="152" x2="780" y2="152" stroke="currentColor" stroke-width="1" marker-end="url(#ix-arrow)" />
+  <rect x="340" y="132" width="190" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" />
+  <text x="435" y="149" font-size="11" text-anchor="middle" fill="currentColor">reaches for service.py</text>
+  <text x="435" y="165" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">the tool call never runs</text>
+  <line x1="435" y1="130" x2="435" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#ix-arrow)" />
+  <rect x="330" y="74" width="210" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="2" />
+  <text x="435" y="94" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">REFUSED, with the reason</text>
+  <rect x="570" y="132" width="190" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="665" y="149" font-size="11" text-anchor="middle" fill="currentColor">edits parser.py instead</text>
+  <text x="665" y="165" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">both branches land</text>
+  <text x="12" y="196" font-size="10" font-style="italic" fill="currentColor">Without the gate, B's write lands and one of the two loses work at merge -- with nothing on either screen saying so.</text>
+</svg>
+<figcaption>The refusal happens at edit time, before the write, and names who holds the file. Without
+it both writes succeed and the loss surfaces at merge, or later.</figcaption>
+</figure>
+
 ## What you get
 
-**A worktree per session.** Every session works in its own checkout on its own branch, while the
-repository history -- and the coordination state keyed to it -- stays shared.
-[Worktrees](WORKTREES.md)
+**Sessions that cannot overwrite each other.** Each one works in its own git worktree on its own
+branch, while the repository history stays shared. [Worktrees](WORKTREES.md)
 
-**Edits that collide are refused, not merged.** A `PreToolUse` collision gate refuses an edit to a
-file another live session is already changing. Claims are advisory -- they cannot stop a session
-that refuses to look, so the commit-time gate sits behind them. [Coordination](COORDINATION.md)
+**A refusal at edit time, not a conflict at merge time.** When a session reaches for a file another
+live session has uncommitted changes in, the edit is refused before it runs, and the refusal names
+who is in that file and what they are building. [Coordination](COORDINATION.md)
 
-**Guardrails that hold whether the agent cooperates or not.** Two git hooks: `commit-msg` runs the
-claim gate, `pre-push` refuses a direct push to a protected ref. A worktree gate stops sessions
-building in the shared primary checkout. [Hooks](HOOKS.md)
+**Guardrails that hold whether the agent cooperates or not.** A commit whose subject claims work
+this worktree does not hold is refused. So is a direct push to a protected branch.
+[Hooks](HOOKS.md)
 
-**Sessions that can reach each other.** Announce tells peers what you will touch *before* you start.
-Steering redirects a running session mid-task. Presence, occupancy and overlap answer separately:
-who is live, which worktree, what changes. [Coordination](COORDINATION.md),
-[Steering](STEERING.md)
+**Numbers that cannot be handed out twice.** Two sessions asking for the next free decision-record
+number get different ones, because allocation is an atomic create rather than a read and a write.
+[Sequence allocation](SEQUENCE-ALLOC.md)
 
-**Cleanup that refuses to guess.** A liveness registry tracks which sessions are actually alive; the
-reaper prunes worktrees that are merged **and** clean **and** unoccupied, and declines when it cannot
-tell which of those a worktree is. [Pruning](PRUNING.md)
+**Cleanup that declines rather than guesses.** Worktrees are pruned only when they are merged
+**and** clean **and** unoccupied, and the reaper stops when it cannot tell which of those a worktree
+is. [Pruning](PRUNING.md)
 
-**Work too large for one context.** An OWASP ASVS 5.0 assessment runs to several hundred
-requirements, more than one session can hold. The cost is **different unwritten rules**: verdicts
-nobody can reconcile.
-[Large assessments](https://secure-development-standards.pages.dev/ASVS-ASSESSMENT.html)
+**A shape for the work itself.** One session plans and tracks, two build, one lands. The roles are
+what stop two sessions deciding the same thing. [Run a KORUS build](KORUS-BUILD.md)
 
-### Which part defends against #76590
+### What actually stops the failure above
 
-Three mechanisms touch that failure. Only the first prevents it:
+Three mechanisms touch it. Only the first prevents it.
 
-| | Script | What it does |
+| Role | Script | What it does |
 |---|---|---|
-| **Prevention** | `scripts/hooks/worktree_gate.ps1` | A `PreToolUse` hook. Refuses the git verbs that would swap or discard the shared **primary** checkout's tree -- that is the tree #76590 flips, and the rule that stops it. A separate rule refuses a `git checkout`/`git switch` that would hijack another session's *linked* worktree. Either way the tool call does not run. |
-| **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the shared *primary* checkout when its HEAD has drifted and the tree is clean. On a dirty tree it declines, says so, and touches nothing. |
-| **Detection** | the home-branch record | Recorded in each worktree's private git directory, where a checkout cannot move it. A later session finding the worktree elsewhere warns and offers the restore command. Warn-only; it is [wrong by design](WORKTREES.md#the-sidecar-home-branch-record-is-wrong-by-design), so treat a warning as a prompt to read the reflog, not as proof. |
+| **Prevention** | `scripts/hooks/worktree_gate.ps1` | Refuses the git verbs that would swap or discard the shared primary checkout's tree. The tool call does not run. |
+| **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the primary when its HEAD has drifted and the tree is clean. On a dirty tree it declines and touches nothing. |
+| **Detection** | the home-branch record | Kept where a checkout cannot move it. A later session finding the worktree elsewhere warns and offers the restore command. Warn-only, and [wrong by design](WORKTREES.md#the-sidecar-home-branch-record-is-wrong-by-design). |
 
----
+## Start here
 
-## Limits, read before installing
-
-**Session discovery rests on a vendor surface this project does not own.** Everything answering "who
-is live, and where" reads `<config-root>/sessions/<pid>.json` -- a record the *client* writes, whose
-shape, location and lifetime belong to the client. Three consequences follow:
-
-- **Announce needs the desktop client.** It delivers through `ccd_session_mgmt`, an MCP server a
-  plain CLI install lacks. The hook never sends: it asks the model to, so nothing is delivered and
-  the model says so. **If you are CLI-only, leave that one hook uninstalled** -- nothing else
-  depends on it.
-- **The desktop app's own session list is incomplete.** `list_sessions` enumerates only sessions
-  *that app itself spawned*; an editor-extension session is never registered, so it cannot be
-  messaged. It is authoritative for who can be **messaged**, the on-disk records for who **exists**.
-- **A schema change degrades to "cannot tell", not to a wrong answer.** Rename a field or change
-  `startedAt`'s unit and every fence says it cannot tell -- designed for in
-  `scripts/coord/session-registry.ps1`. The doctor prints records read and placed, so the change
-  surfaces as a count going to zero.
-
-**Guardrails against accidents, not security boundaries.** The `PreToolUse` gates inspect tool
-arguments: a file a shell command writes is invisible, and an agent-authored script defeats a
-command-string rule. `--no-verify` on commit or push bypasses both git hooks. No CI-side enforcement
-ships.
-
-### Requirements
-
-| Need | Without it |
+| If you want to | Go to |
 |---|---|
-| **PowerShell 7.3+** (`pwsh`) | Nothing installs. Most scripts carry `#Requires -Version 7.3`. |
-| **git** | Nothing installs. Everything is keyed on the git common directory. |
-| **`python` on `PATH`** (or `CCX_PYTHON`) | The installed git gates are OFF and say so on stderr. Needed by the three git-hook checkers and the leak gate. |
-| **`ccx.config.json` at the target repo root** | User-scope hooks stay inert in that repo. It is both the knob file and the opt-in marker. |
+| See it working on your own repository | [Quickstart](QUICKSTART.md) |
+| Set up the four-session build | [Run a KORUS build](KORUS-BUILD.md) |
+| Know what it needs, and where it stops working | [Limits and requirements](LIMITS.md) |
+| Understand the model everything else applies | [Concepts](CONCEPTS.md) |
+| Read the account this came from | [The KORUS framework](KORUS.md) |
+| Have Claude Code assess your own repository | [Feed this to Claude Code](FEED-THIS-TO-CLAUDE-CODE.md) |
 
-PowerShell 7 runs on Linux and macOS, but Windows is the exercised path; self-marking and path
-case-folding degrade elsewhere. **There is no `ccx` on `PATH`**: `ccx doctor` means
-`pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`.
-[MIT](https://claude-multisession.pages.dev/LICENSE)
+Nothing beyond `pwsh`, `git` and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs
+nothing.
 
----
+## What it costs you
 
-## Quickstart
+**These are guardrails against accidents, not security boundaries.** The edit-time gates read tool
+arguments, so a file written by a shell command is invisible to them, and `--no-verify` bypasses
+both git hooks.
 
-Two directories are involved, and every command says which it means:
+**Everything here fails the same way it succeeds.** An uninstalled gate and a working one look
+identical from inside a session, because both let the edit through. That is why `ccx doctor` exists
+and why you run it before installing as well as after.
 
-| | |
-|---|---|
-| **tooling** | This checkout. Nothing you install governs *it*; it is where scripts are copied from and hashed against. |
-| **target** | The repository you want governed. It gets the config file, the git hooks, and its primary checkout in the gate's allowlist. |
+**Announce needs the desktop client.** On a CLI-only install, leave that one hook uninstalled.
+Nothing else depends on it.
 
-**Use the vendored layout** -- copy `scripts/`, `bin/` and `ccx.config.json` into the target and
-commit them, so tooling *is* target. It is the only layout in which the doctor can reach exit 0.
-
-The separate-checkouts layout works for the worktree gate, both git hooks and the backstop. It fails
-for the three coordination hooks: shims that resolve their script inside whatever repository the
-session runs in, so a target not carrying those files gets three wired hooks that resolve nothing.
-
-Run all of this from a **plain terminal**. All four installers refuse when `$env:CLAUDECODE` is `1`,
-because a session that can install these controls can remove them.
-
-```powershell
-$tooling = "<path-to-this-checkout>"
-$target  = "<path-to-the-repo-you-want-governed>"
-Set-Location $target      # the doctor reports what it resolves FROM HERE, so stand in the target
-
-# 1. Opt the target in, and give it the scripts the coordination hooks resolve.
-Copy-Item "$tooling/ccx.config.json" "$target/ccx.config.json"   # then edit it
-Copy-Item "$tooling/scripts" $target -Recurse
-Copy-Item "$tooling/bin" $target -Recurse
-# ...then commit them, so every worktree of the target gets them. After vendoring there are two
-# copies on disk: install and audit from ONE of them. Installing from one and hashing against the
-# other is exactly the drift the doctor calls STALE.
-
-# 2. Baseline BEFORE installing anything. Expect a wall of OFF and exit 1 -- that is correct, and it
-#    is the only way to tell an installed guardrail from a decorative one afterwards.
-pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
-
-# 3. Coordination hooks: session banner, collision gate, announce. Takes NO repository -- it writes
-#    ONE settings file whose hooks resolve their repo per session at run time.
-pwsh -NoProfile -File "$tooling/scripts/coord/install-coordination.ps1"
-
-# 4. The commit-msg claim gate and pre-push guard, into the TARGET clone's shared .git/hooks, where
-#    one copy governs every worktree of that clone at once.
-pwsh -NoProfile -File "$tooling/scripts/coord/install-git-hooks.ps1" -RepoRoot $target
-
-# 5. The worktree gate. -Repo names the PRIMARY checkout to allowlist (several allowed:
-#    -Repo <path-a>,<path-b>). The allowlist is the kill switch.
-pwsh -NoProfile -File "$tooling/scripts/worktree/install-gate.ps1" -Repo $target
-
-# 6. The SessionStart backstop. ONE config root per run -- run it again for each root the doctor
-#    lists under "config roots". An unwired root is OFF, and OFF is exit 1.
-pwsh -NoProfile -File "$tooling/scripts/worktree/install-selfheal.ps1" -ConfigDir ~/.claude
-
-# 7. Prove it.
-pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
-```
-
-### Then run two sessions
-
-```powershell
-pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name alerts
-pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name parser
-```
-
-`spawn.ps1` creates an isolated worktree on its own branch and opens an editor window in it;
-`new.ps1` does the same without the editor. Neither takes a target flag: both act on the primary you
-are standing in, so stay in the target. Then start a session in each window and confirm
-coordination:
-
-```powershell
-pwsh -NoProfile -File "$tooling/scripts/coord/presence.ps1"   # both sessions listed
-pwsh -NoProfile -File "$tooling/scripts/coord/overlap.ps1"    # what each is changing
-```
-
-Ask both sessions to edit the same file and the second one's edit is refused. That refusal is the
-whole product.
-
-### Two things the quickstart does not cover
-
-**Prove it governed the repository you meant.** The doctor's default target is the current directory,
-so a run started in the wrong place produces a long, plausible, mostly-green report about the wrong
-clone:
-
-```powershell
-pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target |
-    Select-String 'repo examined|tooling checkout|gate: allowlist|LIVE allowlist'
-```
-
-**Give the sessions a working agreement.** Copy
-[CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
-into the target as `CLAUDE.md` and cut it to what is true there: it is where you write down what
-the gates cannot see. Keep it short: a stale one still gets acted on.
-
-[INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) is the record
-of record for the installers: the annotated version of these steps, and how to prove each one is live
-rather than merely merged.
-
----
-
-## What ships
-
-Paths are relative to this checkout, and the site serves each at the same path --
-[/scripts/coord/claim.ps1](https://claude-multisession.pages.dev/scripts/coord/claim.ps1) needs no
-clone. Also on [GitHub](https://github.com/wshallwshall/claude-multisession), the better view where
-reachable.
-
-### Start here
-
-| Script | Does | Doc |
-|---|---|---|
-| `bin/ccx-doctor.ps1` | Prove -- by receipt and by attack -- that each control is installed, wired, and refuses what it can be made to refuse. It never infers, always prints WHAT WAS SCANNED and BLIND SPOTS ON THIS RUN, and a skip is never a pass (exit 2). At least one deny path is not self-testable: the collision gate's needs a live peer worktree holding an uncommitted change to the same file, so the doctor proves only that the gate refuses to go *silent*, and prints that as a blind spot every run | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
-
-### To run sessions
-
-| Script | Does | Doc |
-|---|---|---|
-| `scripts/worktree/new.ps1` | Create an isolated worktree on its own branch, off the fetched remote tip, serialised against concurrent adds | [Worktrees](WORKTREES.md) |
-| `scripts/worktree/spawn.ps1` | `new.ps1` plus an editor window (`-Editor`, else `CCX_EDITOR`, else `EDITOR`, else `code`) | [Worktrees](WORKTREES.md) |
-| `scripts/coord/presence.ps1` | Who is actually live in this repo right now, across every surface. Read-only | [Coordination](COORDINATION.md) |
-| `scripts/coord/overlap.ps1` | What everyone else is changing -- files and stated work. `-File <path>`, `-Json`; cached, so the gate's common case is a cache read | [Coordination](COORDINATION.md) |
-| `scripts/coord/claim.ps1` | Take, release or list an atomic claim on a piece of work, so a session finds out before the work rather than at merge. Advisory: a claim cannot stop a session that refuses to look. Claims do not expire and releasing is manual, on purpose | [Coordination](COORDINATION.md) |
-| `scripts/coord/alloc.ps1` | Allocate the next number in a shared sequence atomically, so two sessions can never be handed the same one; `-ShowFloor` inspects without spending one. `seq_check.py` is the other half -- neither is sufficient alone | [Sequence allocation](SEQUENCE-ALLOC.md) |
-| `bin/ccx-steer.ps1` | Queue a steering note from a second terminal while a session is mid-task | [Steering](STEERING.md) |
-
-### To clean up
-
-| Script | Does | Doc |
-|---|---|---|
-| `scripts/worktree/remove.ps1` | Remove one worktree, referencing its tip before anything is removed, and writing a keep-ref when `-DeleteBranch` is used | [Pruning](PRUNING.md) |
-| `scripts/worktree/prune-merged.ps1` | The reaper: prune = merged **and** clean **and** unoccupied. Dry-run by default, `-Apply` to act. Carries a second, non-cwd signal and prints its blind spots | [Pruning](PRUNING.md) |
-| `scripts/worktree/rescue.ps1` | Move uncommitted work out of the shared primary into a fresh worktree -- the companion to the gate that stops you writing there | [Worktrees](WORKTREES.md) |
-| `scripts/worktree/restore-primary.ps1` | Re-attach the primary to its home branch after a session left it detached or on the wrong branch. Refuses on a dirty tree | [Worktrees](WORKTREES.md) |
-| `scripts/worktree/sessions.ps1` | Find sessions for this repo across every login, including ones a relocation made invisible; `-Rehome` puts a transcript back | [Worktrees](WORKTREES.md) |
-| `scripts/security/scan_forbidden.py` | The leak gate: refuse identifying content before a private repo goes public. `--path DIR`, `--require-tokens`, `--show-context`. Nothing wires it | [Leak gate](LEAK-GATE.md) |
-
-### Controls that run without you
-
-Installed once, then invoked by the harness or by git.
-
-| Script | Event | Does | Doc |
-|---|---|---|---|
-| `scripts/hooks/worktree_gate.ps1` | `PreToolUse` | Denies writes whose target path is inside a governed primary, dispatch from the primary, and the git verbs that swap or discard its tree. Fails open, but loudly | [Hooks](HOOKS.md) |
-| `scripts/hooks/collision_gate.ps1` | `PreToolUse` | Refuses an edit to a file a live session is already changing. Fails open -- never silently | [Coordination](COORDINATION.md) |
-| `scripts/hooks/announce-session.ps1` | `UserPromptSubmit` | Tells peers you exist and what you intend, on the first prompt at which a messageable peer exists. Always exits 0; delivery needs the desktop client | [Coordination](COORDINATION.md) |
-| `scripts/worktree/session-context.ps1` | `SessionStart` | Banner: your project's working defaults plus a live coordination block. Its stdout is the chat's starting context, so it never fails loudly | [Hooks](HOOKS.md) |
-| `scripts/worktree/worktree-selfheal.ps1` | `SessionStart` | Repairs a primary whose HEAD drifted, when the tree is clean -- the most privileged control here, whose only safety property is that it refuses a dirty tree | [Worktrees](WORKTREES.md) |
-| `scripts/hooks/claim_check.py` | `commit-msg` | Refuses a code-touching commit whose subject claims an item this worktree does not hold. Fail-closed | [Coordination](COORDINATION.md) |
-| `scripts/hooks/push_guard.py` | `pre-push` | Refuses a direct push of a protected ref. An explicitly empty `protectedRefs` list disables it with a message on stderr | [PRs and merges](PR-AND-MERGE.md) |
-| `scripts/hooks/seq_check.py` | `pre-commit` | Refuses a colliding, unallocated, or unindexed sequence number; `--ci` re-runs the collision rules against a freshly fetched trunk. No installer wires it | [Sequence allocation](SEQUENCE-ALLOC.md) |
-| `scripts/hooks/block-blanket-git-stage.ps1` | `PreToolUse` | Opt-in. Denies `git add -A/--all/-u/.` and `git commit -a/-am`. Fails open | [Hooks](HOOKS.md) |
-| `scripts/hooks/steer-inject.ps1` | `PreToolUse` | Opt-in per worktree. Delivers a queued steering note at the next tool-call boundary rather than at the end of the turn | [Steering](STEERING.md) |
-
-### Internals and installers
-
-| Script | Does | Doc |
-|---|---|---|
-| `scripts/coord/session-registry.ps1` | The liveness fence: reads the client's session registry and decides whether a session is alive. Liveness may only VETO, never PERMIT -- DEAD/STALE/absent is the absence of a veto, not a permission | [Concepts](CONCEPTS.md) |
-| `scripts/coord/occupancy.ps1` | The one cwd-to-worktree matcher, returning a receipt alongside its rows (roots examined, records examined, records that could not be placed) and setting `Available` only when there was something to examine | [Concepts](CONCEPTS.md) |
-| `scripts/coord/lock.ps1` | The short-lived cross-session mutex, dot-sourced rather than run: `. lock.ps1` then `Enter-CcxLock` / `Exit-CcxLock`. No TTLs anywhere: locks retry and never steal, and on timeout fail loudly and name the holder | [Concepts](CONCEPTS.md) |
-| `scripts/coord/install-coordination.ps1` | Wires the banner, collision gate and announce at user scope as shims that re-resolve at run time; writes exactly one settings file per run (`-SettingsPath`) | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
-| `scripts/coord/install-git-hooks.ps1` | Installs `commit-msg` + `pre-push` into one clone's shared `.git/hooks` (`-RepoRoot`), refuses to overwrite a foreign hook, and never writes `pre-commit` at all | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
-| `scripts/worktree/install-gate.ps1` | Installs the worktree gate as a copy outside every working tree, into every config root it finds, plus the allowlist that is its kill switch (`-Repo`, `-ConfigDir`) | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
-| `scripts/worktree/install-selfheal.ps1` | Wires the SessionStart backstop into ONE config root per run; `-ConfigDir` is mandatory, and it governs whatever the gate's allowlist already names | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
-
----
+The full statement, with the requirements table and the three consequences of building on a vendor
+surface this project does not own, is on [Limits and requirements](LIMITS.md).
 
 ## Where to go next
 
-**The model.** [Concepts](CONCEPTS.md): worktree per session, one shared state root, a liveness
-fence that may only veto, exclusive-create over read-modify-write, no TTLs, the six knobs in
-`ccx.config.json`. Then [Hooks](HOOKS.md): every control's event and its fail-open or fail-closed
-posture.
+**Running sessions.** [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) owns three things no
+other page does: which surface to run on, the channels sessions reach each other on, and the lander
+role.
 
-**Running sessions.** Start at [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md). It is the
-entry point to the group, and it covers the three things no other page owns:
-
-- which surface to run sessions on;
-- the channels they have for reaching each other;
-- using one session as a lander.
-
-[Desktop accounts](DESKTOP-ACCOUNTS.md) is the setup step before any of that if you run more than
-one Claude account: one desktop instance per account, and the config root each one adds.
+[Desktop accounts](DESKTOP-ACCOUNTS.md) is the setup step before any of it, if you run more than one
+Claude account.
 
 Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](COORDINATION.md) -
 [Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -
 [PRs and merges](PR-AND-MERGE.md) - [Pruning](PRUNING.md).
 
+**Every script, and what it does.** [The inventory](SCRIPTS.md), grouped by what you are trying to
+do. The site serves each script at its own path, so
+[/scripts/coord/claim.ps1](https://claude-multisession.pages.dev/scripts/coord/claim.ps1) needs no
+clone.
+
 **Safety,** in descending order of how much actually ships:
 
-- [Leak gate](LEAK-GATE.md) -- a scanner you can run today, plus the blind spot no scanner can close.
+- [Leak gate](LEAK-GATE.md) -- a scanner you can run today, plus the blind spot no scanner closes.
 - [Usage awareness](USAGE-AWARENESS.md) -- a design; ships no hook.
 - [Session mail](SESSION-MAIL.md) -- how to build the lane that reaches the peers announce cannot.
-  Ships nothing here: a step-by-step guide, not an installed tool.
 
-**In practice:** [Tips and tricks](TIPS-AND-TRICKS.md) (ordered by when each item bites) -
-[Drift audit case study](CASE-STUDY-drift-audit.md) (a method, not a finding list).
-[Correction chain case study](CASE-STUDY-correction-chain.md) covers one finding, four statements, three wrong.
+**In practice:** [Tips and tricks](TIPS-AND-TRICKS.md), ordered by when each item bites.
+[Drift audit](CASE-STUDY-drift-audit.md) is a method rather than a finding list.
+[Correction chain](CASE-STUDY-correction-chain.md) covers one finding, four statements, three wrong.
 
 **The standards are a separate project now.**
-[secure-development-standards](https://secure-development-standards.pages.dev/) holds
-what used to live here: a bar for agent-written code a small team stands behind, plus its CI
-discipline and assessment method. They ship no code and no certification.
+[secure-development-standards](https://secure-development-standards.pages.dev/) holds what used to
+live here: a bar for agent-written code, plus its CI discipline and assessment method.
 
-**At the repository root:**
-[INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) (record of
-record for the installers) and
+**The long form:** [Install](INSTALL.md) is the record of record for the installers -- every scope,
+and how to prove each one is live rather than merely merged.
 [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
-(a working agreement to drop into your own repository).
+is a working agreement to drop into your own repository.

@@ -46,7 +46,7 @@ counting after the split, so the numbers past each section are occupied, not vac
 | Series | Issued here | Issued there | **Next free** |
 |---|---|---|---|
 | `B-<n>` | B-1 to B-10 | B-11 to B-18 | **B-19** |
-| `HS-<n>` | HS-1 to HS-16, HS-20, HS-22 | HS-17 spent on a superseded branch, HS-18 to HS-21 | **HS-23** |
+| `HS-<n>` | HS-1 to HS-16, HS-20 to HS-23 | HS-17 spent on a superseded branch, HS-18 to HS-21 | **HS-24** |
 | `PD-<n>` | PD-1 to PD-8 | PD-9 to PD-13 | **PD-14** |
 | `OPEN-<n>` | OPEN-1 to OPEN-8 | none | **OPEN-9** |
 
@@ -153,9 +153,10 @@ sentence is still required, it is now told which slot to sit in.
 | HS-13 | A heading **MUST NOT** be renamed until the repository has been searched for its text | Standards cite headings by name, and only the link-adjacent form is gated |
 | HS-14 | Lines **SHOULD** wrap near 100 characters | The wrap |
 | HS-15 | A quantity **MUST** be the number where one exists, not a vague determiner | "139", not "nearly all" |
-| HS-20 | A paragraph **MUST NOT** exceed 300 characters. Rewrite it shorter; do **not** satisfy this by splitting one paragraph into two | A ratchet in `tests/test_prose_rules_hold.py`. The corpus is red behind it on purpose: 463 paragraphs were over the limit on 2026-08-10, and that number is debt that may not grow |
+| HS-20 | A paragraph **MUST NOT** exceed 300 characters. Rewrite it shorter; do **not** satisfy this by splitting one paragraph into two | A hard cap in `tests/test_prose_rules_hold.py` since 2026-08-16, when the last of the debt cleared. It shipped as a ratchet because 463 paragraphs were over the limit on 2026-08-10; the baseline is now 0, so the next one over fails the run |
 | HS-16 | A markdown link **MUST** sit on one line, text and target both, and that outranks HS-14 | `tests/test_a_links_text_never_wraps.py`. `jekyll-relative-links` matches a link with a pattern whose `.` excludes a newline, so a wrapped one is never rewritten and the published site serves the raw `.md` while github.com renders it correctly. 35 links were in this state on 2026-08-07 |
 | HS-22 | A heading or title **MUST** use sentence case: the first word, the first word after a colon, and proper nouns are capitalized, nothing else. **MUST NOT** end in a period | [Google's developer documentation style guide](https://developers.google.com/style/headings). No gate; checked by eye |
+| HS-23 | A page a reader ARRIVES on **MUST** route rather than explain. It **MUST NOT** carry the install procedure, the requirements table or a script inventory, and it **MUST** name the first command's page in its opening | `tests/test_the_landing_page_stays_a_front_door.py`. The landing page reached 3,143 words before this rule, with the first install command 68% of the way down it |
 
 ### HS-21: retired 2026-08-16, and the identifier is kept rather than reissued
 
@@ -171,6 +172,23 @@ The test's own guard said what to do about that: "if the series is genuinely gon
 rather than leaving it to certify an empty set." Deleted, per its own instruction.
 `FRAMEWORK-spec-kit.md` keeps its nine-section shape; nothing requires a second page to match it
 now.
+
+### HS-23: what the landing page stopped carrying, and why a rule was needed
+
+Nothing was wrong with any individual sentence on it. The defect was accretion: the install
+procedure, the requirements table, the vendor-surface limits and a 40-row script inventory each
+arrived on the landing page because it was the page everyone read, and each one was correct.
+
+**The reader pays for that in ordering, not in accuracy.** A developer arriving to find out whether
+to try this met the caveats before the commands, and the commands 68% of the way down a
+3,143-word page.
+
+The four owners it split into: [Quickstart](QUICKSTART.md) for the procedure,
+[Limits and requirements](LIMITS.md) for what it needs and where it stops,
+[Every script](SCRIPTS.md) for the inventory, and the landing page for routing.
+
+**The rule is a cap rather than a prohibition on detail.** Detail is not the defect and `PD` still
+outranks this: the fix is always to move a fact to the page that owns it, never to delete it.
 
 ---
 
@@ -196,12 +214,13 @@ leaves them alone. All four left with
 [secure-development-standards](https://github.com/wshallwshall/secure-development-standards).
 Nothing here is under it, and PD-6 forbids reissuing an identifier.
 
-That repository does not follow them: its house style comes from its own gates and carried no
-equivalent of this rule. Two of the four are held by tests written for other reasons:
-`test_rule_ids_are_stable.py` parses `## Retired rules`, and the selector test pins the sentinel
-on both sides. The status-check date line and the ASVS Part 1 to Part 2 boundary marker are held by
-nothing at all. That is the exact condition PD-8 was written for, now true again one repository
-over, where a rule covering it is proposed rather than assumed.
+That repository does not follow them: its house style comes from its own gates. Two of the four are
+held by tests written for other reasons -- `test_rule_ids_are_stable.py` parses `## Retired rules`,
+and the selector test pins the sentinel on both sides.
+
+The status-check date line and the ASVS Part 1 to Part 2 boundary marker are held by nothing at all.
+That is the condition PD-8 was written for, true again one repository over, where a rule covering it
+is proposed rather than assumed.
 
 ---
 

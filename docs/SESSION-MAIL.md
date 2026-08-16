@@ -2,33 +2,35 @@
 
 ## TLDR/BLUF
 
-**What this is.** Step-by-step instructions for building the async lane a [KORUS](KORUS.md) build
-needs once a peer sits outside the desktop app's own reach. Two shapes: a VS Code companion session,
-or a session under a second Claude account.
+**What this is.** Build instructions for a mailbox that reaches a [KORUS](KORUS.md) peer the
+realtime channel cannot see. Two peers need one: a VS Code companion session, and a session under a
+second Claude account.
 
-**No script here implements it.** This is the design, staged as buildable steps, plus every failure a
-first attempt hits. Each failure below was measured, not reasoned about. Two survived a full review
-before anyone caught them.
+**This page ships nothing. No script here implements it.** It is the design, staged as buildable
+steps, plus every failure a first attempt hits. Each failure below was measured, not reasoned about.
+Two survived a full review before anyone caught them.
 
-**Why you should care.** [Announce](COORDINATION.md#announcing-yourself) enumerates an in-memory map
-of sessions the desktop app itself spawned. KORUS recommends a VS Code instance alongside the desktop
-app for review, and several Claude accounts to cover a week of build work.
-
-Both peers sit outside announce's reach by construction, not by bug. An editor-extension session is
-never entered into that map. A session under a different login sits behind a config root announce
-never reads.
+**Why you should care.** [Announce](COORDINATION.md#announcing-yourself), the realtime channel, only
+knows about sessions the desktop app itself started. Neither peer above is one of those, by
+construction rather than by bug.
 
 Not for you if every session in your build runs under one desktop app on one account.
 
-**How to use it.** Start at [The shape of a working lane](#the-shape-of-a-working-lane) for what to
-build. Read [Four ways the first attempt breaks](#four-ways-the-first-attempt-breaks) before you ship
-it -- each one there was found by someone who thought their first build was done.
+**How to use it.** Start at [The shape of a working lane](#the-shape-of-a-working-lane), then work
+through the steps in order. Read
+[Four ways the first attempt breaks](#four-ways-the-first-attempt-breaks) before you ship. Each was
+found by someone who thought their first build was done.
 
 ---
 
 ## Who actually needs this
 
-Two KORUS peers sit outside announce's reach, and the gap is structural, not a setting to flip.
+KORUS recommends a VS Code instance alongside the desktop app for review, and several Claude
+accounts to cover a week of build work. Both of those peers sit outside announce's reach, and the
+gap is structural, not a setting to flip.
+
+[Announce](COORDINATION.md#announcing-yourself) enumerates an in-memory map of sessions the desktop
+app itself spawned. Neither peer is in it.
 
 | Peer | Why announce cannot reach it |
 |---|---|
@@ -48,8 +50,11 @@ Confirm which tool you called before deciding a peer is unreachable.
 
 ## The shape of a working lane
 
-A **file drop** in the shared state root, written by a send command and read by a hook. Three design
-choices carry the rest of this page, and each earns its place from a measured failure below.
+The lane is a **file drop** in the shared state root. A send command writes the file. A hook in the
+recipient's session reads it, and that hook is the **drain** every step below refers to.
+
+Three design choices carry the rest of this page, and each earns its place from a measured failure
+below.
 
 - Put the drop **inside `.git`**. Nothing under `.git` can enter a commit, and it is not a ref
   namespace, so `push --mirror` cannot carry it either. The leak risk becomes structural, not policed.
@@ -57,8 +62,9 @@ choices carry the rest of this page, and each earns its place from a measured fa
 - Split delivery into **show** (every hook run) and **consume** (one event only). A client can spawn
   and discard a session before it reaches the event that would consume anything.
 
-**That guarantee belongs to the path, not the design, and it does not travel.** Move the queue outside
-`.git` and both properties disappear at once: a temp directory, a synced drive, neither carries it.
+**The leak guarantee belongs to the path, not the design, and it does not travel.** Move the queue
+outside `.git` and both properties disappear at once: a temp directory, a synced drive, neither
+carries it.
 
 Re-decide the plain-text-versus-hashed question there. Do not assume it carries over.
 
@@ -66,14 +72,23 @@ Re-decide the plain-text-versus-hashed question there. Do not assume it carries 
 
 ## Step 1: pick the state root
 
-Resolve it once, from the git common directory, so every worktree of a clone sees the same mailboxes:
+**The goal.** One mail root every worktree of a clone resolves the same way, so both ends of a
+message agree where the boxes are.
+
+**What to do.** Resolve it from the git common directory, once, and reuse that value:
 
 ```powershell
 git rev-parse --path-format=absolute --git-common-dir
 ```
 
-`<git-common-dir>/mail/` is a reasonable layout: `box/<worktree-key>/inbox|claiming|seen|expired/`,
-`tmp/` for atomic publish staging, and one `OFF` file.
+**What happens next.** You get one absolute path, identical from every worktree of that clone.
+
+Build the boxes under it. `<git-common-dir>/mail/` is a reasonable layout:
+
+- `box/<worktree-key>/inbox|claiming|seen|expired/`, one set of four per recipient.
+- `tmp/`, for atomic publish staging: a message is written there and moved into an inbox in one
+  step, so no reader ever sees half of it.
+- One `OFF` file.
 
 The `OFF` file's mere presence suppresses delivery for every worktree, without losing what is queued.
 
@@ -81,16 +96,24 @@ The `OFF` file's mere presence suppresses delivery for every worktree, without l
 
 ## Step 2: address a box by worktree, not by name or session id
 
-Not by session id: a context clear re-mints the id and strands mail addressed to the old one. Not by
-worktree name: a name is a creation-time label nothing keeps current. One worktree was observed on
-four different branches in a single day.
+**The goal.** An address that still points at the right box after a context clear, or a branch
+switch.
 
-One function computes the key, dot-sourced by both the sender and the drain, so the two ends can never
-compute a different key from the same path:
+**What to do.** Key each box on the recipient's worktree path.
+
+- **Not by session id.** A context clear re-mints the id and strands mail addressed to the old one.
+- **Not by worktree name.** A name is a creation-time label nothing keeps current. One worktree was
+  observed on four different branches in a single day.
+
+Write one function that computes the key, dot-sourced by both the sender and the drain, so the two
+ends can never compute a different key from the same path:
 
 1. Normalize case, trailing separator and slash direction.
-2. Hash the normalized string for injectivity.
+2. Hash the normalized string for injectivity: two different paths can never land in one box.
 3. Keep a readable slug beside the hash, only so a human can tell boxes apart in a listing.
+
+**What happens next.** Sender and drain compute the same key from the same path, and a listing shows
+one box per worktree.
 
 **Match the key exactly, never by prefix, and expect getting it wrong to be silent.** A message
 addressed to a peer's primary checkout instead of its worktree queued, reported success, and landed in
@@ -100,7 +123,9 @@ a box nobody drains. Every observable said it had worked.
 
 ## Step 3: write send, list and status commands
 
-The send command needs a destination, a body, and nothing else load-bearing:
+**The goal.** Commands a peer can run without having read this page.
+
+**What to do.** Give send a destination, a body, and nothing else load-bearing:
 
 ```powershell
 mail.ps1 -Send -To ..\your-worktree -Body "the ADR number is 0161"
@@ -109,11 +134,14 @@ mail.ps1 -List
 mail.ps1 -Status
 ```
 
+**What happens next.** The message sits in the recipient's inbox until that recipient's drain runs.
+Nothing is delivered at send time.
+
 `-To all` broadcasts to every live worktree your presence roster can see. `-ToSessionId` optionally
 narrows delivery to one session. Keep it a filter, never the addressing key, for the reason in step 2.
 
-Give every message a TTL (step 6) and a `-Kind` label such as `note`, `handoff`, or `alert`. The label
-is display-only, never a control.
+Give every message a TTL -- the age at which an undelivered message expires, set in step 6 -- and a
+`-Kind` label such as `note`, `handoff`, or `alert`. The label is display-only, never a control.
 
 **A length check in the send command is a courtesy, not a control.** Whoever can write a file into the
 inbox never runs the sender's code. The binding cap belongs in the drain, covered in step 7.
@@ -122,7 +150,9 @@ inbox never runs the sender's code. The binding cap belongs in the drain, covere
 
 ## Step 4: claim a message exactly once
 
-Two drains can run over one inbox at the same time, and delivery must claim a message exactly once.
+**The goal.** Each message claimed exactly once, even though two drains can run over one inbox at
+the same time.
+
 Three approaches look reasonable and fail, in increasing order of how convincing they look:
 
 | Approach | Why it fails |
@@ -137,9 +167,12 @@ process, five hundred rounds: exactly one winner every round. Conclusive-looking
 Sixteen separate processes, the configuration a hook actually runs in, eight hundred rounds: more than
 one racer reported a win in forty-six of them.
 
-**Build the claim as an exclusive open, no sharing.** Stale metadata cannot answer it. It is slightly
-over-strict, so retry briefly and then cede. An unclaimed message stays claimable, and a false win is a
-double delivery. Ceding is the safe direction.
+**What to do.** Build the claim as an **exclusive open, no sharing**. Stale metadata cannot answer
+it.
+
+**What happens next.** The claim is slightly over-strict, so retry briefly and then cede. An
+unclaimed message stays claimable, and a false win is a double delivery. Ceding is the safe
+direction.
 
 > A concurrency result is a fact about a configuration, not about an API. A threads-in-one-process test
 > is not evidence about processes, and it looks perfect right up until it runs as one.
@@ -148,6 +181,8 @@ double delivery. Ceding is the safe direction.
 
 ## Step 5: split show from consume across two hook events
 
+**The goal.** A message that survives a session which starts and vanishes before doing any work.
+
 A hook that **consumes** at session start can lose state to a session that never really existed. One
 measured launch produced six `SessionStart` events under six different ids. Exactly one of them went
 on to submit a prompt.
@@ -155,14 +190,14 @@ on to submit a prompt.
 A discarded session never reaches a later event, so anything it consumed is gone with it. Nothing about
 the moment `SessionStart` fires can tell a real session from a phantom.
 
-**So do not consume at `SessionStart`.** Render mail there and leave it in the inbox. A per-session
-marker suppresses re-display, but never authorizes a consume.
+**What to do.** Never consume at `SessionStart`. Render mail there and leave it in the inbox. A
+per-session marker suppresses re-display, but never authorizes a consume.
 
 Consume only at `Stop`, an event a discarded session never reaches: claim, write a receipt, move to
 `seen/`, and remove exactly what this invocation just rendered.
 
-The accepted trade: two real sessions starting before either finishes a turn both display the same
-message. **Duplicate display is accepted. Silent loss is not.**
+**What happens next.** Two real sessions starting before either finishes a turn both display the
+same message. That is the accepted trade. **Duplicate display is accepted. Silent loss is not.**
 
 **Mint the marker after the emit, not before.** A first version of this split minted the marker before
 the message existed, and treated any receipt as backing it. Receipts were keyed per message, not per
@@ -171,9 +206,11 @@ the message existed, and treated any receipt as backing it. Receipts were keyed 
 So one session's receipt backed another session's marker, and a message nobody had seen was consumed.
 The fix: the marker is the proof of display, written only once the display has actually happened.
 
-Two smaller traps from that same repair, both of which stranded a message while reporting success. A
-mandatory string parameter that rejected an empty string threw into a bare catch. A file move that is
-non-terminating under a suppressed error preference completed with no receipt written.
+Two smaller traps from that same repair each stranded a message while reporting success:
+
+- A mandatory string parameter that rejected an empty string threw into a bare catch.
+- A file move that is non-terminating under a suppressed error preference completed with no receipt
+  written.
 
 Make every write in the consume path terminating, and catch specifically, not broadly.
 
@@ -181,17 +218,19 @@ Make every write in the consume path terminating, and catch specifically, not br
 
 ## Step 6: set one TTL, against your delivery points, not a feeling
 
+**The goal.** One expiry number, chosen against the moments delivery can actually happen.
+
 A message should be the one thing in this design that expires.
 [Held state and a message expire for opposite reasons](CONCEPTS.md#the-rule-is-about-held-state-and-a-message-is-not-held-state).
 
 Expiring held state hands a critical section to a second process while the first is still in it.
 Expiring a message stops a stale instruction from being acted on.
 
-Pick the number against when delivery actually happens: `SessionStart` and `Stop`. A recipient closed
-or idle overnight receives nothing until it is opened again.
+**What to do.** Pick the number against when delivery actually happens: `SessionStart` and `Stop`. A
+recipient closed or idle overnight receives nothing until it is opened again.
 
-At 720 minutes an ordinary overnight gap expired a real message. At 4320 minutes -- a weekend -- a
-three-day-old instruction still refuses to expire.
+**What happens next.** At 720 minutes an ordinary overnight gap expired a real message. At 4320
+minutes -- a weekend -- a three-day-old instruction still refuses to expire.
 
 **Expiry is the only point where a message is lost rather than merely late, and it is reachable by
 doing nothing.**
@@ -203,7 +242,10 @@ told it went unread. A longer TTL lowers the frequency. It does not touch the si
 
 ## Step 7: treat the message body as hostile input
 
-Every rule below closes a real defect, not a hypothetical one.
+**The goal.** A body that cannot forge the frame around it, reach a path it was not addressed to, or
+flood the recipient's screen.
+
+**What to do.** Apply every rule below. Each closes a real defect, not a hypothetical one.
 
 | Rule | The defect it closes |
 |---|---|
@@ -225,18 +267,21 @@ Bound what the drain renders, and enforce every bound there rather than trusting
 | `from.branch` | 120 chars |
 | `kind` | 16 chars |
 
-Overflow should defer, never drop. A message too large for the current batch stays in the inbox for
-the next drain. A single body over the per-message cap is still delivered, truncated, with a pointer to
-the full file on disk.
+**What happens next.** Overflow should defer, never drop: a message too large for the current batch
+stays in the inbox for the next drain. A single body over the per-message cap is still delivered,
+truncated, with a pointer to the full file on disk.
 
 ---
 
 ## Step 8: prove delivery, do not infer it from a successful send
 
+**The goal.** Delivery you can point at, rather than a send you assume worked.
+
 **Queued is not delivered.** Delivery happens when the recipient's drain next runs. Confirm it rather
 than reading a successful send as proof.
 
-Three habits make delivery observable instead of merely wired:
+**What to do.** Build three habits into the drain, which make delivery observable instead of merely
+wired:
 
 - **The drain announces that it ran.** "The box is empty" beats silence: a missing line means the hook
   did not fire, where silence alone reads the same as a hook that fired and found nothing.
@@ -249,8 +294,8 @@ Three habits make delivery observable instead of merely wired:
 
 ## Four ways the first attempt breaks
 
-The four steps above each answer one of these, and every one was found after a version that looked
-finished passed review:
+Every one of these was found after a version that looked finished had passed review. The step that
+answers each is named beside it:
 
 1. **The exclusion primitive did not exclude.** Step 4: an exclusive open, not a move-and-catch.
 2. **Showing is not consuming.** Step 5: render at every event, consume only at `Stop`.
@@ -266,14 +311,17 @@ Budget review time for exactly these four. They are the ones that survive a plau
 The default `SessionStart`/`Stop` drain leaves a gap: a recipient idle for hours gets nothing until it
 next opens. An urgent tier can close part of that gap.
 
-A watcher armed at `Stop`, sleeping and then waking the session mid-turn through an `asyncRewake` hook,
-rather than waiting for the next turn boundary. It works, and then it stops.
+**The goal.** Wake an idle recipient mid-turn, rather than waiting for its next turn boundary.
 
-It cannot re-arm itself. The wake belongs to a process the client spawned and is tracked by hook id, so
-a self-respawn produces a grandchild whose exit nobody is listening for.
+**What to do.** Arm a watcher at `Stop`. It sleeps, then wakes the session through an `asyncRewake`
+hook. Arm it again on `UserPromptSubmit`, so it re-arms once per real turn.
 
-**Re-arming is the next hook's job, not the watcher's.** Arm it on `UserPromptSubmit`, so it re-arms
-once per real turn. Arming it on `SessionStart` instead would spawn one watcher per phantom session.
+**What happens next.** It works, and then it stops. It cannot re-arm itself. The wake belongs to a
+process the client spawned and is tracked by hook id, so a self-respawn produces a grandchild whose
+exit nobody is listening for.
+
+**Re-arming is the next hook's job, not the watcher's.** Arming the watcher on `SessionStart`
+instead would spawn one watcher per phantom session.
 
 Size the wait against the harness's own timeout, with headroom. 900 seconds of watcher against a
 1200-second harness timeout leaves room to tell "the watcher woke it" from "the harness killed it."
@@ -335,8 +383,8 @@ Measured against one editor extension, and the kind of fact that changes under a
 
 ## Fitting it into a KORUS build
 
-The dispatcher and lander sessions are the two most likely to need this lane, in a [KORUS](KORUS.md)
-build.
+The dispatcher and lander sessions are the two most likely to need this lane. Both are roles in the
+[build shape](KORUS-BUILD.md) that [KORUS](KORUS.md) sets out.
 
 The dispatcher reaches a VS Code review instance running alongside the desktop app. The lander reaches
 a build session parked under a second account while its own account is out of weekly usage.
@@ -350,6 +398,7 @@ to close. [Announce](COORDINATION.md) already reaches it.
 
 | For | Read |
 |---|---|
+| The build these dispatcher and lander sessions sit in | [Run a KORUS build](KORUS-BUILD.md) |
 | The realtime channel, and who it can reach | [Coordination](COORDINATION.md) |
 | Delivering a note into a running session, mid-turn | [Steering](STEERING.md) |
 | Why held state and a message expire for opposite reasons | [Concepts](CONCEPTS.md) |

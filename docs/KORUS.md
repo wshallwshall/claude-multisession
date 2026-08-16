@@ -116,10 +116,10 @@ your CISO and any auditor. It also provides ongoing context for the AI.
 OWASP's ASVS 5 framework is a great way to harden your application against hackers. There are three
 security levels depending on what your application touches.
 
-Have Claude create a register of your OSVS scores. Be sure it works against the exact wording of
-OSVS 5, not against summaries Claude creates or gets from other sources.
+Have Claude create a register of your ASVS scores. Be sure it works against the exact wording of
+ASVS 5, not against summaries Claude creates or gets from other sources.
 
-Then, have Claude anchor your OSVS scores against sym/ctx anchors. Don't point at a line number in
+Then, have Claude anchor your ASVS scores against sym/ctx anchors. Don't point at a line number in
 the code; that changes when you update the code. Sym/ctx identifies code by its shape, not by its
 position. That means the reference only changes when the actual code structure changes -- not when
 someone adds whitespace, comments, or moves unrelated code above it.

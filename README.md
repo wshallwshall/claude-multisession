@@ -2,18 +2,22 @@
 
 ## TLDR/BLUF
 
-Run several Claude Code sessions at once on one repository without them overwriting each
-other. Each session gets its own git worktree and branch; hooks refuse the edits, commits and pushes
-that would collide. No daemon, no service, no dependencies beyond `pwsh`, `git` and a `python`.
-PowerShell 7, Windows-first, MIT. Cloning installs nothing.
+Run several Claude Code sessions on one repository without overwriting each other. Each gets
+its own worktree and branch; hooks refuse the edits, commits and pushes that would collide. No
+daemon, no service, nothing beyond `pwsh`, `git` and `python`. Windows-first, MIT; cloning installs
+nothing.
 
 > **When something here breaks, it produces exactly the same output as when it works -- byte-identical
 > to success.** That is why `ccx doctor` exists, and why you run it *before* installing anything as
 > well as after. The full statement and what it costs you are on the
 > [documentation site](https://claude-multisession.pages.dev/).
 
-**Go:** [What problem this solves](#what-problem-this-solves) - [Install](INSTALL.md) -
-[Documentation site](https://claude-multisession.pages.dev/) -
+This repository is the tooling half of **KORUS**: four Claude Code sessions on one repository -- a
+dispatcher, two builders and a lander. The method and the operating procedure live on
+[the KORUS site](https://claude-multisession.pages.dev/); this file is the repository's front door.
+
+**Go:** [Quickstart](https://claude-multisession.pages.dev/QUICKSTART.html) -
+[What problem this solves](#what-problem-this-solves) - [Install](docs/INSTALL.md) -
 [Honest limits](#honest-limits)
 
 Or paste [this page](docs/FEED-THIS-TO-CLAUDE-CODE.md) into Claude Code and have it evaluate your
@@ -21,10 +25,9 @@ repository for you.
 
 ---
 
-Nothing here puts a `ccx` executable on your `PATH`. Every command is a plain script you run with
-`pwsh`; where this README says `ccx doctor` it is shorthand for
-`pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`. Every relative path in this file is
-relative to this checkout, which is **not** necessarily the repository being governed.
+Nothing here puts a `ccx` executable on your `PATH`. `ccx doctor` below is shorthand for
+`pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`, and every relative path is relative to
+this checkout -- which is **not** necessarily the repository being governed.
 
 ---
 
@@ -42,8 +45,8 @@ record the *client* writes.
 3. **A client schema change degrades every fence to "cannot tell"**, never to a confident wrong
    answer -- and the doctor surfaces it as a record count going to zero.
 
-Full statement, with what each one costs you, on the
-[documentation site](https://claude-multisession.pages.dev/#limits-read-before-installing).
+Full statement, with what each one costs you, in
+[the section that owns it](https://claude-multisession.pages.dev/LIMITS.html#session-discovery-rests-on-a-vendor-surface-this-project-does-not-own).
 
 ---
 
@@ -83,18 +86,20 @@ repository can recompute them.
 
 ## Platform
 
-**PowerShell 7 + Windows-first.** Nearly every shipped script is PowerShell; a handful are Python,
-and those are stdlib-only and portable. The PowerShell house rule is a `#Requires -Version 7.3` line
-at the top, and all but a few carry it. The two selfheal scripts ask only for `7`, and a few carry no
-`#Requires` at all. That omission is deliberate in the announce hook's case, because its event has to
-degrade to "stand down and say so" rather than throw at load. An exact file census is not printed
-here on purpose: a count in prose is stale on the next file added. Count it against the tree you
-actually have instead, and note that the scope is the question. `git ls-files 'bin/*.ps1' 'bin/*.py'
-'scripts/*.ps1' 'scripts/*.py'` is the *shipped* set. A bare `git ls-files '*.ps1'
-'*.py'` returns something else: it also sweeps in `examples/` and `tests/`. It runs on PowerShell 7
-for Linux and macOS, but the Windows paths are the ones that were exercised, and two behaviors
-degrade elsewhere (self-marking in the roster, and path case-folding). A bash port is a different
-project.
+**PowerShell 7 + Windows-first.** Most scripts are PowerShell; the rest are stdlib-only Python.
+
+The house rule is a `#Requires -Version 7.3` line and most carry it. The two selfheal scripts ask
+only for `7`, and a few carry no `#Requires` at all -- deliberate for the announce hook, whose event
+must degrade to a stand-down message rather than throw at load.
+
+No file census appears here: a count in prose is stale on the next file added. Count it against your
+own tree, watching the scope. `git ls-files 'bin/*.ps1' 'bin/*.py' 'scripts/*.ps1'
+'scripts/*.py'` is the *shipped* set; a bare `git ls-files '*.ps1' '*.py'` also sweeps in
+`examples/` and `tests/`.
+
+It runs on PowerShell 7 for Linux and macOS, but only the Windows paths were exercised, and two
+behaviors degrade elsewhere: self-marking in the roster, and path case-folding. A bash port is a
+different project.
 
 MIT licensed. No dependencies beyond `pwsh`, `git`, and -- for the three git-hook checkers and the
 leak gate -- any `python3` on `PATH`.
@@ -103,18 +108,18 @@ leak gate -- any `python3` on `PATH`.
 
 ## Install
 
-Two directories are involved and the installers refuse to guess between them: **tooling** (this
-checkout, which nothing you install governs) and **target** (the repository you want governed). Use
-the **vendored** layout -- copy `scripts/`, `bin/` and `ccx.config.json` into the target and commit
-them, so tooling *is* target. It is the only layout in which the doctor can reach exit 0, because the
-three coordination hooks are shims that resolve their script inside whatever repository the session
-is running in.
+Two directories are involved, and the installers refuse to guess between them: **tooling** (this
+checkout, which nothing you install governs) and **target** (the repository you want governed).
 
-The seven-step path, with a command you can paste, is on the
-[documentation site](https://claude-multisession.pages.dev/#quickstart).
-**[INSTALL.md](INSTALL.md) is the record of record**: every installer, its scope, how to prove it is
-live rather than merely merged, and what the doctor's exit code means when you install only some of
-it.
+Use the **vendored** layout: copy `scripts/`, `bin/` and `ccx.config.json` into the target and
+commit them, so tooling *is* target. Only that layout lets the doctor reach exit 0, because the
+three coordination hooks are shims that resolve their script inside whatever repository the session
+runs in.
+
+The seven-step path is the
+[Quickstart](https://claude-multisession.pages.dev/QUICKSTART.html).
+**[INSTALL.md](docs/INSTALL.md) is the record of record**: every installer, its scope, how to prove one
+is live, not merely merged, and what the exit code means on a partial install.
 
 Two things that catch people out either way:
 
@@ -128,90 +133,89 @@ Two things that catch people out either way:
 
 ## What is in the box
 
-Everything is a plain script. There is no daemon and no background service. Coordination state --
-claims, locks, allocations, announce receipts -- lives entirely inside your own git directory. Three
-things sit outside it by necessity and are named here rather than discovered: the installed hook
-copies and their allowlist, under your client config root; the wiring entries in that root's
-`settings.json`; and a queued steering note, at `<worktree>/.claude/steer.txt`.
+Everything is a plain script; there is no daemon and no background service. Coordination state --
+claims, locks, allocations, announce receipts -- lives inside your own git directory.
 
-**The full inventory -- every script, what it does, and which doc owns it -- is on the
-[documentation site](https://claude-multisession.pages.dev/#what-ships)**, grouped by
-what you are trying to do: run sessions, clean up, and the controls the harness or git invokes on
-their own. It is one table set rather than two, so it cannot drift from this page.
+Three things sit outside it by necessity: the installed hook copies and their allowlist under your
+client config root, the wiring entries in that root's `settings.json`, and a queued steering note at
+`<worktree>/.claude/steer.txt`.
 
-The shape of it: `bin/ccx-doctor.ps1` proves the rest. `scripts/worktree/` creates, rescues, restores
-and removes worktrees. `scripts/coord/` answers presence, overlap, claims and allocations.
-`scripts/hooks/` holds the gates the harness and git invoke. Four installers wire them, and there are
-four rather than one because they write to genuinely different places -- one settings file, one
-clone's `.git/hooks`, every config root, and one config root respectively.
+**The full inventory -- every script, what it does, and which doc owns it -- is
+[here](https://claude-multisession.pages.dev/SCRIPTS.html)**, grouped by task: run sessions, clean
+up, and the controls the harness or git invokes on their own. One table set, not two, so it cannot
+drift from this page.
+
+The shape of it: `bin/ccx-doctor.ps1` proves the rest; `scripts/worktree/` creates, rescues,
+restores and removes worktrees; `scripts/coord/` answers presence, overlap, claims and allocations;
+and `scripts/hooks/` holds the gates the harness and git invoke.
+
+Four installers wire them rather than one, because they write to genuinely different places: one
+settings file, one clone's `.git/hooks`, every config root, and one config root respectively.
 
 The two that take a repository **refuse to guess** which one. Unset, `-Repo` and `-RepoRoot` mean
-the clone you are standing in. Both installers stop rather than proceed when that is not the clone
-they ship from, because the wrong answer there installs, wires, hashes and receipts perfectly while
-governing a repository you are not working in.
+the clone you are standing in, and both stop if that is not the clone they ship from. The wrong
+answer installs, wires, hashes and receipts perfectly while governing a repository you are not
+working in.
 
 Three properties, each learned the expensive way:
 
 - **The `-Status` modes are exempt from the refuse-to-run-in-a-session rule above**, because auditing
   is not installing. Three of the four carry one; `install-selfheal.ps1` does not -- ask
   `ccx doctor` instead.
-- **The status modes report by receipt, never by reading a settings file.** An entry in
-  `settings.json` is a *claim*; a receipt plus a target that actually resolves is *evidence*. An
-  announce hook once sat wired-but-resolving-nothing for hours while the settings file looked
-  entirely correct, because a similarly-named entry from another project occupied the slot.
+- **Status modes report by receipt, never by reading settings.** A `settings.json` entry is a
+  *claim*; a receipt whose target resolves is *evidence*. An announce hook sat wired but resolving
+  nothing for hours while that file looked correct -- another project's similarly-named entry held
+  the slot.
 - **They never blindly overwrite a hook that is not theirs**, and `install-git-hooks.ps1` never
   writes `pre-commit` at all -- two tools cannot both own that one file, and the failure mode is
   every commit in the repository blocked.
 
-Why user scope rather than the project's `.claude/settings.json`: `.claude/` is commonly gitignored,
-so git cannot deliver a project-level hook to a new worktree. A project hook also lives on one
-branch, and a hook whose script path is inside a working tree *vanishes on a checkout* -- after which
-the tool call runs anyway, silently.
+Why user scope, not the project's `.claude/settings.json`: `.claude/` is usually gitignored, so git
+cannot deliver one to a new worktree. A project hook lives on one branch; one whose script path is
+inside a working tree *vanishes on a checkout* -- after which the tool call runs anyway, silently.
 
 ---
 
 ## How the pieces fit
 
 **One state root, and git already gives it to you.** All coordination state lives at
-`<git-common-dir>/<prefix>-coord/` -- `alloc/`, `claims/`, `locks/`, `announce/`. That location is
-identical across every worktree of a clone (a claim taken in one is visible from another), isolated
-per clone (two clones cannot collide), and uncommittable by construction (no `git add -A` can sweep
-it into a commit). Its corollary matters: **state outlives the worktree**, so a claim survives the
-directory that took it.
+`<git-common-dir>/<prefix>-coord/` -- `alloc/`, `claims/`, `locks/`, `announce/`. It is identical
+across every worktree of a clone, isolated per clone, and uncommittable: no `git add -A` can sweep
+it into a commit.
+
+So a claim taken in one worktree is visible from another, two clones cannot collide, and **state
+outlives the worktree** -- a claim survives the directory that took it.
 
 **Everything is exclusive-create, never read-modify-write.** A claim, a lock and an allocation are
 all "create this file exclusively; the failure to create *is* the mutual exclusion". See the
 4-of-8-lost-writes measurement above for why the obvious alternative is not an option.
 
 **There are no TTLs anywhere, and the omission is the design.** A lock that expires on a timer hands
-the critical section to a second process while the first is still inside it -- silently, and at the
-exact moment the operation is slowest. That is when a timeout is most likely to be the wrong
-inference. Locks retry and never steal: on timeout they fail loudly and name the holder. A wedged
-lock you can see beats a silent double-write you cannot.
+the critical section to a second process while the first is inside it, silently, at the moment the
+operation is slowest. Locks retry and never steal: on timeout they fail loudly and name the holder.
 
-**Liveness may only VETO, never PERMIT.** There is no heartbeat anywhere, so nothing can prove a
-session is gone. `DEAD`/`STALE`/absent is the *absence of a veto*, not a permission. The fence is
-wired so it can only block a destructive action. Read `scripts/coord/session-registry.ps1` for what
-each verdict licenses; the inverse reading is the natural one, which is why it is stated next to the
-code.
+**Liveness may only VETO, never PERMIT.** There is no heartbeat, so nothing can prove a session is
+gone: `DEAD`/`STALE`/absent is the *absence of a veto*, not a permission, and the fence can only
+block a destructive action. `scripts/coord/session-registry.ps1` states what each verdict licenses.
 
-**An empty answer and an unanswerable one must not look alike.** `scripts/coord/occupancy.ps1`
-returns a *receipt* alongside its rows -- roots examined, records examined, records that could not be
-placed -- and sets `Available` only when there was actually something to examine. A caller about to
-destroy something gates on `Available`, prints the receipt, and refuses when it is false. Count what
-you examined, not what you found.
+**An empty answer must not look like an unanswerable one.** `scripts/coord/occupancy.ps1` returns a
+*receipt* -- roots and records examined, records it could not place -- and sets `Available` only
+when something was examined. A caller about to destroy something refuses unless `Available` is true.
 
-**One copy of each safety check.** The liveness fence lives once
-(`scripts/coord/session-registry.ps1`). So does the cwd->worktree matcher
-(`scripts/coord/occupancy.ps1`), and so do the path-comparison rule and the worktree-path formula
-(`scripts/coord/_common.ps1`). The command splitter both shell gates need lives once
-(`scripts/hooks/_command.ps1`), and the "which tree would this git command actually touch" resolver
-lives once beside it (`scripts/hooks/_gittarget.ps1`). The Python gates cannot dot-source PowerShell,
-so they get the one counterpart they need -- config discovery, the git runner, path folding -- in
-`scripts/hooks/_ccxconfig.py`, which states the three things the two sides must agree on. Two copies
-of a safety check drift, and the copy that drifts is the one nobody is testing. The shared substrate
-files exist precisely because five copies of "resolve the git common dir" had already drifted into
-five behaviors, two of which produced a state root at the filesystem root when git failed.
+**One copy of each safety check.** Each of these lives in exactly one file:
+
+- the liveness fence, in `scripts/coord/session-registry.ps1`;
+- the cwd->worktree matcher, in `scripts/coord/occupancy.ps1`;
+- the path-comparison rule and the worktree-path formula, in `scripts/coord/_common.ps1`;
+- the command splitter both shell gates need, in `scripts/hooks/_command.ps1`;
+- the resolver for which tree a git command would actually touch, in `scripts/hooks/_gittarget.ps1`;
+- config discovery, the git runner and path folding for the Python gates, which cannot dot-source
+  PowerShell, in `scripts/hooks/_ccxconfig.py` -- which states the three things the two sides must
+  agree on.
+
+Two copies of a safety check drift, and the copy that drifts is the one nobody is testing. These
+shared files exist because five copies of "resolve the git common dir" had already drifted into five
+behaviors, two of which produced a state root at the filesystem root when git failed.
 
 ---
 
@@ -255,11 +259,13 @@ Two optional files you own: `.ccx/session-banner.md` (your project's SessionStar
 Environment overrides: `CCX_CONFIG`, `CCX_TRUNK`, `CCX_PYTHON`, `CCX_EDITOR`, `CCX_SESSION_BANNER`,
 `CCX_ALLOW_DIRECT_PUSH`, `CCX_ANNOUNCE_DISABLE`.
 
-**Kill switches are files, not settings.** Hook wiring only takes effect in *newly started* sessions
-and an environment variable never reaches a session already running, so the switches that have to
-work right now are on disk: delete `~/.claude/hooks/ccx-gate.repos.txt` to ungovern everything, or
-create `<state-root>/announce/OFF` to stand announce down. `ccx doctor` reports every disarm it
-finds, so a switch you left flipped cannot quietly become the status quo.
+**Kill switches are files, not settings.** Hook wiring reaches only *newly started* sessions, and an
+environment variable never reaches a running one, so a switch that has to work right now has to be
+on disk.
+
+Delete `~/.claude/hooks/ccx-gate.repos.txt` to ungovern everything; create
+`<state-root>/announce/OFF` to stand announce down. `ccx doctor` reports every disarm it finds, so a
+switch you left flipped cannot quietly become the status quo.
 
 ---
 
@@ -280,36 +286,36 @@ be discovered. Measured on the repo this tooling was developed in:
 
 ## Honest limits
 
-- **These are guardrails against the accidental action, not security boundaries.** Every gate here
+- **These are guardrails against the accidental action, not security boundaries.** Every gate
   inspects tool arguments or a command string, so a file written by a shell command is invisible to
   the `PreToolUse` gate, and **any agent-authored script defeats a command-string rule outright**.
-  `git commit --no-verify` and `git push --no-verify` bypass the git hooks. The commit-time hooks are
-  the backstop for the tool-time ones, because they inspect the *tree*; back the push guard with
+- **`--no-verify` bypasses the git hooks**, on both `git commit` and `git push`. The commit-time
+  hooks backstop the tool-time ones because they inspect the *tree*; back the push guard with
   server-side protection if you need a real one.
 - **False positives are the expensive failure.** A gate that denies ordinary work trains sessions to
-  route around it, and a routed-around gate protects nothing. The rules here are deliberately narrow
-  for that reason, and the fail-open postures are deliberate -- but they are *declared*, per hook,
-  and they never fail open silently.
+  route around it, and a routed-around gate protects nothing. The narrow rules and the fail-open
+  postures follow from that -- but each posture is *declared*, per hook, and never fails open
+  silently.
 - **Enumerated coverage means every hole is silent.** The gates match named tools and named verbs.
   Anything outside the enumeration passes without a word. `ccx doctor`'s wired-versus-implemented
   diff is the only thing that surfaces a rule which exists but can never fire.
-- **The occupancy fence is cwd-keyed and therefore partial.** It cannot see a session writing into a
-  worktree by absolute path from somewhere else, a cwd recorded as a UNC or 8.3 short path, or a
-  session that never registered. The reaper carries a second, non-cwd signal for that reason and
-  prints its blind spots; do not build a destructive action on the cwd signal alone.
+- **The occupancy fence is cwd-keyed and partial.** It cannot see an absolute-path write from
+  another cwd, a cwd recorded as a UNC or 8.3 short path, or a session that never registered. The
+  reaper adds a second, non-cwd signal and prints its blind spots; do not gate a destructive action
+  on cwd alone.
 - **The collision gate's deny path is not self-testable.** Proving it needs a live peer worktree
   holding an uncommitted change to the same file. `ccx doctor` proves only that the gate refuses to
   go *silent* on its unresolvable path, and prints that as a blind spot on every run.
-- **A claim cannot stop a session that refuses to look.** What it buys is that the collision becomes
-  visible *before* the work rather than after. Claims do not expire, and releasing is manual: an
-  abandoned claim is a stale note, whereas an auto-expiring one silently re-opens the race it exists
-  to prevent.
+- **A claim cannot stop a session that refuses to look.** It buys visibility: the collision shows up
+  *before* the work rather than after. Claims do not expire, and releasing is manual -- an abandoned
+  claim is a stale note, whereas an auto-expiring one silently re-opens the race it exists to
+  prevent.
 - **Two sequences that both number from 1 share one claim namespace.** Claim keys are flat -- the key
   a person types is the key on disk. Worth knowing before you configure overlapping sequences.
-- **No CI-side enforcement is shipped.** `seq_check.py --ci` exists and re-runs the collision rules
-  against a freshly fetched trunk, but wiring it into your pipeline is yours. Note that the
-  allocation-ownership rule *cannot* run in CI -- it reads a per-clone registry a runner does not
-  have -- and it is reported as not running rather than left in place looking like coverage.
+- **No CI-side enforcement ships.** `seq_check.py --ci` re-runs the collision rules against a
+  freshly fetched trunk; wiring it into your pipeline is yours. The allocation-ownership rule
+  *cannot* run in CI: it reads a per-clone registry a runner lacks, and says so rather than looking
+  like coverage.
 
 ---
 
@@ -338,16 +344,16 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/USAGE-AWARENESS.md` | Warning a session before it hits a hard usage cutoff, and why that is harder than it looks. Ships no hook -- the mechanism depends on undocumented client internals, so what transfers is the design and the eight ways it reports confidently wrong numbers |
 | `CLAUDE.md.template` | A working agreement to drop into your own repo: plan first, commit-versus-push approval split, never grep for a number, shared memory across worktrees |
 
-**The standards are a separate project now.** They were roughly half of this repository and shared
-none of its subject. The set, its CI discipline and the assessment method live at
-[secure-development-standards](https://github.com/wshallwshall/secure-development-standards),
-which carries its own index. That index is not mirrored here: two copies of one list is the drift
-both projects are about.
+**The standards are a separate project now** -- roughly half of this repository, sharing none of its
+subject. The set, its CI discipline and its assessment method live at
+[secure-development-standards](https://github.com/wshallwshall/secure-development-standards).
 
-Worked examples live in `examples/`: a language-agnostic worktree setup hook
-(`worktree-setup.ps1.example`), a session banner (`session-banner.md.example`), an annotated sequence
-gate kept as narrative rather than wired to anything (`ledger_check.annotated.py`), and a complete
-filled-in sequence configuration with its index-row format (`sequence-adr/`).
+Its index is not mirrored here: two copies of one list is the drift both projects are about.
+
+Worked examples live in `examples/`: a language-agnostic setup hook (`worktree-setup.ps1.example`),
+a session banner (`session-banner.md.example`), an annotated sequence gate wired to nothing
+(`ledger_check.annotated.py`), and a filled-in sequence config with its index-row format
+(`sequence-adr/`).
 
 ---
 

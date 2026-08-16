@@ -7,16 +7,17 @@ layout: default
 
 ## TLDR/BLUF
 
-**What this is.** A research pass on 2026-08-15 put 23 claims through 3-vote adversarial refutation
-and killed 13. One of the kills was wrong: the primary source confirms the claim verbatim. This is
-what that failure costs and how to stop paying it.
+**What this is.** On 2026-08-15 a research pass sent 23 claims to three verifiers each, every
+verifier told to disprove rather than confirm. It killed 13. One kill was wrong: the primary source
+states the claim verbatim, in a file in the repository the pass was already reading.
 
-**Why you should care.** A false positive gets argued with. A false negative reads as rigour and is
-filed as a finding nobody revisits. Not for you if you never fan work out to verifiers.
+**Why you should care.** A wrong claim that survives gets argued with. A true claim wrongly killed
+reads as rigour and is filed as a finding nobody reopens. Not for you if you never fan work out to
+verifiers.
 
-**How to use it.** The fix is one schema change, in
+**How to use it.** The fix is one schema change. It is in
 [Separate refuted from could-not-establish](#separate-refuted-from-could-not-establish). Everything
-before that is why the obvious version does not work.
+above that section is why the obvious version does not work.
 
 ---
 
@@ -25,7 +26,8 @@ before that is why the obvious version does not work.
 A pass verified claims about `spec-kit-arch-governance`, a third-party extension. Among them: that
 it is compatible with Spec Kit v0.16.x.
 
-Three verifiers, each prompted to refute rather than confirm, killed it `0-3`.
+Three verifiers read that claim, each prompted to refute rather than confirm. All three voted to
+kill it. The pass recorded the vote as `0-3`: no votes for the claim, three against.
 
 The extension's catalog entry in the Spec Kit repository reads:
 
@@ -34,8 +36,8 @@ The extension's catalog entry in the Spec Kit repository reads:
                      "requires": { "speckit_version": ">=0.1.0" } }
 ```
 
-`>=0.1.0` admits every 0.16 release. The claim was true, stated plainly, in a machine-readable file
-in the repository the pass was already reading.
+`>=0.1.0` admits every 0.16 release. **The claim was true**, stated plainly, in a machine-readable
+file in the repository the pass was already reading.
 
 ---
 
@@ -69,8 +71,14 @@ Try to refute this finding. Default to refuted=true if you cannot find solid sup
 That default is load-bearing and it points the wrong way. It converts **"I searched and found
 nothing"** into **"this is established false"**, which are different claims about the world.
 
-A verifier that cannot reach a source, hits a rate limit, or searches badly produces the same output
-as one that read the source and found it contradicted. Both come back `refuted: true`.
+Four verifiers produce the same output, and only one of them has refuted anything:
+
+- it could not reach the source
+- it hit a rate limit
+- it searched badly and found nothing
+- it read the source, and the source contradicted the claim
+
+All four come back `refuted: true`.
 
 This is [`HS-9`](HOUSE-STYLE.md) applied to a research harness rather than a diagnostic: a result
 must not be phrasable as an answer when the tool could not determine one. It is the same rule that
@@ -80,7 +88,8 @@ makes a skipped check exit 2 in `bin/ccx-doctor.ps1` rather than pass.
 
 ## Separate refuted from could-not-establish
 
-The fix is to stop asking verifiers for a boolean.
+**The goal.** A verdict that can say "could not tell" out loud, so a retrieval failure never lands
+in the kill pile. That means one thing: stop asking verifiers for a boolean.
 
 **Measured on this repository's own runs.** Three verification workflows were run on 2026-08-15, and
 each used this verdict schema:
@@ -97,15 +106,18 @@ A boolean cannot carry "could not tell". A verifier that wanted to report an unr
 no field to report it in, so every such case was recorded as a kill.
 
 The same runs used a three-valued enum in the *establish* phase, which could say
-`NO_SOURCE_ADDRESSES_IT`. So the harness could express the distinction where it collected evidence
-and threw it away where it judged evidence. Use the enum in both:
+`NO_SOURCE_ADDRESSES_IT`. The harness could express the distinction where it collected evidence, and
+threw it away where it judged evidence.
+
+**What to do.** Use that enum in the verdict phase too:
 
 ```js
 verdict: { type: 'string', enum: ['REFUTED', 'SURVIVED', 'COULD_NOT_ESTABLISH'] }
 ```
 
-Then count only `REFUTED` toward a kill, and report `COULD_NOT_ESTABLISH` separately rather than
-folding it into either pile.
+**What happens next.** Only `REFUTED` counts toward a kill. `COULD_NOT_ESTABLISH` is reported as its
+own pile rather than folded into either of the others, so a kill list now holds only claims a
+verifier argued down.
 
 The bundled `/deep-research` workflow already does a narrow version of this. It lists a claim as
 unverified rather than refuted when a verifier hits a rate limit or an API error. The gap is the
@@ -115,10 +127,12 @@ case where the verifier ran fine and found nothing.
 
 ## What to do with a kill list you already have
 
-**Do not treat a refuted list as established fact.** That is the operational consequence, and it
-applies to any pass whose verdicts were booleans, including every one this repository has run.
+**The goal.** Find the wrong kills in a list you have already filed, without rerunning the pass.
 
-Three checks worth spending, in descending order of yield:
+**Do not treat a refuted list as established fact.** That applies to any pass whose verdicts were
+booleans, including every one this repository has run.
+
+**What to do.** Three checks, in descending order of yield:
 
 - **Re-read the primary source for any kill that would change a decision.** The wrong kill here was
   a semver range in a JSON file, which takes seconds to check and was never checked because the
@@ -130,6 +144,9 @@ Three checks worth spending, in descending order of yield:
   survived and everything about promotion criteria and conventions died. That split is credible:
   those claims were killed because nobody has published them, not because a verifier could not
   reach a file.
+
+**What happens next.** Expect a mechanical kill to be the cheapest to recheck, and expect some of
+them to come back. Auditing the kill below took one read of a README, and that verdict held.
 
 ---
 
@@ -147,12 +164,14 @@ and supersession-cycle linting."* Read against that tool's own README on 2026-08
 So the verdict was defensible and the claim still lost a true fact. **A compound claim is only as
 verifiable as its weakest conjunct**, and one boolean discards the parts that held.
 
-This is the failure the arch-governance kill does not cover, and it needs a different fix. Split a
-claim into atomic assertions before verifying, so a verifier can reject the unsupported half without
-taking the confirmed one with it.
+**A different fix, for a failure the arch-governance kill does not cover.** Split a claim into
+atomic assertions before verifying. A verifier can then reject the unsupported half without taking
+the confirmed one with it.
 
 Both failures share a cause. A verdict field narrower than the thing being judged forces a verifier
 to round its answer, and the rounding always goes the same way.
+
+---
 
 ## The narrower lesson
 

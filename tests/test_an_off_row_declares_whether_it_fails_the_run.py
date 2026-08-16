@@ -39,7 +39,7 @@ import unittest
 import _ccxtest as t
 
 DOCTOR = t.REPO_ROOT / "bin" / "ccx-doctor.ps1"
-INSTALL = t.REPO_ROOT / "INSTALL.md"
+INSTALL = t.REPO_ROOT / "docs" / "INSTALL.md"
 
 # Every parameter Add-Result accepts. The extractor reads values only for these, which is what keeps
 # it from mistaking `-Leaf` inside an interpolated name for a parameter of the call. If the function

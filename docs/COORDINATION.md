@@ -2,33 +2,30 @@
 
 ## TLDR/BLUF
 
-**What this is.** Presence, overlap, claims, locks and announce. They are the parts of this repo that
-let several Claude Code sessions work in one repository at the same time without silently destroying
-each other's work.
+**What this is.** The commands that answer "who else is working in this repo, and on what". Plus the
+one gate that refuses your edit when a live peer is already changing that file.
 
 **Why you should care.** Two sessions in two worktrees cannot overwrite each other's bytes. They can
-still edit one file in parallel and find out at merge, by which point both have built on divergent
-assumptions and someone's work is thrown away.
+still edit one file in parallel and find out at merge, when both have built on divergent assumptions
+and somebody's work is thrown away.
 
-Worse, they can build the *same thing* in *different files*: zero conflicts, two green pull
-requests, nothing structural sees it. Measured on the repo this tooling was developed in: three
-sessions independently fixed the same dependency advisory; two of the three pull requests closed as
-duplicates.
+They can also build the *same thing* in *different files*: zero conflicts, two green pull requests,
+nothing structural sees it. Measured on the repo this tooling was developed in: three sessions fixed
+the same dependency advisory, and two of the three pull requests closed as duplicates.
 
-Not for you if you run one session at a time, nor for a plain CLI install where announce is
-concerned, which needs the desktop client.
+Not for you if you run one session at a time. Announce is not for you on a plain CLI install either,
+because delivery needs the desktop client.
 
-**How to use it.** Start at [The pieces](#the-pieces), which routes each question to a script.
-Then [Proving any of this is live](#proving-any-of-this-is-live), which separates an installed
-fence from a wired one. Read [Honest limits, stated first](#honest-limits-stated-first) before
-relying on it.
+**How to use it.** Start at [The pieces](#the-pieces), which routes each question to a script. Run
+[Proving any of this is live](#proving-any-of-this-is-live) before you trust an answer. Read
+[Honest limits, stated first](#honest-limits-stated-first) before relying on any of it.
 
 ## Honest limits, stated first
 
 | Limit | Consequence |
 |---|---|
 | PowerShell 7, Windows-first | Most of these scripts are PowerShell. The POSIX paths exist (the process table falls back to `ps -A -o pid=,ppid=`) but Windows is where they are exercised. |
-| The `ccd_session_mgmt` MCP is Claude Code Desktop only | It is **absent on a plain CLI install**. `scripts/hooks/announce-session.ps1` never sends anything itself -- it resolves peers and asks the model to send. Where that MCP is missing the hook still fires, still finds peers, and then instructs the model to call tools it does not have. Leave it uninstalled, or create the `OFF` file. |
+| Announce needs the desktop client (the `ccd_session_mgmt` messaging MCP) | **Absent on a plain CLI install.** `scripts/hooks/announce-session.ps1` never sends; it asks the model to send. Without the MCP the hook fires and finds peers, then names tools the model cannot call. Leave it uninstalled, or create the `OFF` file. |
 | The session record schema is a vendor contract | Every fence here rests on `<config-root>/sessions/<pid>.json`, which the client writes. We do not own its shape, location or lifetime. It can break under you. |
 | `list_sessions` cannot see every session kind | It enumerates sessions the desktop app itself spawned. Editor-extension sessions are never entered into it. See below. |
 | Nothing has a heartbeat | Nothing here can *prove* a session is gone. Only the positive answer ("it is live") is trustworthy. |
@@ -56,7 +53,7 @@ Everything shared lives under `<git-common-dir>/<prefix>-coord`, resolved by `Ge
 
 ```text
 <git-common-dir>/ccx-coord/
-  alloc/            sequence allocation
+  alloc/            sequence numbers, handed out one at a time
   claims/           work claims
   locks/            short-lived operation mutexes
   announce/         announce markers, receipts, the OFF switch
@@ -82,17 +79,25 @@ releases claims on *evidence* (the directory is gone **and** deregistered), neve
 tooling was developed in: eight concurrent PowerShell writers to one file lost four writes,
 silently.
 
-Every mutual-exclusion primitive here -- `claim.ps1`, `lock.ps1`, the allocator, the announce hook's
-concurrency guard -- is instead an atomic exclusive create, and the *failed create* is the mutual
-exclusion.
+Every mutual-exclusion primitive here instead uses an **atomic exclusive create**: it creates a
+file that must not already exist, and the *failed create* is the exclusion. That covers `claim.ps1`,
+`lock.ps1`, the sequence allocator and the announce hook's concurrency guard.
 
 ## Presence: Who is here
+
+**The goal.** Find out which sessions are alive in this repository right now, on any surface.
+
+**What to do.**
 
 ```powershell
 pwsh -NoProfile -File scripts/coord/presence.ps1          # live sessions in this repo
 pwsh -NoProfile -File scripts/coord/presence.ps1 -All     # include stale/dead registry entries
 pwsh -NoProfile -File scripts/coord/presence.ps1 -Json    # machine-readable (stdout is pure JSON)
 ```
+
+**What happens next.** One row per session the registry can prove is live. Read the exit code as well
+as the rows, because a real all-clear and a failed look print
+[the same bytes](#an-empty-roster-and-an-unreadable-roster-are-the-same-bytes).
 
 ### Read the registry, not the app's session list
 
@@ -185,9 +190,13 @@ that signals on the one its caller ignores is documentation, not a control.
 
 ### Keep exactly one copy of the fence
 
-`presence.ps1` (a roster), `scripts/worktree/sessions.ps1` (**moves** a transcript) and
-`scripts/worktree/prune-merged.ps1` (**deletes** a worktree) all need one answer to "is this session
-alive", and the drifting copy of a safety check is the untested one. So the fence lives once in
+Three tools need one answer to "is this session alive":
+
+- `presence.ps1`, which prints a roster.
+- `scripts/worktree/sessions.ps1`, which **moves** a transcript.
+- `scripts/worktree/prune-merged.ps1`, which **deletes** a worktree.
+
+The drifting copy of a safety check is the untested one, so the fence lives once in
 `session-registry.ps1`, the cwd matcher in `occupancy.ps1`, path comparison in `_common.ps1`. Say so
 in a comment, or the next session re-forks it.
 
@@ -220,6 +229,11 @@ surface is irrelevant to it.
 
 ## Overlap: What they are touching
 
+**The goal.** Before you start a chunk of work, find out what the other sessions have already
+touched: the files, and the subjects they are working on.
+
+**What to do.**
+
 ```powershell
 pwsh -NoProfile -File scripts/coord/overlap.ps1                      # human summary
 pwsh -NoProfile -File scripts/coord/overlap.ps1 -Json                # machine-readable
@@ -227,7 +241,7 @@ pwsh -NoProfile -File scripts/coord/overlap.ps1 -File src/service.py # who else 
 pwsh -NoProfile -File scripts/coord/overlap.ps1 -Refresh             # ignore the cache
 ```
 
-Two independent signals, because they catch different failures:
+**What happens next.** Two independent signals, because they catch different failures:
 
 - **FILES**, per worktree: committed-and-unlanded changes plus the uncommitted working tree. Catches
   concurrent edits. Exact, cheap, no cooperation required.
@@ -263,8 +277,8 @@ all-clear never fired and the render loop printed a ghost: blank name, blank bra
 `1 changed file(s)` -- `@($null).Count` is `1` there too. It does not miss a worktree; it
 **invents** one.
 
-It is also *stateful*, which is what hid it: the fresh walk answers "No other worktree has changes."
-and the very next run inside the 60-second cache window answers with a ghost. Same repo, same state,
+It is also *stateful*, which is what hid it. A fresh walk answers "No other worktree has changes."
+The very next run, inside the 60-second cache window, answers with a ghost. Same repo, same state,
 two answers. **A bug that only appears on the second run reads as flakiness, not as a defect.**
 
 **Rule.** Normalise **once, at the source**, the moment the value is loaded -- not at each consumer.
@@ -292,9 +306,9 @@ Neither diff form is correct alone, and each is wrong in the opposite direction:
 
 - `<trunk>...HEAD` (three-dot) is what the branch **authored**. Required, because two-dot alone
   blames a merely-behind branch for every file the trunk moved underneath it.
-- `<trunk>..HEAD` (two-dot) is what still **differs** from the trunk. Required, because a repo that
-  squash-merges never makes the squashed commit an ancestor of the branch, so the merge base never
-  advances and three-dot credits a landed branch with its files *forever*.
+- `<trunk>..HEAD` (two-dot) is what still **differs** from the trunk. Required: a repo that
+  squash-merges never makes the squashed commit an ancestor of the branch. The merge base never
+  advances, so three-dot credits a landed branch with its files *forever*.
 
 The **intersection** is what the branch authored and has not yet landed. It self-clears on squash,
 rebase and merge-commit alike. Measured: two landed branches claimed 8 and 4 files under three-dot
@@ -362,12 +376,20 @@ It is quoted to a human; it is never acted on.
 
 ## Claims: What is being built
 
+**The goal.** Say what you are about to build, under a key other sessions can see, before you build
+it.
+
+**What to do.**
+
 ```powershell
 pwsh -NoProfile -File scripts/coord/claim.ps1 -Take 12 -Note "csv importer"
 pwsh -NoProfile -File scripts/coord/claim.ps1 -Take dep-advisory-path-parse -Note "..."
 pwsh -NoProfile -File scripts/coord/claim.ps1 -List
 pwsh -NoProfile -File scripts/coord/claim.ps1 -Release 12
 ```
+
+**What happens next.** The key becomes a file under `claims/` in the state root. `-Take` on a key
+somebody else holds fails and names the holder.
 
 A claim is a free-text **key**. Numbered keys are **enforced** by a commit-time gate; free-text keys
 are **advisory** and catch what costs rework -- unnumbered work nobody thought to coordinate.
@@ -426,7 +448,7 @@ broadcast, and stamp the refresh time. (`claimed` is the claim's identity and ne
   worktree. Measured: 400 moves left it absent on 2,559 of 154,506 polls, 0 of 134,581 with
   overwrite.
 - **Failing is the safe direction.** If the move cannot complete (a scanner or editor holding the
-  destination), the old note survives, the claim stays yours, and the tool says so -- and explicitly
+  destination), the old note survives and the claim stays yours. The tool says so, and explicitly
   says *do not `-Release`*.
 
 ### Serialisation details that are not cosmetic
@@ -448,6 +470,10 @@ nothing wrong" both give an empty problem list, so say "did not scan" when the s
 
 ## Locks: One operation at a time
 
+**The goal.** Stop two sessions running the same operation at the same moment.
+
+**What to do.** Dot-source the library and wrap the operation:
+
 ```powershell
 . "$PSScriptRoot/../coord/lock.ps1"
 $lock = Enter-CcxLock -Name "worktree-add"
@@ -455,9 +481,12 @@ try   { <the operation> }
 finally { Exit-CcxLock $lock }
 ```
 
-Same atomic exclusive-create as claims, for the same measured reason. Different from a claim: a
-claim is a long-lived advisory note about *work*, released by hand; this is a short-lived mutex
-around a single *operation* measured in seconds. That is why this one retries and claims do not.
+**What happens next.** The session that creates the lock file first runs the operation. A second
+session retries while the lock is held.
+
+Same atomic exclusive-create as claims, for the same measured reason. The difference is lifetime. A
+claim is a long-lived advisory note about *work*, released by hand. A lock is a short-lived mutex
+around one *operation* measured in seconds. That is why a lock retries and a claim does not.
 
 **We retry; we never steal.** Breaking a lock we cannot prove abandoned re-opens the race it exists
 to close; no liveness signal proves abandonment. On timeout `Enter-CcxLock` fails **loudly**, naming
@@ -469,8 +498,9 @@ can safely break.
 
 ## Announcing yourself
 
-`scripts/hooks/announce-session.ps1` runs on **UserPromptSubmit** and injects an instruction, a peer
-list and the id-resolution rules into the model's context at the one moment they are actionable.
+`scripts/hooks/announce-session.ps1` runs when you submit a prompt (the **UserPromptSubmit** hook).
+It puts an instruction, a peer list and the id-resolution rules into the model's context at the one
+moment they are actionable.
 
 **Why not SessionStart?** At SessionStart a session knows it exists and nothing else, so announcing
 then can only say "hello" -- the interrupt without the information. One prompt later it knows what it
@@ -506,13 +536,19 @@ characters. Branch does not join them: the rosters reported different branches f
    Measured: the two rosters print byte-identical cwds, so an exact match is expected to succeed. No
    exact row means **skip that peer**, and never guess an id.
 
-   A matched row is enough on its own, because **`isRunning` is not a reachability flag.** It reports
-   whether that session was mid-turn at the instant you called `list_sessions`, and most peers are
-   idle most of the time.
+3. Send to the `sessionId` from that row. A usable messaging id starts with `local_`.
+4. Message at most the peers you actually reached, one message each.
 
-   `isRunning: false` is idle, not gone. `send_message` delivers to it normally, and the message
-   waits as a user turn until that session next runs. Skipping on it silently drops nearly every
-   peer, which is the failure this step exists to prevent.
+**cwd is the only join key.**
+
+### A matched row is enough: `isRunning` is not a reachability flag
+
+`isRunning` reports whether that session was mid-turn at the instant you called `list_sessions`, and
+most peers are idle most of the time.
+
+`isRunning: false` is idle, not gone. `send_message` delivers to it normally, and the message waits
+as a user turn until that session next runs. Skipping on it silently drops nearly every peer, which
+is the failure step 2 exists to prevent.
 
 **Measured, and it runs opposite to the discarded rule.** Against the live MCP: `isRunning: false`
 returned `Message sent.`, `isRunning: true` returned `queued ... will be processed after the
@@ -539,10 +575,6 @@ stale.
 **Attempt the send and let the return value be the evidence.** It answers what the flag only
 gestures at, and costs one call. A wrong id fails loudly (`Session <id> not found.`), so a failure
 is self-announcing. A TSV row recorded `NOT_RUNNING` under the old rule is a false negative.
-3. Send to the `sessionId` from that row. A usable messaging id starts with `local_`.
-4. Message at most the peers you actually reached, one message each.
-
-**cwd is the only join key.**
 
 ### A wrong id errors loudly -- and label inferences as inferences
 
@@ -609,9 +641,12 @@ Three hooks in one `UserPromptSubmit` array:
 - an `mcp_tool` naming a **deliberately nonexistent** server *also* produced nothing, where the
   documentation promises a non-blocking error.
 
-**Why the result is worthless.** With no connected MCP server anywhere on the box, "output not
-surfacing", "the server not being addressable" and "every call erroring with the error never reaching
-the model" produce identical bytes.
+**Why the result is worthless.** With no connected MCP server anywhere on the box, three explanations
+produce identical bytes:
+
+- the output not surfacing;
+- the server not being addressable;
+- every call erroring, with the error never reaching the model.
 
 **Rule.** Include a negative control that **must** fail. If the must-fail and under-test cases
 produce the same output, the result is **untested**, not negative: re-run against a known-good one.
@@ -636,9 +671,9 @@ sessions currently misbehaving.
 <git-common-dir>/<prefix>-coord/announce/OFF
 ```
 
-The environment variable (`CCX_ANNOUNCE_DISABLE`, its name derived from the configured prefix so a
-renamed project does not answer to somebody else's variable) is a **secondary**, for a session that
-has not started yet. Removing just this hook without disarming the collision gate or the banner:
+`CCX_ANNOUNCE_DISABLE` is the **secondary** switch, for a session that has not started yet. Its name
+is derived from the configured prefix, so a renamed project does not answer to somebody else's
+variable. Removing just this hook without disarming the collision gate or the banner:
 
 ```powershell
 pwsh -NoProfile -File scripts/coord/install-coordination.ps1 -Only UserPromptSubmit -Uninstall
@@ -704,9 +739,9 @@ the work to a different path. Do not expect a written agreement to change a mech
 
 ### Know what the gates still cannot see
 
-The commit-time claim gate closes the *pull* direction (a code-touching commit declaring an item must
-hold that item's claim for this worktree) and announce closes the *push* direction (peers learn intent
-early). **Neither stops two sessions building the same thing under two different names.**
+The commit-time claim gate closes the *pull* direction: a code-touching commit declaring an item must
+hold that item's claim for this worktree. Announce closes the *push* direction: peers learn intent
+early. **Neither stops two sessions building the same thing under two different names.**
 
 ### A clean merge is not evidence that nobody duplicated your work
 
@@ -747,8 +782,8 @@ git merge-tree --write-tree main <branch>    # the merge. This is the one that a
 ```
 
 Measured on the same branch, 63 commits behind: the two-dot diff reported 1,478 insertions and 3,247
-deletions across 46 files, including two entire test files, and was briefly read as what landing it
-would do. The actual merge touches **two** files. The number measured staleness, not damage.
+deletions across 46 files, including two entire test files. It was briefly read as what landing the
+branch would do. The actual merge touches **two** files. The number measured staleness, not damage.
 
 The two errors point opposite ways: the old `merge-tree` under-reports danger, and a two-dot diff
 wildly over-reports it. Two different sessions made them, on the same branch, within an hour of each
@@ -766,9 +801,9 @@ This is the same shape as [`isRunning`](#the-id-rules-the-most-valuable-part-of-
 instrument answering a narrower question than the one being asked of it, and reporting success while
 it does.
 
-**The one mechanism here that prevents rather than reports.** In the episode above, every correction
-the two sessions made for each other arrived *after* the work was done: the duplicate paragraph, the
-stale verification base, the wrong noun on the routing page, all found by reading afterwards.
+**The one mechanism here that prevents rather than reports.** In that episode, every correction the
+two sessions made for each other arrived *after* the work was done. The duplicate paragraph, the
+stale verification base and the wrong noun on the routing page were found by reading afterwards.
 
 The collision gate was the exception. When the second session tried to edit `docs/index.md` a third
 time, it refused, named the session holding the file and named its branch, and the edit never
@@ -796,9 +831,13 @@ designed to resist by needing no opt-in. Reading it is still a step you have to 
 
 ## Proving any of this is live
 
+**The goal.** Tell a control that is actually wired from one that is merely installed.
+
 Every failure mode here is byte-identical to success: a wired hook resolving nothing exits
 silently, exactly like a healthy one with no peers. An announce hook sat wired-but-resolving-nothing
 for hours while settings looked correct: a similarly-named entry from another project held the slot.
+
+**What to do.**
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-doctor.ps1                                  # receipts + attacks
@@ -806,6 +845,9 @@ pwsh -NoProfile -File scripts/coord/install-coordination.ps1 -Status      # the 
 pwsh -NoProfile -File scripts/hooks/announce-session.ps1 -SelfTest        # read-only, writes nothing
 pwsh -NoProfile -File scripts/hooks/collision_gate.ps1 -PathOverride <p>  # who holds this path now
 ```
+
+**What happens next.** Every control gets a row, and the doctor fires an attack each one must refuse.
+Read the blind spots it prints as well as the rows.
 
 Two things make `-Status` trustworthy, and both make it *less* clever than it could be:
 
@@ -879,13 +921,15 @@ rename.
 
 ### Opt-in
 
-The user-scope hooks fire in **every** repository on the machine, so each one first asks "is this
-repository governed?" by testing for **`ccx.config.json` at the repository root** before it writes a
+The user-scope hooks fire in **every** repository on the machine. Each one first asks "is this
+repository governed?" by testing for **`ccx.config.json` at the repository root**, before it writes a
 byte.
 
-That is deliberately *not* "does one of the scripts happen to exist", which is true in a
-half-installed tree, true in any fork that copied the scripts directory and opted into nothing, and
-false in a repository that vendors the scripts elsewhere.
+That is deliberately *not* "does one of the scripts happen to exist". That second test is:
+
+- true in a half-installed tree;
+- true in any fork that copied the scripts directory and opted into nothing;
+- false in a repository that vendors the scripts elsewhere.
 
 It is a direct presence test at the root, never a walk-up. A walk-up from an unrelated repository
 checked out *inside* a governed one would find the outer config and claim the inner repo.

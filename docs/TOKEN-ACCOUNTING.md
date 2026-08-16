@@ -2,27 +2,28 @@
 
 ## TLDR/BLUF
 
-**What this is.** Four measurements of one subscription tier's weekly usage meter, taken on
-2026-08-12, establishing what unit it counts and what a month of it is worth against published
-per-token API prices.
+**What this is.** Four accounts on one subscription tier, measured on 2026-08-12, to answer two
+questions. What unit does the weekly usage meter count, and what is a month of it worth at published
+per-token API prices?
 
-**Why you should care.** The meter counts only the tokens that are not cache reads, so a percentage
-is a poor proxy for work done and a good one for cost. Not for you if you want a rate card: this is
-four samples of an undocumented meter, not vendor documentation.
+**Why you should care.** The meter ignores cache reads, so the percentage tracks cost and not work
+done. Read a fast-moving percentage as spend, not as progress. Not for you if you want a rate card:
+this is four samples of an undocumented meter, not vendor documentation.
 
-**How to use it.** Take the ratio, not the dollar figures. The unit finding transfers between
-workloads; the value depends entirely on how much cached context your sessions re-read.
+**How to use it.** Take the ratio, not the dollar figures. Roughly 1.35 million non-cache-read
+tokens buy 1 percent of a weekly window. That unit transfers between workloads. The dollar value
+does not: it depends on how much cached context your sessions re-read.
 
 ---
 
 ## What was measured
 
-Four accounts on the same subscription tier, each billed at 200 USD per month. All four ran the same
-kind of work: long agentic coding sessions against one repository, with large cached contexts.
+Four accounts on the same subscription tier, each billed at 200 USD per month. All four ran the
+same kind of work: long agentic coding sessions against one repository, with large cached contexts.
 
-Each account's tokens were summed from local session transcripts, which record a usage block on every
-assistant message. That sum was paired with the account's live weekly percentage, read at the same
-moment from the client's own usage endpoint.
+Each account's tokens were summed from its local session transcripts, which carry a usage block on
+every assistant message. Each sum was paired with that account's live weekly percentage, read at the
+same moment from the client's own usage endpoint.
 
 | Account | Weekly meter | Tokens in window | Non-cache-read | Raw per 1 percent | Non-cache-read per 1 percent |
 |---|---:|---:|---:|---:|---:|
@@ -36,9 +37,9 @@ reading. Three of the four were near their end, so the extrapolation to a full w
 
 ## The meter counts non-cache-read tokens
 
-Raw tokens per 1 percent vary by a factor of 2.1 across the four rows, from 28,653,520 to 60,475,507.
-Non-cache-read tokens per 1 percent vary by 1.4, and two of the rows agree to within 0.5 percent:
-B at 1,351,906 and C at 1,358,912.
+Raw tokens per 1 percent vary by a factor of 2.1 across the four rows, from 28,653,520 to
+60,475,507. Non-cache-read tokens per 1 percent vary by only 1.4, and two of the rows agree to
+within 0.5 percent: B at 1,351,906 and C at 1,358,912.
 
 **Working estimate: roughly 1.35 million non-cache-read tokens per 1 percent of a weekly window**,
 so a full weekly allowance is near 135 million and a month near 590 million. Cache reads are close
@@ -46,16 +47,16 @@ to free against the meter, which matches their being priced at a tenth of fresh 
 
 Two consequences for anyone reading a percentage:
 
-- **A percentage moving fast does not mean much work went by.** A session re-reading a large cached
+- **A fast-moving percentage does not mean much work went by.** A session re-reading a large cached
   context burns raw tokens at forty times the rate it burns metered ones.
 - **A percentage is a cost signal, not a progress signal.** For progress, count output tokens or
   completed steps.
 
 ## What 200 USD per month buys
 
-Each account's window was priced at the published per-token rates for the model it ran. Those rates
-are 5 USD per million input tokens, 25 output, 6.25 cache write, and 0.50 cache read. Scaled to a
-full window and then to 4.348 weeks.
+Each account's window was priced at the published per-token rates for the model it ran: 5 USD per
+million input tokens, 25 output, 6.25 cache write, and 0.50 cache read. Each row is then scaled to a
+full window, and from there to a month of 4.348 weeks.
 
 | Account | Raw tokens per month | API list value per month | Multiple on 200 USD |
 |---|---:|---:|---:|
@@ -74,8 +75,9 @@ a workload difference the reader can expect to reproduce.
   days when the local transcripts held nothing for it. Some of its spend happened on a surface these
   files do not cover, so its true value is higher by an unmeasured amount.
 
-Per million tokens that works out near 0.013 USD raw, or 0.35 USD counting only non-cache-read
-tokens. List price for this traffic mix is roughly 0.75 USD and 6.00 USD respectively.
+Per million tokens, the subscription works out near 0.013 USD counting raw tokens, or 0.35 USD
+counting only non-cache-read tokens. The same traffic mix at list price is roughly 0.75 USD raw and
+6.00 USD non-cache-read.
 
 ## What these numbers are not
 
@@ -87,8 +89,8 @@ tokens. List price for this traffic mix is roughly 0.75 USD and 6.00 USD respect
 | The dollar figures | A comparison against list price, not a bill. Batch pricing, longer cache lifetimes or a cheaper model all move it |
 | The coverage | Local transcripts on one machine only. Row D is the proof that this misses real spend |
 
-**A window's start is not its first use.** Two of the four opened between one and two days before any
-token was spent against them, so a window boundary cannot be inferred from observed activity.
+**A window's start is not its first use.** Two of the four opened between one and two days before
+any token was spent against them. A window boundary cannot be inferred from observed activity.
 
 ## Reproducing it
 
@@ -96,7 +98,10 @@ The mechanism is the same one [USAGE-AWARENESS.md](USAGE-AWARENESS.md) describes
 ship: undocumented client internals that can change without notice. Nothing here is packaged, and
 the surfaces are named by shape rather than by path for that reason.
 
-Three surfaces, all local:
+**The goal.** Pair one account's own token total with that account's own weekly percentage, read at
+the same moment.
+
+**What to do.** Read three surfaces, all local:
 
 1. **Session transcripts.** One JSON line per message, carrying a usage block with four counters:
    input, output, cache write and cache read. Subagent transcripts nest under the parent session, so
@@ -107,7 +112,10 @@ Three surfaces, all local:
 3. **The live usage endpoint.** Supplies the percentage, and must be gated on an identity lookup so
    a reading is provably about the account you think it is.
 
-Deduplicate messages by their request identifier before summing. Retries and streamed messages
+**What happens next.** You get one row of the table above: a token total, a percentage, and the
+ratio between them.
+
+**Deduplicate messages by their request identifier before summing.** Retries and streamed messages
 otherwise get counted twice.
 
 ## Related

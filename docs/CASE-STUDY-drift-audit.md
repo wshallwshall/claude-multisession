@@ -2,29 +2,31 @@
 
 ## TLDR/BLUF
 
-**What this is.** A *method* document, audit date **2026-08-04**: how the controls in this repository
-were audited as a single system, what the audit proved, and what it could not.
+**What this is.** The method used to audit the controls that ship with KORUS, on **2026-08-04**: how
+they were checked as one system, what that proved, and what it could not.
 
-**Why you should care.** Reading a control here tells you nothing about whether it is enforcing. Six
-design rules came out of the audit, each from a control that looked installed and was not. No status
-table: an inventory of what is unenforced is a map for routing around it.
+**Why you should care.** A control here can be merged, green, and enforcing nothing, and it looks
+exactly like one that works. Six design rules below each came from such a control. Not for you if
+you want a status list: publishing what is unenforced is publishing a bypass map.
 
-**How to use it.** For the current status of *your* estate, do not read a document -- run
-`pwsh -NoProfile -File bin/ccx-doctor.ps1`. Everything here is the reasoning that command encodes.
+**How to use it.** Read it as a checklist for auditing your own controls. For the state of *your*
+estate today, run the audit below rather than trusting any document.
 
 ---
 
-**Audit date: 2026-08-04.** A *method* document: how these controls were audited as one system, what
-that proved and what it could not. It carries no status table and no inventory of what is enforced
-anywhere. That is a stale snapshot of one host on one day, and published it is a bypass map.
+**The goal.** Know whether the controls on *your* machine are enforcing right now. The audit ran on
+one host on **2026-08-04**, so this page carries no status table and no inventory of what is
+enforced anywhere. Such a list goes stale at once, and published it is a bypass map.
 
-If you want the current status of *your* estate, do not read a document. Run the audit:
+**What to do.** Run the audit from the repository root:
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-doctor.ps1
 ```
 
-Everything below is the reasoning that command encodes.
+**What happens next.** It prints what it scanned, what it could not determine, and its own blind
+spots. A check it could not determine is reported `??`, never `OK`. Everything below is the
+reasoning that command encodes.
 
 ---
 
@@ -34,10 +36,15 @@ Each control in this repository is small and readable. Read `scripts/hooks/workt
 can state what it denies. Read `scripts/hooks/collision_gate.ps1` and you can state its posture. That
 reading is worth almost nothing, because none of these files is what runs.
 
-What runs is a *copy*. An installer places it outside every working tree, a matcher in a client
-config root invokes it, it resolves helpers beside itself, and the host may have no interpreter. Any
-join can be wrong while every file is individually correct, which makes this class of system
-dangerous:
+What runs is a *copy*, and four things have to line up before it decides anything:
+
+- an installer places that copy outside every working tree;
+- a matcher in a client config root invokes it;
+- it resolves its helpers from beside itself;
+- the host has an interpreter to run it.
+
+Any one of those joins can be wrong while every file is individually correct. That is what makes
+this class of system dangerous:
 
 > **Every failure mode in this system is byte-identical to success.**
 
@@ -62,7 +69,7 @@ answer at one layer is not evidence about the next.
 | **Wired** | Does anything actually invoke that copy? | Read live matchers out of every config root; diff them against the rules the *installed* script implements | A matcher exists but names a similarly-titled script from a different project; or a rule is implemented and no matcher ever reaches it |
 | **Effective** | What does it decide when fed a real input? | Pipe crafted input at the installed artifact and read the emitted decision | Rules exit on first match, so a later rule may be structurally unreachable. A helper the script dot-sources is absent, so it exits 0 and enforces nothing |
 
-Three consequences follow directly, and they are the three most expensive mistakes available here.
+Three consequences follow, and they are the three most expensive mistakes available here.
 
 **Merging a hook does not install one.** Track *inert-by-design* separately from
 *inert-by-accident*, and re-run the installer as its own announced step. A coordination hook on the
@@ -74,8 +81,8 @@ installed copy, the settings matcher and the source can all disagree with one an
 them decides anything.
 
 **A control that cannot distinguish "ran and resolved" from "ran and found nothing" is not
-installed, however it looks.** The hook that proved this ran for weeks printing a status message,
-and outlasted every other silent defect found the same day because it printed something.
+installed, however it looks.** The hook that proved this printed a status message for weeks. It
+outlasted every other silent defect found the same day, because it printed something.
 
 Full account:
 [put a signal outside the component](TIPS-AND-TRICKS.md#put-at-least-one-signal-outside-the-component-being-audited).
@@ -84,9 +91,8 @@ Full account:
 
 ## The drift taxonomy: D1-D4
 
-"Drift" in this system is not one thing. Separating it into four classes is what makes an audit
-tractable, because the four have different instruments and different fixes -- and because three of them
-are the reason the first one goes unnoticed.
+"Drift" here is not one thing. Four classes make an audit tractable, because each has its own
+instrument and its own fix. Three of them are also the reason the first one goes unnoticed.
 
 | Class | What drifts | Symptom | Instrument |
 |---|---|---|---|
@@ -106,8 +112,8 @@ Where you cannot, ship a rule inventory and a `-Status` asserting an *expectatio
 count.
 
 The same class covers routes rather than names. `scripts/hooks/worktree_gate.ps1` inspects tool
-arguments, so a file written by a shell command is not seen at all, and **any agent-authored script
-defeats a command-string gate** -- a script invocation carries no `git` token.
+arguments, so a file written by a shell command is not seen at all. **Any agent-authored script
+defeats a command-string gate**: a script invocation carries no `git` token.
 
 That is not an adversarial scenario: a sanctioned repair script is exactly that shape. Treat
 string-scanning gates as guardrails against accidents, never as boundaries, and say so in the file.
@@ -115,9 +121,9 @@ string-scanning gates as guardrails against accidents, never as boundaries, and 
 The hooks that parse commands share one command-splitting helper (`scripts/hooks/_command.ps1`) and
 one git-target resolver (`scripts/hooks/_gittarget.ps1`).
 
-The reason is itself an audit finding: two hooks that each split commands their own way will disagree
-about what a command *is*, and the one that drifts is the one nobody is testing. Keep exactly one
-copy of a safety check.
+The reason is itself an audit finding. Two hooks that each split commands their own way will
+disagree about what a command *is*, and the one that drifts is the one nobody is testing. **Keep
+exactly one copy of a safety check.**
 
 ### On D3's opposite failure
 
@@ -128,9 +134,14 @@ word in a prose line of a multi-line command. It also denied a commit whose *mes
 Every such denial erodes compliance with the deny text, which on the shell path is the only control
 there is.
 
-Scan per line, fold continuations, blank quoted spans, recurse into interpreter arguments, and ship
-ALLOW-asserting tests for the multi-line, echoed and message-containing cases. A gate that cries
-wolf gets routed around, and then you have nothing.
+The fix is mechanical:
+
+- scan per line, and fold continuations;
+- blank out quoted spans;
+- recurse into interpreter arguments;
+- ship ALLOW-asserting tests for the multi-line, echoed and message-containing cases.
+
+A gate that cries wolf gets routed around, and then you have nothing.
 
 ---
 
@@ -147,7 +158,7 @@ Key write-gating on the destination. A session may then stay where it is and sim
 worktree: no `cd`, no relocation, no restart. The price is that writes into *another* session's
 worktree are allowed. Accept that explicitly, and know the deny text actively teaches it.
 
-There is a second, unobvious payoff. A target-path rule already contains a fan-out from a bad working
+There is a second payoff. A target-path rule already contains a fan-out from a bad working
 directory. A subagent inherits its parent's cwd, but its writes are judged by where they land, so
 they are denied at the destination regardless of where the parent was standing.
 
@@ -158,8 +169,8 @@ branch switch can make the gate vanish. A path-keyed rule returns "not governed"
 files and lets any session edit them: every session the gate governs could rewrite the gate.
 
 `scripts/hooks/worktree_gate.ps1` closes this with a dedicated rule (1a) covering its own script
-and allowlist. It stops a *session* disarming the control; a human at a terminal is still free to
-uninstall it. The kill switch is documented in the script's own `.NOTES`: obscurity is not a
+and allowlist. It stops a *session* disarming the control. A human at a terminal is still free to
+uninstall it, and the kill switch is documented in the script's own `.NOTES`: obscurity is not a
 control.
 
 Generalize it: **any control with a mutable enforcement surface must govern that surface, and the
@@ -182,9 +193,8 @@ deny relocating a live session *into* a worktree. With both live, a session open
 checkout has no in-session path to isolation -- only a human restarting it elsewhere.
 
 Two rules, individually defensible, jointly a dead end. `scripts/worktree/install-gate.ps1` ships
-the relocation rule as opt-in `-EnterWorktreeGate`, **off by default**, and says why in the
-parameter's own comment: a decision to make on purpose, not one riding along with an unrelated
-install.
+the relocation rule as opt-in `-EnterWorktreeGate`, **off by default**. The parameter's own comment
+says why: this is a decision to make on purpose, not one riding along with an unrelated install.
 
 The corollary is **ship the cure before the prohibition.** If a prohibition removes the only path to
 the sanctioned behavior, the prohibition is the defect.
@@ -229,9 +239,9 @@ repository's copy of the script; nothing read the installed copy or a live setti
 Enforcement was running from an installed copy days behind source, and the whole suite was green
 about it.
 
-The fix skips unless the installed artifact exists: `Get-HandledTools` in `bin/ccx-doctor.ps1`
-asserts SHA-256 equality with the source and diffs the *installed* rule set against every config
-root's matchers -- **and prints what it scanned, so a skip never reads as a pass.** Three states:
+The fix skips unless the installed artifact exists. `Get-HandledTools` in `bin/ccx-doctor.ps1`
+asserts SHA-256 equality with the source, then diffs the *installed* rule set against every config
+root's matchers. **It prints what it scanned, so a skip never reads as a pass.** Three states:
 
 | State | Meaning |
 |---|---|
@@ -241,9 +251,14 @@ root's matchers -- **and prints what it scanned, so a skip never reads as a pass
 
 ### Fire every control on purpose, and pair every attack with a negative control
 
-`bin/ccx-doctor.ps1` pipes crafted `PreToolUse` payloads at the *installed* gate, attempts a blanket
-stage, a commit claiming an unheld work item, and a push to a protected ref, requiring a refusal
-each time. Fixtures are throwaway: own repositories, allowlist, state root, deleted on the way out.
+`bin/ccx-doctor.ps1` pipes crafted `PreToolUse` payloads at the *installed* gate and requires a
+refusal each time. It attempts three things:
+
+- a blanket stage;
+- a commit claiming an unheld work item;
+- a push to a protected ref.
+
+Fixtures are throwaway: own repositories, allowlist, state root, deleted on the way out.
 
 Each attack is paired with a **negative control**: an ordinary action the same control must *allow*.
 Without one, a probe cannot tell "refused correctly" from "refused because it could not load". An
@@ -318,7 +333,7 @@ session spends the cycle again and reaches the same place. And when a mechanism 
 **timebox a spike that fails on purpose first** rather than building on it.
 
 Deny text is a control surface. A deny message listed the shared checkout *first* among the
-worktrees to reuse instead, displacing a real one off a display cap: a filter compared a string
+worktrees to reuse instead, displacing a real one off a display cap. The filter compared a string
 against an object and was always true. Assert that the forbidden path never appears in the suggested
 list.
 
@@ -327,13 +342,16 @@ list.
 The single most damaging line in an audit report is a bare **Done**.
 
 The next session acts on the status. If a change is mostly done, the status must spell out what is
-*not* done, per item, in the same sentence: **"Mostly done -- X, Y; NOT done: Z."** An overstated
-status is worse than no status. No status prompts a check, and a false status ends one.
+*not* done, per item, in the same sentence. Write it as **Mostly done -- X, Y; NOT done: Z.** An
+overstated status is worse than no status: no status prompts a check, and a false status ends one.
 
-`bin/ccx-doctor.ps1` exits `0` only when every required control is installed *and* wired *and*
-refused every attack, `1` on any red, and **`2` when a check could not be determined**.
-`-SkipAttacks` forces exit 2. Tags: `OK`, `RED`, `OFF`, `??`, `--`; `??` is not a rounding error
-toward `OK`.
+`bin/ccx-doctor.ps1` carries that rule in its exit code:
+
+- `0` only when every required control is installed *and* wired *and* refused every attack;
+- `1` on any red;
+- **`2` when a check could not be determined.** `-SkipAttacks` forces exit 2.
+
+Tags: `OK`, `RED`, `OFF`, `??`, `--`. `??` is not a rounding error toward `OK`.
 
 ### Print what you scanned, and name your blind spots, on every run
 

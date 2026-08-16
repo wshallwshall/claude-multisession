@@ -153,6 +153,16 @@ LINK_BEARING_SUFFIXES = (".md", ".yml", ".yaml", ".html", ".json")
 README = t.REPO_ROOT / "README.md"
 LANDING = t.REPO_ROOT / "docs" / "index.md"
 
+# WHERE THE PROCEDURE LIVES, AND IT MOVED ON 2026-08-16. It was docs/index.md, which is why the class
+# below is still named for a landing page. The landing page had grown to 3,143 words -- the install
+# commands, the requirements table and a 40-row script inventory all above the fold -- so the
+# procedure was given its own page and the landing page now points at it.
+#
+# THE PIN MOVED WITH IT RATHER THAN BEING WIDENED, which is the whole point. A scan that accepted the
+# commands on EITHER page would go green on the day they existed on both, and two copies of an
+# install procedure is the exact defect this file was written for.
+PROCEDURE = t.REPO_ROOT / "docs" / "QUICKSTART.md"
+
 
 def tracked_files() -> list[str]:
     """Every path git is tracking, as forward-slash repo-relative strings."""
@@ -207,43 +217,48 @@ class TheTestIndexNamesEveryTest(unittest.TestCase):
 
 
 class TheInstallProcedureHasOneCopy(unittest.TestCase):
-    """docs/index.md owns the procedure; README.md points at it rather than repeating it.
+    """docs/QUICKSTART.md owns the procedure; README.md and the landing page point at it.
 
-    This replaced a case that pinned the two files to identical blocks, which was the right shape
-    while both carried the commands. De-duplicating the landing pages left README with no block,
-    and that case's own empty-match guard fired rather than passing on an empty comparison. The
-    guard is kept below, moved onto the file that now owns the procedure -- which is the only file
-    it can defend, since a guard on the pointing file would fail the moment the pointing worked.
+    This replaced a case that pinned two files to identical blocks, which was the right shape while
+    both carried the commands. De-duplicating the landing pages left README with no block, and that
+    case's own empty-match guard fired rather than passing on an empty comparison. The guard is kept
+    below, on whichever file owns the procedure -- which is the only file it can defend, since a
+    guard on a pointing file would fail the moment the pointing worked.
+
+    THE OWNER CHANGED ON 2026-08-16 and the shape of the check did not. There are now TWO pointing
+    files to defend rather than one, because the landing page stopped carrying the commands in the
+    same change that moved them.
     """
 
-    def test_the_landing_page_still_carries_the_procedure(self):
-        landing = INSTALL_COMMAND.findall(t.read(LANDING))
+    def test_the_quickstart_still_carries_the_procedure(self):
+        procedure = INSTALL_COMMAND.findall(t.read(PROCEDURE))
         self.assertNotEqual(
             [],
-            landing,
-            "no install commands found in docs/index.md, which is the one copy of the procedure. "
-            "Either the block moved or its shape changed; a pattern that matches nothing passes "
-            "everything, so fix the pattern -- or this file's premise about where the procedure "
-            "lives -- before trusting a green run here.",
+            procedure,
+            "no install commands found in docs/QUICKSTART.md, which is the one copy of the "
+            "procedure. Either the block moved or its shape changed; a pattern that matches nothing "
+            "passes everything, so fix the pattern -- or this file's premise about where the "
+            "procedure lives -- before trusting a green run here.",
         )
 
-    def test_the_readme_carries_no_second_copy_that_disagrees(self):
-        readme = INSTALL_COMMAND.findall(t.read(README))
-        landing = INSTALL_COMMAND.findall(t.read(LANDING))
+    def test_no_other_front_door_carries_a_second_copy_that_disagrees(self):
+        procedure = INSTALL_COMMAND.findall(t.read(PROCEDURE))
 
-        # Either README points (no commands) or it repeats the landing page exactly. Anything else
-        # is the divergence this file exists for. Stated as one membership test rather than a
-        # branch, so the empty case cannot slip through as an early return that reads as a pass.
-        # Its vacuous case -- both empty -- is what the sibling case above rules out.
-        self.assertIn(
-            readme,
-            ([], landing),
-            "README.md carries install commands that do not match docs/index.md.\n"
-            "README.md:\n  " + "\n  ".join(readme) + "\n"
-            "docs/index.md:\n  " + "\n  ".join(landing) + "\n"
-            "A reader follows exactly one of these. Either drop the block from README.md and point "
-            "at the landing page, or make the two character-identical in this same commit.",
-        )
+        # Either the file points (no commands) or it repeats the owner exactly. Anything else is the
+        # divergence this file exists for. Stated as one membership test rather than a branch, so
+        # the empty case cannot slip through as an early return that reads as a pass. Its vacuous
+        # case -- both empty -- is what the sibling case above rules out.
+        for path in (README, LANDING):
+            found = INSTALL_COMMAND.findall(t.read(path))
+            self.assertIn(
+                found,
+                ([], procedure),
+                f"{path.name} carries install commands that do not match docs/QUICKSTART.md.\n"
+                f"{path.name}:\n  " + "\n  ".join(found) + "\n"
+                "docs/QUICKSTART.md:\n  " + "\n  ".join(procedure) + "\n"
+                "A reader follows exactly one of these. Either drop the block and point at the "
+                "quickstart, or make the two character-identical in this same commit.",
+            )
 
 
 class TheWriteCollisionFigureNamesItsDenominator(unittest.TestCase):
@@ -627,7 +642,11 @@ class DocClaimsMatchTheCode(unittest.TestCase):
 
     def test_no_front_door_describes_the_refusal_as_merely_set(self):
         offenders = []
-        for path in (README, LANDING, t.REPO_ROOT / "INSTALL.md"):
+        # PROCEDURE joined this list on 2026-08-16, in the change that moved the install commands
+        # off the landing page. The sentence describing the refusal travelled with the commands, so
+        # a scan that kept reading only the old three would have been reading the one set of pages
+        # the sentence had just left.
+        for path in (README, LANDING, PROCEDURE, t.REPO_ROOT / "docs" / "INSTALL.md"):
             for number, line in enumerate(t.read(path).splitlines(), start=1):
                 if CLAUDECODE_LOOSE.search(line):
                     offenders.append(f"{path.name}:{number}: {line.strip()}")
@@ -859,8 +878,22 @@ class TheNextFreeIdentifierIsAboveEverythingThisPageIssues(unittest.TestCase):
         self.assertEqual([("B", "18")], self.DECLARED_NEXT_FREE.findall(row))
 
 
-class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
-    """OPEN-2 and OPEN-7: the section exists, and it carries three labelled answers in order.
+class EveryRenderedPageCarriesItsSummarySection(unittest.TestCase):
+    """OPEN-2: the summary section exists on every rendered page, spelled the one way.
+
+    THIS CLASS USED TO ENFORCE OPEN-7 AS WELL, and the half that went is worth recording rather than
+    silently deleting. It pinned three labels -- `**What this is.**`, `**Why you should care.**`,
+    `**How to use it.**` -- verbatim and in order on every page, so a reworded or unbolded one read
+    as absent. OPEN-7 was relaxed on 2026-08-16 to require the three ANSWERS in the author's own
+    words rather than three fixed phrases, and docs/HOUSE-STYLE.md carries the tombstone.
+
+    The gate was removed the day after the rule was, on the owner's instruction. It is called out
+    here because for that day the rule sheet said "No gate: a semantic check needs a reader, not a
+    substring match" while the substring match was still running and still green -- a document
+    describing a control it did not have, which is the defect this whole suite exists to refuse.
+
+    WHAT REPLACES IT IS NOTHING, deliberately. A semantic check needs a reader. OPEN-2 below is the
+    part a substring match can honestly hold: the section is there, and it is spelled one way.
 
     WHY THIS IS GATED RATHER THAN LEFT TO REVIEW. On 2026-08-10, 15 of the 18 rendered pages had no
     summary section at all -- the convention existed on COORDINATION, HOUSE-STYLE and index and
@@ -874,11 +907,6 @@ class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
     arriving from GitHub rather than from the nav. 404.md is a Jekyll stub, not a page.
     """
 
-    # Verbatim, and the order is part of the rule: a reader who learns the shape on one page should
-    # find it in the same order on the next. Stored with the trailing period because that is the
-    # form OPEN-7 quotes -- `**What this is**` without it is a different string and must not pass.
-    THREE_ANSWERS = ("**What this is.**", "**Why you should care.**", "**How to use it.**")
-
     NOT_A_PAGE = ("docs/404.md",)
 
     def rendered_pages(self) -> list[str]:
@@ -891,9 +919,9 @@ class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
     def pages_under_the_open_rules(self) -> list[str]:
         """Rendered pages minus the OPEN-8 exemptions.
 
-        OPEN-2 and OPEN-7 both demand specific words in a specific place, so neither can be applied
-        to a page published in its author's own words without editing those words. OPEN-8 names the
-        pages that are, and t.AUTHORED_VERBATIM is its only list.
+        OPEN-2 demands a specific heading in a specific place, which cannot be applied to a page
+        published in its author's own words without editing those words. OPEN-8 names the pages that
+        are, and t.AUTHORED_VERBATIM is its only list.
         """
         return [f for f in self.rendered_pages() if f not in t.AUTHORED_VERBATIM]
 
@@ -948,57 +976,6 @@ class EveryRenderedPageOpensWithTheThreeAnswers(unittest.TestCase):
             "should not have one, that is a change to OPEN-2 in docs/HOUSE-STYLE.md and to this "
             "test, not an exemption added here.",
         )
-
-    def test_every_rendered_page_carries_the_three_answers_in_order(self):
-        offenders = []
-        for relpath in self.pages_under_the_open_rules():
-            text = t.read(t.REPO_ROOT / relpath)
-            at = -1
-            for label in self.THREE_ANSWERS:
-                found = text.find(label, at + 1)
-                if found < 0:
-                    offenders.append(f"{relpath}: missing {label}")
-                    break
-                if found < at:
-                    offenders.append(f"{relpath}: {label} is out of order")
-                    break
-                at = found
-        self.assertEqual(
-            [],
-            offenders,
-            "OPEN-7: the opening must carry three labelled answers, verbatim and in this order -- "
-            + ", ".join(self.THREE_ANSWERS)
-            + ":\n  "
-            + "\n  ".join(offenders)
-            + "\nThe label is matched exactly, so a reworded or unbolded one reads as absent. That "
-            "is deliberate: the point of the labels is that they are the same three on every page.",
-        )
-
-    def test_the_labels_are_matched_exactly_and_near_misses_do_not_pass(self):
-        """Planted, because the corpus is now all-green and cannot demonstrate a failure.
-
-        Without this, the two cases above would still pass against a check that matched any bold run
-        at all, or that ignored order.
-        """
-        ordered = "**What this is.** a\n\n**Why you should care.** b\n\n**How to use it.** c"
-        at = -1
-        for label in self.THREE_ANSWERS:
-            found = ordered.find(label, at + 1)
-            self.assertGreaterEqual(found, 0, f"{label} not found in a correctly formed opening")
-            at = found
-
-        for near_miss in (
-            "**What this is** a",          # no trailing period
-            "**what this is.** a",         # lower case
-            "*What this is.* a",           # single asterisk, not bold
-            "What this is. a",             # no emphasis at all
-        ):
-            self.assertNotIn(
-                self.THREE_ANSWERS[0],
-                near_miss,
-                f"{near_miss!r} matched the label, so the check would accept a drifted spelling.",
-            )
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,16 +2,15 @@
 
 ## TLDR/BLUF
 
-**What this is.** The design, failure modes and rules for a hook that warns a session when the plan
-pool it bills is running out.
+**What this is.** Eight rules for a hook that warns a session when the plan pool it bills is running
+out. They cover what it must resolve, what it must refuse to say, and the failure behind each one.
 
-**Why you should care.** This repo's recurring theme at its sharpest: **an instrument that
-answers a narrower question than the one you asked, while looking completely healthy.** Not for
-you as code -- **no such hook ships here**: the mechanism depends on undocumented client
-internals.
+**Why you should care.** Each rule came from **an instrument that answered a narrower question than
+the one you asked, while looking completely healthy.** Not for you as code -- **no such hook ships
+here**: the mechanism depends on undocumented client internals.
 
-**How to use it.** Take the rules, not the implementation; those transfer and the code does not.
-Start with the purpose, which is preventing lost work at a hard cutoff and is not budgeting.
+**How to use it.** Take the rules, not the implementation -- those transfer and the code does not.
+Start at [Why you want this at all](#why-you-want-this-at-all): the purpose decides the rules below.
 
 ---
 
@@ -20,18 +19,16 @@ it looks. **No such hook ships in this repo**: the mechanism depends on undocume
 internals that can change without notice, so shipping one would ship a control that breaks
 silently.
 
-The lessons here are the sharpest instance in this repo of its recurring theme: **an instrument that
-answers a narrower question than the one you asked, while looking completely healthy.**
-
 ---
 
 ## Why you want this at all
 
-The purpose is **preventing lost work at a hard cutoff**. It is not budgeting.
+The purpose is **preventing lost work at a hard cutoff**. It is not budgeting. That decides
+everything downstream.
 
-That decides everything downstream. A budgeting tool wants accuracy and can be wrong quietly. A
-lost-work tool wants to fire *before* an agent is mid-refactor with nothing committed, and must
-**refuse to report** rather than report wrongly, because the point is that somebody acts on it.
+A budgeting tool wants accuracy and can be wrong quietly. A lost-work tool has to fire *before* an
+agent is mid-refactor with nothing committed. It must **refuse to report** rather than report
+wrongly, because the point is that somebody acts on it.
 
 When it fires, the correct response is not "stop". It is:
 
@@ -41,18 +38,16 @@ When it fires, the correct response is not "stop". It is:
 
 ## Rule 1: A percentage is meaningless without its account
 
-This is the failure that forced the design.
-
-An early version hardcoded which account to read. It reported **93 percent weekly** into a session
-whose actual pool was at **5 percent**. Both the number and the account name were confident, formatted,
-and wrong.
+This is the failure that forced the design. An early version hardcoded which account to read. It
+reported **93 percent weekly** into a session whose actual pool was at **5 percent**. Both the
+number and the account name were confident, formatted, and wrong.
 
 > **A hook that is confidently wrong is worse than no hook. It converts "I should check" into
 > "I already know."**
 
-Pointing the hardcoded value at a different account does not fix it; it relocates the same lie. A
-machine with several logins the client switches between has no correct constant: any hardcoded
-account is wrong for every session on the others, and wrong for all of them after the next switch.
+Pointing the hardcoded value at a different account relocates the same lie. A machine with several
+logins the client switches between has no correct constant. Any hardcoded account is wrong for every
+session on the others, and wrong for all of them after the next switch.
 
 **Resolve the pool per session, from the surface that actually knows which login the session bills.**
 If you cannot resolve it, say so.
@@ -69,8 +64,8 @@ Each of these was checked and each was wrong for the case it appeared to answer:
 | The per-session record on disk | Carries no account field at all, so it cannot answer the question. |
 | Token-file modification times | They track whichever account the tool last polled, so they point at its own most recent behavior. **A signal derived from your own tool's activity is a mirror, not a measurement.** |
 
-That last row is the general one. If your evidence for "which account is this" is a side effect of
-your own polling, you have built a loop that confirms whatever it did last.
+**That last row is the general one.** If your evidence for "which account is this" is a side effect
+of your own polling, you have built a loop that confirms whatever it did last.
 
 ## Rule 3: Cross-check against an independent sample, and refuse when they disagree
 
@@ -91,15 +86,15 @@ Two design details matter more than they look:
 An UNKNOWN result names the pool by an opaque identifier and says the usage could not be determined.
 It never names a login as "this session's" on the strength of a token file.
 
-Half-established results are where confident wrongness comes from. If you know the account but not the
-number, say that. If you know a number but not whose it is, that number is unusable -- do not print it
-next to a name to make the output look complete.
+Half-established results are where confident wrongness comes from. If you know the account but not
+the number, say that. If you know a number but not whose it is, that number is unusable. Do not
+print it next to a name to make the output look complete.
 
 ## Rule 5: The diagnostics are the payload when something fails
 
 A summary filter kept only lines containing the words for the two window names. It silently dropped
-every refusal message the underlying tool produced -- which were exactly the sentences explaining
-*why* the reading failed -- leaving an UNKNOWN with an empty reason.
+every refusal message the underlying tool produced -- exactly the sentences explaining *why* the
+reading failed -- leaving an UNKNOWN with an empty reason.
 
 **A filter written for the success case will strip the failure case.** When you filter output, check
 what a failing run actually prints before deciding what to keep.
@@ -120,8 +115,8 @@ Three constraints, each learned:
 ## Rule 7: Cache per pool, never in one unlabeled slot
 
 A single shared cache slot lets the first writer in a refresh window define what every later reader
-reports, whatever account that reader asked about. Key the cache by pool. An unlabeled cache is an
-unlabeled claim.
+reports, whatever account that reader asked about. **Key the cache by pool.** An unlabeled cache is
+an unlabeled claim.
 
 ## Rule 8: A threshold is not a decision
 
@@ -147,7 +142,7 @@ whose pool it is, and when the window rolls.
 ## Platform trap worth its own line
 
 On Windows, a directory can be **visible to an interpreter launched by full path and invisible to
-the same interpreter launched through an app-execution alias**, because of installer-level AppData
+the same interpreter launched through an app-execution alias**. The cause is installer-level AppData
 virtualization. A hook that works by hand can read an empty directory when the client runs it.
 
 Wire hooks by full interpreter path, and make a missing path report UNKNOWN rather than OK. "I could

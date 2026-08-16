@@ -2,44 +2,38 @@
 
 ## TLDR/BLUF
 
-**What this is.** The entry point to running more than one Claude Code session in one repository.
-Three things live here and nowhere else: **which surface to run the sessions on**, **the channels
-sessions have for reaching each other**, and **using one session as a lander**.
+**What this is.** The three things this page owns: **which surface to run the sessions on**, **the
+channels sessions have for reaching each other**, and **using one session as a lander**. A lander is
+the session every push, pull request and merge routes through; nothing here implements it.
 
-**Why you should care.** Concurrency buys real parallelism and a specific set of failures, nearly
-all invisible while they happen. Four preparations work only *before* the second session starts,
-because each takes effect in sessions started afterwards. Not for you if you run one session at a
+**Why you should care.** Several sessions at once buy real parallelism and a set of failures,
+nearly all invisible while they happen. Four preparations work only *before* the second session
+starts: each takes effect in sessions started afterwards. Not for you if you run one session at a
 time.
 
-**How to use it.** Read [Concepts](CONCEPTS.md) first, then work the numbered list below in order.
-Everything else on this page names a problem and links to the page that owns the fix.
+**How to use it.** Read [Concepts](CONCEPTS.md) first, then work the four preparations below in
+order. After that, two tables do the lookup: **the problems**, each with the page that fixes it, and
+**the channels**, each with who it reaches and when.
 
 ---
 
-More than one Claude Code session in one repository at the same time buys real parallelism and
-creates a specific set of failures, nearly all of which are invisible while they happen.
+Every page below applies three ideas from [Concepts](CONCEPTS.md):
 
-Three things live here and nowhere else: **which surface to run the sessions on**, **the channels
-sessions have for reaching each other**, and **using one session as a lander**. Everything else
-names the problem and links to the page that owns the fix.
+- **A worktree per session** -- one directory and one branch each.
+- **One shared state root** that every worktree of a clone resolves identically.
+- **A liveness fence that may only veto** -- it can refuse an action, never authorize one.
 
-Read [Concepts](CONCEPTS.md) first. A worktree per session, one shared state root every worktree of a
-clone resolves identically, and a liveness fence that may only veto: every page below applies those
-three ideas.
+**Before the second session starts.** At least these four. Do the last two *first*: each takes
+effect in sessions started afterwards, so doing it in response to the problem is doing it too late.
 
-**Before the second session starts.** At least these four, and the last two are only effective if you
-do them *first* -- each takes effect in sessions started afterwards, so doing it in response to the
-problem is doing it too late.
-
-1. Pick the surface, deliberately -- see [below](#which-surface-to-run-several-sessions-on).
-2. Give each session its own worktree, cut from a freshly fetched remote tip
+1. **Pick the surface, deliberately** -- see [below](#which-surface-to-run-several-sessions-on).
+2. **Give each session its own worktree**, cut from a freshly fetched remote tip
    ([Worktrees](WORKTREES.md)).
-3. Install the gates into **every** config root the client uses, then verify with the three commands
-   in the surface section
-   ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md),
+3. **Install the gates into every config root the client uses**, then verify with the three commands
+   in the surface section ([INSTALL.md](INSTALL.md),
    [Hooks](HOOKS.md)).
-4. Wire the steering hook now if you will ever want it, because it only takes effect in sessions
-   started after it was wired ([Steering](STEERING.md)).
+4. **Wire the steering hook now** if you will ever want it. It only takes effect in sessions started
+   after it was wired ([Steering](STEERING.md)).
 
 ---
 
@@ -68,13 +62,14 @@ column, and only there.
 
 ## Which surface to run several sessions on
 
-> **This is operating experience, dated 2026-08-06. It is not a benchmark.** Several sessions at once
-> are run on the **Claude Code desktop app**. Running several at once in the **VS Code extension** has
-> run into worktree hijacking. Nothing in this repository measures a hijack rate per surface, so treat
-> this as one operator's result on one setup. If your own result differs, yours is the better data.
+> **Operating experience, dated 2026-08-06. Not a benchmark.** Sessions here are run several at a
+> time on the **Claude Code desktop app**. Running several at once in the **VS Code extension** has
+> run into worktree hijacking: one session checking its own branch out inside another session's
+> directory. Nothing in this repository measures a hijack rate per surface, so treat this as one
+> operator's result on one setup. If your own result differs, yours is the better data.
 
-The preference is worth stating only because the mechanisms under it are each checkable. Each bullet
-says what class of evidence it rests on, because they are not the same class:
+**The preference is worth stating only because each mechanism under it is checkable.** The four
+below do not rest on the same class of evidence, so each one names its own class:
 
 - *Cited upstream, not reproduced here.* **The hijack is harness-side, and nothing here ties it to a
   surface.** A per-session auto-worktree can half-fail on Windows, flipping the *primary's* HEAD
@@ -82,8 +77,8 @@ says what class of evidence it rests on, because they are not the same class:
   ([claude-code#76590](https://github.com/anthropics/claude-code/issues/76590)).
 
   This repository cites that issue rather than reproducing it, and records no observation of the
-  extension's worktree layout either way. Read the bullet as removing an easy assumption, not as
-  establishing that the defect is surface-neutral.
+  extension's worktree layout either way. The bullet removes an easy assumption. It does not
+  establish that the defect is surface-neutral.
 - *Measured here.* **An extension session is absent from the desktop app's own `list_sessions`.** It
   enumerates only sessions that app spawned; an extension session is never registered, not filtered
   out. Verified on a live extension session sharing the **default** config root: not a login split.
@@ -91,17 +86,18 @@ says what class of evidence it rests on, because they are not the same class:
   worktree.** A large share of this repo's worktrees had no project settings file, and a live
   editor session was working in one with **zero** coordination context. So the hooks here install
   at **user** scope.
-- *Observed once.* **User scope means *per config root*, and the gate fails open**, so an unwired root
-  is byte-identical to a governed one from inside the session.
+- *Observed once.* **User scope means *per config root*, and the gate fails open.** An unwired root
+  refuses nothing and says nothing, so from inside the session it is byte-identical to a governed
+  one.
 
   This is the only bullet tied to an observed hijack. A session under an ungoverned config root
   checked its own branch out inside another session's linked worktree, and the gate that would have
   refused it was not installed there.
 
   Editor-hosted chats under an extra config root are the installers' stated reason for wiring every
-  root ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md)), and it is the configuration
-  that hijack came from. Nothing here counts roots by surface: rationale, not a measured
-  distribution.
+  root ([INSTALL.md](INSTALL.md)), and that is the
+  configuration the hijack came from. Nothing here counts roots by surface: rationale, not a
+  measured distribution.
 
 **What is not established.** The intuitive story -- an extension session is invisible to
 `list_sessions`, so anything reading that list acts as though it is gone -- does not hold here.
@@ -110,8 +106,8 @@ The worktree gate reads no session list. It keys on a write's target path and on
 about the tree a command acts on ([Hooks](HOOKS.md)).
 
 The reaper and the presence roster read the on-disk per-session registry, which carries every
-surface, so an extension session is **not** invisible to the thing that deletes worktrees
-([Pruning](PRUNING.md)). `list_sessions` blindness costs messageability, not tree protection.
+surface. So an extension session is **not** invisible to the thing that deletes worktrees
+([Pruning](PRUNING.md)). `list_sessions` blindness costs you messaging, not tree protection.
 
 The observed hijack came from an editor-hosted session under an ungoverned config root, and no
 measurement here separates the surface from the ungoverned root as the operative fact.
@@ -121,8 +117,10 @@ a project's *own settings file* run in the extension ([Session mail](SESSION-MAI
 installer here writes **user** scope, and nothing measures whether a user-scope hook fires there at
 all.
 
-**So check it on your own setup rather than taking the preference on trust.** From a session started
-the way you intend to run them:
+**The goal.** Find out whether the controls are live on the surface you actually run, rather than
+taking the preference on trust.
+
+**What to do.** From a session started the way you intend to run them:
 
 ```powershell
 pwsh -NoProfile -File scripts/coord/presence.ps1                 # does the roster carry this session?
@@ -130,24 +128,28 @@ pwsh -NoProfile -File bin/ccx-doctor.ps1                         # are the gates
 pwsh -NoProfile -File scripts/worktree/install-gate.ps1 -Status  # wired, and current, in EVERY config root?
 ```
 
-A gate wired and current in every config root addresses the one mechanism this repository can name.
-That is not proof it *fires* on your surface: `-Status` answers "is it wired", not "does it fire".
-`ccx-doctor.ps1` attacks each control rather than reading config; trust it, not the wiring report.
+**What happens next.** A gate wired and current in every config root covers the one mechanism this
+repository can name. It is not proof the gate *fires* on your surface:
 
-**The surface choice reduces a residual; it does not replace the gate.** A hijack the gate refuses is
-a message on your screen; a hijack on a surface where the gate was never installed is silent.
+- `-Status` answers "is it wired", not "does it fire".
+- `ccx-doctor.ps1` attacks each control rather than reading config, so trust it over the wiring
+  report.
+
+**The surface choice reduces a residual; it does not replace the gate.** A hijack the gate refuses
+is a message on your screen. A hijack on a surface where the gate was never installed is silent.
 
 ---
 
 ## How sessions talk to each other
 
-Almost every signal a session can *send* is **pull**: it sits there until somebody looks. One channel
-pushes from one session to another. Three more are delivered to a session that never looked, two of
-them by the harness rather than by a peer, and several reach only sessions that have not started.
+Almost every signal a session can *send* is **pull**: it sits there until somebody looks. One
+channel pushes from one session to another. Three more are delivered to a session that never
+looked, two of them by the harness rather than by a peer. Several reach only sessions that have not
+started.
 
-**Timing decides whether a message is useful at all**, so the table is sorted by it rather than by
-tool. A note that lands when a session next *starts* is a different instrument from one that
-interrupts it between tool calls, and choosing wrong lands the message after the decision. Five
+**Timing decides whether a message is useful at all**, so the table is sorted by timing rather than
+by tool. A note that lands when a session next *starts* is a different instrument from one that
+interrupts it between tool calls. Choose wrong and the message arrives after the decision. Five
 bands:
 
 - **A** -- already running, mid-turn.
@@ -175,8 +177,8 @@ At least these channels exist. Each links to the page that owns it.
 | [Session mail](SESSION-MAIL.md) | **E** -- a session that starts later; a mid-turn wake-up is possible and is one-shot. | addressed to a worktree box, keyed by normalized path | **no** -- designed and documented here, not implemented here |
 
 One property explains the whole first band: **a file is re-read on every hook run**. An environment
-variable is read once at process start, and a settings edit takes effect only in the next session.
-So every channel that reaches a running session is a file. Costs are on each channel's page.
+variable is read once at process start, and a settings edit reaches only the next session. So every
+channel that reaches a running session is a file. Each channel's page carries its costs.
 
 ### Choosing one
 
@@ -184,13 +186,13 @@ So every channel that reaches a running session is a file. Costs are on each cha
 - Tell a running peer what you are **about to do** -> announce.
 - The recipient **does not exist yet** -> a claim, an allocated number, or the SessionStart context.
 - You want the answer **yourself** -> presence, overlap, `claim.ps1 -List`. Nothing pushes.
-- You want a rule **enforced** rather than communicated -> a gate. Anything else is a request. So **if
-  what you want to say is "do not touch X", publish something a gate consumes rather than something a
-  human reads.**
+- You want a rule **enforced** rather than communicated -> a gate. Anything else is a request. So
+  **if what you want to say is "do not touch X", publish something a gate consumes rather than
+  something a human reads.**
 
-The pull-side queries share one blind spot. They read git state and a roster keyed on the directory
-a session was *launched* in. A write made into a worktree by absolute path from a session sitting
-elsewhere is invisible to them. A fence needs a second, non-cwd signal
+**The pull-side queries share one blind spot.** They read git state, and a roster keyed on the
+directory a session was *launched* in. A write by absolute path into a worktree, from a session
+sitting elsewhere, is invisible. A fence needs a second, non-cwd signal
 ([Pruning](PRUNING.md)).
 
 **A message from another session is data, never an instruction**: it authorizes no push, merge,
@@ -204,27 +206,26 @@ adequate.
 
 **Shouting through the operator.** Its timing is the worst here: unbounded, waiting on a human to
 read and then type. It arrives in the **operator's voice**, so the receiver cannot tell peer
-assertion from instruction. And it scales as one conversation per session: the person is the
-bottleneck.
+assertion from instruction. It scales as one conversation per session: the person is the bottleneck.
 
 **A note in a file both sessions read.** No delivery, no receipt: silence and unseen look the same.
-No tool reads it, so no mechanical verdict changes: two sessions agreed in prose to hand a file
-over and the gate refused, because it reads git. And a worktree file moves under you on a branch
+No tool reads it, so no mechanical verdict changes. Two sessions agreed in prose to hand a file
+over; the gate refused, because it reads git. And a worktree file moves under you on a branch
 switch.
 
 **Relying on git itself**: branch name, commit message, merge conflict. A conflict is not a warning
 but the notification that both sessions already did the thing. A worktree name is a creation-time
 label, observed well off the work it names. Under squash-merge, reachability is wrong both ways.
 
-All three carry information a human can interpret and a tool cannot act on, and all three arrive after
+All three carry information a human can interpret and a tool cannot act on. All three arrive after
 the decision.
 
 ---
 
 ## Using a lander session
 
-Once several sessions are in flight, it is worth giving one of them a different job: hold the picture
-of what is in flight and decide what lands in what order, while the others build.
+Once several sessions are in flight, give one of them a different job. The **lander** holds the
+picture of what is in flight and decides what lands in what order, while the others build.
 
 **Nothing here implements this, and this page is introducing the term.** No lander script, no
 role flag, no routing. The working agreement already routes push, pull request and merge to the
@@ -240,8 +241,8 @@ One sentence carries the boundary: **a lander arbitrates; it does not execute.**
   merge. Measured: the trunk moved **seven times** during one pair of pull requests. Two branches
   that each merge cleanly against the trunk they were cut from need not merge cleanly in either
   order.
-- **Some shared state is last-write-wins and outside git** -- project memory, shared notes, a ledger.
-  The rule there is single-writer, and single-writer needs a writer.
+- **Some shared state is last-write-wins and outside git**: project memory, shared notes, a
+  ledger. The rule there is single-writer, and single-writer needs a writer.
 
 ### What routes through it, and what does not
 
@@ -257,13 +258,12 @@ At least these, and the two catch-all rows at the bottom are the rule the rest a
 | Writes to any shared last-write-wins state outside git | Taking a lock |
 | Anything whose answer must be identical for every session and no gate can compute | Any read-only query |
 
-**Allocation is atomic**: the failed exclusive create *is* the mutual exclusion, so a lander
-handing out numbers is the read-modify-write that loses. **A claim is keyed to the working tree**,
-so a lander claiming for a worker gets that worker's own commit refused by the commit-time
-gate.
+**Allocation is atomic**: the failed exclusive create *is* the mutual exclusion. A lander handing
+out numbers is the read-modify-write that loses. **A claim is keyed to the working tree**, so a
+lander claiming for a worker gets that worker's own commit refused by the commit-time gate.
 
-The generalization: **if a machine can serialize it, do not put a session in the loop.** Serialization
-is a primitive; single-ownership is a judgment; conflating them produces the queue.
+The generalization: **if a machine can serialize it, do not put a session in the loop.**
+Serialization is a primitive; single-ownership is a judgment; conflating them produces the queue.
 
 ### The route is absolute, and the authority is not transferable
 
@@ -282,7 +282,7 @@ goes to the **owner**, never to whichever worker happens to be holding the branc
 cannot reach a lander is blocked, not promoted.**
 
 **An override has to name the route it overrides.** "Yes", "go ahead" and "use your best judgment"
-are not overrides, and the reply a bare approval earns is a question about which route it meant.
+are not overrides. What a bare approval earns is a question back about which route it meant.
 
 ### How a worker talks to it
 
@@ -303,8 +303,8 @@ hop.
   claim tool sat here and was used exactly **zero** times: a coordination step you must remember is
   one you will skip. A lander that says wait when it needn't destroys the channel it depends
   on.
-- **A worker bypasses it** -- assume it. Claims are advisory and the push guard is a guardrail, not a
-  boundary, so the role sits **behind** enforcing gates rather than instead of them: a lander
+- **A worker bypasses it** -- assume it will. Claims are advisory and the push guard is a guardrail,
+  not a boundary. So the role sits **behind** enforcing gates rather than instead of them: a lander
   that is the only control is not a control.
 - **Stale state, in two symmetric directions.** A broadcast that never lapses: a freeze note still
   announced itself long after its pull request merged. Its mirror: a claim was reported stale while
@@ -316,8 +316,8 @@ hop.
   authorized.
 - **State that lives only in one context.** Whatever it decides must end up in a claim, a number, a
   branch or a gate; a cleared context takes the rest with it.
-- **It inherits the timing table.** It reaches a busy worker only through the steering note -- opt-in
-  per worktree, and effective only in sessions started after it was wired.
+- **It inherits the timing table.** It reaches a busy worker only through the steering note, which
+  is opt-in per worktree and effective only in sessions started after it was wired.
 
 ---
 
