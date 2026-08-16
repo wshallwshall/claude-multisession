@@ -49,6 +49,33 @@ OPENING_CHARS = 1_200
 # rather than the word "script" is what keeps this from firing on prose that mentions one.
 INVENTORY_ROW = re.compile(r"^\|[^|]*`(?:scripts|bin)/[\w./-]+`", re.M)
 
+# A raw HTML block. Same rule tests/test_prose_rules_hold.py uses, and for the same reason: a hand
+# written inline SVG is markup, and a scanner that cannot tell markup from prose counts its
+# coordinates, its marker ids and its aria-label as words. The landing page's collision diagram is
+# about 400 such tokens, which is a third of the cap below -- so counting them would price a diagram
+# out of the one page that most wants one, which is the opposite of what this rule is for.
+#
+# kramdown's rule: a line starting with '<' opens a markup block that runs to the next blank line.
+HTML_BLOCK_START = re.compile(r"^<[a-zA-Z!/]")
+
+
+def prose_words(text: str) -> int:
+    """Words on the page that a reader actually reads. Markup blocks do not count."""
+    words = 0
+    inside_html = False
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            inside_html = False
+            continue
+        if inside_html:
+            continue
+        if HTML_BLOCK_START.match(stripped):
+            inside_html = True
+            continue
+        words += len(stripped.split())
+    return words
+
 # The landing page legitimately names a few scripts: three of them, in the table that says which
 # mechanism prevents, repairs and detects the flagship failure. The inventory it must not carry
 # again is 40 rows long, so the threshold sits well above the one and well below the other.
@@ -58,7 +85,7 @@ INVENTORY_ROWS_ALLOWED = 8
 class TheLandingPageRoutesRatherThanExplains(unittest.TestCase):
     def test_the_scan_actually_read_the_page(self):
         """The empty-match guard. Every case below passes trivially against an empty file."""
-        words = len(t.read(LANDING).split())
+        words = prose_words(t.read(LANDING))
         self.assertGreater(
             words,
             200,
@@ -67,7 +94,7 @@ class TheLandingPageRoutesRatherThanExplains(unittest.TestCase):
         )
 
     def test_the_landing_page_is_under_the_cap(self):
-        words = len(t.read(LANDING).split())
+        words = prose_words(t.read(LANDING))
         self.assertLessEqual(
             words,
             WORD_CAP,
@@ -155,6 +182,35 @@ class TheInventoryPatternCanTellARowFromAMention(unittest.TestCase):
     def test_it_declines_a_script_named_in_prose(self):
         prose = "The reaper is `scripts/worktree/prune-merged.ps1`, and it declines rather than guessing."
         self.assertEqual([], INVENTORY_ROW.findall(prose))
+
+    def test_prose_words_ignores_a_markup_block_and_keeps_the_prose_around_it(self):
+        """The other instrument, planted for the same reason.
+
+        Without this, a `prose_words` that counted markup would silently price the landing page's
+        diagram against the cap, and one that counted nothing at all would pass the cap forever.
+        """
+        page = (
+            "Prose before the diagram.\n"
+            "\n"
+            "<figure role=\"group\">\n"
+            "<svg viewBox=\"0 0 10 10\" role=\"img\" aria-label=\"lots of words in here\">\n"
+            "  <text x=\"1\" y=\"1\">label</text>\n"
+            "</svg>\n"
+            "<figcaption>Caption words that are also markup.</figcaption>\n"
+            "</figure>\n"
+            "\n"
+            "Prose after the diagram.\n"
+        )
+        self.assertEqual(8, prose_words(page))
+
+    def test_prose_words_resumes_after_a_blank_line_inside_a_figure(self):
+        """kramdown ends a markup block at a blank line, so the rule has to as well.
+
+        A figure written with a blank line in it is still markup on the next line, and the next line
+        starts with '<'. What must NOT happen is prose after the figure being swallowed.
+        """
+        page = "<svg>\n<text>x</text>\n\nStill prose here.\n"
+        self.assertEqual(3, prose_words(page))
 
     def test_it_declines_a_table_row_that_names_no_script(self):
         self.assertEqual([], INVENTORY_ROW.findall("| **Prevention** | Refuses the git verbs | x |"))

@@ -107,7 +107,7 @@ separate build environment. Three things are not isolated, and each has bitten:
 
 **The isolation you do not want:** a project-scoped `.claude/settings.json` is git-ignored, a
 creation-time snapshot nothing refreshes and some worktrees lack. So the coordination hooks install
-at **user** scope. See [`INSTALL.md`](https://claude-multisession.pages.dev/INSTALL.md).
+at **user** scope. See [`INSTALL.md`](INSTALL.md).
 
 Setting up a new worktree's environment is `setupHook`'s job, not `new.ps1`'s. It runs with
 `CCX_WORKTREE_PATH`, `CCX_WORKTREE_NAME`, `CCX_PRIMARY_ROOT` and `CCX_BASE_REF` set. See

@@ -30,7 +30,7 @@ effect in sessions started afterwards, so doing it in response to the problem is
 2. **Give each session its own worktree**, cut from a freshly fetched remote tip
    ([Worktrees](WORKTREES.md)).
 3. **Install the gates into every config root the client uses**, then verify with the three commands
-   in the surface section ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md),
+   in the surface section ([INSTALL.md](INSTALL.md),
    [Hooks](HOOKS.md)).
 4. **Wire the steering hook now** if you will ever want it. It only takes effect in sessions started
    after it was wired ([Steering](STEERING.md)).
@@ -95,7 +95,7 @@ below do not rest on the same class of evidence, so each one names its own class
   refused it was not installed there.
 
   Editor-hosted chats under an extra config root are the installers' stated reason for wiring every
-  root ([INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md)), and that is the
+  root ([INSTALL.md](INSTALL.md)), and that is the
   configuration the hijack came from. Nothing here counts roots by surface: rationale, not a
   measured distribution.
 

@@ -257,7 +257,7 @@ somewhere git never looks -- which is the exact shape of failure this script exi
    not at all.
 2. **It never writes `pre-commit` -- not to install, not to patch, not to migrate.** Two tools cannot
    both own that file. What happens when they try, and why the sequence gate therefore ships unwired,
-   is at [the git-hook contract](docs/HOOKS.md#the-git-hook-contract).
+   is at [the git-hook contract](HOOKS.md#the-git-hook-contract).
 
 **Fail-open, declared.** The installed hooks are `/bin/sh` shims that locate a python and exec the
 checker. With no interpreter they write to stderr and exit 0: the gate is OFF for that commit, and
@@ -452,8 +452,8 @@ control:
 
 - The two `PreToolUse` guards are always `--` (not wired anywhere it can see).
 - The **sequence gate reads your configuration**. With no `sequences` key in `ccx.config.json` it is
-  `[-- ]`, off by configuration. With one -- as the shipped file has, so this is what this checkout
-  prints -- it is `[OFF] sequence gate`: nothing at commit time defends the numbers you allocate.
+  `[-- ] sequence gate`, off by configuration. With one, as the shipped file has and this checkout
+  prints, it is `[OFF] sequence gate`: nothing at commit time defends the numbers you allocate.
 - The **ASCII gate is `[OFF] ASCII gate: present, not wired`** in every checkout, since every
   checkout carries `scripts/quality/check-ascii.ps1`. Nothing shipped runs it, so it refuses nothing
   until you invoke it: presence is capability, not enforcement, and `OK` needs installed **and**
@@ -484,7 +484,8 @@ All four throw when `$env:CLAUDECODE` is `1`.
 
 A session that can install these controls can remove them, and every one constrains sessions. The
 gate stops building in a shared checkout; the git hooks bound what a session commits and pushes;
-remove the coordination hooks and a session goes invisible to peers while looking coordinated.
+remove the coordination hooks and a session goes invisible to peers while looking coordinated to
+itself.
 
 The selfheal backstop is the most privileged: it runs `git checkout` on the shared primary
 unattended, from a script the calling session can freely edit. Its only safety property is that it
@@ -497,7 +498,7 @@ Run them from a plain `pwsh` terminal.
 
 **`-Status` is exempt in all three that have one** (the backstop has none; ask the doctor)**, and
 that is load-bearing.** Auditing is not installing: a session blind to its own controls cannot see
-the failure this toolkit is about. In the source, `-Status` is handled *above* the refusal.
+the failure this toolkit is about. The source handles `-Status` *above* the `CLAUDECODE` refusal.
 
 ---
 
@@ -599,8 +600,9 @@ This catches people out on a deliberate partial install, so it is worth stating 
 code is an accounting over the whole control set.
 
 - **Any `RED`, or a *required* control `OFF`, is exit 1.** Required: the worktree gate, its allowlist
-  and wiring, the three coordination rows, both git hooks, the backstop. **A partial install cannot
-  exit 0**: the one you skipped reads `OFF`, implemented and invoked by nothing, not "not chosen".
+  and wiring, the three coordination rows, both git hooks, the SessionStart backstop. **A partial
+  install cannot exit 0.** The skipped one reads `OFF`, implemented, invoked by nothing, not "not
+  chosen".
 - **Any `??` with no `RED` is exit 2.** A skip is never a pass.
 - **`--` never fails a run.** That tag is for a control that is opt-in by design (the blanket-stage
   guard, the steering injector) or off by configuration (the sequence gate with no `sequences` key).

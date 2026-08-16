@@ -72,11 +72,16 @@
     - label: Desktop accounts
       title: "Several desktop instances, one per Claude account"
       path: /DESKTOP-ACCOUNTS.html
-    # Still an off-site `url` entry: the file is at the repository root, outside the Jekyll source,
-    # so the site cannot serve it as a page. The label says the task rather than the filename.
+    # THIS WAS A RAW MARKDOWN LINK UNTIL 2026-08-16, and it was the worst defect on the site. The
+    # file lived at the repository root, outside the Jekyll source, so the one page a reader opens
+    # specifically to get started was served as unstyled plain text: literal `##`, `**bold**` and
+    # `|table|pipes|`, full-width lines, no nav, and no way back except the browser's Back button.
+    # Six independent reviews of the live site flagged it, and it was the only defect all six found.
+    # Moving it under docs/ renders it through the same layout as every other page; the raw source
+    # is still served beside it at /INSTALL.md, the way every other page's source is.
     - label: Installer reference
-      title: "INSTALL.md: four installers, four scopes, and how to prove each is live"
-      url: https://claude-multisession.pages.dev/INSTALL.md
+      title: Install
+      path: /INSTALL.html
 
 - group: Run a build
   items:
@@ -92,7 +97,13 @@
     - label: Steering
       title: Steering a running session
       path: /STEERING.html
-    - label: Session mail
+    # THE "(design)" SUFFIX IS LOAD-BEARING AND IS NOT DECORATION. This page and Usage awareness both
+    # say in their own opening that they ship no code, and both said so before 2026-08-16. What they
+    # could not say is anything at all BEFORE the click: in the sidebar they sat identically to Hooks
+    # and Worktrees, so a reader budgeted time for a feature, read the page, and found homework. Six
+    # independent reviews of the live site raised it. The suffix is the only place the distinction
+    # can reach a reader who has not opened the page yet.
+    - label: Session mail (design)
       title: "Session mail for a KORUS build"
       path: /SESSION-MAIL.html
     - label: Sequence allocation
@@ -113,7 +124,7 @@
     - label: Leak gate
       title: The leak gate
       path: /LEAK-GATE.html
-    - label: Usage awareness
+    - label: Usage awareness (design)
       title: "Usage awareness: Knowing when to stop, without lying about it"
       path: /USAGE-AWARENESS.html
     - label: CI for leaders

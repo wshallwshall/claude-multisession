@@ -17,7 +17,7 @@ dispatcher, two builders and a lander. The method and the operating procedure li
 [the KORUS site](https://claude-multisession.pages.dev/); this file is the repository's front door.
 
 **Go:** [Quickstart](https://claude-multisession.pages.dev/QUICKSTART.html) -
-[What problem this solves](#what-problem-this-solves) - [Install](INSTALL.md) -
+[What problem this solves](#what-problem-this-solves) - [Install](docs/INSTALL.md) -
 [Honest limits](#honest-limits)
 
 Or paste [this page](docs/FEED-THIS-TO-CLAUDE-CODE.md) into Claude Code and have it evaluate your
@@ -116,9 +116,9 @@ commit them, so tooling *is* target. Only that layout lets the doctor reach exit
 three coordination hooks are shims that resolve their script inside whatever repository the session
 runs in.
 
-The seven-step path, with a command to paste, is the
+The seven-step path is the
 [Quickstart](https://claude-multisession.pages.dev/QUICKSTART.html).
-**[INSTALL.md](INSTALL.md) is the record of record**: every installer, its scope, how to prove one
+**[INSTALL.md](docs/INSTALL.md) is the record of record**: every installer, its scope, how to prove one
 is live, not merely merged, and what the exit code means on a partial install.
 
 Two things that catch people out either way:

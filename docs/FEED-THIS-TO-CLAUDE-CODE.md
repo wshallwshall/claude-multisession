@@ -143,7 +143,7 @@ Only now, and only for the pieces they chose.
    the user-scope hooks stay inert in this repository. Start from the tooling's own
    `ccx.config.json`.
 2. **Produce the commands, do not run them.** Substitute the real absolute paths, and order them as
-   [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) does. Tell them to run the set
+   [INSTALL.md](INSTALL.md) does. Tell them to run the set
    **in a plain terminal, not through you**, and ask for the output pasted back rather than
    summarised.
 3. **STOP** until they have run it and reported back.
@@ -202,7 +202,7 @@ Do not reconstruct these from memory -- read them when they become relevant.
 
 | For | Read |
 |---|---|
-| The full install procedure | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
+| The full install procedure | [INSTALL.md](INSTALL.md) |
 | Requirements, and where each control stops working | [Limits](LIMITS.md) |
 | What the whole thing is for | [Concepts](CONCEPTS.md) |
 | Worktree rules and the hijack it prevents | [Worktrees](WORKTREES.md) |

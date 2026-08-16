@@ -216,9 +216,12 @@ summary:focus-visible,
   padding-right: 1rem;
 }
 
+/* 0.72rem measured at 11.5px, which is below the size at which an all-caps, letter-spaced label is
+   comfortable to scan; 0.78rem measures at 12.5px. Raised on 2026-08-16 after two independent
+   reviews of the live site flagged it. Contrast was already fine and is unchanged. */
 .nav-heading {
   margin: 1.5rem 0 0.4rem;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;

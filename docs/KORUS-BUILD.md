@@ -21,6 +21,48 @@ Four sessions, three jobs. **Nothing here implements the roles**: there is no di
 role flag, and no routing. The roles are a convention you establish in each session's opening prompt
 and in your `CLAUDE.md`.
 
+<figure role="group">
+<svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The four-session KORUS shape. A backlog feeds a dispatcher, which hands tasks to two build sessions. Each builder works in its own git worktree on its own branch, and a claim marks which task each holds. The collision gate sits between the two builders and refuses an edit to a file the other one already has uncommitted changes in. Both builders hand finished branches to a single lander session, which is the only one that pushes or merges, and a push guard sits between the lander and the trunk.">
+  <defs>
+    <marker id="korus-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <rect x="20" y="30" width="150" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="95" y="55" font-size="12" text-anchor="middle" fill="currentColor">Backlog</text>
+  <line x1="95" y1="70" x2="95" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <rect x="20" y="130" width="150" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="95" y="152" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Dispatcher</text>
+  <text x="95" y="170" font-size="11" text-anchor="middle" fill="currentColor">plans, tracks, assigns</text>
+  <line x1="170" y1="145" x2="286" y2="95" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <line x1="170" y1="172" x2="286" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="205" y="105" font-size="10" font-style="italic" fill="currentColor">claim</text>
+  <text x="205" y="238" font-size="10" font-style="italic" fill="currentColor">claim</text>
+  <rect x="290" y="55" width="230" height="62" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="405" y="78" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Build session A</text>
+  <text x="405" y="97" font-size="11" text-anchor="middle" fill="currentColor">own worktree, own branch</text>
+  <rect x="290" y="228" width="230" height="62" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="405" y="251" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Build session B</text>
+  <text x="405" y="270" font-size="11" text-anchor="middle" fill="currentColor">own worktree, own branch</text>
+  <line x1="405" y1="120" x2="405" y2="225" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" />
+  <rect x="300" y="152" width="210" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3" />
+  <text x="405" y="169" font-size="11" font-weight="bold" text-anchor="middle" fill="currentColor">collision gate</text>
+  <text x="405" y="186" font-size="10" text-anchor="middle" fill="currentColor">refuses the second edit</text>
+  <line x1="520" y1="86" x2="620" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <line x1="520" y1="259" x2="620" y2="196" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <rect x="622" y="145" width="170" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="707" y="167" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Lander</text>
+  <text x="707" y="185" font-size="11" text-anchor="middle" fill="currentColor">the only one that pushes</text>
+  <line x1="707" y1="201" x2="707" y2="279" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="716" y="228" font-size="10" font-style="italic" fill="currentColor">push guard</text>
+  <rect x="622" y="281" width="170" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="707" y="306" font-size="12" text-anchor="middle" fill="currentColor">trunk</text>
+</svg>
+<figcaption>The dispatcher assigns; each builder holds a claim and its own worktree; the collision
+gate sits between the builders and refuses an edit to a file the other already has uncommitted
+changes in; the lander is the only session that reaches the remote.</figcaption>
+</figure>
+
 | Session | Owns | Must not |
 |---|---|---|
 | **Dispatcher** | The plan, the backlog, and which task goes to which builder | Write application code |

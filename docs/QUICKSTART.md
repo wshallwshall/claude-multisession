@@ -172,6 +172,6 @@ gates cannot see. Keep it short: a stale one still gets acted on.
 **Then scale up.** [Run a KORUS build](KORUS-BUILD.md) is the four-session shape this all exists to
 support: a dispatcher, two builders and a lander.
 
-[INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) is the record of record for the
+[INSTALL.md](INSTALL.md) is the record of record for the
 installers: the annotated version of these steps, and how to prove each one is live rather than
 merely merged.

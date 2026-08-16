@@ -47,6 +47,37 @@ Upstream, this is [claude-code#76590](https://github.com/anthropics/claude-code/
 a [field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
 roughly fourteen sessions on one directory.
 
+## What it looks like when it works
+
+<figure role="group">
+<svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two session lanes on a shared timeline. Session A edits service.py and leaves the change uncommitted. Session B then reaches for the same file and the collision gate refuses the edit before it runs, naming who holds the file. Session B edits parser.py instead, and both branches land.">
+  <defs>
+    <marker id="ix-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <text x="12" y="52" font-size="12" font-weight="bold" fill="currentColor">Session A</text>
+  <line x1="100" y1="46" x2="780" y2="46" stroke="currentColor" stroke-width="1" marker-end="url(#ix-arrow)" />
+  <rect x="120" y="26" width="200" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="220" y="43" font-size="11" text-anchor="middle" fill="currentColor">edits service.py</text>
+  <text x="220" y="59" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">left uncommitted</text>
+  <text x="12" y="158" font-size="12" font-weight="bold" fill="currentColor">Session B</text>
+  <line x1="100" y1="152" x2="780" y2="152" stroke="currentColor" stroke-width="1" marker-end="url(#ix-arrow)" />
+  <rect x="340" y="132" width="190" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" />
+  <text x="435" y="149" font-size="11" text-anchor="middle" fill="currentColor">reaches for service.py</text>
+  <text x="435" y="165" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">the tool call never runs</text>
+  <line x1="435" y1="130" x2="435" y2="92" stroke="currentColor" stroke-width="1.5" marker-end="url(#ix-arrow)" />
+  <rect x="330" y="74" width="210" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="2" />
+  <text x="435" y="94" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">REFUSED, with the reason</text>
+  <rect x="570" y="132" width="190" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="665" y="149" font-size="11" text-anchor="middle" fill="currentColor">edits parser.py instead</text>
+  <text x="665" y="165" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">both branches land</text>
+  <text x="12" y="196" font-size="10" font-style="italic" fill="currentColor">Without the gate, B's write lands and one of the two loses work at merge -- with nothing on either screen saying so.</text>
+</svg>
+<figcaption>The refusal happens at edit time, before the write, and names who holds the file. Without
+it both writes succeed and the loss surfaces at merge, or later.</figcaption>
+</figure>
+
 ## What you get
 
 **Sessions that cannot overwrite each other.** Each one works in its own git worktree on its own
@@ -75,7 +106,7 @@ what stop two sessions deciding the same thing. [Run a KORUS build](KORUS-BUILD.
 
 Three mechanisms touch it. Only the first prevents it.
 
-| | Script | What it does |
+| Role | Script | What it does |
 |---|---|---|
 | **Prevention** | `scripts/hooks/worktree_gate.ps1` | Refuses the git verbs that would swap or discard the shared primary checkout's tree. The tool call does not run. |
 | **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the primary when its HEAD has drifted and the tree is clean. On a dirty tree it declines and touches nothing. |
@@ -143,8 +174,7 @@ clone.
 [secure-development-standards](https://secure-development-standards.pages.dev/) holds what used to
 live here: a bar for agent-written code, plus its CI discipline and assessment method.
 
-**At the repository root:**
-[INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) is the record of record for the
-installers, and
+**The long form:** [Install](INSTALL.md) is the record of record for the installers -- every scope,
+and how to prove each one is live rather than merely merged.
 [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
 is a working agreement to drop into your own repository.

@@ -11,7 +11,7 @@ mid-task, and neither screen says so. Not for you if you run one session at a ti
 Windows without testing first: these scripts are PowerShell 7, and Windows is the tested platform.
 
 **How to use it.** Read the section for the job you have. [`docs/CONCEPTS.md`](CONCEPTS.md) defines
-the terms this page assumes, [`INSTALL.md`](https://claude-multisession.pages.dev/INSTALL.md) wires
+the terms this page assumes, [`INSTALL.md`](INSTALL.md) wires
 the gate and the backstop, and [`docs/PRUNING.md`](PRUNING.md) owns the automated reaper.
 
 ---
@@ -449,7 +449,7 @@ separate dependency environment. It feels total. Four things are still shared, a
 | **Coordination state** | It lives at `<git-common-dir>/<prefix>-coord`, which is identical across every worktree of a clone (that is the point -- a claim taken in one worktree must be visible in another). | Its corollary: **state outlives the worktree.** Remove a worktree and the claims it took are still there. Release on *evidence* -- the directory is gone **and** deregistered -- never on a timer. See [`docs/COORDINATION.md`](COORDINATION.md). |
 | **`.git/config`** | Written by `git worktree add`. | Already handled by the mutex above. |
 | **The AI coding assistant's project memory** | It lives outside the repository, in one directory shared by every session on the machine. Last write wins. | Reads are fine. Coordinate **writes** explicitly, or let exactly one session own them. |
-| **Nothing under `.claude/` reaches a new worktree by itself** | A project-scoped settings file is a creation-time snapshot at best, lives on one branch, and is commonly git-ignored -- so git cannot deliver a project-level hook to a worktree at all. | Wire cross-session hooks at **user** scope, with the script installed outside every working tree. See [`INSTALL.md`](https://claude-multisession.pages.dev/INSTALL.md). |
+| **Nothing under `.claude/` reaches a new worktree by itself** | A project-scoped settings file is a creation-time snapshot at best, lives on one branch, and is commonly git-ignored -- so git cannot deliver a project-level hook to a worktree at all. | Wire cross-session hooks at **user** scope, with the script installed outside every working tree. See [`INSTALL.md`](INSTALL.md). |
 
 ---
 

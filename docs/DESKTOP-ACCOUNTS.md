@@ -193,6 +193,6 @@ scale.
 | Which surface to run several sessions on, and the channels between them | [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) |
 | Finding a session across every login, and putting a relocated one back | [Worktrees](WORKTREES.md) |
 | Presence, occupancy and overlap, which read every config root | [Coordination](COORDINATION.md) |
-| Wiring each config root, and proving the wiring is live | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
+| Wiring each config root, and proving the wiring is live | [INSTALL.md](INSTALL.md) |
 | Every control's event and its fail-open or fail-closed posture | [Hooks](HOOKS.md) |
 | Knowing when a pool is spent, which is per account | [Usage awareness](USAGE-AWARENESS.md) |
