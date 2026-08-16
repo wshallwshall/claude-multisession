@@ -34,13 +34,16 @@ description: >-
 # surface, account economics, backlog, decision records, an ASVS register, the session topology,
 # worktrees, inter-session communication, usage limits and CI. Concurrency is one of them.
 #
-# IT IS TITLE CASE, AND THAT IS A DELIBERATE EXCEPTION TO HS-22. That rule asks for sentence case in
-# a heading or a title, and this line is neither: it is the wordmark, set by the owner on
-# 2026-08-16. `Keep One Repo, Unblock Sessions` remains what the letters stand for and is still what
-# the landing page and docs/KORUS.md expand it to; this line says what the project IS. HS-22 carries
-# no gate, so nothing enforces either reading -- which is why the decision is written down here
-# rather than left to look like drift.
-tagline: Multi-Session AI Coding on One Repo
+# SENTENCE CASE, UNDER HS-22, WITH NO EXCEPTION CLAIMED. It landed as `Multi-Session AI Coding on
+# One Repo` and was settled as sentence case by the owner the same day. The argument for an exception
+# was that a wordmark is neither a heading nor a title; the argument against is that HS-22 exists so
+# the set reads as one voice, and a tagline printed in every `<title>` on the site is the last place
+# to make a private exception. `AI` stays capitalised as an acronym, which is what the rule already
+# allows for a proper noun.
+#
+# `Keep One Repo, Unblock Sessions` remains what the letters stand for, and is still what the landing
+# page and docs/KORUS.md expand it to. This line says what the project IS.
+tagline: Multi-session AI coding on one repo
 
 # WHERE THIS SITE LIVES, AND WHY IT IS NOT GITHUB PAGES. It was served from
 # wshallwshall.github.io/claude-multisession until 2026-08-10. The reader this site is written for
