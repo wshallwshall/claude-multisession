@@ -27,13 +27,27 @@ and git redirected into it through `-C`, `--git-dir`, `GIT_DIR` or a `cd`.
 That is documented in
 [Run parallel sessions with worktrees](https://code.claude.com/docs/en/worktrees).
 
-**That covers isolation, and it now covers most of the primary-checkout defence too.** The honest
-split is what one isolated session cannot see: the other one.
+**Two limits on that, and the second one decides it for this project.**
+
+The checks apply only *while a session is isolated*. A session running in the primary checkout gets
+none of them.
+
+And **PowerShell gets only one of the four**. That page states it plainly: "For PowerShell commands,
+Claude Code applies only the working-directory check." The git-redirect and command-shape checks are
+Bash and Monitor only. Read on 2026-08-16.
+
+That matters because this project is PowerShell-first. On the shell it assumes, an isolated session
+can still run `git -C <primary> checkout -B ...`. Its working directory legitimately stays in the
+worktree, so the one applicable check passes.
+
+**So the split is not "native covers the primary, KORUS covers the peers".** Native covers the
+primary for Bash. For PowerShell it covers where the command runs, not where git points.
 
 | What you need | Claude Code's own worktrees | What KORUS adds |
 |---|---|---|
 | A checkout and branch per session | Yes, and automatically in the desktop app | Nothing. Use the native one |
 | Stopping a session writing into the main checkout | Yes, while that session is isolated | The same refusal for a session that is **not** isolated, on any primary in its allowlist |
+| Stopping `git -C <primary>` from a PowerShell command | **No.** Only the working-directory check applies to PowerShell | Refuses the git verbs that would swap or discard the primary's tree, whatever shell they arrive in |
 | Two isolated sessions editing the same file | Not addressed. Each is isolated from the main checkout, not from the other | Refuses the second edit before it runs, naming who holds the file |
 | Two sessions taking the same record number | Not addressed | Atomic allocation, plus a commit-time gate |
 | Knowing who is live, and what each is changing | Not addressed | `presence.ps1` and `overlap.ps1` |
