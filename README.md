@@ -330,7 +330,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/PR-AND-MERGE.md` | Landing work from N branches into one trunk, and the four states that all read as "can't merge" |
 | `docs/SEQUENCE-ALLOC.md` | Allocating a shared sequence git cannot see, with decision-record numbers as the worked example |
 | `docs/STEERING.md` | The two steering scripts: queue a note from a second terminal, deliver it mid-task |
-| `docs/SESSION-MAIL.md` | The async lane for peers the realtime announce cannot reach. Ships nothing -- it is a design note, and most useful as the measured list of ways the obvious implementations fail |
+| `docs/SESSION-MAIL.md` | Step-by-step instructions for building the async lane a KORUS build needs to reach a VS Code peer or a second-account peer. Ships nothing here -- a build guide, not an installed tool |
 | `docs/LEAK-GATE.md` | The forbidden-content scanner: what a shape detector catches before a repo goes public, what a token file adds, and the two things no scanner can ever see |
 | `docs/CASE-STUDY-drift-audit.md` | A redacted account of auditing a multi-session estate as one system -- the method, not a status snapshot |
 | `docs/CASE-STUDY-correction-chain.md` | One finding restated four times across two sessions, three statements wrong -- what a correction sequence licenses and what it does not |

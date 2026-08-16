@@ -69,8 +69,8 @@
     - label: Steering
       title: Steering a running session
       path: /STEERING.html
-    - label: Installing coordination
-      title: "Installing intersession coordination for a multi-session Claude Code build"
+    - label: Session mail
+      title: "Session mail for a KORUS build"
       path: /SESSION-MAIL.html
     - label: Sequence allocation
       title: Sequence allocation
