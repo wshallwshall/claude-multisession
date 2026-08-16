@@ -131,9 +131,8 @@ same way -- by receipt, never by reading a settings file.
 ## Why user scope, and not the project's `.claude/`
 
 Project hooks do not reach worktrees: `.claude/` is usually git-ignored, so git cannot deliver a
-project `settings.json` to a new worktree; where it can, the copy is a creation-time snapshot nothing
-refreshes. And a project hook lives on **one branch**, protecting nothing until other worktrees merge
-it.
+project `settings.json` there; where it can, the copy is a creation-time snapshot nothing refreshes.
+And a project hook lives on **one branch**, protecting nothing until other worktrees merge it.
 
 Measured on the repository this tooling was developed in: more than half the worktrees had no project
 settings at all. A live editor session in one of them had zero coordination context -- it could not
@@ -200,8 +199,7 @@ red line, printed with the bases it tried, because that is the state that reads 
 
 `-Status` models the shim's resolution rather than using a better helper: a check that resolves the
 primary better than the hook does reports a healthy hook that does not work. It resolves from your
-**current directory**, so it answers only for the repository you are standing in -- re-run it from
-each.
+**current directory**, so it answers only for the repository you stand in -- re-run it from each.
 
 ### The standing cost
 
@@ -227,7 +225,7 @@ Leave `-RepoRoot` off and the target is the clone **you are standing in**, which
 this script ships from; otherwise it refuses, naming both and printing the `-RepoRoot` line to
 re-run.
 
-That refusal replaced a default that resolved this script's own checkout:
+That refusal replaced a default resolving this script's own checkout:
 `cd <your-repo>; pwsh -File <tooling>/scripts/coord/install-git-hooks.ps1` then installed both gates
 into the **tooling** clone, printed a clean receipt, and governed nothing you were working in, while
 every status line agreed.
@@ -254,9 +252,9 @@ somewhere git never looks -- which is the exact shape of failure this script exi
 **Two invariants worth knowing before you run it.**
 
 1. **It refuses to overwrite a hook that is not ours.** A `commit-msg` or `pre-push` without our
-   marker stops the install: merge them by hand, rather than let blind overwriting delete somebody
-   else's control. The markers are on-disk identity, so renaming one orphans every install. Rename
-   once, in one commit, or not at all.
+   marker stops the install; merge by hand. Blind overwriting deletes somebody else's control. The
+   markers are on-disk identity: renaming one orphans every install. Rename once, in one commit, or
+   not at all.
 2. **It never writes `pre-commit` -- not to install, not to patch, not to migrate.** Two tools cannot
    both own that file. What happens when they try, and why the sequence gate therefore ships unwired,
    is at [the git-hook contract](docs/HOOKS.md#the-git-hook-contract).
@@ -390,8 +388,8 @@ Five things, reported separately:
 - **`governing`.** The allowlist contents. No file, no entries, nothing governed -- and it says
   `gate is OFF` rather than printing nothing.
 - **`wiring`, per config directory.** The matchers in that file, diffed against the rules the
-  **installed** script implements. `UNWIRED` means implemented but never fires; `stray`, matched but
-  ignored; `opt-in`, off by design. A count of "3" is not information: it asserts against an
+  **installed** script has. `UNWIRED` is implemented but never fires; `stray`, matched but ignored;
+  `opt-in`, off by design. A count of "3" says nothing unless you know 3 is right, so it asserts an
   expectation.
 - **`skipped`.** Directories whose NAME matched a config root but are not one, each with its
   rejection reason -- a candidate dropped silently reads like one that never existed.
@@ -409,8 +407,8 @@ green tests while the gate that actually runs has never heard of it.
 ## What the installers guarantee about a control's dependencies
 
 A checker installed **without the module it imports** raises at import: it refuses every commit, for
-reasons unrelated to what it checks. Without its dot-sourced helpers a gate does the opposite: exit 0
-after a stderr receipt, enforcing **nothing** while every named file is present and hashes correctly.
+reasons unrelated to what it checks. Without its dot-sourced helpers, a gate exits 0 after a stderr
+receipt, enforcing **nothing** while every named file is present and hashes correctly.
 
 Both shipped, once each. Each installer now carries its dependency closure as a declared list, and
 neither will install a partial one:
@@ -454,13 +452,12 @@ control:
 
 - The two `PreToolUse` guards are always `--` (not wired anywhere it can see).
 - The **sequence gate reads your configuration**. With no `sequences` key in `ccx.config.json` it is
-  `[-- ] sequence gate`, off by configuration. With one -- as the shipped file has, so this is what
-  this checkout prints -- it is `[OFF] sequence gate`: nothing at commit time defends the numbers you
-  allocate.
+  `[-- ]`, off by configuration. With one -- as the shipped file has, so this is what this checkout
+  prints -- it is `[OFF] sequence gate`: nothing at commit time defends the numbers you allocate.
 - The **ASCII gate is `[OFF] ASCII gate: present, not wired`** in every checkout, since every
   checkout carries `scripts/quality/check-ascii.ps1`. Nothing shipped runs it, so it refuses nothing
-  until you invoke it: presence is capability, not enforcement, and `OK` is reserved for installed
-  **and** wired.
+  until you invoke it: presence is capability, not enforcement, and `OK` needs installed **and**
+  wired.
 
 Neither tag fails the run, with one exception: a checkout missing the ASCII checker altogether reads
 `[OFF] ASCII gate: not in this checkout`, and that one **is** required -- a checkout missing a file
@@ -485,10 +482,9 @@ because an absent gate looks exactly like one that passed.
 
 All four throw when `$env:CLAUDECODE` is `1`.
 
-Any session that can install these controls can remove them, and every one constrains sessions. The
+A session that can install these controls can remove them, and every one constrains sessions. The
 gate stops building in a shared checkout; the git hooks bound what a session commits and pushes;
-remove the coordination hooks and a session goes invisible to peers while looking coordinated to
-itself.
+remove the coordination hooks and a session goes invisible to peers while looking coordinated.
 
 The selfheal backstop is the most privileged: it runs `git checkout` on the shared primary
 unattended, from a script the calling session can freely edit. Its only safety property is that it
@@ -501,8 +497,7 @@ Run them from a plain `pwsh` terminal.
 
 **`-Status` is exempt in all three that have one** (the backstop has none; ask the doctor)**, and
 that is load-bearing.** Auditing is not installing: a session blind to its own controls cannot see
-the failure this toolkit is about. In the source, `-Status` is handled *above* the `CLAUDECODE`
-refusal.
+the failure this toolkit is about. In the source, `-Status` is handled *above* the refusal.
 
 ---
 
@@ -514,10 +509,9 @@ pwsh -NoProfile -File <tooling>/scripts/coord/install-git-hooks.ps1 -RepoRoot <t
 pwsh -NoProfile -File <tooling>/scripts/worktree/install-gate.ps1 -Uninstall
 ```
 
-Installer 2's `-Uninstall` resolves a clone the way its install does, takes the same `-RepoRoot` and
-refuses on the same terms: removing the wrong clone's hooks is the same mistake as installing them
-there. Installer 3's removes the shared allowlist and every config root's wiring, neither
-repository-keyed.
+Installer 2's `-Uninstall` resolves a clone as its install does, takes the same `-RepoRoot` and
+refuses on the same terms: removing the wrong clone's hooks is the same mistake as installing there.
+Installer 3's removes the shared allowlist and every config root's wiring, neither repository-keyed.
 
 Each removes only entries carrying its own marker. Installer 2 leaves a foreign hook alone on the
 uninstall path, and leaves the checker copy with it: that hook may have been edited to call the copy,
@@ -558,9 +552,8 @@ pwsh -NoProfile -File <tooling>/bin/ccx-doctor.ps1 -Repo <the-repo-you-governed>
 Run this after every install path above, and read **what it says it scanned** -- not just the verdict.
 
 **Pass `-Repo`, and read it back.** Without it the doctor examines the current directory's
-repository -- from the tooling checkout, a long, plausible, mostly-green report about the tooling
-checkout. It cannot refuse to answer, so it prints two lines at the top of every run, marking the
-same-clone case:
+repository -- from the tooling checkout, a long, mostly-green report about the tooling checkout. It
+cannot refuse to answer, so it prints two lines at the top of every run, marking the same-clone case:
 
 ```text
   repo examined    : <the-repo-you-governed>   (-Repo)
@@ -606,9 +599,8 @@ This catches people out on a deliberate partial install, so it is worth stating 
 code is an accounting over the whole control set.
 
 - **Any `RED`, or a *required* control `OFF`, is exit 1.** Required: the worktree gate, its allowlist
-  and wiring, the three coordination rows, both git hooks, the SessionStart backstop. **A partial
-  install cannot exit 0**: the one you skipped reads `OFF`, implemented and invoked by nothing, not
-  "not chosen".
+  and wiring, the three coordination rows, both git hooks, the backstop. **A partial install cannot
+  exit 0**: the one you skipped reads `OFF`, implemented and invoked by nothing, not "not chosen".
 - **Any `??` with no `RED` is exit 2.** A skip is never a pass.
 - **`--` never fails a run.** That tag is for a control that is opt-in by design (the blanket-stage
   guard, the steering injector) or off by configuration (the sequence gate with no `sequences` key).
@@ -632,8 +624,8 @@ Three of its blind spots are worth internalising before you trust any of this:
 
 - **Announce delivery.** Announce sends nothing itself: it asks the model to send, via a
   session-management MCP server the desktop client provides and a plain CLI install lacks. Without
-  it the hook fires, finds peers, and names tools the model does not have. Decorative there, and
-  invisible to PowerShell.
+  it the hook fires, finds peers, then names tools the model lacks. Decorative there, and invisible
+  to PowerShell.
 - **The session record schema is a vendor contract.** Every liveness answer rests on a per-session
   JSON record written by the client. A renamed field, a moved directory or a changed unit turns the
   counts into zeros. Read the record census as the instrument, not as the sessions.

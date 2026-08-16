@@ -87,8 +87,10 @@ repository can recompute them.
 ## Platform
 
 **PowerShell 7 + Windows-first.** Most scripts are PowerShell; the rest are stdlib-only Python.
-The house rule is `#Requires -Version 7.3`; the two selfheal scripts ask only for `7`, and the
-announce hook carries none, so its event degrades to a stand-down message rather than throw at load.
+
+The house rule is a `#Requires -Version 7.3` line and most carry it. The two selfheal scripts ask
+only for `7`, and a few carry no `#Requires` at all -- deliberate for the announce hook, whose event
+must degrade to a stand-down message rather than throw at load.
 
 No file census appears here: a count in prose is stale on the next file added. Count it against your
 own tree, watching the scope. `git ls-files 'bin/*.ps1' 'bin/*.py' 'scripts/*.ps1'
@@ -140,8 +142,8 @@ client config root, the wiring entries in that root's `settings.json`, and a que
 
 **The full inventory -- every script, what it does, and which doc owns it -- is
 [here](https://claude-multisession.pages.dev/SCRIPTS.html)**, grouped by task: run sessions, clean
-up, and the controls the harness or git invokes on their own. One table set rather than two, so it
-cannot drift.
+up, and the controls the harness or git invokes on their own. One table set, not two, so it cannot
+drift from this page.
 
 The shape of it: `bin/ccx-doctor.ps1` proves the rest; `scripts/worktree/` creates, rescues,
 restores and removes worktrees; `scripts/coord/` answers presence, overlap, claims and allocations;
@@ -297,10 +299,10 @@ be discovered. Measured on the repo this tooling was developed in:
 - **Enumerated coverage means every hole is silent.** The gates match named tools and named verbs.
   Anything outside the enumeration passes without a word. `ccx doctor`'s wired-versus-implemented
   diff is the only thing that surfaces a rule which exists but can never fire.
-- **The occupancy fence is cwd-keyed and partial.** It misses a write into a worktree by absolute
-  path, a cwd recorded as a UNC or 8.3 short path, or a session that never registered. The reaper
-  adds a second, non-cwd signal and prints its blind spots, so do not gate a destructive action on
-  cwd alone.
+- **The occupancy fence is cwd-keyed and partial.** It cannot see an absolute-path write from
+  another cwd, a cwd recorded as a UNC or 8.3 short path, or a session that never registered. The
+  reaper adds a second, non-cwd signal and prints its blind spots; do not gate a destructive action
+  on cwd alone.
 - **The collision gate's deny path is not self-testable.** Proving it needs a live peer worktree
   holding an uncommitted change to the same file. `ccx doctor` proves only that the gate refuses to
   go *silent* on its unresolvable path, and prints that as a blind spot on every run.

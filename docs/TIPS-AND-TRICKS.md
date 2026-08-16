@@ -235,13 +235,14 @@ ignored -- which leaves the hook looking installed while permitting everything.
 
 **Gate on the write's TARGET path, never on the session's cwd.** Measured here over 30 days: **29%**
 of Edit/Write calls by primary-seated sessions wrote into a sibling worktree by absolute path. Those
-writes were already correct, and a cwd-keyed gate would deny every one. Only the destination
-matters.
+writes were already correct, and a cwd-keyed gate would deny every one.
 
-**Conversely, a cwd-keyed *fence* is blind to that entire class.** Occupancy: is a session working
-in this tree now? The same 29% is invisible to any occupancy check that maps a recorded cwd onto a
-worktree. So `prune-merged.ps1` requires **two independent occupancy signals**, treating recent
-git-metadata mtime as the load-bearing one.
+**Conversely, a cwd-keyed *fence* is blind to that entire class.** Occupancy asks whether a session
+is working in this tree now, and the same 29% is invisible to any check that maps a recorded cwd
+onto a worktree.
+
+So `prune-merged.ps1` requires **two independent occupancy signals**, treating recent git-metadata
+mtime as the load-bearing one.
 
 **False positives are the expensive failure.** A gate that denies ordinary work trains sessions to
 route around it, and a routed-around gate protects nothing. `block-blanket-git-stage.ps1` is
