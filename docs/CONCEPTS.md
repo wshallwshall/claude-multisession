@@ -31,6 +31,66 @@ The whole system is three layers:
 
 The hooks, the reaper, the allocator and the announce path are all applications of those three.
 
+Here are the same three ideas as they sit on disk, with the two hook layers that enforce them.
+
+<figure role="group">
+<svg viewBox="0 0 860 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One clone contains a gated primary checkout and any number of linked worktrees, each on its own branch. All of them share one git common directory, which holds the coordination state: claims, allocations, locks and announce receipts. Two hook layers act on that clone. User-scope hooks are installed once per client config root and cover the worktree gate and collision gate at PreToolUse, the banner and self-heal at SessionStart, and announce at UserPromptSubmit. Git-scope hooks are installed once per clone and cover the claim gate at commit-msg and the push guard at pre-push. The doctor stands outside both and proves each control by attacking it.">
+  <defs>
+    <marker id="cx-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <rect x="16" y="26" width="560" height="240" rx="8" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="28" y="46" font-size="12" font-weight="bold" fill="currentColor">One clone</text>
+  <rect x="32" y="58" width="150" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="2" />
+  <text x="107" y="79" font-size="11" font-weight="bold" text-anchor="middle" fill="currentColor">primary checkout</text>
+  <text x="107" y="96" font-size="10" text-anchor="middle" fill="currentColor">gated: nothing builds here</text>
+  <rect x="202" y="58" width="118" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="261" y="79" font-size="11" text-anchor="middle" fill="currentColor">worktree A</text>
+  <text x="261" y="96" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">branch a</text>
+  <rect x="336" y="58" width="118" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="395" y="79" font-size="11" text-anchor="middle" fill="currentColor">worktree B</text>
+  <text x="395" y="96" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">branch b</text>
+  <text x="500" y="92" font-size="12" text-anchor="middle" fill="currentColor">... N</text>
+  <line x1="107" y1="116" x2="107" y2="158" stroke="currentColor" stroke-width="1.5" marker-end="url(#cx-arrow)" />
+  <line x1="261" y1="116" x2="261" y2="158" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#cx-arrow)" />
+  <line x1="395" y1="116" x2="395" y2="158" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#cx-arrow)" />
+  <rect x="32" y="160" width="512" height="86" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="288" y="180" font-size="11" font-weight="bold" text-anchor="middle" fill="currentColor">one shared git common directory</text>
+  <text x="288" y="198" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">every worktree of this clone resolves it identically</text>
+  <rect x="52" y="208" width="106" height="28" rx="4" fill="none" stroke="currentColor" />
+  <text x="105" y="226" font-size="10" text-anchor="middle" fill="currentColor">claims</text>
+  <rect x="170" y="208" width="116" height="28" rx="4" fill="none" stroke="currentColor" />
+  <text x="228" y="226" font-size="10" text-anchor="middle" fill="currentColor">allocations</text>
+  <rect x="298" y="208" width="96" height="28" rx="4" fill="none" stroke="currentColor" />
+  <text x="346" y="226" font-size="10" text-anchor="middle" fill="currentColor">locks</text>
+  <rect x="406" y="208" width="118" height="28" rx="4" fill="none" stroke="currentColor" />
+  <text x="465" y="226" font-size="10" text-anchor="middle" fill="currentColor">announce state</text>
+  <rect x="612" y="26" width="234" height="128" rx="8" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="624" y="46" font-size="12" font-weight="bold" fill="currentColor">user scope</text>
+  <text x="624" y="62" font-size="10" font-style="italic" fill="currentColor">once per client config root</text>
+  <text x="624" y="82" font-size="10" fill="currentColor">PreToolUse: worktree gate,</text>
+  <text x="624" y="97" font-size="10" fill="currentColor">collision gate</text>
+  <text x="624" y="117" font-size="10" fill="currentColor">SessionStart: banner, self-heal</text>
+  <text x="624" y="137" font-size="10" fill="currentColor">UserPromptSubmit: announce</text>
+  <rect x="612" y="166" width="234" height="92" rx="8" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="624" y="186" font-size="12" font-weight="bold" fill="currentColor">git scope</text>
+  <text x="624" y="202" font-size="10" font-style="italic" fill="currentColor">once per clone</text>
+  <text x="624" y="222" font-size="10" fill="currentColor">commit-msg: claim gate</text>
+  <text x="624" y="242" font-size="10" fill="currentColor">pre-push: push guard</text>
+  <line x1="610" y1="86" x2="470" y2="86" stroke="currentColor" stroke-width="1.5" marker-end="url(#cx-arrow)" />
+  <line x1="610" y1="212" x2="560" y2="212" stroke="currentColor" stroke-width="1.5" marker-end="url(#cx-arrow)" />
+  <rect x="16" y="290" width="830" height="54" rx="8" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" />
+  <text x="431" y="312" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">bin/ccx-doctor.ps1</text>
+  <text x="431" y="331" font-size="10" text-anchor="middle" fill="currentColor">stands outside both layers and proves each control by attacking it, never by reading config</text>
+  <text x="16" y="372" font-size="10" font-style="italic" fill="currentColor">A solid arrow is enforcement. A dashed arrow is state a worktree reads and writes.</text>
+  <text x="16" y="392" font-size="10" font-style="italic" fill="currentColor">Nothing here isolates a running program: ports, databases and .env are outside every box.</text>
+</svg>
+<figcaption>The primary is gated so nothing builds in it; each session gets a worktree on its own
+branch; all of them share one state root. The two hook layers install at different scopes, which is
+why there are four installers rather than one.</figcaption>
+</figure>
+
 ---
 
 ## 1. Worktree-per-session

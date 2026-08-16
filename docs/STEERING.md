@@ -136,7 +136,9 @@ protocol, which is why these two scripts share no code.
 
 - Writing a second note **replaces** the first. The command warns when it overwrites one that was
   never consumed. Take the warning seriously: the earlier note was not delivered and never will be.
-- Delivery is read-then-delete, exactly once. There is no history and no re-delivery.
+- Delivery is read-then-delete, and the honest bound is **at most once**. The hook checks, reads,
+  deletes and emits as separate steps under no lock, and the delete lands before anything confirms
+  the note reached the model. There is no history and no re-delivery.
 - **There is no expiry.** A note sits until the session's next tool call, possibly hours later and
   in the middle of an unrelated task. Write any condition into the text so the *recipient* can
   evaluate it: "if you have not started the migration yet, don't". Never write one only you can

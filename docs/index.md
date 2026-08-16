@@ -52,6 +52,10 @@ Upstream, this is [claude-code#76590](https://github.com/anthropics/claude-code/
 a [field report](https://github.com/anthropics/claude-code/issues/76590#issuecomment-5004149125) of
 roughly fourteen sessions on one directory.
 
+**Claude Code now blocks much of that itself.** A session started with `--worktree` is refused any
+edit or command that resolves into the main checkout. What it does not do is stop two isolated
+sessions colliding with each other -- [which half you need](FAQ.md).
+
 ## What it looks like when it works
 
 <figure role="group">
@@ -138,6 +142,7 @@ throughput comes from.
 
 | If you want to | Go to |
 |---|---|
+| Work out whether you need this at all | [FAQ](FAQ.md) |
 | See it working on your own repository | [Quickstart](QUICKSTART.md) |
 | Set up the four-session build | [Run a KORUS build](KORUS-BUILD.md) |
 | Know what it needs, and where it stops working | [Limits and requirements](LIMITS.md) |

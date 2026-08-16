@@ -2,10 +2,10 @@
 
 ## TLDR/BLUF
 
-**What this is.** What KORUS needs to run, and the four places it stops working. Both were on the
+**What this is.** What KORUS needs to run, and the places it stops working. Both were on the
 landing page, above the first command, until 2026-08-16.
 
-**Why you should care.** Three of the four limits come from one fact: session discovery rests on a
+**Why you should care.** Three of these limits come from one fact: session discovery rests on a
 vendor surface this project does not own. Read them before you trust a green report. Not for you if
 you have not installed anything yet, in which case start at [Quickstart](QUICKSTART.md).
 
@@ -30,6 +30,24 @@ case-folding degrade elsewhere.
 `pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`.
 [MIT](https://claude-multisession.pages.dev/LICENSE).
 
+## Platform support
+
+`.github/workflows/gates.yml` holds the CI matrix, and it names two operating systems.
+
+| Platform | Status | What degrades |
+|---|---|---|
+| **Windows, PowerShell 7.3+** | The exercised path. In CI as `windows-latest` | Nothing known. This is the platform the defaults assume |
+| **Linux, PowerShell 7.3+** | In CI as `ubuntu-latest` | Path comparison stops folding case, and roster self-marking degrades. Both are named in the note under Requirements above |
+| **macOS** | **Not tested.** It is not in the CI matrix | Not established. Nothing here reports on macOS either way, so treat it as unmeasured rather than working |
+| **Windows PowerShell 5.1** | Unsupported | `#Requires -Version 7.3` refuses to start most scripts there, and `powershell.exe` is a separate executable from `pwsh` |
+
+CI is not the doctor. Those runners execute the ASCII gate, the leak scan, a parse of every shipped
+`.ps1` and the test suite on both platforms. They do not run `ccx doctor`, and the workflow's own
+header says why: it needs a live second session and a peer worktree.
+
+So a green Linux run says the scripts parse and the suite passes there. Whether the hooks, the
+gates and the roster behave on Linux in a real session is not established by it.
+
 ## Session discovery rests on a vendor surface this project does not own
 
 Everything answering "who is live, and where" reads `<config-root>/sessions/<pid>.json` -- a record
@@ -49,12 +67,58 @@ is authoritative for who can be **messaged**, the on-disk records for who **exis
 `scripts/coord/session-registry.ps1`. The doctor prints records read and placed, so the change
 surfaces as a count going to zero.
 
+## Shared runtime state is out of scope
+
+A worktree isolates **files**. It does not isolate what a running program contends for. A listening
+port, a development database, a Redis keyspace, a local service, a package cache, generated build
+output and a git-ignored `.env` all sit outside what it separates.
+
+Two sessions running the same test suite in two worktrees can collide on any of those, and **nothing
+here sees it**. No gate reads a port or a database name, and neither does the doctor. It surfaces as
+a flaky test or a corrupted fixture, blamed on anything but concurrency.
+
+This is unsolved in this project rather than handled quietly. There is no control to install and
+nothing to switch on. Two habits are the whole of it, and both are yours to apply:
+
+- **Give each worktree its own environment.** `new.ps1` runs the per-checkout bootstrap named by
+  `setupHook` in `ccx.config.json`, and warns when it cannot find that file.
+  [Worktrees](WORKTREES.md) gives the contract the hook receives.
+- **Choose ports and database names per worktree, by hand.** Nothing derives them for you. A setup
+  hook that writes one port into every checkout has moved the collision, not removed it.
+
 ## Guardrails against accidents, not security boundaries
 
 The `PreToolUse` gates inspect tool arguments. A file a shell command writes is invisible to them,
 and an agent-authored script defeats a command-string rule.
 
-`--no-verify` on commit or push bypasses both git hooks. No CI-side enforcement ships.
+**The reason they are not a boundary.** Every control here runs as the same operating-system
+identity as the agent it constrains. The hook scripts, the repository allowlist at
+`~/.claude/hooks/ccx-gate.repos.txt` and the user-scope settings file wiring them are all files that
+identity may write.
+
+An agent that edits one is not defeating a boundary. It is editing its own configuration, with the
+permissions it was already given. Two documented exits need no editing at all:
+
+- `--no-verify` on a commit or a push skips both git hooks. No CI-side enforcement ships.
+- `CCX_ALLOW_DIRECT_PUSH=1` turns the push guard off. It is a deliberate escape hatch, kept distinct
+  from `--no-verify` so it stays greppable in shell history, and the guard announces
+  `direct push ALLOWED` on stderr when it fires.
+
+The doctor lists that variable as a live disarm switch, but only when it is set in the doctor's own
+environment. Prefixing a single `git push` with it leaves nothing for a later run to find.
+
+**The remedy.** Enforcement the constrained identity cannot rewrite, which means a different plane
+altogether:
+
+| Pair with | Why it holds |
+|---|---|
+| Protected branches on the remote | The rule lives on the server. Editing a local hook does not reach it |
+| Required status checks | A merge that waits on a check is not waved through by a flag on the pushing machine |
+| Agent credentials with no bypass permission | Bypass is a permission. Withhold it from the token the agent pushes with |
+
+**Nothing in this repository configures any of that for you.** Those are settings on your hosting
+provider, `bin/ccx-doctor.ps1` does not read them, and this repository's own `gates` workflow treats
+its check as advisory rather than required.
 
 ## Everything here fails the same way it succeeds
 
