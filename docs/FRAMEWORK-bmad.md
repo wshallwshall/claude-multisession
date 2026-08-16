@@ -63,6 +63,7 @@ errors instead of guessing.
 
 The 49 skills:
 
+<!-- no-copy -->
 ```
 bmad-advanced-elicitation      bmad-agent-analyst           bmad-agent-architect
 bmad-agent-dev                 bmad-agent-pm                bmad-agent-ux-designer

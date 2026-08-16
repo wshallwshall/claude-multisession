@@ -336,6 +336,7 @@ The framing rule, which all of them are instances of:
 A leak scan had just **blocked** a tree, and the wrapper printed `exit=0`. `$?` was reporting
 `tail`'s status, not the scanner's.
 
+<!-- no-copy -->
 ```bash
 # WRONG - $? is tail's
 scan ./tree | tail -5
@@ -361,6 +362,7 @@ A planted test violation was supposed to contain `C:\Users\<name>\...`. `printf`
 start of a unicode escape, so the string written to disk was not the string intended. The
 "violation" the scanner then failed to find had never existed.
 
+<!-- no-copy -->
 ```bash
 # WRONG - \U, \n, \t all get interpreted
 printf 'C:\Users\someone\project\file.txt' > fixture.txt

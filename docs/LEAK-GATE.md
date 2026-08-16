@@ -85,6 +85,7 @@ The version this came from dropped file arguments silently, refusing only if **e
 
 **3. It prints what it scanned and what it loaded.** Two lines on stderr, every run, pass or fail:
 
+<!-- no-copy -->
 ```
 ccx leak gate: loaded structural=8, names=0, literals=0, allowlist=1  [STRUCTURAL-ONLY: ...]
 ccx leak gate: scanned 412 file(s)  [STRUCTURAL-ONLY: ...]

@@ -57,6 +57,7 @@ the end of the turn.
 
 The hook's output shape is fixed by the event:
 
+<!-- no-copy -->
 ```json
 {"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"[STEERING NOTE ...]: ..."}}
 ```
@@ -71,6 +72,7 @@ purpose.
 
 **What to do.** Add this to that worktree's `.claude/settings.local.json`:
 
+<!-- no-copy -->
 ```json
 {
   "hooks": {

@@ -167,6 +167,69 @@ class ScriptOnlyEnhancesWhatIsAlreadyServed(unittest.TestCase):
         )
 
 
+class AnExampleNobodyShouldRunCarriesNoCopyButton(unittest.TestCase):
+    """The copy button is an instruction to run something, so it must not appear on an illustration.
+
+    THE CASE THIS EXISTS FOR IS ON THE LANDING PAGE. Its first code block is
+    `git checkout -B feature/parser origin/main` -- the command that CAUSES the failure the entire
+    site is about, quoted so a reader can recognise it. The copy button shipped on it, which turned
+    the site's own worked example of the defect into a one-click invitation to reproduce it.
+
+    THE MARKER IS AN HTML COMMENT rather than kramdown's `{: .no-copy}`, because these pages are read
+    on github.com as well: a comment renders as nothing there, and an IAL renders as literal text in
+    the middle of the document.
+    """
+
+    MARKER = "<!-- no-copy -->"
+
+    # The block, and the page it is on. Named rather than pattern-matched: this is a short list of
+    # specific illustrations, and a pattern would quietly stop covering the one that matters.
+    MUST_BE_MARKED = (
+        ("docs/index.md", "git checkout -B feature/parser origin/main"),
+        ("docs/TIPS-AND-TRICKS.md", "# WRONG - $? is tail's"),
+        ("docs/QUICKSTART.md", "service.py has UNCOMMITTED changes"),
+    )
+
+    def test_each_illustration_is_marked(self):
+        offenders = []
+        for relpath, needle in self.MUST_BE_MARKED:
+            lines = t.read(t.REPO_ROOT / relpath).split("\n")
+            hit = next((i for i, line in enumerate(lines) if needle in line), None)
+            if hit is None:
+                offenders.append(f"{relpath}: no line containing {needle!r} -- did the example move?")
+                continue
+            # Walk back to the fence that opens the block, then check the line above it.
+            fence = next((i for i in range(hit, -1, -1) if lines[i].lstrip().startswith("```")), None)
+            if fence is None or fence == 0 or self.MARKER not in lines[fence - 1]:
+                offenders.append(f"{relpath}:{hit + 1}: {needle!r} is in an unmarked code block")
+        self.assertEqual(
+            [],
+            offenders,
+            "these blocks are illustrations, and without the marker assets/site.js puts a Copy "
+            "button on them:\n  "
+            + "\n  ".join(offenders)
+            + f"\nPut `{self.MARKER}` on the line immediately above the opening fence. The landing "
+            "page one is the important one: it is the command that causes the failure this site "
+            "exists to prevent, and a Copy button on it invites the reader to run exactly that.",
+        )
+
+    def test_the_script_honours_the_marker(self):
+        """The other half. The marker is inert unless site.js reads it."""
+        js = t.read(SCRIPT)
+        self.assertIn(
+            "no-copy",
+            js,
+            "assets/site.js no longer looks for the no-copy marker, so every marked illustration "
+            "has a Copy button again and the markers are decoration.",
+        )
+        self.assertIn(
+            "isMarkedNoCopy",
+            js,
+            "the marker check was renamed or removed. If copy buttons are now decided another way, "
+            "point this test at it rather than deleting the case.",
+        )
+
+
 class TheSearchIndexIsBuiltRatherThanFetchedFromAnyoneElse(unittest.TestCase):
     """The search box is the one feature that loads data, so it is the one worth pinning."""
 

@@ -55,7 +55,7 @@
       title: Run a KORUS build
       path: /KORUS-BUILD.html
     - label: The KORUS framework
-      title: "The KORUS Framework: Lesson Learned the Hard Way"
+      title: "The KORUS framework: Lessons learned the hard way"
       path: /KORUS.html
     - label: Concepts
       title: Concepts

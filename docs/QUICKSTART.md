@@ -132,6 +132,7 @@ session `alerts`, ask it to edit the same file.
 **What happens next.** The second edit never runs. The tool call is refused, and Claude is handed
 this:
 
+<!-- no-copy -->
 ```text
 service.py has UNCOMMITTED changes in another LIVE session's worktree -- editing it now means one of you loses work at merge.
 

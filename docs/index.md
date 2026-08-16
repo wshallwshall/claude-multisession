@@ -7,17 +7,21 @@ layout: default
 
 ## TLDR/BLUF
 
-**What this is.** A way to run four Claude Code sessions against one repository at once without them
-overwriting each other. KORUS is the build shape -- a dispatcher, two builders and a lander -- and
-`claude-multisession` is the tooling that enforces the parts a convention cannot.
+**What this is.** KORUS -- Keep One Repo, Unblock Sessions -- is one developer's account of what
+makes Claude Code productive on a real project. It covers the model and effort to run, what the
+accounts cost, what to write down, and running several sessions without collisions.
 
-**Why you should care.** Four sessions is real throughput until two collide in a way git cannot
-report as a conflict. Those collisions touch no shared bytes, so every branch merges clean and the
-loss lands later. Not for you if you run one session at a time.
+`claude-multisession` is the tooling that enforces that last part.
 
-**How to use it.** [Quickstart](QUICKSTART.md) installs it and ends with you watching a collision
-get refused. [Run a KORUS build](KORUS-BUILD.md) is the four-session shape.
-[The KORUS framework](KORUS.md) is the account it all came from.
+**Why you should care.** Most of the framework is convention you can adopt by reading. The
+concurrency part is not: sessions sharing one repository collide in ways git cannot report as a
+conflict, so every branch merges clean and the loss lands later.
+
+Not for you if Claude Code is an occasional convenience rather than how the project gets built.
+
+**How to use it.** [Quickstart](QUICKSTART.md) installs the enforcement and ends with you watching a
+collision get refused. [Run a KORUS build](KORUS-BUILD.md) is the session shape.
+[The KORUS framework](KORUS.md) is the whole account, in its author's words.
 
 ---
 
@@ -26,6 +30,7 @@ get refused. [Run a KORUS build](KORUS-BUILD.md) is the four-session shape.
 Two sessions are running. Session A is halfway through a refactor, with uncommitted work in the
 tree. Session B decides it needs a fresh branch:
 
+<!-- no-copy -->
 ```powershell
 git checkout -B feature/parser origin/main
 ```
@@ -78,7 +83,9 @@ roughly fourteen sessions on one directory.
 it both writes succeed and the loss surfaces at merge, or later.</figcaption>
 </figure>
 
-## What you get
+## What the tooling enforces
+
+This is the part a convention cannot hold on its own, so it ships as code.
 
 **Sessions that cannot overwrite each other.** Each one works in its own git worktree on its own
 branch, while the repository history stays shared. [Worktrees](WORKTREES.md)
@@ -111,6 +118,21 @@ Three mechanisms touch it. Only the first prevents it.
 | **Prevention** | `scripts/hooks/worktree_gate.ps1` | Refuses the git verbs that would swap or discard the shared primary checkout's tree. The tool call does not run. |
 | **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the primary when its HEAD has drifted and the tree is clean. On a dirty tree it declines and touches nothing. |
 | **Detection** | the home-branch record | Kept where a checkout cannot move it. A later session finding the worktree elsewhere warns and offers the restore command. Warn-only, and [wrong by design](WORKTREES.md#the-sidecar-home-branch-record-is-wrong-by-design). |
+
+## The rest of the framework
+
+The tooling above is one part of KORUS. The rest is convention, and it is where most of the
+throughput comes from.
+
+| Part | What it decides | Where |
+|---|---|---|
+| Model and effort | Which model to run, and why the slower setting still wins | [The KORUS framework](KORUS.md) |
+| Surface | Which client to run sessions on, and one instance per account | [Desktop accounts](DESKTOP-ACCOUNTS.md) |
+| Account economics | What a plan buys, measured against published API rates | [Token accounting](TOKEN-ACCOUNTING.md) |
+| What you write down | A backlog, decision records, and a security register | [The KORUS framework](KORUS.md) |
+| The session shape | Who plans, who builds, who lands | [Run a KORUS build](KORUS-BUILD.md) |
+| Not losing work to a limit | Knowing when to stop. A design here, not a shipped hook | [Usage awareness](USAGE-AWARENESS.md) |
+| What "done" means | The check that runs when the author cannot vouch for the change | [CI for leaders](CI-FOR-LEADERS.md) |
 
 ## Start here
 
