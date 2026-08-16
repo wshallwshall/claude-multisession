@@ -48,6 +48,12 @@
     - label: Overview
       title: KORUS
       path: /
+    # SECOND, because the first question is whether to bother. Claude Code ships its own worktrees
+    # now and they cover more than they used to, so the FAQ opens by saying which half of this
+    # project a reader still needs -- and says plainly when the answer is "none of it".
+    - label: FAQ
+      title: Frequently asked questions
+      path: /FAQ.html
     - label: Quickstart
       title: Quickstart
       path: /QUICKSTART.html
@@ -133,6 +139,9 @@
 
 - group: Reference
   items:
+    - label: Troubleshooting
+      title: Troubleshooting
+      path: /TROUBLESHOOTING.html
     - label: Every script
       title: "Every script, and what it does"
       path: /SCRIPTS.html

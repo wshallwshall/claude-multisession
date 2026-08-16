@@ -3,9 +3,9 @@
 ## TLDR/BLUF
 
 **What this is.** The install, start to finish, and then two sessions that refuse to overwrite each
-other. Seven steps, run from a plain terminal, against a repository you already have.
+other. Eight steps, run from a plain terminal, against a repository you already have.
 
-**Why you should care.** Step 7 is the point: you make two sessions edit one file, and watch the
+**Why you should care.** Step 8 is the point: you make two sessions edit one file, and watch the
 second one get refused. Until you have seen that refusal, nothing here is proven to be running. Not
 for you if you have no repository to govern yet.
 
@@ -24,7 +24,22 @@ Every command below runs in a **plain terminal**, not inside a Claude Code sessi
 installers refuse when `$env:CLAUDECODE` is `1`, because a session that can install these controls
 can remove them.
 
-## 1. Name the two directories
+## 1. Get the tooling
+
+```powershell
+git clone https://github.com/wshallwshall/claude-multisession.git
+```
+
+**Pin it rather than tracking `main`.** This repository runs concurrent sessions against itself, so
+`main` moves. Check out a commit you have read, and upgrade deliberately.
+
+**If you cannot reach GitHub**, you are the reader this site was moved for, and there is no clone.
+
+Every file is served here at its own path, so the fallback is to fetch the paths listed on
+[Every script](SCRIPTS.md) into a directory of your own. One example:
+[/scripts/coord/claim.ps1](https://claude-multisession.pages.dev/scripts/coord/claim.ps1)
+
+## 2. Name the two directories
 
 Every command says which directory it means, because the installers refuse to guess.
 
@@ -39,7 +54,7 @@ $target  = "<path-to-the-repo-you-want-governed>"
 Set-Location $target      # the doctor reports what it resolves FROM HERE, so stand in the target
 ```
 
-## 2. Vendor the tooling into the target
+## 3. Vendor the tooling into the target
 
 Copy the scripts into the target and commit them, so tooling *is* target. That is the only layout in
 which the doctor can reach exit 0.
@@ -59,7 +74,7 @@ The separate-checkouts layout works for the worktree gate, both git hooks and th
 for the three coordination hooks: they resolve their script inside whatever repository the session
 runs in, so a target without those files gets three wired hooks that resolve nothing.
 
-## 3. Baseline the doctor before installing anything
+## 4. Baseline the doctor before installing anything
 
 ```powershell
 pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
@@ -68,7 +83,7 @@ pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
 Expect a wall of `OFF` and exit 1. **That is the correct result.** It is the only way to tell an
 installed guardrail from a decorative one afterwards.
 
-## 4. Install the four controls
+## 5. Install the four controls
 
 They are four rather than one because they write to genuinely different places.
 
@@ -90,7 +105,7 @@ pwsh -NoProfile -File "$tooling/scripts/worktree/install-gate.ps1" -Repo $target
 pwsh -NoProfile -File "$tooling/scripts/worktree/install-selfheal.ps1" -ConfigDir ~/.claude
 ```
 
-## 5. Prove the install landed on the right repository
+## 6. Prove the install landed on the right repository
 
 ```powershell
 pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
@@ -104,7 +119,7 @@ pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target |
     Select-String 'repo examined|tooling checkout|gate: allowlist|LIVE allowlist'
 ```
 
-## 6. Spawn two sessions
+## 7. Spawn two sessions
 
 ```powershell
 pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name alerts
@@ -122,7 +137,7 @@ pwsh -NoProfile -File "$tooling/scripts/coord/presence.ps1"   # both sessions li
 pwsh -NoProfile -File "$tooling/scripts/coord/overlap.ps1"    # what each is changing
 ```
 
-## 7. Watch a collision get refused
+## 8. Watch a collision get refused
 
 **The goal.** Prove the collision gate is live rather than merely installed.
 

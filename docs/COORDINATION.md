@@ -399,6 +399,25 @@ Neither stops a session that refuses to look; they surface the collision *before
 The claiming identity is **this working tree**, not the primary checkout: two checkouts of one clone
 are two claimants.
 
+### One namespace: A numbered key is the number alone
+
+`scripts/hooks/claim_check.py` reads the commit subject for a configured `<KIND> #N`, and the KIND
+decides only whether the gate fires and what the message says. The claim it then looks for is keyed
+on `N` by itself.
+
+**So two configured sequences share one set of numbered keys.** With both `adr` and `backlog`
+configured, `ADR #12` and `BACKLOG #12` are the same claim. Whichever worktree takes `12` first
+holds it against the other, and the second one's commit is refused naming a kind it never claimed.
+
+That is conservative rather than wrong: it refuses in the safe direction. It is still worth knowing
+before you configure a second sequence whose numbers will overlap the first.
+
+Take the number the gate will look for:
+
+```powershell
+pwsh -NoProfile -File scripts/coord/claim.ps1 -Take 12 -Note "csv importer"
+```
+
 ### Report liveness, never age
 
 **Trap.** Labelling a claim stale once it passes some age, and recommending release.
