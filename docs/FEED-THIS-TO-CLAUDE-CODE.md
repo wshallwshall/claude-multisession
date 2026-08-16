@@ -3,34 +3,39 @@
 ## TLDR/BLUF
 
 **What this is.** A prompt you paste into Claude Code, plus the instructions it follows once it has
-read this page. It surveys your repository and advises you; it installs nothing.
+read this page. It surveys your repository and advises you. It installs nothing.
 
-**Why you should care.** It answers whether this tooling helps your situation at all, and running one
-session at a time is a perfectly good answer it is told to give. It reports what is already in your
-repository and what would have to change, before you commit to any of it.
+**Why you should care.** You get an answer about *your* repository before you change anything: what
+is already there, what would have to change, what gets in the way. "Run one session at a time" is an
+answer it is told to give. Not for you if you have already decided to install.
 
-**How to use it.** Paste the block in the next section into Claude Code, opened in the repository you
-are thinking about. Everything after that section is addressed to the model, not to you.
+**How to use it.** Paste the block below into Claude Code, opened in the repository you are thinking
+about. Everything under [For Claude Code](#for-claude-code) is addressed to the model, not to you.
+If you have already decided, go to [Quickstart](QUICKSTART.md) instead.
 
 ## For the human, in thirty seconds
 
-Open Claude Code in the repository you are thinking about, and paste this:
+**The goal.** Find out whether this tooling is worth installing here, without installing anything.
+
+**What to do.** Open Claude Code in the repository you are thinking about, and paste this:
 
 ```text
 Read https://claude-multisession.pages.dev/FEED-THIS-TO-CLAUDE-CODE.md
 and use it to advise me about this repository. Stop where it tells you to stop.
 ```
 
+**What happens next.** It reads this page and the documents it points at, looks at your repository,
+and then talks to you about it. It stops and waits before anything gets installed.
+
 ### What that will actually do
 
-Claude Code will read this page and the documents it points at, look at your repository, and then
-**talk to you about it**. Specifically, it will:
+Specifically, Claude Code will:
 
 - **Tell you what this tooling is for**, and whether your situation is one it helps with. Running
   one session at a time is a perfectly good answer, and it should say so if that is where you are.
 - **Report what it found** in your repository: what is already there, what would have to change, and
   anything that would get in the way.
-- **Explain what a setup would involve** -- which pieces, in what order, and what each one costs you
+- **Explain what a setup would involve**: which pieces, in what order, and what each one costs you
   in friction. You can stop at any point, or take one piece and ignore the rest.
 - **Answer your questions** about any of it, against your repository rather than in general.
 - **Prepare exact commands, if you decide you want them**, with the real paths already filled in,
@@ -55,12 +60,12 @@ Everything from here is addressed to you, Claude Code.
 ## What you are being asked to do
 
 **Advise, do not install.** Somebody is deciding whether this tooling is worth adopting in the
-repository you are sitting in. Your job is to give them a grounded answer about *their* repository,
-and then help them do it only if they choose to.
+repository you are sitting in. Give them a grounded answer about *their* repository, then help them
+act on it only if they choose to.
 
 Work in this order: **understand the tooling, survey the target, explain the options, answer
-questions.** Only if they decide to proceed do you prepare commands for them to run. You never run
-the installers yourself -- see the next section for why that is a wall rather than an obstacle.
+questions.** Prepare commands only if they decide to proceed. You never run the installers yourself.
+The next section says why that is a wall rather than an obstacle.
 
 **Say so if the answer is no.** This tooling earns its cost when several sessions work one
 repository at once, or when collisions regularly lose work. If neither is true, say plainly they
@@ -98,9 +103,9 @@ obstacle.
 
 Read the target. Change nothing. Report what you find.
 
-1. **Preconditions.** PowerShell 7.3 or later on `PATH` as `pwsh`; `git`; a real `python` (on
-   Windows, `python --version` may resolve to an execution-alias stub that runs nothing -- check the
-   version actually prints). Name any that are missing; without them a setup could not proceed.
+1. **Preconditions.** PowerShell 7.3 or later on `PATH` as `pwsh`, `git`, and a real `python`. On
+   Windows, `python --version` may resolve to an execution-alias stub that runs nothing, so check
+   that a version actually prints. Name any that are missing: without them a setup cannot proceed.
 2. **The target's identity.** Its root, its trunk branch name, whether it has worktrees, and
    whether `.git/hooks` holds a `commit-msg` or `pre-push` from something else. If either is there,
    say so loudly: the installer refuses to overwrite a hook it does not own, so the human must
@@ -133,20 +138,20 @@ Then **STOP and let them decide.** Do not produce commands yet.
 
 Only now, and only for the pieces they chose.
 
-1. **Write `ccx.config.json` at the target root**, if they want it. You may do this yourself -- it is
-   a config file, not an installer. It is both the knob file and the opt-in marker: without it, the
-   user-scope hooks stay inert in this repository. Start from the tooling's own `ccx.config.json`.
-2. **Produce the commands, do not run them.** Substitute the real absolute paths, order them as
-   [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) does, and
-   tell them to run the set **in a plain terminal, not through you**. Ask for the output pasted back
-   rather than summarised.
+1. **Write `ccx.config.json` at the target root**, if they want it. You may do this yourself: it is
+   a config file, not an installer. It is both the knob file and the opt-in marker, so without it
+   the user-scope hooks stay inert in this repository. Start from the tooling's own
+   `ccx.config.json`.
+2. **Produce the commands, do not run them.** Substitute the real absolute paths, and order them as
+   [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) does. Tell them to run the set
+   **in a plain terminal, not through you**, and ask for the output pasted back rather than
+   summarised.
 3. **STOP** until they have run it and reported back.
 4. **Verify what came back**, using the audit commands you are allowed to run. See below.
 5. **Offer a working agreement.** Copy
    [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
-   into the target as `CLAUDE.md` **and edit it down to what is true here.** Delete every rule the
-   target does not actually follow. An
-   aspirational agreement is worse than none: the next session acts on it.
+   into the target as `CLAUDE.md`, **cut to what is true here.** Delete every rule the target does
+   not follow. An aspirational agreement is worse than none: the next session acts on it.
 6. **STOP.** Ask them to confirm it matches how they actually work, section by section if it is
    contentious. You are guessing at their conventions; they are not.
 
@@ -184,12 +189,12 @@ and why. That sentence is more useful to the human than the workaround.
 
 - **You cannot prove the install works end to end.** You can audit it. The strongest evidence is the
   doctor run from a plain terminal, by the human, after everything is wired.
-- **You cannot prove a gate can fail.** Breaking a control on purpose to watch it refuse is the only
-  proof that it is live, and doing that convincingly needs a second live session and a peer worktree.
-  Say that the deny path is unproven rather than implying it is proven.
-- **Announce needs a desktop-only server.** If this is a plain CLI install, the announce hook will
-  find peers and then instruct you to call tools you do not have. Leave that one hook uninstalled and
-  say why.
+- **You cannot prove a gate can fail.** Breaking a control on purpose to watch it refuse is the
+  only proof that it is live. Doing that convincingly needs a second live session and a peer
+  worktree. Say that the deny path is unproven rather than implying it is proven.
+- **Announce needs a desktop-only server.** On a plain CLI install, the announce hook finds peers
+  and then instructs you to call tools you do not have. Leave that one hook uninstalled, and say
+  why.
 
 ## Where the detail lives
 
@@ -198,6 +203,7 @@ Do not reconstruct these from memory -- read them when they become relevant.
 | For | Read |
 |---|---|
 | The full install procedure | [INSTALL.md](https://claude-multisession.pages.dev/INSTALL.md) |
+| Requirements, and where each control stops working | [Limits](LIMITS.md) |
 | What the whole thing is for | [Concepts](CONCEPTS.md) |
 | Worktree rules and the hijack it prevents | [Worktrees](WORKTREES.md) |
 | Claims, locks, presence, overlap | [Coordination](COORDINATION.md) |

@@ -13,11 +13,9 @@ Four installers, four scopes, and how to prove each one is live rather than mere
 - **Not for you if you are not on Windows.** This is PowerShell 7 and Windows-first. The Python
   checkers are portable and almost nothing else is, and off Windows path comparison stops
   case-folding, which the doctor prints as a blind spot rather than working around.
-- **Where to start.** Step 0, opt in. Then the doctor, then what the doctor says it scanned -- that
-  reading is the only thing separating an installed control from a merged file. Expect the ASCII gate
-  to read `OFF` even after a complete install, and the sequence gate to join it once you configure
-  `sequences`; both are counted on an `OFF (opt-in)` line rather than folded into the `OFF` total, and
-  [Controls no installer wires](#controls-no-installer-wires) says why neither is a hole.
+- **Where to start.** Step 0, opt in, then the doctor -- and read what it says it scanned, not just
+  the verdict. Expect `OFF` from the ASCII gate, and from the sequence gate once `sequences` is set;
+  both count as [`OFF (opt-in)`](#controls-no-installer-wires), not as holes.
 
 ---
 
@@ -26,12 +24,12 @@ Four installers, four scopes, and how to prove each one is live rather than mere
 > file you are reading is a source artifact, not an enforcement.
 
 That failure is invisible by construction. A repository with no controls installed still gives you a
-session banner, a status message on every prompt, and green output. There is no error, no warning,
-and nothing in the settings file that looks wrong. On the repository this tooling was developed in, a
-coordination hook sat wired-but-resolving-nothing for hours while the settings file read as correct,
-because a similarly-named entry from an unrelated project occupied the slot. Another gate had dozens
-of passing tests, every one of them binding the repository's copy while enforcement ran from a stale
-installed copy.
+session banner, a per-prompt status message, and green output -- no error, no warning, nothing in
+the settings file that looks wrong.
+
+On the repository this tooling was developed in: a coordination hook sat wired and resolving nothing
+for hours while an unrelated project's similarly-named entry held its slot, and a gate with dozens
+of passing tests bound the repository's copy while enforcement ran from a stale installed one.
 
 ---
 
@@ -44,11 +42,12 @@ installed copy.
 | A `python` on `PATH` (or `CCX_PYTHON`) | The git hooks installer 2 writes are `/bin/sh` shims that exec a stdlib-only Python checker; the hand-wired sequence gate and the leak gate are Python too | **The installed git gates are OFF** and say so on stderr |
 | `ccx.config.json` at the target repo root | It is both the knob file and the opt-in marker | User-scope hooks stay inert in that repo |
 
-**Platform honesty.** This is PowerShell 7 and Windows-first. The Python checkers -- the git-hook
-gates under `scripts/hooks/` and the leak gate at `scripts/security/scan_forbidden.py` -- are
-stdlib-only and portable; almost everything else is `pwsh`. See `docs/HOOKS.md` for which git hook
-each checker belongs to. Off Windows, path comparison stops case-folding and the roster's
-self-marking degrades -- the doctor prints both as blind spots rather than pretending otherwise.
+**Platform honesty.** PowerShell 7, Windows-first. Only the stdlib-only Python checkers port: the
+git-hook gates under `scripts/hooks/` (`docs/HOOKS.md` says which hook each belongs to) and the leak
+gate at `scripts/security/scan_forbidden.py`.
+
+Off Windows the doctor prints two blind spots: path comparison stops case-folding, and the roster's
+self-marking degrades.
 
 ---
 
@@ -62,11 +61,9 @@ repositories asked for them. That marker is `ccx.config.json` at the repository 
 Copy-Item <path-to-this-checkout>/ccx.config.json ./ccx.config.json
 ```
 
-Set `trunk`, `worktreeLayout`, `protectedRefs` and (optionally) `sequences` to match that repository.
-`CCX_CONFIG` overrides the lookup if you need the file somewhere else. The probe is deliberately the
-config file's **presence** and not "does some implementation script happen to exist here" -- that
-second question is true in a half-installed tree and false in a repository that vendors the scripts
-elsewhere.
+Set `trunk`, `worktreeLayout`, `protectedRefs` and optionally `sequences` to match. `CCX_CONFIG`
+moves the lookup elsewhere. The probe is the file's **presence**, not "is an implementation script
+here": that question is true in a half-installed tree and false where the scripts live elsewhere.
 
 Without this file the installers still run, and each one prints a `NOTE` telling you the rest of the
 tooling will stay inert.
@@ -86,11 +83,10 @@ tooling will stay inert.
 
 ## Which repository each installer governs
 
-The most expensive mistake available here is installing perfectly into the wrong clone. Everything
-downstream then agrees with you: the install prints a receipt, `-Status` hashes green, and the doctor
-returns a long, mostly-green report -- all of it true, and none of it about the repository you are
-working in. Two directories are in play in every command, and they are only the same directory if you
-vendored these scripts into your own repository:
+The most expensive mistake here is a perfect install into the wrong clone. Everything downstream
+agrees: a receipt, `-Status` green, a long mostly-green doctor report -- all true, none of it about
+the repository you work in. Two directories are in play, and they coincide only in a vendored
+layout:
 
 - the **tooling checkout**, which is where scripts are *copied from* and hashed against, and
 - the **target**, the clone or checkout that is *governed*.
@@ -109,11 +105,9 @@ Two consequences worth keeping:
   the target. A governed repository is not expected to vendor any of these files, so `-RepoRoot
   <your-repo>` does not send the installer looking in `<your-repo>/scripts/hooks/` for sources.
 - **`install-git-hooks.ps1` resolves its clone before every mode**, so `-Status` and `-Uninstall`
-  refuse on the same terms and take the same `-RepoRoot`: auditing or removing the wrong clone's
-  hooks is the same error with the same cost. `install-gate.ps1` is the opposite, and deliberately:
-  its `-Status` and `-Uninstall` are not repository-keyed at all -- they read and remove the one
-  shared allowlist and the config roots' wiring -- so `-Repo` has no meaning there and is not asked
-  for.
+  take the same `-RepoRoot` and refuse on the same terms: auditing the wrong clone's hooks is the
+  same error as installing there. `install-gate.ps1` is the opposite, deliberately: no `-Repo` at
+  all.
 
 Nothing above changes the one rule that makes it checkable: after any of it, run the doctor with an
 explicit `-Repo` and read the `repo examined` line back before you believe anything under it.
@@ -121,31 +115,29 @@ explicit `-Repo` and read the `repo examined` line back before you believe anyth
 ### Shim or copy -- the trade you are making
 
 The coordination installer writes a **shim**: a one-liner that locates the script in a checkout and
-runs it. Nothing falls stale, because a pull updates the hook everywhere at once. The price is that a
-shim resolving nothing exits silently and writes nothing, which is byte-identical to a healthy hook
-with no peers.
+runs it. Nothing falls stale -- a pull updates the hook everywhere at once. The price: a shim
+resolving nothing exits silently and writes nothing, byte-identical to a healthy hook with no peers.
 
 The gate and git-hook installers write a **copy**, because their scripts must survive a checkout. The
-primary is routinely on a detached HEAD or an old commit, and a hook whose script path lives inside a
-working tree simply vanishes on a branch switch -- after which the tool call runs anyway, silently.
-The price is drift: installing from a stale checkout downgrades the live gate for every worktree at
-once, while every file involved is still present and still looks installed.
+primary is routinely on a detached HEAD or an old commit, and a hook whose script lives inside a
+working tree vanishes on a branch switch -- after which the tool call runs anyway, silently.
 
-Both prices are paid the same way -- by receipt, never by reading a settings file.
+The price is drift: installing from a stale checkout downgrades the live gate for every worktree at
+once, while every file involved is still present and still looks installed. Both prices are paid the
+same way -- by receipt, never by reading a settings file.
 
 ---
 
 ## Why user scope, and not the project's `.claude/`
 
-Project-scoped hooks do not reach worktrees. `.claude/` is git-ignored in a great many repositories,
-so git cannot deliver a project `settings.json` to a new worktree at all; where it can, the copy is a
-creation-time snapshot that nothing refreshes. And a project hook lives on **one branch**, so it
-protects nothing until every other worktree merges it.
+Project hooks do not reach worktrees: `.claude/` is usually git-ignored, so git cannot deliver a
+project `settings.json` to a new worktree; where it can, the copy is a creation-time snapshot nothing
+refreshes. And a project hook lives on **one branch**, protecting nothing until other worktrees merge
+it.
 
 Measured on the repository this tooling was developed in: more than half the worktrees had no project
-settings whatsoever. A live editor session was working in one of them with zero coordination
-context -- it could not see its peers and they could not see it. That is the failure mode that
-matters. It is not obviously broken; it is invisible.
+settings at all. A live editor session in one of them had zero coordination context -- it could not
+see its peers, and they could not see it. That failure mode is invisible, not broken-looking.
 
 User scope is per-machine and loads in every worktree regardless of how that worktree was created.
 Hook definitions from the user, project and local scopes are unioned, so installing at user scope
@@ -167,26 +159,26 @@ Wires three rows into `~/.claude/settings.json`:
 | `PreToolUse` (`Edit\|Write\|MultiEdit\|NotebookEdit`) | `scripts/hooks/collision_gate.ps1` | Refuses a file a live session is already changing |
 | `UserPromptSubmit` | `scripts/hooks/announce-session.ps1` | Tells peers you exist, and what you intend |
 
-**Target:** a settings file, and nothing else. This is the one installer that never resolves a
-repository -- the rows it writes are shims that resolve one per session, at run time, from that
-session's own directory. So it does not matter which checkout you run it from, and there is no
-`-Repo` to get wrong. What it *does* write is exactly **one** file per run: `~/.claude/settings.json`
-unless `-SettingsPath` moves it. If your client reads more than one config root, run it once per
-root; the doctor lists the roots it found under `config roots`.
+**Target:** a settings file, and nothing else. This installer never resolves a repository -- its rows
+are shims that resolve one per session, at run time, from that session's own directory -- so no
+checkout is the wrong one to run it from and there is no `-Repo` to get wrong.
+
+It writes exactly **one** file per run: `~/.claude/settings.json` unless `-SettingsPath` moves it. If
+your client reads more than one config root, run it once per root; the doctor lists the roots it
+found under `config roots`.
 
 Useful flags: `-Only <event>` and `-Except <event>` scope install, uninstall and `-Status` alike.
 Announce lives on its own event, so `-Only UserPromptSubmit -Uninstall` removes announce **without**
 disarming the collision gate or the banner.
 
-**The shim resolves the primary checkout first, not the calling worktree.** Coordination is
-infrastructure and has to be uniform; two sessions running different versions of the collision
-protocol is exactly the drift the shared liveness fence exists to prevent. The calling worktree is
-kept only as a fallback.
+**The shim resolves the primary checkout first, not the calling worktree.** Coordination has to be
+uniform: two sessions running different versions of the collision protocol are exactly the drift the
+shared liveness fence prevents. The calling worktree is only a fallback.
 
-Both candidates are inside the session's **own** repository, which is what makes the vendored layout
-the one where these three rows can be `OK`. See
-[Quickstart](https://claude-multisession.pages.dev/#quickstart) for the layout choice,
-and for what a target that does not carry these scripts gets instead.
+Both candidates are inside the session's **own** repository, which is why only the vendored layout
+makes these three rows `OK`.
+[Quickstart](https://claude-multisession.pages.dev/QUICKSTART.html) covers the layout
+choice, and what a target without these scripts gets instead.
 
 ### Prove it
 
@@ -206,17 +198,17 @@ Read four separate lines per row, and do not let any of them stand in for anothe
 `=> LIVE` requires wired **and** resolving **and** matching the receipt. `resolves NOTHING` is its own
 red line, printed with the bases it tried, because that is the state that reads as healthy.
 
-`-Status` deliberately models the shim's resolution rather than using a better helper that resolves
-the primary more carefully. A status check that finds the target by a better route than the hook uses
-reports a healthy hook that does not work. It also resolves from your **current directory**, because
-that is where the hook resolves from -- so `-Status` only ever answers for the repository you are
-standing in. Re-run it from each one.
+`-Status` models the shim's resolution rather than using a better helper: a check that resolves the
+primary better than the hook does reports a healthy hook that does not work. It resolves from your
+**current directory**, so it answers only for the repository you are standing in -- re-run it from
+each.
 
 ### The standing cost
 
 These hooks run on every prompt in every repository on the machine. Measured on the repository this
-tooling was developed in: roughly 0.5 s for the shim on every user prompt, plus roughly 1.0 s for the
-peer lookup on the prompts where it actually runs (the cheap opt-in check runs first, deliberately).
+tooling was developed in: roughly 0.5 s for the shim per prompt, plus roughly 1.0 s for the peer
+lookup on the prompts where it runs (the cheap opt-in check runs first, deliberately).
+
 Announce's row carries a 15 s timeout, which is that hook's only time bound.
 
 ---
@@ -231,23 +223,25 @@ pwsh -NoProfile -File <tooling>/scripts/coord/install-git-hooks.ps1 -RepoRoot <t
 `core.hooksPath` if that is set for the clone, otherwise `<its-git-common-dir>/hooks`. `-HooksDir`
 overrides that derivation for a layout neither answer covers; you should almost never need it.
 
-Leave `-RepoRoot` off and the target is the clone **you are standing in** -- which this script
-requires to be the clone it ships from, and otherwise refuses, naming both and printing the
-`-RepoRoot` line to re-run. That refusal replaced a default that resolved this script's own checkout,
-under which `cd <your-repo>; pwsh -File <tooling>/scripts/coord/install-git-hooks.ps1` installed both
-gates into the **tooling** clone and printed a clean receipt for them. Nothing you were working in
-was governed, and every status line agreed it was fine.
+Leave `-RepoRoot` off and the target is the clone **you are standing in**, which must be the clone
+this script ships from; otherwise it refuses, naming both and printing the `-RepoRoot` line to
+re-run.
+
+That refusal replaced a default that resolved this script's own checkout:
+`cd <your-repo>; pwsh -File <tooling>/scripts/coord/install-git-hooks.ps1` then installed both gates
+into the **tooling** clone, printed a clean receipt, and governed nothing you were working in, while
+every status line agreed.
 
 The checkers are always copied from the tooling checkout, never from `-RepoRoot`. A repository you
 want governed is not required to carry `scripts/hooks/`.
 
-Installs into the **shared** hooks directory, which lives in the common git directory that every
-linked worktree of the clone shares. One file there reaches all of them the instant it is written --
-no branch, no merge, no propagation lag. It survives a branch switch in any of them. And it sees
-every write route (an edit tool, a shell redirect, a script, an editor, a subagent), because it
-inspects the **tree** at commit time rather than a tool call. That last property is why it exists
-alongside the `PreToolUse` gate, which inspects tool arguments and therefore cannot see a file
-written by a shell command.
+Installs into the **shared** hooks directory in the clone's common git directory, which every linked
+worktree shares. One file there reaches all of them the instant it is written -- no branch, no merge,
+no propagation lag -- and it survives a branch switch in any of them.
+
+It also sees every write route -- an edit tool, a shell redirect, a script, an editor, a subagent --
+because it inspects the **tree** at commit time rather than a tool call. That is why it exists
+alongside the `PreToolUse` gate, which inspects tool arguments and cannot see a shell-written file.
 
 | Hook | Checker | Refuses |
 |---|---|---|
@@ -259,22 +253,21 @@ somewhere git never looks -- which is the exact shape of failure this script exi
 
 **Two invariants worth knowing before you run it.**
 
-1. **It refuses to overwrite a hook that is not ours.** If `commit-msg` or `pre-push` exists without
-   our marker, the installer stops and tells you to merge them by hand. Blind overwriting silently
-   deletes somebody else's control. The marker strings are on-disk identity: renaming one orphans
-   every existing install, after which this script correctly refuses to touch the old file as
-   foreign. Rename once, in one commit, or not at all.
+1. **It refuses to overwrite a hook that is not ours.** A `commit-msg` or `pre-push` without our
+   marker stops the install: merge them by hand, rather than let blind overwriting delete somebody
+   else's control. The markers are on-disk identity, so renaming one orphans every install. Rename
+   once, in one commit, or not at all.
 2. **It never writes `pre-commit` -- not to install, not to patch, not to migrate.** Two tools cannot
    both own that file. What happens when they try, and why the sequence gate therefore ships unwired,
    is at [the git-hook contract](docs/HOOKS.md#the-git-hook-contract).
 
 **Fail-open, declared.** The installed hooks are `/bin/sh` shims that locate a python and exec the
-checker. With no interpreter they write to stderr and exit 0 -- the gate is OFF for that commit, and
-it says so out loud. This is the single failure that turns both gates off everywhere at once, while
-every file involved is still present and still looks installed. That is why `-Status` reports which
-interpreter it found, and asks the interpreter for its version rather than trusting the lookup. On
-Windows a `python` on `PATH` is often an execution-alias stub that resolves cleanly and then runs
-nothing.
+checker. With no interpreter they write to stderr and exit 0: the gate is OFF for that commit, and
+says so out loud.
+
+That one failure turns both gates off everywhere at once, every file still present and still looking
+installed. So `-Status` names the interpreter it found and asks it for its version: on Windows a
+`python` on `PATH` is often an execution-alias stub that resolves cleanly and runs nothing.
 
 `git commit --no-verify` and `git push --no-verify` bypass both. That is a guardrail against accident,
 not a security boundary; back it with a server-side check if you need one.
@@ -285,19 +278,18 @@ not a security boundary; back it with a server-side check if you need one.
 pwsh -NoProfile -File <tooling>/scripts/coord/install-git-hooks.ps1 -RepoRoot <the-clone> -Status
 ```
 
-`-Status` resolves its clone exactly the way the install does, refusal included, so it audits the
-clone you name rather than the one the script lives in. It prints `governs`, `hooks dir` and
-`sources` on three separate lines for the same reason -- the first question a reader has about a
-report is which repository it is about.
+`-Status` resolves its clone the way the install does, refusal included, so it audits the clone you
+name rather than the one the script lives in. It prints `governs`, `hooks dir` and `sources` on
+separate lines for the same reason: the first question about a report is which repository it is
+about.
 
-It re-hashes the installed copies and compares them against **both** the receipt and this checkout's
-sources -- because "a file with the right name is there" is not the same claim as "the code that is
-running is the code you are reading". Read `checker INSTALLED COPY DIFFERS FROM SOURCE` as *the
-running gate is not the code in this checkout*.
+It re-hashes the installed copies against **both** the receipt and this checkout's sources: "a file
+with the right name is there" is not "the running code is the code you are reading".
+Read `checker INSTALLED COPY DIFFERS FROM SOURCE` as *the running gate is not the code here*.
 
 `-Status` also names its own blind spot: nothing in it executes either checker. A hook that exists and
-hashes correctly still does nothing if the checker it execs refuses to run. Driving a real commit -- or
-running the doctor, which fires each control on purpose -- is the only thing that answers that.
+hashes correctly still does nothing if the checker it execs refuses to run. Driving a real commit --
+or running the doctor, which fires each control on purpose -- is the only answer.
 
 ---
 
@@ -307,28 +299,26 @@ running the doctor, which fires each control on purpose -- is the only thing tha
 pwsh -NoProfile -File <tooling>/scripts/worktree/install-gate.ps1 -Repo <the-primary-to-govern>
 ```
 
-**Target:** `-Repo` names the **primary checkout(s)** to write into the allowlist, and accepts
-several at once (`-Repo <path-a>,<path-b>`). It is the primary, not a worktree, on purpose: you will
-usually install from a worktree -- that is the whole point of the gate -- and governing that worktree
-instead of the primary would be exactly backwards.
+**Target:** `-Repo` names the **primary checkout(s)** written into the allowlist, several at once if
+you like (`-Repo <path-a>,<path-b>`). The primary and not a worktree, on purpose: you will usually
+install from a worktree, and governing that worktree instead would be exactly backwards.
 
-Leave `-Repo` off and the target is the primary of the clone **you are standing in**, which must be
-the clone this script ships from; otherwise it refuses and names both primaries. The old default
-resolved this script's own clone, so installing from a tooling checkout put the tooling checkout in
-the allowlist -- after which the status line, the receipt and the doctor all agreed, confidently,
-about the wrong repository.
+Leave `-Repo` off and the target is the primary of the clone **you are standing in** -- required to
+be the clone this script ships from, or it refuses, naming both. The old default resolved this
+script's own clone, and put the tooling checkout in the allowlist while every report agreed.
 
 `-ConfigDir` is the separate question of *which config roots get wired*; it does not name a
 repository. `-Status` and `-Uninstall` are not repository-keyed at all -- they read and remove the one
 shared allowlist and that wiring -- so neither takes `-Repo`.
 
 Copies `scripts/hooks/worktree_gate.ps1` to `~/.claude/hooks/` and registers it as a `PreToolUse`
-hook in the `settings.json` of **every** Claude config directory on the machine: `~/.claude` plus each
-`~/.claude-account-*` that a launcher created **and that carries a marker the client itself
-writes** (`projects/`, `sessions/` or `.claude.json`). The marker test is deliberately not
-`settings.json` or `hooks/`: those are what these installers write, so accepting a directory
-because it has them would make the check confirm its own earlier mistake. Anything rejected is
-listed with its reason. Override the set with `-ConfigDir`, which bypasses the test entirely.
+hook in the `settings.json` of **every** Claude config directory: `~/.claude`, plus each
+`~/.claude-account-*` carrying a marker the client itself writes (`projects/`, `sessions/` or
+`.claude.json`).
+
+The marker test is deliberately not `settings.json` or `hooks/`: those are what these installers
+write, so accepting a directory for having them would let the check confirm its own earlier mistake.
+Rejections are listed with their reason. `-ConfigDir` overrides the set and bypasses the test.
 
 **Why every config directory.** Wiring only `~/.claude` leaves every other login ungated, and those
 are where parallel editor-hosted chats run. A session running under an ungoverned login checked its

@@ -2,17 +2,15 @@
 
 ## TLDR/BLUF
 
-**What this is.** The map of every guardrail here to the event that fires it, the wiring contract
-between an installer and a settings file, and the house rules for adding one.
+**What this is.** A table of every guardrail here: what fires it, what it refuses, and what it does
+when the check itself breaks. Then the wiring, and the rules for writing a new one.
 
-**Why you should care.** Two things are called a hook here and they fail in opposite ways: a
-harness hook can refuse a tool call but never sees a shell redirect; a git hook sees every write
-route but only at commit time. Merging a hook does not install one. Not for you if you run one
-session.
+**Why you should care.** Two things here are both called a hook, and they fail in opposite ways. A
+harness hook can refuse a tool call but never sees a shell redirect. A git hook sees every write,
+but only at commit time. Merging a hook does not install one. Not for you if you run one session.
 
-**How to use it.** Read the two definitions below, then the wiring tables. The harness hooks are
-PowerShell 7 and Windows-first; the git-hook checkers are stdlib-only Python behind `/bin/sh` shims
-and are the portable part of the set.
+**How to use it.** Find your control in the event map and read its last column. Then run
+`bin/ccx-doctor.ps1` to find out whether it is switched on at all.
 
 ---
 
@@ -26,8 +24,9 @@ call before it happens.
 time, hands them argv or stdin, and reads the exit code. They see every write route -- an edit tool,
 a shell redirect, an editor, a subagent -- because they inspect the tree rather than a tool call.
 
-Every guardrail here is one or the other, and each declares its posture in its own file header. This
-document is the map, the wiring contract, and the house rules for adding one.
+Every guardrail here is one or the other. Each declares its **posture** -- what it does when the
+check itself breaks -- in its own file header. This document is the map, the wiring contract, and
+the house rules for adding one.
 
 Platform note: the harness hooks are PowerShell 7 and Windows-first. The git-hook checkers -- the
 three enumerated in the second table below -- are stdlib-only Python behind `/bin/sh` shims, and are
@@ -36,6 +35,10 @@ the portable part of the set.
 ---
 
 ## The event map
+
+Three harness events carry the controls here: `SessionStart` when a chat opens, `PreToolUse` before
+a tool call runs, and `UserPromptSubmit` when you send a prompt. Read the **Posture** column first:
+*fail open* lets work through when the control breaks, *fail closed* refuses it.
 
 | Event | Script | Matcher | What it decides | Posture |
 |---|---|---|---|---|
@@ -65,12 +68,15 @@ Installers:
 Nothing installs `block-blanket-git-stage.ps1`, `steer-inject.ps1`, or `seq_check.py`. Wire those by
 hand.
 
-`.claude/settings.example.json` is a real, tracked row for the blanket-stage guard, with the path
-left as a loud placeholder. `docs/STEERING.md` carries the equivalent for the steering injector at
-`settings.local.json` scope, where that one belongs.
+**The goal.** Switch on a control no installer covers.
 
-An `.example.` file is inert by construction, because the harness loads `settings.json` and
-`settings.local.json` only. Nothing here can be mistaken for an installed control.
+**What to do.** Copy the blanket-stage guard's tracked row out of `.claude/settings.example.json`
+into a real `settings.json`, and replace its loud placeholder path. `docs/STEERING.md` carries the
+steering injector's row at `settings.local.json` scope, where that one belongs.
+
+**What happens next.** Nothing, until you edit a live file. An `.example.` file is inert by
+construction, because the harness loads `settings.json` and `settings.local.json` only. Nothing here
+can be mistaken for an installed control. The sequence gate needs `pre-commit`, not a settings row.
 
 `install-git-hooks.ps1` warns about the sequence gate when sequences are configured, because an
 absent gate and a passing gate look the same from the outside.
@@ -134,9 +140,9 @@ Two wiring patterns, deliberately different:
   byte-identical to a healthy hook with no peers. Its installer writes a receipt and `-Status`
   re-resolves live.
 
-Hook definitions from the user, project and local scopes are unioned, so a user-scope entry adds to a
-project's own guards rather than replacing them. The installers here write user scope on purpose:
-project settings live on one branch and reach a sibling worktree only if it merges them.
+Hook definitions from the user, project and local scopes **merge, they do not replace**: a
+user-scope entry adds to a project's own guards. The installers here write user scope on purpose.
+Project settings live on one branch, and reach a sibling worktree only if it merges them.
 
 Markers are on-disk identity. `install-coordination.ps1` finds its own entries by the literal
 `ccx-coord` or `ccx-announce` in the command string, matched as a substring. So **neither marker may
@@ -202,9 +208,9 @@ the exception: whatever it prints to stdout **is** the starting context, so it e
 
 ### Never carry a decision in the exit code
 
-Every hook in this repository exits 0 and puts its decision in the JSON. The reason is that
-`exit 1` -- the intuitive "refuse" -- is not a refusal here: a non-zero-but-not-2 exit lets the tool
-call through **silently**, which is how a missing hook script reads as an allow. Two consequences:
+Every hook in this repository exits 0 and puts its decision in the JSON. `exit 1` -- the intuitive
+"refuse" -- is not a refusal here. A non-zero-but-not-2 exit lets the tool call through
+**silently**, which is how a missing hook script reads as an allow. Two consequences:
 
 * Do not add `#Requires` to a hook whose failure mode matters. A requirements failure is raised
   before the body runs and exits non-zero, so the file's own error handling never gets a turn.
@@ -279,7 +285,7 @@ postures differ on purpose and the difference is the design:
   cannot work.
 * The **worktree gate** fails open too, but for a blunter reason: a guardrail that wedges all work
   gets uninstalled, and then it protects nothing.
-* The **claim gate** and the **sequence gate** fail closed. A malformed claim reads as unclaimed; a
+* The **claim gate** and the **sequence gate** fail closed. A malformed claim reads as unclaimed. A
   git failure refuses the commit rather than being swallowed into "nothing is staged", which reads
   as a pass. Both are recoverable in one command. A false clean is not, because nobody looks.
 * The **push guard** defaults to the strict direction when it cannot read its configuration, and
@@ -297,7 +303,7 @@ reached the session as reassurance -- for weeks.
 You cannot detect a difference the producer never encoded. So:
 
 * Emit a **named** notice on the fault path (`payload-unreadable`, `overlap-empty`,
-  `overlap-failed`), keep the allow posture, and rate-limit per reason so a persistently broken
+  `overlap-failed`), and keep the allow posture. Rate-limit per reason, so a persistently broken
   dependency does not inject a notice into every single edit.
 * Fail toward **noise**. If the rate-limit stamp cannot be read or written, emit the notice anyway --
   silence is the defect being fixed, so the failure mode of the noise-suppressor must be noise.
@@ -306,10 +312,10 @@ You cannot detect a difference the producer never encoded. So:
 * Scope the throttle per worktree, not per repository. A repo-wide stamp means the first session to
   hit a broken gate silences it for every other session. Those sessions read that silence as
   "checked, nobody is here", which is precisely the defect the notice exists to remove.
-* Where the notice cannot be JSON, because the failure happened before the hook could load its
-  helpers, write it to **stderr**, which is not parsed as a decision, and to the deny log. Both
-  `worktree_gate.ps1` and `block-blanket-git-stage.ps1` print `NOT ENFORCING` there when a dot-source
-  fails.
+* Where the failure happened before the hook could load its helpers, the notice cannot be JSON.
+  Write it to **stderr**, which is not parsed as a decision, and to the deny log. Both
+  `worktree_gate.ps1` and `block-blanket-git-stage.ps1` print `NOT ENFORCING` there when a
+  dot-source fails.
 
 ### `[]` is not the same as nothing, and the fix belongs in the producer
 
@@ -336,34 +342,37 @@ way.
 
 ### The first rule to fire is the only one that speaks
 
-`Write-Deny` exits. So rules are evaluated in source order and there is **no defense in depth between
-them** -- a later rule guarding the same case is unreachable, and looks live in the source. Two
-practical consequences:
+`Write-Deny` exits. So rules are evaluated in source order, and there is **no defense in depth
+between them**. A later rule guarding the same case is unreachable, and looks live in the source.
+Two practical consequences:
 
 * Order rules by cost and blast radius, and say why in a comment. The dispatch rule is checked first
-  in the worktree gate because it is the cheapest place to stop a fan-out that would otherwise run
-  for an hour and report success while writing nothing.
-* Never let two rules each assume the other owns a case. That has shipped: one rule resolved the
-  target from `-C` or cwd only and declined; the other resolved a `cd`, then returned with a comment
-  saying the first rule owned it. Both bowed out, and a whole family of tree-swapping commands was
-  allowed.
+  in the worktree gate because it is the cheapest place to stop a fan-out. Unstopped, that fan-out
+  runs for an hour and reports success while writing nothing.
+* Never let two rules each assume the other owns a case. It has shipped: one rule resolved the
+  target from `-C` or cwd only and declined. The other resolved a `cd`, then declined with a comment
+  saying the first rule owned it. A family of tree-swapping commands was allowed.
 
 ### Log every deny
 
 Before `Write-GateLog` existed, the worktree gate wrote its decision to stdout and exited 0. Nothing
 could answer "how many drift events did this prevent" or "is the false-positive rate one a day or
-one in a thousand", so every severity ranking was an opinion. A receipt is the smallest fix.
+one in a thousand". Every severity ranking was an opinion. A receipt is the smallest fix.
 
-The shipped record is one tab-separated line carrying at least: timestamp, hook version, the
-12-character digest of the gate file that adjudicated, pid, rule, tool, cwd, and a short detail each
-rule composes. The hand-maintained version label has been wrong and cannot name the copy that ran.
+The shipped record is one tab-separated line, carrying at least:
+
+* the timestamp, the hook version, and the 12-character digest of the gate file that adjudicated;
+* the pid, the rule, the tool, and the cwd;
+* a short detail each rule composes.
+
+The hand-maintained version label has been wrong, and cannot name the copy that ran.
 
 Three constraints that are easy to get wrong:
 
 * **Never log the raw command or file contents.** Each rule passes a detail it composed (a verb, a
   target path), so an argument carrying a secret cannot reach a plaintext log.
 * **One record is one line, always.** The detail is derived from tool input, so strip `\r`, `\n` and
-  `\t` and cap the length before composing -- otherwise a crafted path forges extra records in a log
+  `\t` and cap the length before composing. Otherwise a crafted path forges extra records in a log
   whose whole purpose is counting.
 * **Expect contention.** Every session on the machine appends to one file. `Add-Content` silently
   dropped records under load, and a lossy counter is worse than none because it reads as a
@@ -383,11 +392,11 @@ verb-scanning gate, all of them wrong:
 * `echo "git checkout main"` -- denied.
 * `git commit -m "chore: clean up dead code"` -- denied on `clean`.
 * `git restore <two files>`, run from a worktree, denied as "would change the working tree of the
-  SHARED PRIMARY" because a later `cat <primary>/...` in the same compound command named the primary.
+  SHARED PRIMARY". A later `cat <primary>/...` in the same compound command had named the primary.
 
-That last one is the worst kind: the refusal text was **wrong about what the command did**, so the
-operator reading it was told the primary was at risk when it never was. A gate that misdescribes what
-it blocked teaches people to disbelieve it.
+That last one is the worst kind. The refusal text was **wrong about what the command did**, so the
+operator was told the primary was at risk when it never was. A gate that misdescribes what it
+blocked teaches people to disbelieve it.
 
 The mitigations, all shipped:
 
@@ -406,8 +415,8 @@ The mitigations, all shipped:
 * Write ALLOW-asserting tests: a multi-line command, an echoed command, a commit message containing a
   blocklisted verb, and a path that merely resembles a governed one.
 
-Where a cheap test is genuinely unsure, land on the deny side -- but only after the structural checks
-have had their turn, and say in a comment which direction you chose and why.
+Where a cheap test is genuinely unsure, land on the deny side. Do it only after the structural
+checks have had their turn, and say in a comment which direction you chose and why.
 
 ### Enumerated coverage means every hole is silent
 
@@ -463,10 +472,12 @@ a false one.
 
 ### State the cost of an always-on hook
 
-Measured on the repo this tooling was developed in: the coordination shim costs roughly half a
-second on **every** user prompt in **every** repository, the peer lookup about a second more where
-it runs, and a `PreToolUse` hook on `*` a process spawn per tool call -- roughly a third of a
-second.
+Measured on the repo this tooling was developed in:
+
+* the coordination shim costs roughly half a second on **every** user prompt in **every**
+  repository;
+* the peer lookup costs about a second more, where it runs;
+* a `PreToolUse` hook on `*` costs a process spawn per tool call, roughly a third of a second.
 
 Consequences, all of them shipped decisions:
 
@@ -504,7 +515,7 @@ produced. The tests validated an interface that did not exist.
 
 ## Establishing what a hook actually does
 
-Reading the source tells you what a rule *would* do, not whether it runs: the installed copy, the
+Reading the source tells you what a rule *would* do, not whether it runs. The installed copy, the
 settings matcher and the source can all disagree, and a first-match exit makes later rules
 unreachable.
 
@@ -513,7 +524,17 @@ Measured on the repo this tooling was developed in: a gate had 85 passing tests,
 invisible: delete a rule from source and the stale copy enforces it forever, and every test reports
 it gone.
 
-So establish behavior by driving crafted input into the **installed** hook and reading the decision
+**The goal.** Find out what the hook you have installed decides, rather than what the source says it
+would decide.
+
+**What to do.** Run `bin/ccx-doctor.ps1`. It takes receipts (installed-copy SHA versus source,
+markers in live settings, wired matchers diffed against implemented rules), fires each control and
+requires a refusal, and names its own blind spots.
+
+**What happens next.** You get a verdict per control, each backed by a refusal the doctor provoked
+rather than by source it read. Run it before believing any of this is on.
+
+To drive one control by hand, feed crafted input into the **installed** hook and read the decision
 it emits:
 
 ```powershell
@@ -526,15 +547,18 @@ $payload = @{
 $payload | pwsh -NoProfile -File "$HOME/.claude/hooks/worktree_gate.ps1"
 ```
 
+A refusal comes back on stdout as JSON carrying `hookSpecificOutput.permissionDecision`. Anything
+else, including no output at all, means the installed copy did not refuse -- whatever the source
+says.
+
 Four rules for that probe, each learned by getting it wrong:
 
 1. **Pair every attack with a negative control.** A write outside every governed root, and a write
    into a nested worktree, must both be ALLOWED. Without the negative, "refused correctly" and
    "refused because it could not import its own substrate" are the same result.
-2. **Make the probe itself fail loudly.** In `bin/ccx-doctor.ps1`, four attack payloads bound to
-   nothing, carrying no `tool_input`, so every rule allowed them and the doctor called a fine gate
-   broken. The builder now throws on an empty `tool_input`, and an aborted sequence records `??`,
-   never a pass.
+2. **Make the probe itself fail loudly.** In `bin/ccx-doctor.ps1`, four attack payloads carried no
+   `tool_input`, so every rule allowed them and the doctor called a fine gate broken. The builder
+   now throws on an empty `tool_input`, and an aborted sequence records `??`, never a pass.
 3. **If your must-fail case and your under-test case produce the same bytes, the result is
    UNTESTED, not negative.** An `mcp_tool` probe produced nothing for a real MCP server and nothing
    for a nonexistent one that the documentation says errors. Say untested and re-run against a
@@ -542,11 +566,6 @@ Four rules for that probe, each learned by getting it wrong:
 4. **Capability is not enforcement.** A probe fired at the source file rather than the installed copy
    proves the rule can refuse, not that anything is refusing. The doctor downgrades those results
    rather than reporting them green.
-
-`bin/ccx-doctor.ps1` does all of this in one command. It takes receipts (installed-copy SHA versus
-source, markers in live settings, wired matchers diffed against implemented rules), fires each
-control and requires a refusal, and names its own blind spots. Run it before believing any of this
-is on.
 
 ---
 
@@ -561,8 +580,8 @@ is on.
   hook-installers throw when `CLAUDECODE=1`. `-Status` is exempt and runs *before* the refusal: a
   session blind to its own guardrails cannot notice the failure the machinery exists to surface.
 * **Announce delivery depends on a session-management MCP that is Desktop-only.** It is absent on a
-  plain CLI install, where the hook still fires, still resolves peers, and then instructs the model to
-  call tools it does not have. Leave it uninstalled there, or create its OFF file.
+  plain CLI install. The hook still fires there, still resolves peers, and then instructs the model
+  to call tools it does not have. Leave it uninstalled there, or create its OFF file.
 * **A kill switch must be a file.** Hook wiring takes effect only in newly started sessions, and an
   environment variable set now is invisible to a running process. The allowlist file and the
   announce OFF file reach live sessions; `CCX_ANNOUNCE_DISABLE` and `CCX_ALLOW_DIRECT_PUSH` do not.

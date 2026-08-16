@@ -2,36 +2,37 @@
 
 ## TLDR/BLUF
 
-**What this is.** `scripts/coord/alloc.ps1` and `scripts/hooks/seq_check.py`, which hand out "the next
-free number" for a sequence -- decision records, issue headings, migration numbers -- so two sessions
-cannot reach for the same one.
+**What this is.** Two scripts that hand out the next free number in a sequence -- decision records,
+issue headings, migration numbers. `scripts/coord/alloc.ps1` issues a number nobody else can hold.
+`scripts/hooks/seq_check.py` refuses a commit that reuses one.
 
-**Why you should care.** This is the one collision class every other control in this repository is
-blind to. Two sessions each compute the same next number correctly, from their own point of view, and
-both use it. Not for you if your repository maintains no numbered sequence.
+**Why you should care.** Two sessions can take the same number, name their files differently, and
+git merges both with no conflict. This is the one collision class every other control here is blind
+to. Not for you if your repository maintains no numbered sequence.
 
-**How to use it.** What a sequence *is* lives entirely in `ccx.config.json`. Decision records are the
-worked example in `examples/sequence-adr/`, but nothing in the mechanism is specific to them. The
-gate ships **unwired**, so read the doctor's status output before assuming it enforces anything.
+**How to use it.** Start at [Configuring a sequence](#configuring-a-sequence): one key in
+`ccx.config.json` defines a sequence, and both scripts are inert without it. The gate ships
+**unwired**, so run `bin/ccx-doctor.ps1` before assuming it enforces anything.
 
 ---
 
-Some numbers are a shared resource that git cannot see. Decision records named `0001-*.md`,
-`0002-*.md`. Issues written as `## 58.` headings in one file. Migration numbers, RFC numbers, schema
-versions -- anything where "the next one" is a scalar two people can reach for at once.
+Some numbers are a shared resource git cannot see. "The next one" is a single value two sessions can
+reach for at once:
 
-`scripts/coord/alloc.ps1` and `scripts/hooks/seq_check.py` exist for the one collision class every
-other control here is blind to. `examples/sequence-adr/` is the worked example, but nothing in the
-mechanism is specific to decision records. A sequence is defined entirely in `ccx.config.json`.
+- Decision records named `0001-*.md`, `0002-*.md`.
+- Issues written as `## 58.` headings in one file.
+- Migration numbers, RFC numbers, schema versions.
+
+`examples/sequence-adr/` is the worked example, and nothing in the mechanism is specific to decision
+records. A sequence is defined entirely in `ccx.config.json`.
 
 ---
 
 ## The defect
 
-Two sessions each look for the next free number. Both compute the same answer -- correctly, from
-their own point of view -- and both use it. They create **differently named** artifacts:
-`0004-alpha.md` and `0004-beta.md`, or two `## 58.` headings sixteen hundred lines apart in the
-same file.
+Two sessions each look for the next free number. Both get the same answer, correctly, from their own
+point of view. Both use it, and they create **differently named** artifacts: `0004-alpha.md` and
+`0004-beta.md`, or two `## 58.` headings sixteen hundred lines apart in one file.
 
 Git merges both **cleanly**. There is no textual conflict, because the two sessions never touched
 the same bytes.
@@ -53,8 +54,8 @@ It is not churn. It is a concurrency defect, and the workaround is the bug.
 > remedy keeps being "redo it by hand", ask whether you are looking at a race.
 
 **It fires in sequences the allocator does not cover, too.** Measured 2026-08-11: a session checked
-that a rule identifier was free, composed the entry, then wrote it -- and a peer had taken that
-number in the gap. The check and the write were never one operation.
+that a rule identifier was free, composed the entry, then wrote it. A peer had taken that number in
+the gap, because the check and the write were never one operation.
 
 A series spanning two clones is the case this allocator cannot take. Its state root is per-clone by
 design, so two repositories issuing from one series share no allocator, and the rule identifiers in
@@ -105,8 +106,8 @@ Neither half is sufficient alone.
 | **Gate** | `scripts/hooks/seq_check.py` | Refuses a commit that adds a number which is already taken, unallocated, or missing from the index | `pre-commit`, and again in CI with `--ci` |
 
 **Test-and-set, not read-modify-write.** The allocator claims a number by creating
-`<state-root>/alloc/<kind>/<number>.json` with `FileMode::CreateNew` and `FileShare::None`; if a
-sibling got there first the create throws `IOException` and the loop moves on. That throw *is* the
+`<state-root>/alloc/<kind>/<number>.json` with `FileMode::CreateNew` and `FileShare::None`. If a
+sibling got there first, the create throws `IOException` and the loop moves on. That throw *is* the
 mutual exclusion.
 
 A read-modify-write on a shared list is not an alternative. Measured on the repo this tooling was
@@ -124,8 +125,11 @@ develops holes. That is deliberate: holes are free, collisions are not.
 
 ## Configuring a sequence
 
-One key in `ccx.config.json`. Omit `sequences` entirely and both halves are inert -- the allocator
-refuses with a message naming the file to edit, and the gate returns 0 without a word.
+**The goal.** Tell both scripts what counts as a number here: which directory holds it, what its
+filename looks like, and where its index row lives.
+
+**What to do.** Add one `sequences` key to `ccx.config.json`. This is the decision-record sequence
+from `examples/sequence-adr/`:
 
 ```json
 {
@@ -149,10 +153,15 @@ refuses with a message naming the file to edit, and the gate returns 0 without a
 | `indexFile` | no | An index/table file that must carry a row per number |
 | `indexRowPattern` | with `indexFile` | Regex recognizing one row. **Group 1 must capture the number.** |
 
-Both scripts validate this **before touching the registry**, and both name the file and the key in
-every message. `indexFile` and `indexRowPattern` must be given together **or not at all**: half a
-configuration silently drops a whole term from the floor, and a floor that is **silently** too low
-is the **exact** failure the allocator exists to prevent.
+**What happens next.** Both scripts validate this key **before touching the registry**, and both
+name the file and the key in every message they print.
+
+Omit `sequences` entirely and both scripts are inert. The allocator refuses with a message naming
+the file to edit, and the gate returns 0 without a word.
+
+`indexFile` and `indexRowPattern` must be given together **or not at all**. Half a configuration
+silently drops a whole term from the floor. A floor that is **silently** too low is the **exact**
+failure the allocator exists to prevent.
 
 ### `indexRowPattern` is compiled multiline, and that was once a silent hole
 
@@ -178,6 +187,11 @@ the one that term is for.
 
 ## Using it
 
+**The goal.** Get a number that is yours, or read the **floor** without spending one. The floor is
+the highest number already taken anywhere this clone can see.
+
+**What to do.**
+
 ```powershell
 # take a number
 pwsh -NoProfile -File scripts/coord/alloc.ps1 -Kind adr -Title "Worktree gate"
@@ -189,15 +203,19 @@ pwsh -NoProfile -File scripts/coord/alloc.ps1 -Kind adr -ShowFloor
 pwsh -NoProfile -File scripts/coord/alloc.ps1 -List
 ```
 
-`-Kind` may be omitted when exactly one sequence is configured. With two or more it is required,
-and the error lists the configured names -- the parameter is deliberately **not** a `ValidateSet`, so
-the repo does not carry two lists of kinds that have to agree.
+**What happens next.** A **successful** allocation prints:
 
-`-Title` is required for a real allocation. It is recorded in the claim so a sibling session running
-`-List` can see what the number is for.
+- the number, and the directory to put it in;
+- the pattern the path must match, and a suggested filename;
+- a reminder to add the index row **in the same commit**.
 
-A **successful** allocation prints the number, the directory to put it in, the pattern the path must
-match, a suggested filename, and a reminder to add the index row **in the same commit**.
+The two parameters:
+
+- `-Kind` may be omitted when exactly one sequence is configured. With two or more it is required,
+  and the error lists the configured names. The parameter is deliberately **not** a `ValidateSet`,
+  so the repo does not carry two lists of kinds that have to agree.
+- `-Title` is required for a real allocation. It is recorded in the claim, so a sibling session
+  running `-List` can see what the number is for.
 
 The claim records `number`, `kind`, `title`, `branch`, `worktree` and `claimed`, as UTF-8 with **no
 BOM**: the gate reads it with `encoding="utf-8"`, and a BOM makes `json.loads` raise.
@@ -206,7 +224,8 @@ BOM**: the gate reads it with `encoding="utf-8"`, and a BOM makes `json.loads` r
 
 ## The floor, and why it ratchets
 
-The floor is the maximum over four terms, then ratcheted against a persisted high-water mark:
+The allocator issues the first number above the floor, so the floor is what decides whether a number
+is free. It is the maximum over four terms, then ratcheted against a persisted high-water mark:
 
 | Term | Source | Catches |
 |---|---|---|
@@ -220,15 +239,17 @@ are invisible to a trunk-only sweep, so the allocator hands them out as free. Th
 later as two differently-named files that merged clean. A number on *any* ref is taken.
 
 Term 2 is batched. One `git show` process per ref cost roughly 34 seconds on Windows, measured on
-the repo this tooling was developed in; two `git cat-file` processes did it in about 3. Most refs
+the repo this tooling was developed in. Two `git cat-file` processes did it in about 3: most refs
 share a blob, so de-duplicating by object id collapses several hundred specs into far fewer reads.
 
 ### The ratchet
 
-**The sweep is only as good as the refs this clone holds.** Measured on the repo this tooling was
-developed in, all refs gave a floor well above origin and local heads: numbers lived on
-remote-tracking refs for a remote no longer in `git remote -v`. Drop those and the floor silently
-reverts, and the allocator re-issues numbers already in use -- no error, no signal.
+**The sweep only sees this clone's refs.** Measured on the repo this tooling was developed in, the
+all-refs floor sat well above origin and local heads: those numbers lived on remote-tracking refs
+for a remote no longer in `git remote -v`.
+
+Drop those refs and the floor silently reverts, so the allocator re-issues numbers already in use --
+no error, no signal.
 
 So the floor is persisted to `<state-root>/alloc/<kind>/.floor-highwater` and **may rise but never
 fall**. When the computed floor comes in below the mark, `alloc.ps1` prints a loud NOTE naming both
@@ -246,13 +267,16 @@ but the history those refs pointed at is still gone.
 
 ### Allocation is a one-way door, so it ships a read-only probe
 
-Numbers are never reclaimed, so before `-ShowFloor`, the only way to test the floor was to **spend
-a number on the question**. That made the floor's correctness the one property nobody re-tested --
-which is how it went an entire release reading two refs while its header promised all of them.
+Numbers are never reclaimed, so before `-ShowFloor` the only way to test the floor was to **spend a
+number on the question**. That made the floor's correctness the one property nobody re-tested. It
+went an entire release reading two refs while its header promised all of them.
 
-`-ShowFloor` prints the kind, the resolved trunk, the floor (with the computed value and the
-high-water mark shown separately), **the paths it swept**, the number it would issue next, and the
-watermark path -- and allocates nothing.
+`-ShowFloor` allocates nothing and prints:
+
+- the kind, and the resolved trunk;
+- the floor, with the computed value and the high-water mark shown separately;
+- **the paths it swept**;
+- the number it would issue next, and the watermark path.
 
 Two details make it trustworthy:
 
@@ -286,9 +310,9 @@ there:
 - survives a branch switch in any of them, because it sits outside every working tree;
 - and **sees every write route**, because it inspects the staged tree rather than a tool call.
 
-That last property is the one that matters here. A `PreToolUse` gate reads tool *arguments*, so it
-is blind to a shell redirect, `Set-Content`, `python -c`, a heredoc, an editor, or a subagent. The
-commit hook sees all of them, because by then the bytes are in the index.
+**That third property is the one that matters here.** A `PreToolUse` hook reads a tool call's
+*arguments* before it runs, so it is blind to a shell redirect, `Set-Content`, `python -c`, a
+heredoc, an editor, or a subagent. The commit hook sees all of them: by then the bytes are staged.
 
 ### What it checks
 
@@ -314,18 +338,18 @@ For the same reason it reads the **staged tree** (`git show :path`), never the w
 reading the working tree blocks every unrelated commit the moment you have an untracked
 work-in-progress file in your checkout.
 
-And it is **stdlib only, with no project import**. Most worktrees have no virtualenv, and a gate
-that skips because an import failed is worse than no gate: it still looks installed. The one shared
-import is its sibling `_ccxconfig.py`; failing to find it exits non-zero with an explicit message.
+It is **stdlib only, with no project import**. Most worktrees have no virtualenv, and a gate that
+skips because an import failed is worse than no gate: it still looks installed. The one shared
+import is its sibling `_ccxconfig.py`. Failing to find it exits non-zero with an explicit message.
 
 ### Two rules that keep it honest
 
 Both live in `_ccxconfig.git()` and both were paid for:
 
 - **`encoding=` is required.** `text=True` alone decodes with the locale default, cp1252 on stock
-  Windows. Index files are routinely UTF-8, so the decode raised in subprocess's reader thread,
-  `proc.stdout` came back `None`, and the caller died on `findall(None)`, blocking the commits it
-  guards.
+  Windows. Index files are routinely UTF-8, so the decode raised in subprocess's reader thread.
+  `proc.stdout` came back `None`, the caller died on `findall(None)`, and the commits it guards were
+  blocked.
 - **A non-zero git exit raises.** A bad ref or an unfetched base must never read as an empty file,
   because an empty index parses as "no numbers taken". When the wrapper swallowed non-zero exits,
   the added-files list came back `[]` and the gate reported PASS on every run where it could not
@@ -346,41 +370,44 @@ byte-identical to a clean run.
 `pre-push`, and *never `pre-commit`*. Two tools cannot own one file, and a foreign hook renamed
 behind a framework's shim has failed on Windows, blocking every commit until the shim was removed.
 
-Whenever `sequences` is configured the installer prints in yellow that it does **not** install the
-gate, and until you wire one nothing at commit time stops two sessions using the same number.
-`bin/ccx-doctor.ps1` reports it as **OFF**, with the reason. An absent gate looks like one that
+Whenever `sequences` is configured, the installer prints in yellow that it does **not** install the
+gate. Until you wire one, nothing at commit time stops two sessions using the same number.
+`bin/ccx-doctor.ps1` reports it as **OFF**, with the reason: an absent gate looks like one that
 passed.
 
-Wire it into whatever hook framework you already use:
+**The goal.** Have something at commit time refuse a number that is already taken, never allocated,
+or missing from the index.
+
+**What to do.** Add one line to whatever hook framework you already use:
 
 ```sh
 # in your existing pre-commit hook, or as its own file if you own that slot
 python scripts/hooks/seq_check.py || exit 1
 ```
 
-Verify by receipt, not by presence:
+**What happens next.** Verify by receipt, not by presence:
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-doctor.ps1
 ```
 
 The doctor reports whether any `pre-commit` in the resolved hooks directory invokes `seq_check`. It
-separately fires a **read-only floor probe** at the allocator -- `-ShowFloor`, which never spends a
-number -- so a broken allocator is caught without corrupting the sequence to find out.
+separately fires a **read-only floor probe** at the allocator, `-ShowFloor`, which never spends a
+number. A broken allocator is caught without corrupting the sequence to find out.
 
 ---
 
 ## Modes are not symmetric, and saying so is the point
 
-`--ci` re-runs the same rules against a freshly fetched trunk, which is what catches the **stale-base
-collision**: each branch is internally consistent, and the duplicate only exists once both have
+`--ci` re-runs the same rules against a freshly fetched trunk. That catches the **stale-base
+collision**: each branch is internally consistent, and the duplicate exists only once both have
 merged. It re-runs every rule but one.
 
 **Rule 2 -- allocation ownership -- cannot run in CI.** It reads a per-clone registry inside the git
-directory and compares a worktree path; a runner clones fresh and has neither, so the check would
+directory and compares a worktree path. A runner clones fresh and has neither, so the check would
 return False for every item and nothing could ever merge.
 
-An earlier version ran the CI half of that rule anyway: it computed a set and discarded it, which
+An earlier version ran the CI half of that rule anyway. It computed a set and discarded it, which
 made it structurally incapable of failing while reading, in source, exactly like coverage.
 
 > **Rule.** If a rule cannot run in a mode, name it as not running. Never leave it in place looking
@@ -388,26 +415,26 @@ made it structurally incapable of failing while reading, in source, exactly like
 > allocated to anybody.
 
 The residual, stated plainly: after a `--no-verify` commit, a number belonging to another session's
-**unmerged** branch can be taken with nothing objecting. The corruption then surfaces late -- but
-loudly and recoverably -- when the second of the two merges.
+**unmerged** branch can be taken with nothing objecting. The corruption surfaces late, loudly and
+recoverably, when the second of the two merges.
 
 CI mode also insists on a resolvable base. Locally, an unresolvable trunk downgrades to a printed
-note; in CI it raises, because there the base comparison *is* the job and a base that does not
-resolve is a workflow misconfiguration.
+note. In CI it raises: there the base comparison *is* the job, and a base that does not resolve is a
+workflow misconfiguration.
 
 ### If you wire the CI leg
 
-Two things to get right, neither of which is obvious:
+Three things to get right, none of them obvious:
 
 - **Do not gate the step on a "code changed" path filter.** A pull request that only adds a decision
-  record *is* a docs-only change, so a `code == 'true'` condition makes the governance step skip on
+  record *is* a docs-only change. A `code == 'true'` condition makes the governance step skip on
   exactly the pull requests it exists to police.
 - **Ride it inside an already-required job** rather than adding a brand-new required context. A
   newly required check wedges every pull request opened before it existed.
-
-Use a **two-dot** diff (`base HEAD`), not three-dot. On a pull request the checkout is the merge
-commit, so HEAD contains base. Three-dot resolves a merge base, and two shallow histories fail to
-reach their common ancestor; deepening to fix that is itself a race. The failure was **silent**.
+- **Use a two-dot diff** (`base HEAD`), not three-dot. On a pull request the checkout is the merge
+  commit, so HEAD contains base. Three-dot resolves a merge base, and two shallow histories fail to
+  reach their common ancestor. Deepening to fix that is itself a race, and the failure was
+  **silent**.
 
 ---
 
@@ -417,8 +444,8 @@ Rule 2 keys ownership on the **worktree** that holds the claim: `owns()` compare
 `worktree` field, folded through `fold_path()`, against the current repo root.
 
 That only discriminates because each session gets its own worktree. Measured on the repo this
-tooling was developed in, the ownership rule was a **no-op** before worktree isolation was enforced:
-every co-tenant session authored in the same primary checkout, so all of them mapped to one key.
+tooling was developed in, the ownership rule was a **no-op** before worktree isolation was enforced.
+Every co-tenant session authored in the same primary checkout, so all of them mapped to one key.
 
 > **Rule.** Check that your ownership key actually distinguishes the actors in practice, not merely
 > in principle. Number allocation and worktree isolation are a pair -- the first is meaningless
@@ -450,8 +477,8 @@ The guard was not detecting a breach. It was detecting the partition being used 
 > it.
 
 **A branch that cannot fire reads as protection and is worse than none.** Once an entry exists at a
-number in the shared band it is indistinguishable from a legitimate one, so the arm would have to
-fire on correct input or never at all. Detecting a breach needed an input the repository lacked.
+number in the shared band, it is indistinguishable from a legitimate one. The arm would have to fire
+on correct input, or never at all, and detecting a breach needed an input the repository lacked.
 
 > **Rule.** Remove a branch that cannot fire; do not leave it dormant. Replace it with something the
 > data can actually support -- a warning at a threshold measured on the band where the other band's
@@ -468,12 +495,12 @@ Stated plainly, because each one is a hole somebody will otherwise assume is cov
 | `git commit --no-verify` bypasses the gate | This is a guardrail against accident, not a security boundary. The `--ci` run is the backstop. |
 | Ownership is never checked in CI | A green CI is not evidence the number was allocated. |
 | No installer writes `pre-commit` | Until you wire it, nothing at commit time stops two sessions using the same number. The doctor reports this as OFF, not as absent. |
-| The shims fail open with no python | Both Python-backed git hooks print to stderr and exit 0 when no interpreter is found. `install-git-hooks.ps1 -Status` and the doctor both report the interpreter, because that single condition turns the gates off everywhere at once while every file involved is still present. |
+| The shims fail open with no python | Both Python-backed git hooks print to stderr and exit 0 when no interpreter is found. `install-git-hooks.ps1 -Status` and the doctor both report the interpreter: that one condition turns every gate off at once, with every file still present. |
 | Ownership is worktree-keyed | Where every session shares one checkout, it collapses to "somebody here allocated it". |
-| Two sessions can still build the same thing under two *different* numbers | Nothing structural sees duplicated work. That is what claims and announce are for -- see `docs/COORDINATION.md`. |
+| Two sessions can still build the same thing under two *different* numbers | Nothing structural sees duplicated work. That is what claims and announce are for -- see [coordination](COORDINATION.md). |
 | The high-water ratchet cannot restore history | It stops re-issue. The commits those refs pointed at are still gone. |
 | Numbers are never reclaimed | Sequences develop holes. Accepted by design. |
-| A series shared across two clones cannot be allocated here | The state root is per-clone on purpose, so two repositories issuing from one number series have no allocator in common. The rule identifiers in `docs/HOUSE-STYLE.md` are in that state, and the control there is a dated table rather than a gate. |
+| A series shared across two clones cannot be allocated here | The state root is per-clone by design, so two repositories issuing from one series share no allocator. The rule identifiers in `docs/HOUSE-STYLE.md` are in that state, and the control there is a dated table rather than a gate. |
 
 ---
 

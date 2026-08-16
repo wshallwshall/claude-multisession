@@ -9,7 +9,15 @@
       the body. So the title is used here and in nothing else: printing it as a heading below would
       give every page two of them.
     {%- endcomment -%}
-    {%- if page.url == '/' or page.title == nil or page.title == site.title -%}
+    {%- comment -%}
+      THE LANDING PAGE CARRIES THE TAGLINE, AND THAT IS A GATE RATHER THAN A FLOURISH. site-build.yml
+      checks every page's `<title>` against that page's leading H1. The landing H1 is `# KORUS`, so a
+      bare `<title>KORUS</title>` passes -- and says nothing to anyone reading a search result. The
+      tagline is appended from docs/_config.yml, which keeps the H1 a substring and the title useful.
+    {%- endcomment -%}
+    {%- if page.url == '/' -%}
+    <title>{{ site.title }} - {{ site.tagline }}</title>
+    {%- elsif page.title == nil or page.title == site.title -%}
     <title>{{ site.title }}</title>
     {%- else -%}
     <title>{{ page.title | strip_newlines }} - {{ site.title }}</title>
@@ -22,8 +30,17 @@
     <a class="skip-link" href="#content">Skip to content</a>
 
     <header class="site-header">
+      {%- comment %}
+        THE TAGLINE IS ORIENTATION, NOT DECORATION. `site.title` is four letters and an acronym, so a
+        reader landing on a deep page from a search result had nothing telling them what site they
+        were on. It is one short phrase, in the header of every page, and it is deliberately not the
+        `description` -- that is written for a search result and is two sentences long.
+      {%- endcomment %}
       <div class="site-header-inner">
-        <a class="site-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+        <p class="site-brand">
+          <a class="site-title" href="{{ site.baseurl }}/">{{ site.title }}</a>
+          <span class="site-tagline">{{ site.tagline }}</span>
+        </p>
         <a class="site-repo-link" href="{{ site.repo_url }}">Source on GitHub</a>
       </div>
     </header>

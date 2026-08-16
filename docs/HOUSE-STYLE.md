@@ -46,7 +46,7 @@ counting after the split, so the numbers past each section are occupied, not vac
 | Series | Issued here | Issued there | **Next free** |
 |---|---|---|---|
 | `B-<n>` | B-1 to B-10 | B-11 to B-17 | **B-18** |
-| `HS-<n>` | HS-1 to HS-16, HS-20, HS-21 | HS-17 spent on a superseded branch, HS-18, HS-19 | **HS-22** |
+| `HS-<n>` | HS-1 to HS-16, HS-20 to HS-22 | HS-17 spent on a superseded branch, HS-18, HS-19 | **HS-23** |
 | `PD-<n>` | PD-1 to PD-8 | PD-9 | **PD-10** |
 | `OPEN-<n>` | OPEN-1 to OPEN-8 | none | **OPEN-9** |
 
@@ -139,6 +139,24 @@ sentence is still required, it is now told which slot to sit in.
 | HS-20 | A paragraph **MUST NOT** exceed 300 characters. Rewrite it shorter; do **not** satisfy this by splitting one paragraph into two | A ratchet in `tests/test_prose_rules_hold.py`. The corpus is red behind it on purpose: 463 paragraphs were over the limit on 2026-08-10, and that number is debt that may not grow |
 | HS-16 | A markdown link **MUST** sit on one line, text and target both, and that outranks HS-14 | `tests/test_a_links_text_never_wraps.py`. `jekyll-relative-links` matches a link with a pattern whose `.` excludes a newline, so a wrapped one is never rewritten and the published site serves the raw `.md` while github.com renders it correctly. 35 links were in this state on 2026-08-07 |
 | HS-21 | A page in a series **MUST** answer the series' questions in the series' declared order, and **MUST** carry a section for a question it cannot answer rather than omitting it | `tests/test_a_series_answers_one_set_of_questions.py`, against the order declared in `docs/_data/nav.yml`. An omitted section reads as "this framework has no such property"; a section saying "not established" reads as what it is |
+| HS-22 | A page a reader ARRIVES on **MUST** route rather than explain. It **MUST NOT** carry the install procedure, the requirements table or a script inventory, and it **MUST** name the first command's page in its opening | `tests/test_the_landing_page_stays_a_front_door.py`. The landing page reached 3,143 words before this rule, with the first install command 68% of the way down it |
+
+### HS-22: what the landing page stopped carrying, and why a rule was needed
+
+Nothing was wrong with any individual sentence on it. The defect was accretion: the install
+procedure, the requirements table, the vendor-surface limits and a 40-row script inventory each
+arrived on the landing page because it was the page everyone read, and each one was correct.
+
+**The reader pays for that in ordering, not in accuracy.** A developer arriving to find out whether
+to try this met the caveats before the commands, and the commands 68% of the way down a
+3,143-word page.
+
+The four owners it split into: [Quickstart](QUICKSTART.md) for the procedure,
+[Limits and requirements](LIMITS.md) for what it needs and where it stops,
+[Every script](SCRIPTS.md) for the inventory, and the landing page for routing.
+
+**The rule is a cap rather than a prohibition on detail.** Detail is not the defect and `PD` still
+outranks this: the fix is always to move a fact to the page that owns it, never to delete it.
 
 ---
 
@@ -164,12 +182,13 @@ leaves them alone. All four left with
 [secure-development-standards](https://github.com/wshallwshall/secure-development-standards).
 Nothing here is under it, and PD-6 forbids reissuing an identifier.
 
-That repository does not follow them: its house style comes from its own gates and carried no
-equivalent of this rule. Two of the four are held by tests written for other reasons:
-`test_rule_ids_are_stable.py` parses `## Retired rules`, and the selector test pins the sentinel
-on both sides. The status-check date line and the ASVS Part 1 to Part 2 boundary marker are held by
-nothing at all. That is the exact condition PD-8 was written for, now true again one repository
-over, where a rule covering it is proposed rather than assumed.
+That repository does not follow them: its house style comes from its own gates. Two of the four are
+held by tests written for other reasons -- `test_rule_ids_are_stable.py` parses `## Retired rules`,
+and the selector test pins the sentinel on both sides.
+
+The status-check date line and the ASVS Part 1 to Part 2 boundary marker are held by nothing at all.
+That is the condition PD-8 was written for, true again one repository over, where a rule covering it
+is proposed rather than assumed.
 
 ---
 

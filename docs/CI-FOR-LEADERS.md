@@ -2,15 +2,15 @@
 
 ## TLDR/BLUF
 
-**What this is.** A guide to the continuous integration this repository runs, written for the people
-who fund that work rather than build it. It moves the definition of *done* off the confidence of
-whoever wrote the change and onto an automated check that ends in a pass or a fail.
+**What this is.** A guide to the continuous integration this repository runs -- the checks that run
+on their own when a change arrives. It is written for the people who fund that work rather than
+build it. *Done* stops meaning "the author is confident" and starts meaning "a check passed".
 
-**Why you should care.** What an AI assistant produces defeats review by being plausible, not by
+**Why you should care.** What an AI assistant writes survives review by looking plausible, not by
 looking wrong. Sessions pushing into one main branch -- the trunk -- also produce defects that merge
 with no conflict marker. Not for you if you want a workflow file to copy. None is written out here.
 
-**How to use it.** Bring the five questions in
+**How to use it.** Take the five questions in
 [what to ask your team for](#what-to-ask-your-team-for) to your next engineering meeting. Hand the
 pipeline itself to an engineer.
 
@@ -18,25 +18,24 @@ pipeline itself to an engineer.
 
 ## Why review stopped being enough
 
-Slop is confident, well-formed, wrong output, and it survives a read.
+**Slop is confident, well-formed, wrong output, and it survives a read.**
 
-A usage hook built early in this work told a session it had used 93% of its weekly allowance, while
-the account that session drew on sat at 5%. The number and the account name were both neatly
-formatted, confident and wrong. [Usage awareness](USAGE-AWARENESS.md) says why no such hook ships
-here.
+A usage hook built early in this work told a session it had used 93% of its weekly allowance. The
+account that session drew on sat at 5%. The number and the account name were neatly formatted,
+confident and wrong. [Usage awareness](USAGE-AWARENESS.md) says why no such hook ships here.
 
-The categories of error have not moved; the volume of output has, and
+The kinds of error have not changed. The volume of output has, and
 [The CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html) makes
-that point. Reviewer hours did not rise with the volume, so attention per change fell.
+that point. Reviewer hours did not rise with it, so attention per change fell.
 
-**[external]**, not measured here. Developers with an AI assistant wrote less secure code while
-being more confident that it was secure, on a 2022-generation model (Perry et al., ACM CCS 2023).
+**[external]**, not measured here. On a 2022-generation model, developers with an AI assistant wrote
+less secure code while being more confident that it was secure (Perry et al., ACM CCS 2023).
 
 Re-baseline that finding against
 [Code quality](https://secure-development-standards.pages.dev/standards/CODE-QUALITY.html) before
 you cite it.
 
-The answer is a check that can fail rather than more reading, and
+The answer is not more reading. It is a check that can fail, and
 [CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html) makes
 that case.
 
@@ -45,7 +44,7 @@ that case.
 Two sessions each compute the next free identifier from their own isolated checkout. Both are
 correct. The branches merge with no conflict, and no line disagrees with any other line.
 
-Human review cannot catch this, by construction, because each half is right on its own. In the
+**Human review cannot catch this, by construction, because each half is right on its own.** In the
 repository where this tooling was built, that collision fired three separate times, and
 [Sequence allocation](SEQUENCE-ALLOC.md) is the record.
 
@@ -53,19 +52,25 @@ Three concurrent branches claimed one identifier, and the clash showed up only a
 [CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) states the
 rule: *"Reserve globally unique identifiers from a shared registry, never by scanning"*.
 
-Four defences are each individually blind to it: a separate checkout per session, a file lock, code
-review, and a green pipeline on each branch. A central check catches it, or nothing does.
+Four defences are each individually blind to it:
 
-An allocator that hands out the next number by creating a file only if it does not exist produced
-eight distinct numbers across eight concurrent processes, with zero collisions. Rewriting one shared
-list lost four of the eight writes and raised no error.
+- A separate checkout per session.
+- A file lock.
+- Code review.
+- A green pipeline on each branch.
 
-Duplicated work fails the same way. Two sessions fixed one defect an hour apart, and the rebase --
-replaying one branch onto the other -- reported no conflict. The doubled fix shipped with 92 tests
-passing.
+A central check catches this, or nothing does.
+
+**The fix is an allocator that reserves a number by creating a file only if it does not exist.** It
+produced eight distinct numbers across eight concurrent processes, with zero collisions. Rewriting
+one shared list lost four of the eight writes and raised no error.
+
+**Duplicated work fails the same way.** Two sessions fixed one defect an hour apart, and the
+rebase -- replaying one branch onto the other -- reported no conflict. The doubled fix shipped with
+92 tests passing.
 
 Elsewhere, three sessions fixed one dependency advisory. Those three branches produced zero textual
-conflicts, and two of the three pull requests closed as duplicates;
+conflicts, and two of the three pull requests closed as duplicates.
 [Coordination](COORDINATION.md) records both incidents.
 
 **A green branch is not a green combination.** Back in the repository where this tooling was built,
@@ -73,23 +78,23 @@ the trunk moved seven times while a single pair of pull requests was open. Two b
 green on their own can still break when combined, in either order.
 
 **A check on a branch tells you about that branch alone.** Nothing tests the merged result until it
-lands on the trunk, so a check that runs after the merge earns its keep as soon as sessions run in
+lands on the trunk. A check that runs after the merge earns its keep as soon as sessions run in
 parallel.
 
 ## What a gate is, and what it replaces
 
-**A gate is a deterministic check with an exit code.** It gives the same answer every time it runs,
-and it ends in a pass or a fail rather than an opinion. A gate is never an instruction to the
-assistant to be careful, and no change merges on the assistant's own assurance.
+**A gate is a check that ends in a pass or a fail, never an opinion.** It is deterministic: the same
+change gets the same answer every run, reported as an exit code. A gate is never an instruction to
+the assistant to be careful, and no change merges on the assistant's own assurance.
 
 [AI-assisted development](https://secure-development-standards.pages.dev/standards/AI-ASSISTED-DEVELOPMENT.html)
 states both the definition and the no-merge rule.
 
 **A written reminder is not a control.** A session-start banner asked every session to work in its
-own checkout. Measured over 30 days, in the repository where this tooling was built, 44% of writes
+own checkout. Measured over 30 days in the repository where this tooling was built, 44% of writes
 from sessions sitting in the shared checkout landed there anyway.
 
-Nothing in the repository can recompute that figure, and it has not been re-measured, so treat the
+Nothing in the repository can recompute that figure, and it has not been re-measured. Treat the
 [README](https://claude-multisession.pages.dev/README.md) number as cited rather than current.
 
 *Done* no longer means an author who can walk you through the change. It means a set of checks that
@@ -116,13 +121,14 @@ assistant better or the reviewer faster.
 | A branch that was green before the trunk moved | Revalidation against the current trunk |
 | The same intent implemented twice | A claim register declared before work starts, checked at commit |
 
-The ratchet in the first row is a limit set at today's measured figure that may fall but never rise.
+A **ratchet**, in the first row, is a limit set at today's measured figure. It may fall. It never
+rises.
 
 The gate behind the third row arrived after that 44% measurement. It checks where a write is going
 rather than where the session happens to be sitting: [Tips and tricks](TIPS-AND-TRICKS.md).
 
-That last row is the one a gate leaves open. A register records only what a session declared, so two
-sessions building the same thing under two names both pass.
+**The last row is the one a gate leaves open.** A register records only what a session declared, so
+two sessions building the same thing under two names both pass.
 
 A gate decides a property of one change at a time, and two changes doing the same work each look
 correct alone: [Coordination](COORDINATION.md) states the limit.
@@ -133,26 +139,32 @@ Suppose every branch must be current with the trunk before it merges, and no mer
 branches up for you. The trunk then accepts at most one merge per pipeline cycle -- one full run of
 the checks.
 
-A low-urgency merge therefore costs every other branch in flight a full cycle. One broken check that
-blocks merges stops every session, not one. A changed gate also makes every already-green branch
-unverified.
+Three costs follow from that:
+
+- A low-urgency merge costs every other branch in flight a full cycle.
+- One broken check that blocks merges stops every session, not one.
+- A changed gate makes every already-green branch unverified.
 
 [CI and standards](https://secure-development-standards.pages.dev/CI-AND-STANDARDS.html) states the
 sequencing rule, under *"Sequence the queue deliberately"*.
-
-Do that arithmetic with your own two numbers, pipeline cycle time and sessions in flight, before you
-buy another seat, because nothing here measures a ceiling for you.
 
 [CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html) sets
 out the costs a single stream of work already carries, under *"What it buys you, and what it
 costs"*.
 
+**The goal.** Know how many sessions your pipeline can carry before you pay for another seat.
+
+**What to do.** Do that arithmetic with your own two numbers: pipeline cycle time, and sessions in
+flight.
+
+**What happens next.** You get your own ceiling. Nothing here measures one for you.
+
 **False positives are the expensive failure.** In the repository where this tooling was built, a
 rule that scanned for verbs denied a read-only status command. The blocklisted word it matched sat
 in a line of prose. A gate that sessions learn to route around protects nothing.
 
-No speed claim is available here. Nothing in either repository measures a productivity gain, and CI
-enforcement refuses the benefit claims a budget usually rests on. Fund this on auditability,
+**No speed claim is available here.** Nothing in either repository measures a productivity gain, and
+CI enforcement refuses the benefit claims a budget usually rests on. Fund this on auditability,
 continuity and reviewability.
 
 ## How to tell whether a control is real
@@ -167,11 +179,15 @@ dashboard.
 | It can fail | The logic has a red path somewhere in it | Nobody has driven that path with a real defect |
 | It has been proved able to fail | A planted defect turned it red, on this artifact, on this date | The only state an attestation can rest on |
 
-Controls here are installed by a script and fired by hooks. One can therefore be missing, wired to
-nothing, wired to a dead script, or failing open -- waving work through when the check errors. All
-four look exactly like a healthy quiet run: exit zero, no output, work proceeds.
+Controls here are installed by a script and fired by hooks, so one can be:
 
-A dashboard shows all four as the same green.
+- Missing.
+- Wired to nothing.
+- Wired to a dead script.
+- Failing open -- waving work through when the check itself errors.
+
+All four look exactly like a healthy quiet run: exit zero, no output, work proceeds. A dashboard
+shows all four as the same green.
 
 This repository's worktree gate keeps each session in its own checkout. A shipped version of it
 crashed on its own default value, the one it uses when a caller omits an argument.
@@ -215,6 +231,10 @@ named mechanism.
 
 ## What to ask your team for
 
+**The goal.** Leave the meeting knowing which checks block a merge, and whether anyone has watched
+one of them fail.
+
+**What to do.** Ask these five.
 [The CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html)
 already carries the general questions for a control owner. These five are the ones that concurrency
 and AI-written code add.
@@ -227,8 +247,9 @@ and AI-written code add.
 | What does a green run say it examined? | A count of units scanned printed on every run, and a non-zero exit when that count is zero. |
 | When four branches are ready, who decides merge order, and what revalidates each against a moved trunk? | A named person or a written rule, plus a check that a branch is current with the trunk before it lands. |
 
-A weak answer names a document rather than a command. Read today's blocking list out of the
-configuration, because the server-side setting moves faster than prose describing it.
+**What happens next.** A weak answer names a document rather than a command. Read today's blocking
+list out of the configuration, because the server-side setting moves faster than prose describing
+it.
 
 ## Related
 

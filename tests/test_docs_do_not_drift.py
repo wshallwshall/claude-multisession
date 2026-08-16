@@ -153,6 +153,16 @@ LINK_BEARING_SUFFIXES = (".md", ".yml", ".yaml", ".html", ".json")
 README = t.REPO_ROOT / "README.md"
 LANDING = t.REPO_ROOT / "docs" / "index.md"
 
+# WHERE THE PROCEDURE LIVES, AND IT MOVED ON 2026-08-16. It was docs/index.md, which is why the class
+# below is still named for a landing page. The landing page had grown to 3,143 words -- the install
+# commands, the requirements table and a 40-row script inventory all above the fold -- so the
+# procedure was given its own page and the landing page now points at it.
+#
+# THE PIN MOVED WITH IT RATHER THAN BEING WIDENED, which is the whole point. A scan that accepted the
+# commands on EITHER page would go green on the day they existed on both, and two copies of an
+# install procedure is the exact defect this file was written for.
+PROCEDURE = t.REPO_ROOT / "docs" / "QUICKSTART.md"
+
 
 def tracked_files() -> list[str]:
     """Every path git is tracking, as forward-slash repo-relative strings."""
@@ -207,43 +217,48 @@ class TheTestIndexNamesEveryTest(unittest.TestCase):
 
 
 class TheInstallProcedureHasOneCopy(unittest.TestCase):
-    """docs/index.md owns the procedure; README.md points at it rather than repeating it.
+    """docs/QUICKSTART.md owns the procedure; README.md and the landing page point at it.
 
-    This replaced a case that pinned the two files to identical blocks, which was the right shape
-    while both carried the commands. De-duplicating the landing pages left README with no block,
-    and that case's own empty-match guard fired rather than passing on an empty comparison. The
-    guard is kept below, moved onto the file that now owns the procedure -- which is the only file
-    it can defend, since a guard on the pointing file would fail the moment the pointing worked.
+    This replaced a case that pinned two files to identical blocks, which was the right shape while
+    both carried the commands. De-duplicating the landing pages left README with no block, and that
+    case's own empty-match guard fired rather than passing on an empty comparison. The guard is kept
+    below, on whichever file owns the procedure -- which is the only file it can defend, since a
+    guard on a pointing file would fail the moment the pointing worked.
+
+    THE OWNER CHANGED ON 2026-08-16 and the shape of the check did not. There are now TWO pointing
+    files to defend rather than one, because the landing page stopped carrying the commands in the
+    same change that moved them.
     """
 
-    def test_the_landing_page_still_carries_the_procedure(self):
-        landing = INSTALL_COMMAND.findall(t.read(LANDING))
+    def test_the_quickstart_still_carries_the_procedure(self):
+        procedure = INSTALL_COMMAND.findall(t.read(PROCEDURE))
         self.assertNotEqual(
             [],
-            landing,
-            "no install commands found in docs/index.md, which is the one copy of the procedure. "
-            "Either the block moved or its shape changed; a pattern that matches nothing passes "
-            "everything, so fix the pattern -- or this file's premise about where the procedure "
-            "lives -- before trusting a green run here.",
+            procedure,
+            "no install commands found in docs/QUICKSTART.md, which is the one copy of the "
+            "procedure. Either the block moved or its shape changed; a pattern that matches nothing "
+            "passes everything, so fix the pattern -- or this file's premise about where the "
+            "procedure lives -- before trusting a green run here.",
         )
 
-    def test_the_readme_carries_no_second_copy_that_disagrees(self):
-        readme = INSTALL_COMMAND.findall(t.read(README))
-        landing = INSTALL_COMMAND.findall(t.read(LANDING))
+    def test_no_other_front_door_carries_a_second_copy_that_disagrees(self):
+        procedure = INSTALL_COMMAND.findall(t.read(PROCEDURE))
 
-        # Either README points (no commands) or it repeats the landing page exactly. Anything else
-        # is the divergence this file exists for. Stated as one membership test rather than a
-        # branch, so the empty case cannot slip through as an early return that reads as a pass.
-        # Its vacuous case -- both empty -- is what the sibling case above rules out.
-        self.assertIn(
-            readme,
-            ([], landing),
-            "README.md carries install commands that do not match docs/index.md.\n"
-            "README.md:\n  " + "\n  ".join(readme) + "\n"
-            "docs/index.md:\n  " + "\n  ".join(landing) + "\n"
-            "A reader follows exactly one of these. Either drop the block from README.md and point "
-            "at the landing page, or make the two character-identical in this same commit.",
-        )
+        # Either the file points (no commands) or it repeats the owner exactly. Anything else is the
+        # divergence this file exists for. Stated as one membership test rather than a branch, so
+        # the empty case cannot slip through as an early return that reads as a pass. Its vacuous
+        # case -- both empty -- is what the sibling case above rules out.
+        for path in (README, LANDING):
+            found = INSTALL_COMMAND.findall(t.read(path))
+            self.assertIn(
+                found,
+                ([], procedure),
+                f"{path.name} carries install commands that do not match docs/QUICKSTART.md.\n"
+                f"{path.name}:\n  " + "\n  ".join(found) + "\n"
+                "docs/QUICKSTART.md:\n  " + "\n  ".join(procedure) + "\n"
+                "A reader follows exactly one of these. Either drop the block and point at the "
+                "quickstart, or make the two character-identical in this same commit.",
+            )
 
 
 class TheWriteCollisionFigureNamesItsDenominator(unittest.TestCase):
@@ -627,7 +642,11 @@ class DocClaimsMatchTheCode(unittest.TestCase):
 
     def test_no_front_door_describes_the_refusal_as_merely_set(self):
         offenders = []
-        for path in (README, LANDING, t.REPO_ROOT / "INSTALL.md"):
+        # PROCEDURE joined this list on 2026-08-16, in the change that moved the install commands
+        # off the landing page. The sentence describing the refusal travelled with the commands, so
+        # a scan that kept reading only the old three would have been reading the one set of pages
+        # the sentence had just left.
+        for path in (README, LANDING, PROCEDURE, t.REPO_ROOT / "INSTALL.md"):
             for number, line in enumerate(t.read(path).splitlines(), start=1):
                 if CLAUDECODE_LOOSE.search(line):
                     offenders.append(f"{path.name}:{number}: {line.strip()}")

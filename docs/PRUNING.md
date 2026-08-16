@@ -2,16 +2,16 @@
 
 ## TLDR/BLUF
 
-**What this is.** Two scripts that remove a worktree: `prune-merged.ps1`, an unattended sweep over
-every sibling, and `remove.ps1`, a human removing one named tree at a time.
+**What this is.** How to delete a finished worktree without deleting a live session's work. Two
+scripts do it: `prune-merged.ps1` sweeps every sibling unattended, and `remove.ps1` takes one name
+at a time from a human.
 
-**Why you should care.** `prune-merged.ps1` is the most destructive tool here: it destroyed a live
-session's worktree once; every rule below came from that or a near miss. A removal can delete
-commits into nothing, the only failure git cannot recover. Not for you if you never create
-worktrees.
+**Why you should care.** A removal can delete commits into nothing, the one failure git cannot undo.
+`prune-merged.ps1` is the most destructive tool here: it destroyed a live session's worktree once,
+and every rule below came from that or a near miss. Not for you if you never create worktrees.
 
-**How to use it.** Read the first two sections before you run either script. `prune-merged.ps1` is a
-dry run by default and only `-Apply` acts.
+**How to use it.** Run `prune-merged.ps1` with no flags. It is a dry run, and only `-Apply` removes
+anything. Read the first two sections before you type `-Apply`.
 
 ---
 
@@ -22,18 +22,21 @@ Two scripts remove a worktree:
 | `scripts/worktree/prune-merged.ps1` | unattended sweep over every sibling worktree | dry run by default; `-Apply` acts |
 | `scripts/worktree/remove.ps1` | a human, one named worktree at a time | acts immediately, refuses on uncommitted tracked changes |
 
-`prune-merged.ps1` is the most destructive tool in this repository. It has destroyed a live session's
-worktree once, and every rule below is a consequence of that or of a near miss. Read the first two
-sections before you run either script.
+Read the next two sections before you run either script. Every rule on this page is the residue of a
+removal that went wrong, or one that nearly did.
 
 ## First: a removal can delete commits into nothing
 
 Removing a worktree can take its branch ref with it, and **a commit that is in no ref is also in no
-reflog**. No reflog entry to recover it from, no branch name, nothing in any interface that admits
-the work existed. This is the only failure in the whole system that git cannot recover.
+reflog**. Nothing is left to recover it from: no reflog entry, no branch name, no interface that
+admits the work existed. This is the only failure in the whole system that git cannot recover.
 
-So `remove.ps1` resolves and prints the tip *before* anything destructive happens, and with
-`-DeleteBranch` it writes a keep-ref first:
+So `remove.ps1` resolves and prints the tip *before* anything destructive happens. With
+`-DeleteBranch` it first writes a **keep-ref**: a spare pointer at the tip that outlives the branch.
+
+**The goal.** Get back the commits of a branch `remove.ps1 -DeleteBranch` has already deleted.
+
+**What to do.** The script writes the keep-ref for you. You read it back.
 
 ```powershell
 # remove.ps1 -DeleteBranch, before the branch goes:
@@ -45,7 +48,9 @@ git branch <name> refs/<prefix>/removed/<name>
 git update-ref -d refs/<prefix>/removed/<name>
 ```
 
-The keep-ref costs nothing and is the difference between "recoverable" and "gone at the next gc".
+**What happens next.** `for-each-ref` lists every tip kept this way, and `git branch` restores one
+under its old name. The keep-ref costs nothing and is the difference between "recoverable" and "gone
+at the next gc".
 
 ### Under squash-merge, the obvious merge tests lie
 
@@ -62,9 +67,9 @@ All three ask one question -- "is this commit reachable from the trunk?" -- and 
 by making the answer no. **Ahead-of-main is not evidence of unmerged work.** That is why `Test-Merged`
 in `prune-merged.ps1` carries three signals, not one:
 
-1. nothing beyond the trunk (`Test-ContainedInMain`),
-2. a merged PR **whose head is this exact tip** -- matching by branch *name* alone force-deletes the
-   commits a branch gained after its PR merged, or the commits of a name reused from an earlier life,
+1. nothing beyond the trunk (`Test-ContainedInMain`);
+2. a merged PR **whose head is this exact tip**. Matching by branch *name* alone force-deletes the
+   commits a branch gained after its PR merged, or the commits of a name reused from an earlier life;
 3. the branch's **own** upstream is gone (the squash-merge + auto-delete shape).
 
 Signal 3 is scoped: `-Base origin/<parent>` points at the *parent's* upstream, so a merged parent
@@ -89,7 +94,7 @@ question was wrong.
 ### The converse trap is the one that destroyed a worktree
 
 Signal 1 answering **zero** is not "merged". A branch created seconds ago has no commits beyond the
-trunk: the state of a session that just started. `Test-BranchNeverUsed` reads the reflog: a branch
+trunk: the state of a session that just started. `Test-BranchNeverUsed` reads the reflog. A branch
 with exactly one entry (`branch: Created from ...`) never advanced, and nothing merged *from* it.
 
 ## The rule: merged AND clean AND NOT occupied
@@ -105,27 +110,32 @@ in the **directory**. The bias is fixed and not negotiable:
 
 Every check that cannot reach a confident answer SKIPs. Nothing is ever traded for tidiness.
 
-**Clean** is stricter here than you may expect, and `Test-WorktreeClean` fails closed:
+**Clean** is stricter here than you may expect. `Test-WorktreeClean` fails closed: when it cannot
+tell, it blocks the removal.
 
 - Uncommitted tracked changes block, and so do **untracked files**. They are the one loss class with no
   recovery through git at all: not in the index, not in a stash, not in the reflog.
-- `--force` suppresses git's refusal on untracked and modified files -- the one that would have
-  prevented the incident -- so the reaper proves cleanliness itself first. It deletes **ignored**
-  files too, invisible to `git status --porcelain`: unrecoverable, merely regenerable. It does *not*
-  override a git lock; that needs `-f -f`, which neither script passes.
+- **`--force` is not a safety net.** It suppresses git's refusal on untracked and modified files
+  that would have prevented the incident, so the reaper proves cleanliness itself first. Its other
+  edges:
+  - it deletes **ignored** files, invisible to `git status --porcelain`: unrecoverable, merely
+    regenerable;
+  - it does *not* override a git lock. That needs `-f -f`, which neither script passes.
 - A `git status` that exits non-zero, or a directory that has vanished, is **not clean**. Those states
   used to be indistinguishable from "no changes" and pointed straight at destruction.
 
-One routine serves the decision pass and the pre-removal re-check, returning *reasons*, not a
-boolean. Collapsing "the directory vanished", "status exited 128", "an untracked file appeared"
-and "somebody edited a tracked file" into one string discards it at the moment an operator most
-needs it.
+One routine serves the decision pass and the pre-removal re-check, and it returns *reasons*, not a
+boolean. Collapsing "the directory vanished", "status exited 128", "an untracked file appeared" and
+"somebody edited a tracked file" into one string discards it when an operator most needs it.
 
 ## Occupancy is a veto, never a permission
 
-There is no heartbeat anywhere in this system, so **nothing here can prove a session is gone**. A
-`DEAD` / `STALE` / absent verdict is the *absence of a veto*, not a permission. The states that veto
-(`scripts/coord/occupancy.ps1`, `$OccupancyVetoStates`) are:
+**Occupancy** answers one question: is somebody working in this directory right now? There is no
+heartbeat in this system, so it can veto a removal but can never authorize one. **Nothing here can
+prove a session is gone.**
+
+A `DEAD` / `STALE` / absent verdict is the *absence of a veto*, not a permission. These are the
+states that veto (`scripts/coord/occupancy.ps1`, `$OccupancyVetoStates`):
 
 | State | Meaning | Vetoes? |
 |---|---|---|
@@ -170,8 +180,8 @@ delete. **A file caught half-written looks exactly like a session that launched 
 When the fence is unavailable, every candidate becomes SKIP and the run exits non-zero. There is
 deliberately **no override flag**. Fix the fence; do not bypass it.
 
-`bin/ccx-doctor.ps1` prints the same receipt on demand -- config roots, records read, records
-unplaceable, worktrees enumerated -- and says in as many words that an empty roster there is *not*
+`bin/ccx-doctor.ps1` prints the same receipt on demand: config roots, records read, records
+unplaceable, worktrees enumerated. It says in as many words that an empty roster there is *not*
 "nobody is live".
 
 ## "Sibling" is not a prefix match
@@ -182,21 +192,23 @@ the *primary* escaped only because `<primary>/` is not `<primary>-`: the one cas
 
 Candidate selection is now two stages:
 
-1. a **deliberately over-inclusive** sweep on the literal prefix (`StartsWith`, `Ordinal` -- not `-like`,
-   whose `[ ]` is a character class, so a repo under a bracketed directory would match nothing and every
-   "it was not pruned" assertion would pass vacuously);
+1. a **deliberately over-inclusive** sweep on the literal prefix: `StartsWith`, `Ordinal`, not
+   `-like`. In `-like`, `[ ]` is a character class, so a repo under a bracketed directory would match
+   nothing and every "it was not pruned" assertion would pass vacuously;
 2. structural exclusions, each **printed as a non-candidate with its reason** rather than silently
    filtered out. A tool that silently filters cannot be checked.
 
-Exclusions, in order: nested in another registered worktree (`Get-ContainingWorktrees`);
-harness-managed (`Test-CcxHarnessWorktreePath` -- any `.claude/worktrees/` segment,
-unconditionally); not a structural sibling (`Test-CcxSiblingWorktreePath` -- **same parent
-directory**, leaf exactly `<primary-leaf>-<something>`);
-detached or bare.
+The exclusions, in order:
 
-`-Name` cannot reach any of them either. A worktree that also *contains* a registered worktree is never
-removed even when unoccupied, because `--force` on the parent deletes the nested checkout and leaves it
-registered with no directory.
+- nested in another registered worktree (`Get-ContainingWorktrees`);
+- harness-managed: `Test-CcxHarnessWorktreePath`, any `.claude/worktrees/` segment, unconditionally;
+- not a structural sibling: `Test-CcxSiblingWorktreePath` wants the **same parent directory** and a
+  leaf spelled exactly `<primary-leaf>-<something>`;
+- detached or bare.
+
+`-Name` cannot reach any of them either. A worktree that *contains* a registered worktree is never
+removed, even when unoccupied. The reason: `--force` on the parent deletes the nested checkout and
+leaves it registered with no directory.
 
 Both layouts coexist by design: this repo's scripts create **siblings**; Claude Code's own worktree
 support creates **nested** ones. Only siblings have scripted teardown. The trap in the other
@@ -204,7 +216,7 @@ direction: a nested checkout is gitignored inside its parent, so the parent read
 
 ## Print your blind spots, and name everything that narrows the fence
 
-A fence believed to be wider than it is, is worse than no fence -- because it is trusted. Every run
+A fence believed to be wider than it is, is worse than no fence, because it is trusted. Every run
 prints what it cannot see, in the receipt as well as on the terminal:
 
 - a session writing into a worktree **by absolute path from elsewhere** (the 29% above);
@@ -229,9 +241,9 @@ in the JSON receipt:
 
 ### A plausible threshold can disarm a signal completely
 
-`-IdleHours 0.5`, typed for "half an hour", reads as a tightening. It is not: on the repo this
+`-IdleHours 0.5`, typed for "half an hour", reads as a tightening. It is not. On the repo this
 tooling was developed in, an **occupied** worktree measured **10.4 hours** idle by git-metadata
-mtime, so any window under the empirical floor releases trees measurement says are in use. Two
+mtime. Any window under the empirical floor releases trees that measurement says are in use. Two
 guards:
 
 - `$IDLE_FLOOR_HOURS = 12` -- **deliberately not a parameter**. A floor an operator can lower is not a
@@ -243,9 +255,9 @@ guards:
 Only the literal `0` used to be declared. Everything between 0 and the floor disarmed signal 2 just as
 effectively and printed nothing.
 
-`-Name` is `-IdleHours 0` scoped to one tree, and since signal 1 has been measured vetoing none of
-the real siblings on a busy repo, `-Apply -Name <slug>` can leave a candidate with **no working
-occupancy signal at all**. It stays available for legitimate uses, but it is never silent.
+`-Name` is `-IdleHours 0` scoped to one tree. Signal 1 has been measured vetoing none of the real
+siblings on a busy repo, so `-Apply -Name <slug>` can leave a candidate with **no working occupancy
+signal at all**. It stays available for legitimate uses, but it is never silent.
 
 ## A wrong-cwd run must refuse loudly, never green no-op
 
@@ -262,8 +274,8 @@ like "everything is tidy". Three refusals exist for this class:
 
 ## Re-check immediately before each destructive step
 
-The decision table is built up front, but `-Apply` **re-evaluates everything from scratch in the same
-run and acts on that table**, never on a table you read a minute ago. Then, immediately before *each
+The decision table is built up front. `-Apply` then **re-evaluates everything from scratch in the
+same run and acts on that table**, never on a table you read a minute ago. Immediately before *each
 individual removal*, it re-reads:
 
 1. fence availability -- a fence that **dies mid-run** stops the rest of the run;
@@ -272,14 +284,13 @@ individual removal*, it re-reads:
 4. signal 2 (activity), which was once the one signal missing from this block;
 5. cleanliness.
 
-The window is real: a merged-PR probe costs roughly half a second per candidate (measured on the repo
-this tooling was developed in), plus the time taken by every removal before this one. A session can
-arrive inside it.
+The window is real. A merged-PR probe costs roughly half a second per candidate, measured on the repo
+this tooling was developed in. Add the time taken by every removal before this one. A session can
+arrive inside that window.
 
 When the re-check vetoes, the occupants it found are **written back onto the decision**. Without
-that, the one candidate the fence saved reports `Occupants: []`; the "vetoed by signal 1" figure
-under-reports the save to zero -- the number that stops "the fence ran" implying "the fence covered
-it".
+that, the one candidate the fence saved reports `Occupants: []`, and the "vetoed by signal 1" figure
+under-reports the save to zero. That figure stops "the fence ran" implying "the fence covered it".
 
 ## Count outcomes, not intentions
 
@@ -290,8 +301,8 @@ A destructive tool that over-reports what it destroyed is actively misleading. T
   0 is git's claim; the directory being gone is the fact.
 - `orphaned` is a **subset** of `failed`, and `failedNonOrphan` is spelled out so a consumer cannot
   reach a wrong total by adding all four numbers.
-- `BranchOutcome` starts at `not attempted`, never `kept` -- otherwise every skipped candidate claims a
-  decision nobody made (the JSON once said 7 branches were kept on a run whose summary said 0).
+- `BranchOutcome` starts at `not attempted`, never `kept`. Otherwise every skipped candidate claims a
+  decision nobody made: the JSON once said 7 branches were kept on a run whose summary said 0.
 - `Merged` is `$null`, not `$false`, when the test never ran: a machine consumer reads `false` as
   "checked, and it is not merged", which is a different claim from "never asked".
 - the final line is coloured by the **exit code**, not by the failure count. A run where the fence
@@ -313,12 +324,16 @@ Highest severity wins.
 ## A failed removal is worse than no removal
 
 `git worktree remove --force` deletes the `.git` pointer and **deregisters** the worktree *before*
-it walks the tree, even when that walk fails. A partial failure leaves a directory that is neither
-a worktree nor gone, and the session in it sees `fatal: not a git repository` from every git
-command.
+it walks the tree, even when that walk fails. A partial failure leaves a directory that is neither a
+worktree nor gone, and the session in it sees `fatal: not a git repository` from every git command.
 
-So a failure is diagnosed on the spot, reporting which of the three survived: the **directory**, its
-**.git pointer**, and its **registration**. Recovery, printed by the tool:
+So a failure is diagnosed on the spot. The report names which of three things survived: the
+**directory**, its **.git pointer**, and its **registration**.
+
+**The goal.** Turn a half-removed directory back into a worktree, or into a salvage pile you can
+copy out of.
+
+**What to do.** The tool prints this recipe. Run it from the primary checkout.
 
 ```powershell
 # 1. close anything holding files open in it (an editor, a shell sitting in it)
@@ -331,28 +346,29 @@ git -C <primary> worktree add <path> <branch>
 #    (stashes are safe -- they live in the shared .git)
 ```
 
-`worktree repair` cannot fix the case where the `.git` file is gone (it is the file repair needs), and
-`worktree add --force` refuses because the directory already exists. Hence the move-aside recipe.
+**What happens next.** Step 2 works only while the `.git` file is still there, because that file is
+what `worktree repair` reads. Once it is gone, step 3 is the only route: `worktree add --force`
+refuses while the directory exists, so the directory has to move aside first.
 
 ### Never run `git worktree prune`
 
 It looks like the obvious tidy-up after a failed removal. It is not, and this repository never runs it --
 not in `prune-merged.ps1`, not in `remove.ps1`.
 
-`git worktree prune` deregisters **any** worktree whose directory is momentarily missing -- a path a
-live session is about to return to, the Claude Code-managed nested trees this tooling must never
-touch. `git worktree remove` already deregisters the one you removed; never deregister by sweep.
+`git worktree prune` deregisters **any** worktree whose directory is momentarily missing. That covers
+a path a live session is about to return to, and the Claude Code-managed nested trees this tooling
+must never touch. `git worktree remove` deregisters the one you removed; never deregister by sweep.
 
 ### An orphan outlives the run that made it
 
 Once git has deregistered a worktree it is no longer in `git worktree list`, so it drops out of the
-candidate set. The **next** run then printed a green all-clear over a directory this script had broken,
-with the recovery recipe surviving only in the first run's scrollback.
+candidate set. The **next** run then printed a green all-clear over a directory this script had
+broken. The recovery recipe survived only in the first run's scrollback.
 
-Orphans are therefore remembered in the shared state root
-(`<git-common-dir>/<prefix>-coord/prune-merged-orphans.json`) and re-reported, with the recipe, on every
-later run until the directory is gone or re-registered. Two independent detectors, because either can be
-true alone:
+Orphans are therefore recorded in the shared state root
+(`<git-common-dir>/<prefix>-coord/prune-merged-orphans.json`). Every later run re-reports them, with
+the recipe, until the directory is gone or re-registered. Two independent detectors, because either
+can be true alone:
 
 - the **ledger** written at the moment of the failure;
 - a **ledger-free** scan: an unregistered sibling whose `.git` **file** points into this repo's
@@ -370,8 +386,8 @@ A **ghost stub** is not the reaper's job: a half-failed auto-worktree's director
 ## Deleting the branch: `-d` refusing is a signal
 
 `git branch -d` refuses a branch merged only into the **remote** trunk whenever the local trunk
-lags, as it usually does in a multi-worktree repo. So `-D` became the routine path, overriding git's
-last protection against destroying commits every time for a reason unrelated to the branch's state.
+lags, as it usually does in a multi-worktree repo. `-D` therefore became routine, overriding git's
+last protection against destroying commits every time, for a reason unrelated to the branch's state.
 
 `Remove-BranchSafely` now does:
 
@@ -383,9 +399,9 @@ last protection against destroying commits every time for a reason unrelated to 
 A stale ref costs nothing; a destroyed commit costs a session. The branch is also never touched after an
 **unverified** removal.
 
-`remove.ps1` takes the stricter line. It only ever runs `-d`, and when git refuses it leaves the branch
-in place, prints the tip, and tells you the `-D` command to run deliberately rather than as a side
-effect of tidying up a directory.
+`remove.ps1` takes the stricter line: it only ever runs `-d`. When git refuses, it leaves the branch
+in place, prints the tip, and gives you the `-D` command. Deleting the branch becomes a deliberate
+act rather than a side effect of tidying up a directory.
 
 ## Claims stranded by a removal
 
@@ -404,9 +420,9 @@ The reaper clears them, under rules worth copying:
   registry prevents. One normalizer on both sides, or the match silently misses and the claim stays
   stranded.
 - a dry run releases nothing.
-- an **unreadable** claim file belongs to the registry, not to any worktree -- by definition we could not
-  read whose it is. It is surveyed **once, at run level** (so it is visible to a dry run and cannot be
-  counted once per removal), left in place, listed by filename, and it moves the exit code.
+- an **unreadable** claim file belongs to the registry, not to any worktree: by definition we could
+  not read whose it is. It is surveyed **once, at run level**, so a dry run sees it and no removal
+  can count it twice. It is left in place, listed by filename, and it moves the exit code.
 - `claims.scanned: false` is emitted when there was no claims directory to read. **Never looked is not
   clean**: an empty `unreadable` list means something only when you can prove you looked.
 
@@ -425,6 +441,10 @@ did rather than git's message about what git could not do.
 
 ## Reference
 
+**The goal.** Remove the worktrees that are finished, and none of the ones that are not.
+
+**What to do.** Run these from the primary checkout.
+
 ```powershell
 pwsh -NoProfile -File scripts/worktree/prune-merged.ps1                   # dry run, no action
 pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Fetch            # dry run, refresh refs first
@@ -436,6 +456,10 @@ pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Json             # mach
 pwsh -NoProfile -File scripts/coord/presence.ps1                          # who is here, read-only
 pwsh -NoProfile -File scripts/worktree/remove.ps1 -Name auth -DeleteBranch
 ```
+
+**What happens next.** The dry run prints a decision and a reason for every sibling, the fence
+receipt, and the blind spots above. Read the SKIP reasons, then re-run with `-Apply`. Exit 2 means
+the run refused and removed nothing.
 
 | Flag | Effect | Narrows the fence? |
 |---|---|---|
@@ -460,9 +484,9 @@ exists" passed a build with no primary fence: the re-check caught it, so surviva
 Add a positive control in the same invocation; a refusal test is the exception, refusing the whole
 run.
 
-**Drive the re-check deterministically.** To prove that step 4 of the apply loop really re-reads, use a
-shim whose probe performs the side effect -- a session arrives, the fence dies, metadata is touched --
-*before* it answers. No threads, no sleeps.
+**Drive the re-check deterministically.** Use a shim whose probe performs the side effect *before*
+it answers: a session arrives, the fence dies, metadata is touched. That proves step 4 of the apply
+loop really re-reads. No threads, no sleeps.
 
 ## Limits, stated plainly
 

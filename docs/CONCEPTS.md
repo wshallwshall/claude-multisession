@@ -2,15 +2,16 @@
 
 ## TLDR/BLUF
 
-**What this is.** The mental model behind this tooling: a worktree per session, one shared state root
-every worktree of a clone resolves identically, and a liveness fence that may only ever veto.
+**What this is.** The five ideas every other page here applies. One checkout per session, one shared
+place for coordination state, a liveness check that may only say no, files created rather than
+edited, and no timers anywhere.
 
-**Why you should care.** Almost every rule in the repository is a consequence of one of the five
-ideas below, and the ones that look like paranoia are the ones that were paid for. Read this before
-the installers or those rules read as arbitrary. Not for you if you run one session at a time.
+**Why you should care.** Read this and the rules on the other pages stop looking arbitrary. Every
+trap below is one somebody already paid for. Not for you if you run one session at a time.
 
-**How to use it.** Read the three-layer sketch below, then [Hooks](HOOKS.md) for the event each idea
-is wired to, and [Worktrees](WORKTREES.md) for the day-to-day commands.
+**How to use it.** Read the three-layer sketch, then sections 1 to 5 for the ideas themselves. Then
+[Quickstart](QUICKSTART.md) to install, [Hooks](HOOKS.md) for the event each idea is wired to, and
+[Worktrees](WORKTREES.md) for the day-to-day commands.
 
 ---
 
@@ -27,29 +28,28 @@ The whole system is three layers:
                             which may only ever say NO to an action
 ```
 
-Everything else in the repository, the hooks, the reaper, the allocator, the announce path, is an
-application of those three.
+The hooks, the reaper, the allocator and the announce path are all applications of those three.
 
 ---
 
 ## 1. Worktree-per-session
 
-A git worktree is a second working directory on the same git directory: same history, remotes and
-objects, a different branch and index. Two sessions in one checkout fight over that tree silently --
-one side's `git checkout` swaps the files out from under the other's edit.
+A git **worktree** is a second working directory on the same git directory: same history, remotes
+and objects, a different branch and index. Two sessions in one checkout fight over that tree
+silently. One side's `git checkout` swaps the files out from under the other's edit.
 
 So the unit of isolation is the worktree, and the unit of work is a branch.
 
 ### Primary and linked
 
-The **primary** checkout is the main working tree of the clone, and it is the first entry
-`git worktree list --porcelain` reports. `Get-CcxPrimaryRoot` in
+The **primary** checkout is the main working tree of the clone. It is the first entry
+`git worktree list --porcelain` reports, and `Get-CcxPrimaryRoot` in
 [`scripts/coord/_common.ps1`](https://claude-multisession.pages.dev/scripts/coord/_common.ps1) resolves it that way, deliberately:
 
-> **Trap.** Four earlier copies of this derived the repository root as `$PSScriptRoot/../..`, the
-> checkout the *script* happens to live in. Run from a linked worktree that resolves to the
-> worktree's own root, so a new worktree was created as a sibling *of a sibling*, and the pruning
-> tool, which anchors on the primary, then could not see it as a candidate at all.
+> **Trap.** Four earlier copies derived the repository root as `$PSScriptRoot/../..`, the checkout
+> the *script* happens to live in. Run from a linked worktree, that expression resolves to the
+> worktree's own root. A new worktree was then created as a sibling *of a sibling*, and the pruning
+> tool anchors on the primary, so it could not see that worktree as a candidate at all.
 >
 > **Rule.** Anchor layout on the primary, never on where the script lives. The tooling must behave
 > identically whichever checkout you invoke it from.
@@ -61,21 +61,21 @@ The **primary** checkout is the main working tree of the clone, and it is the fi
 | `sibling` (default) | `<parent-of-primary>/<primary-leaf>-<name>` | this tooling, via `scripts/worktree/new.ps1` |
 | `nested` | `<primary>/.claude/worktrees/<name>` | the client itself, and this tooling if you configure it |
 
-`worktreeLayout` in `ccx.config.json` picks where **we** create worktrees; both populations exist
-on a real machine anyway. `Get-CcxWorktreePath` owns the formula once: it was duplicated in four
-scripts and pattern-*matched* in a fifth, so rule and enforcement disagreed.
+`worktreeLayout` in `ccx.config.json` picks where **we** create worktrees. Both kinds exist on a
+real machine anyway. `Get-CcxWorktreePath` owns the formula once: it was duplicated in four scripts
+and pattern-*matched* in a fifth, so the rule and its enforcement disagreed.
 
-> **Trap.** A nested checkout is git-ignored inside its parent, so the parent reads perfectly clean,
-> and `git worktree remove --force` on the parent deletes both, leaving the nested one registered
-> with no directory. Meanwhile a sweep run from the wrong directory printed a green "no sibling
-> worktrees to consider" and exited 0, a wrong-cwd run reporting a clean bill of health.
+> **Trap.** A nested checkout is git-ignored inside its parent, so the parent reads perfectly clean.
+> `git worktree remove --force` on the parent deletes both, leaving the nested one registered with
+> no directory. A sweep run from the wrong directory printed a green "no sibling worktrees to
+> consider" and exited 0: a wrong-cwd run reporting a clean bill of health.
 >
 > **Rule.** Any path containing a `.claude/worktrees/` segment is excluded from destructive
 > operations *unconditionally*, whatever the layout setting says. That is
-> `Test-CcxHarnessWorktreePath`. It exists as one named test rather than two inline regexes because
-> two rules depend on it and they pull in opposite directions. A gate protecting the primary must
-> **not** govern a nested worktree (a git verb there swaps only its own tree). And a reaper must
-> **never** remove one (a live session is standing in it).
+> `Test-CcxHarnessWorktreePath`, one named test rather than two inline regexes, because two rules
+> depend on it and they pull in opposite directions. A gate protecting the primary must **not**
+> govern a nested worktree (a git verb there swaps only its own tree). A reaper must **never**
+> remove one (a live session is standing in it).
 
 ### "Sibling" is a structure, not a string prefix
 
@@ -91,11 +91,12 @@ exactly `<primary-leaf>-<something>`, and not a nested worktree.
 > broken. Match on structure and exclude containment explicitly.
 
 Even all three conditions only say the path *looks* like ours. Whether it may be touched is a
-separate question answered by occupancy, cleanliness and merge state, never by the name.
+separate question, answered by who is sitting in it (**occupancy**, section 3), whether it is clean,
+and whether it merged. Never by the name.
 
 ### What a worktree does *not* isolate
 
-A fresh worktree feels completely isolated, separate files, separate branch, separate index,
+A fresh worktree feels completely isolated: separate files, separate branch, separate index,
 separate build environment. Three things are not isolated, and each has bitten:
 
 | Shared thing | Consequence |
@@ -104,12 +105,12 @@ separate build environment. Three things are not isolated, and each has bitten:
 | the git hooks directory | one `pre-commit` / `commit-msg` / `pre-push` set governs **every** worktree at once, and sees every write route into the repo |
 | the AI coding assistant's own project memory | it lives outside the repo, one directory per machine, and last write wins. Reads are fine; coordinate writes, or let exactly one session own them |
 
-The isolation you do not want: a project-scoped `.claude/settings.json` is git-ignored, a
+**The isolation you do not want:** a project-scoped `.claude/settings.json` is git-ignored, a
 creation-time snapshot nothing refreshes and some worktrees lack. So the coordination hooks install
 at **user** scope. See [`INSTALL.md`](https://claude-multisession.pages.dev/INSTALL.md).
 
-Environment setup is `setupHook`'s, not `new.ps1`'s: it runs with `CCX_WORKTREE_PATH`,
-`CCX_WORKTREE_NAME`, `CCX_PRIMARY_ROOT` and `CCX_BASE_REF` set. See
+Setting up a new worktree's environment is `setupHook`'s job, not `new.ps1`'s. It runs with
+`CCX_WORKTREE_PATH`, `CCX_WORKTREE_NAME`, `CCX_PRIMARY_ROOT` and `CCX_BASE_REF` set. See
 [`examples/worktree-setup.ps1.example`](https://claude-multisession.pages.dev/examples/worktree-setup.ps1.example).
 
 ---
@@ -128,9 +129,9 @@ Every piece of cross-session coordination state lives in exactly one place:
     overlap-cache.json  the overlap detector's cache
 ```
 
-`Get-CcxStateRoot` (PowerShell) and `state_root()` in
-[`scripts/hooks/_ccxconfig.py`](https://claude-multisession.pages.dev/scripts/hooks/_ccxconfig.py) resolve it, and they must agree
-character for character, because each side compares against records the other side wrote.
+Two functions resolve that path: `Get-CcxStateRoot` (PowerShell) and `state_root()` in
+[`scripts/hooks/_ccxconfig.py`](https://claude-multisession.pages.dev/scripts/hooks/_ccxconfig.py). They must agree character for
+character, because each side compares against records the other side wrote.
 
 Three properties make `<git-common-dir>` the right anchor, and all three are load-bearing:
 
@@ -145,10 +146,10 @@ Three properties make `<git-common-dir>` the right anchor, and all three are loa
 Resolving it correctly is fussier than it looks:
 
 > **Trap.** Five call sites resolved the common dir and disagreed twice. Two omitted
-> `--path-format=absolute`, so git handed back a *relative* `.git` which the caller joined onto
-> whatever directory the process happened to start in, and for a hook that is wherever the harness
-> launched the shell. Two others never checked the exit code, so a git failure produced an empty
-> path that silently became a state root at the filesystem root.
+> `--path-format=absolute`, so git handed back a *relative* `.git`. The caller joined that onto
+> whatever directory the process started in, which for a hook is wherever the harness launched the
+> shell. Two others never checked the exit code, so a git failure produced an empty path that
+> silently became a state root at the filesystem root.
 >
 > **Rule.** Always `--path-format=absolute`. Always check the exit code, and make failure a distinct
 > value the caller has to handle. `Invoke-CcxGit` returns `$null` on a non-zero exit for exactly this
@@ -160,9 +161,9 @@ Resolving it correctly is fussier than it looks:
 This is the surprising half, and it is deliberate. **Remove a worktree and the claims it took are
 still there.** The state lives beside the shared object store, not in the checkout.
 
-The feature: a claim survives a crashed session for a peer to see, and nothing expires on a timer.
-The reaper releases only on **evidence** -- directory gone *and* worktree deregistered, matched on
-full canonicalised path equality -- because releasing a live claim hands its key away.
+That is the feature: a claim survives a crashed session for a peer to see, and nothing expires on a
+timer. The reaper releases a claim only on **evidence**: directory gone *and* worktree deregistered,
+matched on full canonicalised path equality. Releasing a live claim hands its key away.
 
 ---
 
@@ -187,21 +188,21 @@ lifetime:
 | `entrypoint` | string | which surface launched it |
 | `kind` | string | interactive, or whatever else the client decides to write |
 
-Config roots are discovered dynamically (`<home>/.claude*` directories that contain a `sessions`
-directory), because several logins can coexist on one machine and a session is only visible to the
-login that owns it.
+Config roots are discovered dynamically: any `<home>/.claude*` directory holding a `sessions`
+directory. Several logins can coexist on one machine, and a session is only visible to the login
+that owns it.
 
 **This can break under you.** A renamed field or a changed `startedAt` unit degrades every fence to
-"cannot tell", not a confident wrong answer -- hence *not alive* versus *could not be evaluated*
+"cannot tell", not a confident wrong answer. Hence *not alive* versus *could not be evaluated*
 below. `bin/ccx-doctor.ps1` counts records read and placed, so a schema change reads as zero.
 
 ### It is not a pid check
 
 > **Trap.** Checking liveness by testing whether the recorded pid exists. Pids get reused and these
 > records outlive their process, so a recycled pid reports a long-dead session as live. The client
-> ships a `procStart` field intended for exactly this fence; do not depend on it. It may be absent or
-> in a form you did not expect, and the guard shipped alongside it returns true when it cannot tell,
-> i.e. it fails **open** toward "still alive".
+> ships a `procStart` field intended for exactly this fence; do not depend on it. It may be absent
+> or in a form you did not expect. The guard shipped alongside it returns true when it cannot tell,
+> so it fails **open**, toward "still alive".
 >
 > **Rule.** Read the process start time yourself and require it to be consistent with the recorded
 > session start. A process that started *after* the session registered is a recycled pid, not that
@@ -218,15 +219,15 @@ below. `bin/ccx-doctor.ps1` counts records read and placed, so a schema change r
 | `DEAD` | no such pid | no |
 | not found | no record at all | no |
 
-`UNREADABLE` ranks with the possibly-live states, not the gone ones; it used to report `DEAD`. A
-registry file caught mid-write has that shape, the signature of a session that launched one second
-ago -- and it read as "nobody is there" to a caller about to delete its worktree.
+`UNREADABLE` ranks with the possibly-live states, not the gone ones. It used to report `DEAD`. A
+registry file caught mid-write has exactly that shape, the signature of a session that launched one
+second ago. To a caller about to delete that worktree, it read as "nobody is there".
 
 ### Liveness may only veto, never permit
 
-**This is the single most important invariant in the repository.** There is no heartbeat anywhere and
-registry writes are event-driven, so nothing here can *prove* a session is gone, only that it is
-present.
+**Nothing here can prove a session is gone.** There is no heartbeat anywhere, and registry writes
+are event-driven, so the fence can report presence and nothing else. Every other safety rule in this
+repository leans on that one invariant.
 
 > **Trap.** The fence returned `DEAD`/`STALE`/absent for a worktree, and that was read as permission
 > to delete it.
@@ -270,8 +271,8 @@ State these wherever the fence is consumed. They are not hypothetical.
 | a cwd recorded as a UNC path or an 8.3 short path | the match is a string compare on the canonicalised path, and neither spelling canonicalises to the worktree's own |
 | a session that never registered at all | nothing to read |
 
-The 29% is why a cwd-keyed signal alone never licenses a destructive action: deleting needs a
-**second, independent, non-cwd signal**, either able to veto alone. It is why the primary-checkout
+That 29% is why a cwd-keyed signal alone never licenses a destructive action. Deleting needs a
+**second, independent, non-cwd signal**, and either may veto alone. It is why the primary-checkout
 gate keys on the write's **target path**: keying on cwd would deny all 29%, every one correct.
 
 Two further blind spots belong to the *tooling around* the fence rather than to the fence itself:
@@ -349,8 +350,8 @@ two sessions never touch the same bytes, so nothing in git can detect it.
 
 ### Replacing a file that is itself the lock
 
-Refreshing a claim's note means rewriting a file whose *existence* is the mutual exclusion, so any
-instant in which the name does not exist is an instant another worktree can claim a key you hold.
+A claim's note lives in a file whose *existence* is the mutual exclusion. Rewrite it and the name
+briefly does not exist, and in that instant another worktree can claim a key you hold.
 
 > **Trap.** `Move-Item -Force` is delete-then-rename and opens exactly that window. Measured on the
 > repo this tooling was developed in: across 400 moves the destination was absent on 2,559 of 154,506
@@ -376,8 +377,8 @@ No lock expires. No claim expires. Nothing is reaped on a timer. This is the mos
 questioned decision in the repository, so the reasoning is stated once, here.
 
 A lock that expires on a timer hands the critical section to a second process **while the first is
-still inside it**, silently, at the exact moment the operation is slowest. That is precisely when a
-timeout is most likely to be the wrong inference. Compare the two failure modes:
+still inside it**. It does that silently, at the exact moment the operation is slowest, which is
+precisely when a timeout is most likely to be the wrong inference. Compare the two failure modes:
 
 | | Failure it prevents | Failure it causes |
 |---|---|---|
@@ -467,7 +468,7 @@ lower-case **only on a case-insensitive filesystem**.
 > case-sensitive filesystem `/tmp/Primary` and `/tmp/primary` really are two directories, and folding
 > them together would make a gate govern a directory it was never pointed at.
 
-Both helpers return `''` rather than throwing, because every caller is on a fail-open path where an
+Both helpers return `''` rather than throwing. Every caller sits on a fail-open path, where an
 exception would end the process and let the tool call through with nothing said. `''` means "we
 cannot say what this points at", which callers read as "not governed".
 
@@ -510,8 +511,8 @@ caller bug, and silently coining one produces a lock everybody shares.
 Every state file is written as UTF-8 **with no byte-order mark**, via
 `[System.Text.Encoding]::UTF8.GetBytes(...)` rather than a cmdlet that may prepend one.
 
-The reason is concrete: the Python commit-msg gate reads claim files with `encoding="utf-8"`, a BOM
-makes `json.loads` raise, and that gate swallows a parse error into "not claimed", which silently
+The reason is concrete. The Python commit-msg gate reads claim files with `encoding="utf-8"`, and a
+BOM makes `json.loads` raise. That gate swallows a parse error into "not claimed", which silently
 disables the gate for that key. A cosmetic byte turns an enforced control into a decorative one.
 
 In Python, `encoding="utf-8"` on `subprocess.run` is **required**: `text=True` alone decodes with
@@ -533,17 +534,17 @@ Timestamps are written with `.ToString("o")`. Reading one back is where it goes 
 > **Rule.** Round-trip explicitly (`ConvertTo-Stamp` in `claim.ps1`): if the value came back as a
 > `[datetime]` or `[datetimeoffset]`, re-render it with `"o"`.
 
-The same coercion bites *keys*: a claim key shaped like `2020-01-01T00:00:00` comes back through
+The same coercion bites *keys*. A claim key shaped like `2020-01-01T00:00:00` comes back through
 `[string]` as a local short-form date, so the record names a key nobody typed and `-Release` cannot
-match. Write the caller's spelling; the folded filename is the identity.
+match it. Write the caller's spelling; the folded filename is the identity.
 
 ---
 
 ## 7. `ccx.config.json`: six knobs, and nothing else
 
-One file at the repository root. It is **both** the configuration and the **opt-in marker**: the
-user-scope hooks run in every repository on the machine, so "is this repo governed?" has to be
-answerable without running anything. The file is either there or it is not.
+One file at the repository root. It is **both** the configuration and the **opt-in marker**. The
+user-scope hooks run in every repository on the machine. So "is this repo governed?" has to be
+answerable without running anything: the file is either there or it is not.
 
 It is deliberately *not* "does some script exist on disk". That discriminator is true in a
 half-installed tree, false in a repo that vendors the scripts elsewhere, and silently true in a fork
@@ -580,8 +581,8 @@ that only copied a directory.
 Two validation rules are worth knowing because they are enforced at load:
 
 - `prefix` must match `^[A-Za-z][A-Za-z0-9-]{0,31}$`. It becomes a directory name, a git config key
-  *and* an environment-variable stem, so anything needing escaping in any of those is rejected once,
-  at load, rather than producing a state root nobody can type.
+  *and* an environment-variable stem. Anything that would need escaping in any of those is rejected
+  once, at load, rather than producing a state root nobody can type.
 - `sequences` **absent** and `sequences` **empty** mean the same thing on purpose. A caller must not
   treat "no sequences" as an error; a repository that maintains no numbered sequence should not have
   to carry a disabled allocator.
@@ -612,7 +613,7 @@ to defaults nobody chose. A governed repository whose configuration cannot be re
 | `CCX_WORKTREE_PATH`, `CCX_WORKTREE_NAME`, `CCX_PRIMARY_ROOT`, `CCX_BASE_REF` | set for the `setupHook` process |
 
 **A kill switch must reach a session that is already running.** Environment variables and settings
-edits do not, they take effect at launch. So the real switches are **files**:
+edits do not: they take effect at launch. So the real switches are **files**:
 
 - delete `~/.claude/hooks/ccx-gate.repos.txt`, or empty it, and the primary-checkout gate is off;
 - create `<state-root>/announce/OFF` and the announce hook stands down.
@@ -625,8 +626,8 @@ These are load-bearing and honest:
    git-hook checkers, leak gate, shared substrate -- is stdlib-only and portable. Case-folding and
    process start-time reads degrade off Windows; the doctor names that blind spot on every run.
 2. **The client's session-record schema is a vendor contract**, see section 3. It can break under you.
-3. **The `ccd_session_mgmt` MCP server is desktop-only**, and announce delivery depends on it: on
-   a plain CLI install the hook still fires and asks the model for tools it does not have; nothing
+3. **The `ccd_session_mgmt` MCP server is desktop-only**, and announce delivery depends on it. On a
+   plain CLI install the hook still fires and asks the model for tools it does not have, so nothing
    is delivered. Leave that hook uninstalled there, or create the OFF file. Nothing else needs it.
 4. **`<git-common-dir>` as the state root.** Correct, deliberate, and not portable to a
    non-git-backed setup. Keep it, and keep its corollary in mind.
@@ -639,16 +640,31 @@ These are load-bearing and honest:
 
 Every failure mode in this system is **byte-identical to success**.
 
-A wired hook resolving nothing prints what a healthy one with no peers prints. A fence that could
-not read the registry returns the empty list of one that found nobody. A gate missing its helper
-files exits 0. A control merged but never installed is a source artifact with green tests.
+- a wired hook that resolves nothing prints what a healthy one with no peers prints;
+- a fence that could not read the registry returns the empty list of one that found nobody;
+- a gate missing its helper files exits 0;
+- a control merged but never installed is a source artifact with green tests.
 
-This repository is receipts, not logic: print what you scanned, count what you examined, separate
-"found nothing" from "could not look", name your blind spots. `bin/ccx-doctor.ps1` does not read
-settings: it **fires each control and requires it to refuse**, with a paired negative control.
+So this repository is receipts, not logic: print what you scanned, count what you examined, separate
+"found nothing" from "could not look", name your blind spots.
 
-Run it before you trust any of this.
+### Prove the controls before you trust them
+
+**The goal.** Find out which controls are wired in this clone, rather than which ones exist in the
+source. [Quickstart](QUICKSTART.md) is the install this checks.
+
+**What to do.**
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-doctor.ps1
 ```
+
+**What happens next.** A row per control, tagged:
+
+- `OK` -- installed, wired, and where it can be attacked it refused what it must;
+- `RED` -- proven broken: it allowed something it must deny, or denied something it must allow;
+- `OFF` -- implemented here, but nothing invokes it: zero enforcement;
+- `??` -- the check could not be run, and a skip is never a pass.
+
+The doctor does not read settings: it **fires each control and requires it to refuse**, with a
+paired negative control. Run this before you trust any of it.

@@ -2,32 +2,29 @@
 
 ## TLDR/BLUF
 
-**What this is.** The "wish I'd known" file, and the densest page here: one lesson per entry, each
-with the measurement or the incident that produced it.
+**What this is.** The "wish I'd known" file: one lesson per entry, each with the measurement or the
+incident that produced it. Ordered by when the thing bites you.
 
-**Why you should care.** Everything here was paid for once already -- in lost work, in a guardrail
-that turned out to be inert, or in a measurement that answered a question nobody asked. Not for you
-if you have not yet run concurrent sessions; most entries will not mean anything until you have.
+**Why you should care.** Everything here was paid for once already. The price was lost work, a
+guardrail that turned out to be inert, or a measurement that answered a question nobody asked. Not
+for you if you have not yet run concurrent sessions; most entries will not mean anything until you
+have.
 
-**How to use it.** Skim for the entry that matches what just bit you rather than reading it through.
-Most of the repo is `pwsh 7.3+` and Windows-first, and announce needs a Desktop-only MCP, so check
-the scope list below before assuming an entry applies to your setup.
+**How to use it.** Skim for the entry that matches what just bit you. Do not read it through. Check
+the scope list below first: most of this repo is `pwsh 7.3+` and Windows-first, and the announce
+hook needs a Claude Desktop feature.
 
 ---
-
-The "wish I'd known" file. Everything here was paid for once already -- in lost work, in a
-guardrail that turned out to be inert, or in a measurement that answered a question nobody
-asked.
 
 Honest scope, up front:
 
 - **PowerShell 7 + Windows-first.** Most of this repo is `pwsh`. The Python gates -- the git-hook
   checkers under `scripts/hooks/` and the leak gate at `scripts/security/scan_forbidden.py` -- are
   stdlib-only and portable; nearly everything else assumes `pwsh 7.3+`.
-- **`ccd_session_mgmt` is a Desktop-only MCP server, absent on a plain CLI install.**
-  `scripts/hooks/announce-session.ps1` resolves peers and asks the model to send. Without the MCP
-  the hook fires, finds peers, then tells the model to call tools it does not have. Nothing else
-  here depends on it.
+- **Announcing needs Claude Desktop.** `scripts/hooks/announce-session.ps1` resolves peers and asks
+  the model to send, through `ccd_session_mgmt` -- an MCP server absent on a plain CLI install.
+  Without it the hook fires, finds peers, then names tools the model lacks. Nothing else here
+  depends on it.
 - **Claude Code's session record schema is a vendor contract.** The whole liveness fence rests on
   `<config-root>/sessions/<pid>.json` and its `pid` / `startedAt` / `sessionId` / `cwd` /
   `entrypoint` fields. It can change under you without notice.
@@ -39,23 +36,30 @@ Honest scope, up front:
 
 ## 1. Read this first: every failure here is green
 
-The single most important thing to internalise: **in this problem space, broken looks exactly
-like working.**
+**In this problem space, broken looks exactly like working.** Carry that into everything below.
 
-A wired hook resolving nothing exits 0, like a healthy one with nothing to report. A missing gate
-script exits non-zero-but-not-2, and the tool call runs anyway. An empty peer list means "nobody is
-here" and "I could not look". A scanner that loaded zero rules exits 0, like one that found none.
+- A wired hook resolving nothing exits 0, like a healthy one with nothing to report.
+- A missing gate script exits non-zero-but-not-2, and the tool call runs anyway.
+- An empty peer list means "nobody is here" and "I could not look".
+- A scanner that loaded zero rules exits 0, like one that found none.
 
-So the first command to run in a fresh clone is not an installer, it is the audit:
+**The goal.** Find out which guardrails are actually live before you trust any of them. In a fresh
+clone the first command is not an installer, it is the audit.
+
+**What to do.**
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-doctor.ps1
 ```
 
-It hashes every installed copy against this checkout's source and reads every config root's live
-matchers. It **fires each control and requires a deny**, pairs each attack with a negative control
-the guard must *allow*, and prints what it scanned either way. Four tokens carry the whole
-philosophy:
+**What happens next.** The audit does three things, and prints what it scanned either way:
+
+- it hashes every installed copy against this checkout's source;
+- it reads every config root's live matchers;
+- it **fires each control and requires a deny**, pairing each attack with a negative control the
+  guard must *allow*.
+
+Four tokens carry the whole philosophy:
 
 | Tag | Meaning | Exit |
 |---|---|---|
@@ -75,15 +79,18 @@ was not tested is not a control that passed.**
 first one's dead ends. After roughly two failed attempts at the same problem, clear and restart
 with a better prompt rather than grinding in a polluted context.
 
-**Give each session its own worktree, branched off the *fetched remote* tip.**
+**The goal.** Give each session its own worktree, branched off the *fetched remote* tip.
+
+**What to do.**
 
 ```powershell
 pwsh -NoProfile -File scripts/worktree/new.ps1 -Name alerts
 ```
 
-`new.ps1` fetches first and defaults `-Base` to the trunk's remote-tracking ref, not a local
-branch. Branching off a lagging local trunk is the most common way parallel sessions build on old
-code, invisible until the merge. Point `-Base` at a lagging branch and you get a loud warning.
+**What happens next.** `new.ps1` fetches first, then defaults `-Base` to the trunk's
+remote-tracking ref, not a local branch. Point it at a lagging branch and you get a loud warning. A
+lagging local trunk is the most common way parallel sessions build on old code, invisible until the
+merge.
 
 **Creating worktrees concurrently races `.git/config.lock`.** `git worktree add` writes the shared
 config; two adds at the same instant lose one. `new.ps1` takes a cross-session mutex
@@ -94,9 +101,9 @@ own.
 the checkout installed last, so tests pass against code you are not editing. Put per-checkout
 bootstrap in the `setupHook` named by `ccx.config.json`; see `examples/worktree-setup.ps1.example`.
 
-**AI project memory is shared across every worktree, and last write wins.** Memory *feels* isolated
-like the files, branch, index and venv, and it is not: it lives outside the repo, in one directory
-shared by every session. Reads are fine; coordinate **writes**, or let one session own them.
+**AI project memory is shared across every worktree, and last write wins.** It *feels* isolated,
+like the files, branch, index and venv. It is not: it lives outside the repo, in one directory every
+session shares. Reads are fine. Coordinate **writes**, or let one session own them.
 
 **Know which resolution rule a script is under before trusting a new version.** Run **by a hook**,
 it resolves through the installed shim and tracks the *primary* checkout. Run **by hand** from a
@@ -109,12 +116,12 @@ run.
 
 ### Announce intent early, because coordination is pull-based
 
-Almost every signal here is pull-based -- `overlap.ps1`, `presence.ps1`, `claim.ps1 -List` -- and
-nothing pushes. The one push channel `announce-session.ps1` fires at the first prompt with a
-messageable peer, so it carries **intent**. It needs a Desktop-only MCP.
+Almost every signal here is **pull-based**: it waits to be asked. `overlap.ps1`, `presence.ps1` and
+`claim.ps1 -List` all work that way. The one push channel, `announce-session.ps1`, fires at the
+first prompt with a messageable peer, so it carries **intent**. It needs a Desktop-only MCP.
 
-Practical consequence: **say what you are about to build, out loud, in your first or second
-prompt.** A peer that learns your intent at merge time learns it too late.
+So **say what you are about to build, out loud, in your first or second prompt.** A peer that learns
+your intent at merge time learns it too late.
 
 ### Nobody uses a coordination step they have to remember
 
@@ -149,6 +156,10 @@ where it read as a measurement. Anything you did not observe gets hedged in the 
 
 ### Before you edit a hot file, ask who is holding it
 
+**The goal.** Find out whether a live session is already changing the file you are about to edit.
+
+**What to do.**
+
 ```powershell
 # Who else is changing this path right now? Empty output = nobody live holds it.
 pwsh -NoProfile -File scripts/coord/overlap.ps1 -File src/app/service.py
@@ -157,9 +168,9 @@ pwsh -NoProfile -File scripts/coord/overlap.ps1 -File src/app/service.py
 pwsh -NoProfile -File scripts/hooks/collision_gate.ps1 -PathOverride src/app/service.py
 ```
 
-Only **live** sessions block. A dormant worktree with changes cannot be racing you, so it is
-reported and allowed. Blocking on dormant trees would deny edits to every file any abandoned
-branch ever touched, and a gate that cries wolf gets uninstalled.
+**What happens next.** Only **live** sessions block. A dormant worktree with changes cannot be
+racing you, so it is reported and allowed. Blocking on dormant trees would deny edits to every file
+any abandoned branch ever touched, and a gate that cries wolf gets uninstalled.
 
 ### The two id namespaces are not interchangeable
 
@@ -170,16 +181,21 @@ wins**.
 
 ### Steering a session mid-task
 
-A note dropped from a second terminal is delivered at the target session's next tool-call
-boundary instead of at the end of the turn:
+**The goal.** Redirect a session that is already mid-task, without waiting for the turn to end.
+
+**What to do.** From a second terminal:
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-steer.ps1 "stop after the current file; the API shape changed"
 ```
 
-`scripts/hooks/steer-inject.ps1`, the `PreToolUse` half, is **opt-in per worktree**. A `PreToolUse`
-hook matching `*` spawns `pwsh` before every tool call: measured here at ~366 ms, of which ~267 ms
-is bare `pwsh` startup. A standing tax on every session: enable it only where you need it.
+**What happens next.** The note lands at the target session's next tool-call boundary, not at the
+end of its turn.
+
+The receiving half, `scripts/hooks/steer-inject.ps1`, is **opt-in per worktree**. It is a
+`PreToolUse` hook: one matching `*` spawns `pwsh` before every tool call, measured here at ~366 ms,
+of which ~267 ms is bare `pwsh` startup. A standing tax on every session: enable it only where you
+need it.
 
 ### Kill switches must be files
 
@@ -198,6 +214,9 @@ clone.
 
 ## 4. When you write a guardrail
 
+A guardrail's **posture** is its answer to one question: when the check itself breaks, does the work
+go through (**open**) or stop (**closed**)?
+
 **Declare the posture in the file, at the top.** `collision_gate.ps1` fails **open**: it prevents
 rework, never blocks work. `worktree_gate.ps1` fails **open** *loudly*, because it protects a
 shared tree. `claim_check.py` fails **closed** in two places, because a false clean is
@@ -214,14 +233,15 @@ printed `[]`. Always emit the empty array; put the "I could not look" receipt on
 **The `hookSpecificOutput` wrapper is mandatory.** A bare `permissionDecision` is silently
 ignored -- which leaves the hook looking installed while permitting everything.
 
-**Gate on the write's TARGET path, never on the session's cwd.** Measured here over 30 days:
-**29%** of Edit/Write calls by primary-seated sessions wrote into a sibling worktree by absolute
-path -- already correct. A cwd-keyed gate would deny every one. Only the destination matters.
+**Gate on the write's TARGET path, never on the session's cwd.** Measured here over 30 days: **29%**
+of Edit/Write calls by primary-seated sessions wrote into a sibling worktree by absolute path. Those
+writes were already correct, and a cwd-keyed gate would deny every one. Only the destination
+matters.
 
-**Conversely, a cwd-keyed *fence* is blind to that entire class.** The same 29% is invisible to any
-occupancy check that maps a recorded cwd onto a worktree. That is why `prune-merged.ps1` requires
-**two independent occupancy signals** and treats recent git-metadata mtime as the load-bearing
-one.
+**Conversely, a cwd-keyed *fence* is blind to that entire class.** Occupancy: is a session working
+in this tree now? The same 29% is invisible to any occupancy check that maps a recorded cwd onto a
+worktree. So `prune-merged.ps1` requires **two independent occupancy signals**, treating recent
+git-metadata mtime as the load-bearing one.
 
 **False positives are the expensive failure.** A gate that denies ordinary work trains sessions to
 route around it, and a routed-around gate protects nothing. `block-blanket-git-stage.ps1` is
@@ -238,7 +258,7 @@ arguments; a script the model wrote carries none. Commit-time hooks from
 **every write route**.
 
 **Config-level disarm needs its own rule.** Linked worktrees share the object store *and the
-config*, so one config write that repoints hook resolution disables the commit-time gates for every
+config*. So one config write that repoints hook resolution disables the commit-time gates for every
 worktree at once. A git-verb gate that does not cover `config` has a whole-estate hole in it.
 
 **Use one shared target-resolution helper.** Two rules parsing `-C` / `cd` / cwd separately each
@@ -256,8 +276,8 @@ session refusal, discovery, `-Status` and `-Uninstall`, then test that both reac
 directories.
 
 **An install flag that drops a rule must never do it quietly.** `install-gate.ps1 -NoDispatchGate`
-turns off a rule that is still implemented, so `-Status` reports those tools as **UNWIRED**
-(implemented, never firing) and the install prints a warning.
+turns off a rule that is still implemented. So `-Status` reports those tools as **UNWIRED** --
+implemented, never firing -- and the install prints a warning.
 
 **Exclusive-create, never read-modify-write.** Every allocator, claim and lock here claims by
 *exclusively creating* a file, and the failed create **is** the mutual exclusion. Measured here: a
@@ -280,9 +300,9 @@ log, no counter, no audit file. Nothing on the box could answer:
 - did that fix change anything?
 
 So every severity ranking about the whole machinery was an opinion.
-`worktree_gate.ps1` now appends timestamp, rule, tool, cwd and a rule-composed detail -- and
-deliberately **not** the raw command or file contents, so an argument carrying a secret cannot
-land in a plaintext log.
+`worktree_gate.ps1` now appends timestamp, rule, tool, cwd and a rule-composed detail. It
+deliberately does **not** log the raw command or file contents, so an argument carrying a secret
+cannot land in a plaintext log.
 
 **Test deny *messages*, not just decisions.** A deny refused a write to the primary, then listed it
 **first** among worktrees to reuse, displacing a real one off the cap. A filter compared a string
@@ -294,9 +314,9 @@ version-locked on a named row contract, stated in both files. Adding a field is 
 or **changing its meaning** requires editing both notes in one commit. A silent meaning change
 errors nowhere.
 
-**Do not give one rule set two independent numberings.** If the prose says "rule 3" and the code's
-rule 3 is something else, a change description keyed to a number will not match the file it must
-also edit. The next session re-adds what you removed.
+**Do not give one rule set two independent numberings.** Say the prose calls it "rule 3" and the
+code's rule 3 is something else. Then a change description keyed to that number will not match the
+file it must also edit, and the next session re-adds what you removed.
 
 ---
 
@@ -336,9 +356,9 @@ a non-zero `git` exit stays an ordinary, inspectable answer instead of a termina
 
 ### `printf` mangles Windows paths
 
-A planted test violation was supposed to contain `C:\Users\<name>\...`. `printf` treats `\U` as
-the start of a unicode escape, so the string written to disk was not the string intended -- and
-the "violation" the scanner then failed to find had never existed.
+A planted test violation was supposed to contain `C:\Users\<name>\...`. `printf` treats `\U` as the
+start of a unicode escape, so the string written to disk was not the string intended. The
+"violation" the scanner then failed to find had never existed.
 
 ```bash
 # WRONG - \U, \n, \t all get interpreted
@@ -356,8 +376,8 @@ Always read the fixture back before trusting a test that depends on its exact by
 ### A scanner handed a file argument can be a silent no-op
 
 One scanner accepted a file path, dropped it, and exited 0. A later run that mixed files and
-directories *also* exited 0, because the tool's refusal only fires when **everything** it was
-given was dropped -- one surviving directory was enough to make the run look normal.
+directories *also* exited 0. The tool's refusal only fires when **everything** it was given was
+dropped, and one surviving directory was enough to make the run look normal.
 
 Pass directories. Treat a green result from a file-argument invocation as **unproven**, and check
 the tool's own summary line for how many inputs it actually read.
@@ -368,9 +388,9 @@ Plant a violation. Watch the gate fail. *Then* trust the pass. Without that, "gr
 consistent with a dozen states that have nothing to do with your tree being clean.
 
 Assert the detector and rule counts are **non-zero**: a run loading zero rules exits 0 too.
-`ccx-doctor.ps1` pairs every attack with a negative control the guard must allow -- a script
-refusing everything is no guard, and a probe with no positive control cannot tell "failed" from
-"not surfaced".
+`ccx-doctor.ps1` pairs every attack with a negative control the guard must allow. A script refusing
+everything is no guard, and a probe with no positive control cannot tell "failed" from "not
+surfaced".
 
 There is a harness-level version of the same trap, where the gate was fine and the probe was broken.
 The account, and the four rules that came out of it, are at
@@ -380,9 +400,9 @@ The hole opens in an ad-hoc check too. Measured 2026-08-11: three tokens were gr
 to establish that a commit carried no classifier, and the result was zero. Re-run against a ref that
 had to match, the same predicate also returned zero.
 
-**The conclusion was true and the evidence was empty.** That is the more durable of the two failures.
-A false conclusion gets caught by whatever it breaks; a true one resting on nothing never does. Run
-the predicate against a known positive before you trust its zero.
+**The conclusion was true and the evidence was empty.** That is the more durable of the two
+failures. A false conclusion gets caught by whatever it breaks; a true one resting on nothing never
+does. Run the predicate against a known positive before you trust its zero.
 
 ### A gate cannot see a policy judgment
 
@@ -442,8 +462,8 @@ is a *claim*; a receipt plus a target that re-resolves is *evidence*. `install-c
 ### An installer with no row for a hook is a hook that runs nowhere
 
 Worse than a stale copy, because every other signal is healthy. Measured 2026-08-11: a watcher was
-written, verified against the harness and documented, while `install-coordination.ps1` carried no row
-for it. It had been armed nowhere since the day it was written.
+written, verified against the harness and documented, while `install-coordination.ps1` carried no
+row for it. It had been armed nowhere since the day it was written.
 
 Source, tests and documentation all agreed the hook existed. None of the three is a record of it
 being armed.
@@ -491,8 +511,9 @@ mutation run does not use the tool's counting pattern at all.
 Agreement across two methods is what made the figure usable. The 1202 above came from one instrument
 with no cross-check.
 
-Related: **a total is a fact about a (corpus, commit) pair.** The same tool reported 646 on one branch
-and 653 on another carrying two new citing files. Both were correct. Name the tree when you quote one.
+Related: **a total is a fact about a (corpus, commit) pair.** The same tool reported 646 on one
+branch and 653 on another carrying two new citing files. Both were correct. Name the tree when you
+quote one.
 
 ### Measure adherence, do not assume a reminder works
 
@@ -503,9 +524,10 @@ no evidence either way. If a convention matters, enforce it mechanically and mea
 The counts and the denominator are in the
 [README](https://claude-multisession.pages.dev/README.md), which is the record for this figure.
 
-Recorded 2026-08-12, across two sessions on one repository: four times in one day, a written rule was
-not consulted at the moment it applied. A rule banning new glyph vocabulary was broken inside the one
-file that rule protects, on the day an audit was measuring it. Knowing a rule does not fire it.
+Recorded 2026-08-12, across two sessions on one repository: four times in one day, a written rule
+was not consulted at the moment it applied. A rule banning new glyph vocabulary was broken inside
+the one file that rule protects, on the day an audit was measuring it. Knowing a rule does not fire
+it.
 
 ### A green CI run is not evidence of the thing you gated
 
@@ -526,7 +548,7 @@ A number crossing a line does not tell you what to do, and treating it as though
 confident wrong calls in both directions.
 
 **7% of a budget remaining, with 7 minutes until the window resets, is abundant. The same 7%, with
-four hours left, is scarce.** A peer paused everyone on the percentage alone, then retracted after
+four hours left, is scarce.** A peer paused everyone on the percentage alone. They retracted after
 checking the clock: *"The priority was right for a different reason than the one I gave."*
 
 Two rules fall out, and the second is the one people skip:
@@ -563,34 +585,39 @@ Every file in this repository is pure ASCII: no em dash, no arrow, no ellipsis, 
 box-drawing character, no emoji. Write `--`, `->`, `...`, `"` and `'`. That is not a style
 preference. Each of the following happened while building this repo:
 
-- **A non-ASCII character inside a string a script prints raises on a cp1252 console** --
-  `UnicodeEncodeError: 'charmap' codec can't encode characters` -- and cp1252 is the Windows
-  default this tooling targets. The failure lands in the *reporting* path, so the tool dies while
-  telling you something.
+- **A non-ASCII character inside a string a script prints raises on a cp1252 console**:
+  `UnicodeEncodeError: 'charmap' codec can't encode characters`. cp1252 is the Windows default this
+  tooling targets. The failure lands in the *reporting* path, so the tool dies while telling you
+  something.
 - **A scanner's own diagnostic output was observed rendering as replacement characters
   mid-sentence.** The finding was produced correctly and was unreadable.
 - **Reading a file without an explicit `encoding=` raises on one host and silently substitutes
   replacement characters on another.** Same code, same bytes, different machine, different
-  behavior -- and the machine that substitutes is the one that loses data quietly.
+  behavior. The machine that substitutes is the one that loses data quietly.
 - **Emoji and box-drawing characters are not one column wide**, so fixed-width tables and receipts
   stop lining up. There is no correct width to target, either: terminals, diff viewers and pagers
   disagree with each other about everything past ASCII.
 - **A stray character can arrive from a *prompt* and survive review**, because it is visually
   indistinguishable from its ASCII neighbour. One did, in this build.
 
-**ASCII-only with no exceptions: an exception is a judgment call made when someone is least able
-to make it.** "Only in Markdown", "only where it renders" are re-decided per character, by a tired
+**ASCII-only, with no exceptions.** An exception is a judgment call made when someone is least able
+to make it. "Only in Markdown" or "only where it renders" is re-decided per character, by a tired
 reader who cannot see it. A rule with no exceptions can be scripted; one with an exception cannot.
 
-So it is enforced by a script:
+So it is enforced by a script, not by a reader.
+
+**The goal.** Find every non-ASCII byte in the tree, and fix the ones that can be fixed
+mechanically.
+
+**What to do.**
 
 ```powershell
 pwsh -NoProfile -File scripts/quality/check-ascii.ps1          # report
 pwsh -NoProfile -File scripts/quality/check-ascii.ps1 -Fix     # rewrite the safe substitutions
 ```
 
-It reports `file:line:column`, the code point as `U+XXXX`, the character's name and the ASCII text
-it suggests in its place.
+**What happens next.** It reports `file:line:column`, the code point as `U+XXXX`, the character's
+name and the ASCII text it suggests in its place.
 
 Names come from a curated table of the characters that turn up in this kind of work. Anything
 outside it gets its Unicode block and general category, and is **said** to be undescribed, because a
@@ -623,20 +650,19 @@ ever sees what someone remembered to show it.
 ## 7. Cleanup and teardown
 
 **`prune = merged AND clean AND NOT occupied`.** A brand-new worktree is an ancestor of trunk and
-clean from creation -- the state a session that just started work is in. "Merged and clean"
+clean from creation. That is the state a session that just started work is in. "Merged and clean"
 describes the *branch*, not the directory's occupancy. One occupied worktree was destroyed this way.
 
 **The bias is fixed and not negotiable: a false skip is a minor annoyance, a false prune destroys
 a session.** Every check that cannot reach a confident answer SKIPs.
 
 **Never run `git worktree prune`.** It deregisters *any* worktree whose directory is momentarily
-missing -- including nested, harness-managed trees -- and it finishes the destruction that a failed
+missing, including nested, harness-managed trees. It also finishes the destruction that a failed
 removal left half done.
 
-**A failed removal is worse than none.** `git worktree remove --force` deregisters a tree it
-cannot delete: every git command there fails, and it is gone from `git worktree list`, so the next
-run reports green. `prune-merged.ps1` logs orphans to `prune-merged-orphans.json` and re-reports
-them.
+**A failed removal is worse than none.** `git worktree remove --force` deregisters a tree it cannot
+delete. Every git command there fails, and it is gone from `git worktree list`, so the next run
+reports green. `prune-merged.ps1` logs orphans to `prune-merged-orphans.json` and re-reports them.
 
 **"Sibling" is not a prefix match.** A `<primary>-` prefix match includes nested trees under
 `<primary>-work/.claude/worktrees/`, the one set it must never touch.
@@ -662,10 +688,13 @@ check that knows the branch is not merged.
 releases **no** claims. Release only on evidence: directory gone and deregistered, never a timer;
 match full normalized paths. Releasing a live worktree's claim causes a duplicate build.
 
-**Recovering a "disappeared" session.** Claude Code files transcripts under a slug from the
-session's **current** working directory. Relocate a session and it re-files under the new slug,
-dropping out of its old window's list. Nothing is deleted: the remnant reads as a second,
-near-empty session.
+**The goal.** Recover a "disappeared" session: one that dropped out of its window's list.
+
+Claude Code files transcripts under a slug from the session's **current** working directory.
+Relocate a session and it re-files under the new slug, dropping out of its old window's list.
+Nothing is deleted: the remnant reads as a second, near-empty session.
+
+**What to do.**
 
 ```powershell
 pwsh -NoProfile -File scripts/worktree/sessions.ps1 -Relocated
@@ -673,13 +702,13 @@ pwsh -NoProfile -File scripts/worktree/sessions.ps1 -Rehome <id-prefix> -WhatIf
 pwsh -NoProfile -File scripts/worktree/sessions.ps1 -Rehome <id-prefix>
 ```
 
-A bare invocation only ever lists. `-Rehome` is the one destructive action; it honours `-WhatIf`
-and refuses on a session whose transcript was touched within `-MinIdleMinutes`, because moving a
-file out from under its writer corrupts it.
+**What happens next.** A bare invocation only ever lists. `-Rehome` is the one destructive action.
+It honours `-WhatIf`, and refuses on a session whose transcript was touched within
+`-MinIdleMinutes`, because moving a file out from under its writer corrupts it.
 
-**Uncommitted work in a worktree you need to restore** goes through `rescue.ps1`
-(`git stash --include-untracked`, with the recovery instructions printed from a `finally` block so
-they survive a failure), not through a manual reset.
+**Uncommitted work in a worktree you need to restore** goes through `rescue.ps1`, not through a
+manual reset. It runs `git stash --include-untracked` and prints the recovery instructions from a
+`finally` block, so they survive a failure.
 
 ---
 

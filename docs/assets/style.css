@@ -155,6 +155,17 @@ summary:focus-visible,
   justify-content: space-between;
 }
 
+/* The title and its tagline sit on one baseline on a wide screen and stack on a phone, which is what
+   the flex-wrap does. `p` rather than `div` so the header reads as a line of text to a screen
+   reader rather than as two unrelated links. */
+.site-brand {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.6rem;
+}
+
 .site-title {
   font-family: var(--font-mono);
   font-size: 1.05rem;
@@ -162,6 +173,13 @@ summary:focus-visible,
   color: var(--fg);
   text-decoration: none;
   letter-spacing: -0.01em;
+}
+
+/* Quiet on purpose: it orients a reader who arrived on a deep page and must not compete with the
+   page's own H1. */
+.site-tagline {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
 }
 
 .site-title:hover {

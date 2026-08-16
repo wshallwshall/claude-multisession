@@ -6,15 +6,14 @@
 # style is configured in _config.yml. If a permalink style is ever added, every path here changes.
 #
 # `label` is the short nav name and follows the filename. `title` is the document's own H1 verbatim,
-# which is not always the same thing -- ASVS-ASSESSMENT.md never says ASVS in its heading -- and is
-# used as the link's title attribute.
+# which is not always the same thing, and is used as the link's title attribute.
 #
 # An entry with `url` instead of `path` is an absolute link off the site. Those exist because
 # INSTALL.md and the scripts live at the repository root, outside the Jekyll source, so the site
 # cannot serve them at all.
 #
 # A page in a SUBDIRECTORY follows the same rule: docs/standards/FOO.md is built to
-# /standards/FOO.html. ONE FILENAME BREAKS THAT RULE, which is why the section index is called
+# /standards/FOO.html. ONE FILENAME BREAKS THAT RULE, which is why a section index would be called
 # OVERVIEW.md and not README.md. jekyll-optional-front-matter refuses to convert a front-matter-less
 # file whose basename is on its FILENAME_BLACKLIST (README, LICENSE, CONTRIBUTING and friends), so a
 # README stays a static file; jekyll-readme-index then republishes it as the DIRECTORY INDEX with
@@ -22,7 +21,15 @@
 # /standards/README.html for a nav path to point at. Both plugins are in the GitHub Pages
 # always-enabled set and cannot be turned off; the two config keys that would change the behaviour,
 # readme_index.with_frontmatter and readme_index.remove_originals, are unset in _config.yml. Naming
-# the file OVERVIEW.md keeps it on the ordinary path, so its URL is predictable and page.url matches.
+# such a file OVERVIEW.md keeps it on the ordinary path, so its URL is predictable and page.url
+# matches.
+#
+# THE GROUPS ARE ORDERED BY WHAT THE READER IS TRYING TO DO, not by what kind of artifact each page
+# is. That was the change of 2026-08-16. Before it there were seven groups holding 25 links in which
+# a reference page, an installation step and a case study sat side by side, and the reader who had
+# just arrived and the reader debugging a merge were offered the same flat list. The order below is
+# the order the work happens in: understand it, install it, run a build, keep it honest, look
+# something up.
 
 - group: Start here
   items:
@@ -31,35 +38,51 @@
     # first item of the first group as the first anchor in the nav element. Moving this entry down,
     # or adding a group above this one, silently demotes it -- the layout has no notion of a pinned
     # row, so position in this file is the whole of the mechanism.
+    #
+    # THIS ROW USED TO BE `The KORUS framework`, AND THE REASON FOR THAT EXPIRED RATHER THAN BEING
+    # OVERRULED. That page was pinned first because it was the only page on the site about the
+    # method, while the landing page sold the PowerShell tooling. On 2026-08-16 the landing page
+    # became the method's own overview, so the framework essay is now the account BEHIND the
+    # overview rather than the only route to it, and it sits third -- after the two pages a new
+    # reader needs first.
+    - label: Overview
+      title: KORUS
+      path: /
+    - label: Quickstart
+      title: Quickstart
+      path: /QUICKSTART.html
+    - label: Run a KORUS build
+      title: Run a KORUS build
+      path: /KORUS-BUILD.html
     - label: The KORUS framework
       title: "The KORUS Framework: Lesson Learned the Hard Way"
       path: /KORUS.html
-    - label: Overview
-      title: claude-multisession
-      path: /
-    - label: Feed this to Claude Code
-      title: Here's what to feed to Claude Code
-      path: /FEED-THIS-TO-CLAUDE-CODE.html
     - label: Concepts
       title: Concepts
       path: /CONCEPTS.html
-    # Installing sat in the "On GitHub" group, row 32 of 33, which filed the one page an installer
-    # needs behind everything they would read afterwards. It is still an off-site `url` entry -- the
-    # file is at the repository root, outside the Jekyll source, so the site cannot serve it -- but a
-    # reader looking for how to install now finds it where they look. The label says the task rather
-    # than the filename.
-    - label: Installing
+    - label: Feed this to Claude Code
+      title: Here's what to feed to Claude Code
+      path: /FEED-THIS-TO-CLAUDE-CODE.html
+
+- group: Set it up
+  items:
+    - label: Limits and requirements
+      title: Limits and requirements
+      path: /LIMITS.html
+    - label: Desktop accounts
+      title: "Several desktop instances, one per Claude account"
+      path: /DESKTOP-ACCOUNTS.html
+    # Still an off-site `url` entry: the file is at the repository root, outside the Jekyll source,
+    # so the site cannot serve it as a page. The label says the task rather than the filename.
+    - label: Installer reference
       title: "INSTALL.md: four installers, four scopes, and how to prove each is live"
       url: https://claude-multisession.pages.dev/INSTALL.md
 
-- group: Running sessions
+- group: Run a build
   items:
     - label: Running multiple sessions
       title: "Running multiple sessions"
       path: /RUNNING-MULTIPLE-SESSIONS.html
-    - label: Desktop accounts
-      title: "Several desktop instances, one per Claude account"
-      path: /DESKTOP-ACCOUNTS.html
     - label: Worktrees
       title: Worktrees
       path: /WORKTREES.html
@@ -82,8 +105,6 @@
       title: Pruning worktrees
       path: /PRUNING.html
 
-
-
 - group: Guardrails
   items:
     - label: Hooks
@@ -95,18 +116,24 @@
     - label: Usage awareness
       title: "Usage awareness: knowing when to stop, without lying about it"
       path: /USAGE-AWARENESS.html
-
-- group: In practice
-  items:
-    - label: Tips and tricks
-      title: Tips and tricks
-      path: /TIPS-AND-TRICKS.html
     - label: CI for leaders
       title: "CI for leaders: what done means when the author cannot vouch for the change"
       path: /CI-FOR-LEADERS.html
 
+- group: Reference
+  items:
+    - label: Every script
+      title: "Every script, and what it does"
+      path: /SCRIPTS.html
+    - label: Token accounting
+      title: "Token accounting: what a usage meter measures, and what a plan buys"
+      path: /TOKEN-ACCOUNTING.html
+    - label: Tips and tricks
+      title: Tips and tricks
+      path: /TIPS-AND-TRICKS.html
+
 # Evaluations of third-party frameworks, one page each. The naming follows the CASE-STUDY-* series
-# already in "In practice": a shared prefix, then a kebab-case name, so a second evaluation is
+# already in docs/: a shared prefix, then a kebab-case name, so a second evaluation is
 # FRAMEWORK-<name>.md and sorts beside this one in docs/. Each page is scoped to what a reader
 # running CONCURRENT SESSIONS needs from that framework -- the general tool review is upstream's
 # job, and duplicating it here would be the drift HS-3 exists to prevent.
@@ -143,7 +170,7 @@
 # EXTRA SECTIONS ARE ALLOWED. A page may open with `## TLDR/BLUF` and add its own, as the Spec Kit
 # page does with `## How the claims were graded`. What it may not do is omit one: an absent section
 # reads as "this framework has no such property", where a section saying "not established" reads as
-# what it is. Four of the BMAD page's nine rows are in that state today.
+# what it is.
 - group: Other frameworks
   items:
     - label: Spec Kit
@@ -153,17 +180,14 @@
       title: "BMAD 6.11.0, evaluated"
       path: /FRAMEWORK-bmad.html
 
-- group: The standards
+- group: Elsewhere
   items:
-    # These documents lived here until the split and are now their own repository. The group is one
+    # These documents lived here until the split and are now their own repository. The row is one
     # row on purpose: this site routes to them, it does not mirror them, and a second copy of the
     # index is the drift both projects are about.
     - label: Security standards
       title: Security standards for teams building with AI coding assistants
       url: https://secure-development-standards.pages.dev/
-
-- group: On GitHub
-  items:
     - label: CLAUDE.md template
       title: A working agreement to copy into your own repository
       url: https://claude-multisession.pages.dev/CLAUDE.md.template

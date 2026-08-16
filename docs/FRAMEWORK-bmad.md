@@ -8,16 +8,16 @@ layout: default
 ## TLDR/BLUF
 
 **What this is.** [BMAD-METHOD](https://github.com/bmad-code-org/BMAD-METHOD) 6.11.0, published
-2026-08-15, installed and measured the same day against Claude Code. It answers the same questions
-in the same order as [Spec Kit](FRAMEWORK-spec-kit.md), so the two can be read side by side.
+2026-08-15, installed and measured against Claude Code the same day. It answers the same questions
+in the same order as [Spec Kit](FRAMEWORK-spec-kit.md), so the two read side by side.
 
-**Why you should care.** It puts 49 skills and 3.0MB into `.claude/skills`, and none of it is
-gitignored. Its project-root resolution is fail-closed, which is the one place it is plainly better
-than Spec Kit. Not for you if you want a tutorial: read the upstream docs.
+**Why you should care.** It commits 49 skills and 3.0MB into `.claude/skills`, none of it
+gitignored. Run from the wrong directory it stops with an error rather than binding to the wrong
+scaffold. Not for you if you want a tutorial: read the upstream docs.
 
 **How to use it.** If you run concurrent sessions, start at
-[How it holds state](#how-it-holds-state). What is measured and what is researched is marked
-throughout, and two rows remain unestablished and say so.
+[How it holds state](#how-it-holds-state). Every claim below is marked measured or researched, and
+two answers remain unestablished and say so.
 
 ---
 
@@ -38,7 +38,7 @@ installs prompts and path resolution only. BMAD ships Python that parses YAML, w
 atomically, and shells out to git, with its own tests beside it.
 
 Nothing in it is still a gate. No installed script can fail a build, block a commit, or reject a
-document; the Python serves the skills rather than policing the repository.
+document. The Python serves the skills rather than policing the repository.
 
 `.claude/skills` is not gitignored by the installer. Adopting BMAD commits 248 files and 3.0MB into
 the repository unless you add a rule yourself.
@@ -73,20 +73,21 @@ Two findings, pointing opposite ways. Both measured on 2026-08-15 against the in
 
 ### Project-root resolution is fail-closed
 
-`{project-root}` is the working directory the skill is invoked from. `load_central_config` in
-`_bmad/scripts/config_utils.py` resolves `project_root / "_bmad"` and loads `config.toml` with
-`required=True`. It does not walk parent directories.
+**BMAD looks for its scaffold in one place: the directory you ran the skill from.** That is what
+`{project-root}` means here. `load_central_config` in `_bmad/scripts/config_utils.py` resolves
+`project_root / "_bmad"` and loads `config.toml` with `required=True`. It does not walk parent
+directories.
 
-Run it from a worktree on a branch predating the scaffold, which is the case that silently mis-binds
-Spec Kit to the shared primary, and it stops:
+Run it from a worktree whose branch predates the scaffold -- the case that silently mis-binds Spec
+Kit to the shared primary -- and it stops:
 
 ```
 error: required TOML file not found: .../.worktrees/legacy/_bmad/config.toml
 ```
 
-**That is the correct behaviour and it is worth naming.** The failure a reader of this site cares
-about is the one that returns a confident wrong answer. This one returns an error with the path in
-it, so a session that has strayed finds out immediately.
+**That is the correct behaviour and it is worth naming.** The failure that costs a reader time is
+the one returning a confident wrong answer. This one prints the path it wanted and stops, so a
+session that has strayed finds out immediately.
 
 ### The work-item state has no lock
 
@@ -102,7 +103,7 @@ reads at line 455 and `_atomic_write` writes at line 561. The read and the write
 operations with no lock between them.
 
 A search of every Python file for `flock`, `fcntl`, `lockf`, `O_EXCL` or a lockfile returns nothing.
-So two writers racing between that read and that write lose one update, which is the shape
+Two writers racing between that read and that write lose one update. That is the shape
 [Sequence allocation](SEQUENCE-ALLOC.md) records: the check and the write were never one operation.
 
 ### Why the collision is loud rather than silent
@@ -110,9 +111,9 @@ So two writers racing between that read and that write lose one update, which is
 `sprint-status.yaml` is not gitignored. It is committed, so it travels with the branch and each
 worktree carries its own copy.
 
-Two sessions in two worktrees therefore diverge into a merge conflict, which git reports. That is
-the opposite of Spec Kit, whose pointer is gitignored and shared through a parent-directory walk, so
-the divergence is invisible.
+Two sessions in two worktrees therefore diverge into a merge conflict, which git reports. Spec Kit
+is the opposite: its pointer is gitignored and shared through a parent-directory walk, so the
+divergence is invisible.
 
 **Limit: the lost-update window is two writers in one worktree, not two worktrees.** That is the
 case a worktree per session already prevents, so the residual risk is one worktree driven by two
@@ -128,10 +129,12 @@ The strongest corroboration is an artifact that exists. `thbst16/bmad-parallel-d
 third-party Claude Code skill for running BMAD stories in parallel across git worktrees, found by a
 research pass on 2026-08-15.
 
-Core BMAD ships no such thing. That skill's rules read as manual compensations for its absence.
+Core BMAD ships no such thing. That skill's rules read as manual compensations for its absence:
 
-Story files must be created on main before worktrees exist, one agent takes one story, phases run
-sequentially, and cleanup is mandatory before the next set.
+- story files must be created on main before the worktrees exist;
+- one agent takes one story;
+- phases run sequentially;
+- cleanup is mandatory before the next set.
 
 Its state is a hand-maintained bash file mapping story ids to branches, and its worktrees are
 created by a shell script. **That script is the only place git is invoked at all**, and it is
@@ -144,9 +147,18 @@ into disjoint modules and from separate directories, not from any mechanism the 
 
 ## Install and initialise
 
+**The goal.** The scaffold in your project root and the Claude Code skills installed, with no
+interactive prompts.
+
+**What to do.**
+
 ```
 npx bmad-method@6.11.0 install --yes --tools claude-code --modules bmm --directory .
 ```
+
+**What happens next.** The installer writes `_bmad/` in the project root and reports it on success,
+creates `_bmad-output/` empty, and adds 49 skill directories under `.claude/skills/`. None of that
+is gitignored, so write the ignore rule before you commit.
 
 | Fact | Detail |
 |---|---|
@@ -165,12 +177,12 @@ npx bmad-method@6.11.0 install --yes --tools claude-code --modules bmm --directo
 
 ## The flow
 
-**The documented persona order is still not established.** A research pass read the changelog and the
-release feed and surfaced no upstream statement of a phase sequence, so this page states none.
+**The documented persona order is still not established.** A research pass read the changelog and
+the release feed and surfaced no upstream statement of a phase sequence, so this page states none.
 
-What the installed tree shows is the skill set enumerated above, which names six agent personas
-directly: analyst, architect, dev, pm, ux-designer, plus the party-mode aggregator. Artifact-shaped
-skills sit beside them for PRD, architecture, epics and stories, sprint planning and retrospective.
+The installed tree names six agent personas: analyst, architect, dev, pm, ux-designer, and the
+party-mode aggregator. Artifact-shaped skills sit beside them for PRD, architecture, epics and
+stories, sprint planning and retrospective.
 
 That is an inventory, not an order. Do not infer a sequence from it: the Spec Kit page records that
 upstream's own core-versus-optional grouping is not an execution order either.
@@ -178,11 +190,13 @@ upstream's own core-versus-optional grouping is not an execution order either.
 ### The persona set moved in the release before this one
 
 From the changelog, read at `main` on 2026-08-15. v6.11.0 shipped 2026-08-09 and renamed
-`bmad-quick-dev` to `bmad-build`, and `bmad-dev-auto` to `bmad-build-auto`.
+`bmad-quick-dev` to `bmad-build`, and `bmad-dev-auto` to `bmad-build-auto`. The same release:
 
-The same release consolidated three developer personas into one Developer agent and retired the
-tech-writer persona. It also merged three research skills into `bmad-deep-recon` and merged the
-editorial skills into one `bmad-review`, then deprecated `bmad-create-story` and `bmad-dev-story`.
+- consolidated three developer personas into one Developer agent;
+- retired the tech-writer persona;
+- merged three research skills into `bmad-deep-recon`;
+- merged the editorial skills into one `bmad-review`;
+- deprecated `bmad-create-story` and `bmad-dev-story`.
 
 **Measured against the install: both sides of every one of those renames ship together.**
 `bmad-quick-dev` and `bmad-build` are both present, as are `bmad-dev-auto` and `bmad-build-auto`,
@@ -207,7 +221,7 @@ contradicted by a primary source, each with the source named.
 | Config lives in `core-config.yaml` | v6.11.0 moved configuration to a layered TOML system |
 
 The v4 user guide most tutorials cite now returns 404, because v6 restructured the docs tree. That
-is the mechanism behind the whole table: the material did not become wrong, its subject moved and
+is the mechanism behind the whole table: the material did not become wrong. Its subject moved, and
 the old text stayed reachable through forks and reposts.
 
 `rollback` on npm still points a major version back at 4.39.0, so a reader can install the layout
@@ -241,17 +255,16 @@ consuming over 67% of a 200K context window **at activation**, before any work b
 | SM | ~22,130 tokens, 11% |
 | DEV | ~19,830 tokens, 10% |
 
-TEA's knowledge base alone is cited at 571KB, or roughly 143K tokens, and the issue's stated goal is
-to bring typical sessions under 30%. Issue #1235 reports excessive token usage in workflows
-separately.
+TEA's knowledge base alone is cited at 571KB, or roughly 143K tokens. The issue's stated goal is to
+bring typical sessions under 30%. Issue #1235 reports excessive token usage in workflows separately.
 
 **The issue names no version**, which is worth carrying: the skill consolidation at v6.11.0 cut the
 core count from fourteen to eight, so these figures may predate it. They are the hardest numbers
 published and they are unpinned.
 
 **This is cost criticism, not correctness criticism.** No source found reports the framework
-producing wrong output. It reports the framework eating the window before the work starts, which is
-the same shape the Spec Kit page records for that tool.
+producing wrong output. It reports the framework eating the window before the work starts, the same
+shape the Spec Kit page records for that tool.
 
 One reception datum, worth its caveat. An independent comparison logs eight Hacker News submissions
 between 2025-08 and 2026-03, scoring 4, 2, 2, 2, 2, 2, 1 and 1 with no comments on any. That is
@@ -289,11 +302,11 @@ project-scoped store whose numbers are handed out atomically and whose index is 
 
 Stated only where measurement or a named source supports it.
 
-Use it where the executable helpers earn their place: sprint status tracked in a file that survives
-a crashed write, and review skills you would otherwise write yourself.
+**Use it** where the executable helpers earn their place: sprint status tracked in a file that
+survives a crashed write, and review skills you would otherwise write yourself.
 
-Skip it where 3.0MB in the repository and 49 skills on the agent's surface outweigh a convention you
-could adopt by writing three documents. That trade is legible without any further research.
+**Skip it** where 3.0MB in the repository and 49 skills on the agent's surface outweigh a convention
+you could adopt by writing three documents. That trade is legible without any further research.
 
 If you run several sessions on one repository, the state mechanics above are not an argument against
 it. Fail-closed resolution and a committed state file are both better behaved than the framework the
