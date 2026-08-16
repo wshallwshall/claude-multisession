@@ -69,8 +69,8 @@
     - label: Steering
       title: Steering a running session
       path: /STEERING.html
-    - label: Session mail
-      title: "The async lane: reaching sessions the realtime channel cannot"
+    - label: Installing coordination
+      title: "Installing intersession coordination for a multi-session Claude Code build"
       path: /SESSION-MAIL.html
     - label: Sequence allocation
       title: Sequence allocation
@@ -93,7 +93,7 @@
       title: The leak gate
       path: /LEAK-GATE.html
     - label: Usage awareness
-      title: "Usage awareness: knowing when to stop, without lying about it"
+      title: "Usage awareness: Knowing when to stop, without lying about it"
       path: /USAGE-AWARENESS.html
 
 - group: In practice
@@ -102,55 +102,24 @@
       title: Tips and tricks
       path: /TIPS-AND-TRICKS.html
     - label: CI for leaders
-      title: "CI for leaders: what done means when the author cannot vouch for the change"
+      title: "CI for leaders: What done means when the author cannot vouch for the change"
       path: /CI-FOR-LEADERS.html
 
 # Evaluations of third-party frameworks, one page each. The naming follows the CASE-STUDY-* series
 # already in "In practice": a shared prefix, then a kebab-case name, so a second evaluation is
-# FRAMEWORK-<name>.md and sorts beside this one in docs/. Each page is scoped to what a reader
-# running CONCURRENT SESSIONS needs from that framework -- the general tool review is upstream's
-# job, and duplicating it here would be the drift HS-3 exists to prevent.
+# FRAMEWORK-<name>.md and sorts beside this one in docs/.
 #
-# THE SECTION ORDER IS THE LENS, AND EVERY PAGE HERE ANSWERS IT IN THIS ORDER. A series is worth
-# more than its pages only if a reader can compare across it, and two pages answering different
-# questions in different orders cannot be compared. FRAMEWORK-spec-kit.md originally took its shape
-# from the source material it was written from; it was reordered onto this lens on 2026-08-15,
-# before a second page existed, because retrofitting a page already read and linked is the more
-# expensive direction.
-#
-#   1. What it is, measured           size on disk, and whether anything installed can fail a build
-#   2. How it holds state             and what happens to that under a worktree per session
-#   3. Install and initialise         commands, flags, traps found by running it
-#   4. The flow                       phases, order, and what each artifact carries
-#   5. What failed verification       killed claims, with votes
-#   6. What it does not give you      measured against adopting the practices without the tool
-#   7. A decision rule                use when, skip when
-#   8. Where the evidence runs out    named gaps, not filled
-#   9. Provenance, and how to re-check    figures, source tiers, the re-check ladder
-#
-# ROW 2 IS WHY THESE PAGES ARE ON THIS SITE and is why it sits second rather than in the middle. The
-# general tool review is upstream's job. What no upstream will write is what the framework does when
-# several sessions hold several worktrees of one repository, and "nothing collides, here is what was
-# checked" is a legitimate answer to it -- an absent row is not.
-#
-# THIS IS NOW HS-21 IN docs/HOUSE-STYLE.md, gated by
-# tests/test_a_series_answers_one_set_of_questions.py against the tuple in tests/_ccxtest.py, which
-# is the only definition of the order. It was promoted on 2026-08-15, after the order had been
-# applied to a second framework. The list above is a note for whoever writes the next page; the test
-# asserts it still matches the constant, because a note that has drifted is wrong at the one moment
-# anyone reads it.
-#
-# EXTRA SECTIONS ARE ALLOWED. A page may open with `## TLDR/BLUF` and add its own, as the Spec Kit
-# page does with `## How the claims were graded`. What it may not do is omit one: an absent section
-# reads as "this framework has no such property", where a section saying "not established" reads as
-# what it is. Four of the BMAD page's nine rows are in that state today.
+# THESE PAGES NO LONGER SHARE A FIXED SECTION ORDER. Through 2026-08-16 they did, gated as HS-21 in
+# docs/HOUSE-STYLE.md; that rule is retired there, with the reasoning, once the BMAD page moved to a
+# shorter reader-directed shape and left the series at one comparable member. FRAMEWORK-spec-kit.md
+# still carries the old nine-section shape; nothing requires a new page to match it.
 - group: Other frameworks
   items:
     - label: Spec Kit
       title: "Spec Kit 0.16.4 for a KORUS build"
       path: /FRAMEWORK-spec-kit.html
     - label: BMAD
-      title: "BMAD 6.11.0, evaluated"
+      title: "BMAD 6.11.0 with Ultracode: A how-to"
       path: /FRAMEWORK-bmad.html
 
 - group: The standards

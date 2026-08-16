@@ -26,7 +26,7 @@ Two scripts remove a worktree:
 worktree once, and every rule below is a consequence of that or of a near miss. Read the first two
 sections before you run either script.
 
-## First: a removal can delete commits into nothing
+## First: A removal can delete commits into nothing
 
 Removing a worktree can take its branch ref with it, and **a commit that is in no ref is also in no
 reflog**. No reflog entry to recover it from, no branch name, nothing in any interface that admits
@@ -92,7 +92,7 @@ Signal 1 answering **zero** is not "merged". A branch created seconds ago has no
 trunk: the state of a session that just started. `Test-BranchNeverUsed` reads the reflog: a branch
 with exactly one entry (`branch: Created from ...`) never advanced, and nothing merged *from* it.
 
-## The rule: merged AND clean AND NOT occupied
+## The rule: Merged AND clean AND NOT occupied
 
 ```text
 prune = merged AND clean AND NOT occupied

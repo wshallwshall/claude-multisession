@@ -37,7 +37,7 @@ Honest scope, up front:
 
 ---
 
-## 1. Read this first: every failure here is green
+## 1. Read this first: Every failure here is green
 
 The single most important thing to internalise: **in this problem space, broken looks exactly
 like working.**

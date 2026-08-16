@@ -121,7 +121,7 @@ Two sequences are documented, verified against `main`, `v0.16.0`, and that tag's
 grouped core and appears in neither sequence, while clarify, checklist and analyze are grouped
 optional and are interleaved into the full path. Read the table above, not the grouping.
 
-### Stage 1: the constitution
+### Stage 1: The constitution
 
 Command: `/speckit.constitution [your rules]`
 
@@ -132,7 +132,7 @@ The agent generates `.specify/memory/constitution.md`. Every later planning, cod
 step checks against it, and the check itself runs twice: before Phase 0 research and again after
 Phase 1 design. Run this once, in the dispatcher session, before any feature work starts.
 
-### Stage 2: specify, then clarify
+### Stage 2: Specify, then clarify
 
 Command: `/speckit.specify [feature requirements]`
 
@@ -150,7 +150,7 @@ The agent checks the draft against the constitution for gaps, asks targeted ques
 updates `spec.md` with your answers. Run both in the dispatcher session: this is the stage where a
 human needs to be in the loop before work fans out to build sessions.
 
-### Stage 3: plan, then tasks
+### Stage 3: Plan, then tasks
 
 Command: `/speckit.plan [spec-name]`
 
@@ -164,7 +164,7 @@ Command: `/speckit.tasks [spec-name]`
 `specs/<NNN-slug>/tasks.md`, written by this command. A KORUS dispatcher should read both before
 splitting work across build sessions.
 
-### Stage 4: implement
+### Stage 4: Implement
 
 Command: `/speckit.implement [spec-name]`
 
@@ -177,7 +177,7 @@ a review checklist from the spec. `analyze` checks plan and tasks against the co
 writes `specs/<NNN-slug>/analysis.md`. Both are sized for production features; skip them on a
 short build.
 
-### Stage 5: handling requirement changes
+### Stage 5: Handling requirement changes
 
 Do not prompt the agent to "just fix the code." Update the documents and let the code follow:
 
@@ -186,7 +186,7 @@ Do not prompt the agent to "just fix the code." Update the documents and let the
    plan and produces a targeted checklist rather than a full rewrite.
 3. Re-run `/speckit.implement` against the updated `tasks.md`.
 
-### Stage 6: converge, not "fix-findings"
+### Stage 6: Converge, not "fix-findings"
 
 There is no `/speckit.fix-findings` command and no `specs/findings.fixed.md` log in the installed
 10-skill set, checked against the live `templates/commands/` directory on 2026-08-16. The command

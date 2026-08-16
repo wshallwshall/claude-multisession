@@ -3,7 +3,7 @@ title: "Case study: a claim three verifiers refuted, and the source confirms"
 layout: default
 ---
 
-# Case study: a claim three verifiers refuted, and the source confirms
+# Case study: A claim three verifiers refuted, and the source confirms
 
 ## TLDR/BLUF
 

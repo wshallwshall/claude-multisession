@@ -45,15 +45,17 @@ counting after the split, so the numbers past each section are occupied, not vac
 
 | Series | Issued here | Issued there | **Next free** |
 |---|---|---|---|
-| `B-<n>` | B-1 to B-10 | B-11 to B-17 | **B-18** |
-| `HS-<n>` | HS-1 to HS-16, HS-20, HS-21 | HS-17 spent on a superseded branch, HS-18, HS-19 | **HS-22** |
-| `PD-<n>` | PD-1 to PD-8 | PD-9 | **PD-10** |
+| `B-<n>` | B-1 to B-10 | B-11 to B-18 | **B-19** |
+| `HS-<n>` | HS-1 to HS-16, HS-20, HS-22 | HS-17 spent on a superseded branch, HS-18 to HS-21 | **HS-23** |
+| `PD-<n>` | PD-1 to PD-8 | PD-9 to PD-13 | **PD-14** |
 | `OPEN-<n>` | OPEN-1 to OPEN-8 | none | **OPEN-9** |
 
 Read from that repository's `origin/main`, not a local clone: it runs concurrent sessions and a
-clone goes stale in the time one rule takes to write. Checked there on 2026-08-12 at commit
-`d393aad`, before `OPEN-8` was taken. Its one `OPEN` mention cites this page's range, as
-`OPEN-1 to OPEN-6`.
+clone goes stale in the time one rule takes to write.
+
+Checked there on 2026-08-16 at commit `d393aad`, correcting a table that had understated `PD` and
+`B`: `PD-9` through `PD-13` and `B-18` were already issued there, not only `PD-9` and `B-17`. Its
+one `OPEN` mention cites this page's range, as `OPEN-1 to OPEN-6`.
 
 **Neither sheet can see the other move, and both have been wrong about it.** That page says this
 one issues `OPEN-1 to OPEN-6`, true until `OPEN-7` landed. No check on either side could catch it,
@@ -75,7 +77,7 @@ orientation sections were deleted for restating the page rather than opening it.
 | OPEN-4 | An opening **MUST** state who the page is not for, where that set is non-empty, and **MUST** say it as a plain no. It belongs in the `Why you should care` slot | A sentence a reader can fail |
 | OPEN-5 | An opening **SHOULD** link rather than summarise, where the target says it already | A link, not a paraphrase |
 | OPEN-6 | A page longer than roughly 2,000 words **SHOULD** name its own starting point | One link, in the `How to use it` slot |
-| OPEN-7 | The three answers **MUST** be labelled, verbatim and in order: `**What this is.**`, `**Why you should care.**`, `**How to use it.**`, each opening its own paragraph | `tests/test_docs_do_not_drift.py` pins all three, in order, on every rendered page |
+| OPEN-7 | An opening **MUST** address the three answers, in OPEN-1's order, each its own paragraph -- in the author's own words, no fixed labels required | Checked by eye. No gate: a semantic check needs a reader, not a substring match |
 | OPEN-8 | A page published in its author's own words is exempt from `OPEN-2`, `OPEN-7` and the prose ratchets, and **MUST** be named in `AUTHORED_VERBATIM` in `tests/_ccxtest.py`. It stays bound by every rule that does not require rewriting the author: ASCII, `HS-16`, and every link resolving | One tuple, one entry. `tests/test_docs_do_not_drift.py` fails when it names a file this page does not |
 
 ### OPEN-8 names one file, and that is the whole of the exemption
@@ -98,6 +100,21 @@ clean-URL fallback, measured on 2026-08-12 against `/WORKTREES` and `/USAGE-AWAR
 
 What OPEN-8 does not touch: the ASCII gate, `HS-16`, every link resolving, and the site building.
 An exempt page is still one a reader has to be able to load.
+
+### What OPEN-7 demanded before 2026-08-16
+
+It required the three answers **verbatim and labelled**: `**What this is.**`, `**Why you should
+care.**`, `**How to use it.**`, matched by exact substring in `tests/test_docs_do_not_drift.py`.
+
+A reworded or unbolded label read as absent, on purpose -- the labels were meant to be the same
+three words on every page.
+
+**That gate is retired.** The three elements are still required; the fixed phrasing is not. A page
+may open in its own words, as long as a reader can find what this is, why to care, and how to use
+it, in that order.
+
+Nothing checks the wording for that anymore. A semantic check needs a reader, not a substring
+match.
 
 ### What OPEN-1 and OPEN-2 demanded before 2026-08-10
 
@@ -138,7 +155,22 @@ sentence is still required, it is now told which slot to sit in.
 | HS-15 | A quantity **MUST** be the number where one exists, not a vague determiner | "139", not "nearly all" |
 | HS-20 | A paragraph **MUST NOT** exceed 300 characters. Rewrite it shorter; do **not** satisfy this by splitting one paragraph into two | A ratchet in `tests/test_prose_rules_hold.py`. The corpus is red behind it on purpose: 463 paragraphs were over the limit on 2026-08-10, and that number is debt that may not grow |
 | HS-16 | A markdown link **MUST** sit on one line, text and target both, and that outranks HS-14 | `tests/test_a_links_text_never_wraps.py`. `jekyll-relative-links` matches a link with a pattern whose `.` excludes a newline, so a wrapped one is never rewritten and the published site serves the raw `.md` while github.com renders it correctly. 35 links were in this state on 2026-08-07 |
-| HS-21 | A page in a series **MUST** answer the series' questions in the series' declared order, and **MUST** carry a section for a question it cannot answer rather than omitting it | `tests/test_a_series_answers_one_set_of_questions.py`, against the order declared in `docs/_data/nav.yml`. An omitted section reads as "this framework has no such property"; a section saying "not established" reads as what it is |
+| HS-22 | A heading or title **MUST** use sentence case: the first word, the first word after a colon, and proper nouns are capitalized, nothing else. **MUST NOT** end in a period | [Google's developer documentation style guide](https://developers.google.com/style/headings). No gate; checked by eye |
+
+### HS-21: retired 2026-08-16, and the identifier is kept rather than reissued
+
+It required every `docs/FRAMEWORK-*.md` page to answer nine fixed questions in one declared order,
+gated by `tests/test_a_series_answers_one_set_of_questions.py`. The premise was that a series is
+worth more than its pages only if a reader can compare across them.
+
+That premise needs at least two comparable pages. The BMAD page moved to a shorter, reader-directed
+shape -- what it is, how it compares to Ultracode, whether it helps, a short how-to -- leaving the
+series at one member.
+
+The test's own guard said what to do about that: "if the series is genuinely gone, delete this file
+rather than leaving it to certify an empty set." Deleted, per its own instruction.
+`FRAMEWORK-spec-kit.md` keeps its nine-section shape; nothing requires a second page to match it
+now.
 
 ---
 

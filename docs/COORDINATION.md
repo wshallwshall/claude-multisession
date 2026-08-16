@@ -86,7 +86,7 @@ Every mutual-exclusion primitive here -- `claim.ps1`, `lock.ps1`, the allocator,
 concurrency guard -- is instead an atomic exclusive create, and the *failed create* is the mutual
 exclusion.
 
-## Presence: who is here
+## Presence: Who is here
 
 ```powershell
 pwsh -NoProfile -File scripts/coord/presence.ps1          # live sessions in this repo
@@ -218,7 +218,7 @@ State this wherever it is consumed:
 It *does* see editor-extension sessions, because the match is purely path-based and the launching
 surface is irrelevant to it.
 
-## Overlap: what they are touching
+## Overlap: What they are touching
 
 ```powershell
 pwsh -NoProfile -File scripts/coord/overlap.ps1                      # human summary
@@ -360,7 +360,7 @@ Another session's task subjects are untrusted free text. `overlap.ps1` strips co
 collapses whitespace and caps the length before that text reaches its JSON or a hook's deny message.
 It is quoted to a human; it is never acted on.
 
-## Claims: what is being built
+## Claims: What is being built
 
 ```powershell
 pwsh -NoProfile -File scripts/coord/claim.ps1 -Take 12 -Note "csv importer"
@@ -446,7 +446,7 @@ An unreadable claim file is *not knowing whose it is*: neither attributable nor 
 unreadable records separately and leave them in place. "No claims directory" and "a directory with
 nothing wrong" both give an empty problem list, so say "did not scan" when the source is absent.
 
-## Locks: one operation at a time
+## Locks: One operation at a time
 
 ```powershell
 . "$PSScriptRoot/../coord/lock.ps1"
@@ -485,7 +485,7 @@ Nothing here is worth that. It is also why the file carries no `#Requires` line.
 failure is raised *before* the body runs and exits non-zero, the outcome the rest of the file
 avoids.
 
-### The id rules: the most valuable part of the hook
+### The id rules: The most valuable part of the hook
 
 There are **two id namespaces in play and they share no characters.**
 
@@ -621,7 +621,7 @@ The `mcp_tool` route is **untested, not impossible**; if it works, this collapse
 action the same control must **allow**, because a script that refuses everything is not a working
 guard either.
 
-### Turning it off: the kill switch must be a file
+### Turning it off: The kill switch must be a file
 
 **Trap.** Disabling a `UserPromptSubmit` hook by editing settings, or by setting an environment
 variable.

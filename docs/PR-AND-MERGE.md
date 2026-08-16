@@ -61,7 +61,7 @@ git merge-base --is-ancestor origin/main HEAD   # exit 0 = your branch contains 
 In PowerShell the exit code is `$LASTEXITCODE`, not `$?` -- `$?` is a boolean about the last statement
 and will happily report success on a check that answered "no".
 
-### The trap: a branch cut from a pre-squash commit
+### The trap: A branch cut from a pre-squash commit
 
 A branch was cut from a commit pushed to an already-squash-merged PR. Three-dot diff and
 "Files changed" both showed roughly 13 files, 2,967 insertions, 19 deletions -- accurate, silent on
@@ -97,7 +97,7 @@ Measured minutes apart: while `--is-ancestor` failed, two-dot gave 2 files / 52 
 **Rule:** `--is-ancestor` is the load-bearing check; the diff comparison only confirms it. A test that
 agrees with itself in the healthy case is how a trap survives being checked for.
 
-## Reading "can't merge": four states, three different fixes
+## Reading "can't merge": Four states, three different fixes
 
 A PR that was green ten minutes ago stops being mergeable and the reflex is to rebase and force-push.
 That reflex is right for exactly one of the four states and destructive in another.
@@ -267,7 +267,7 @@ That reports peer worktrees whose **committed-and-unlanded** or **uncommitted** 
 path -- the intersection of the two-dot and three-dot file sets, so a branch that has already landed
 stops claiming its files. See [COORDINATION.md](COORDINATION.md).
 
-## Writing up the result: two true numbers can make a false sentence
+## Writing up the result: Two true numbers can make a false sentence
 
 An earlier revision of this document paired a **post-merge** three-dot reading with a **pre-merge**
 two-dot reading as one comparison, so a diff that never proposed a revert was described as proposing
