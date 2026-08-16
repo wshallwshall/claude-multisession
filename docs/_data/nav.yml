@@ -156,7 +156,7 @@
 - group: Other frameworks
   items:
     - label: Spec Kit
-      title: "Spec Kit 0.16.4, evaluated"
+      title: "Spec Kit 0.16.4 for a KORUS build"
       path: /FRAMEWORK-spec-kit.html
     - label: BMAD
       title: "BMAD 6.11.0, evaluated"

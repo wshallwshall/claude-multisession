@@ -70,7 +70,7 @@ no atomic protection either.
 
 Re-verified against `specify-cli` 0.16.4 on 2026-08-15: `Get-HighestNumberFromSpecs` still takes the
 highest prefix and adds one, under no lock. The rest of that framework is in
-[Spec Kit 0.16.4, evaluated](FRAMEWORK-spec-kit.md).
+[Spec Kit 0.16.4 for a KORUS build](FRAMEWORK-spec-kit.md).
 
 **Two projects reached this layout independently.** `examples/sequence-adr/` numbers records at
 `docs/adr/NNNN-slug.md`, flat and project-scoped. `panaversity/spec-kit-plus`, a fork adding the ADR
@@ -91,7 +91,7 @@ So the gate is what makes the set claimable. Without it, "these are the decision
 about a directory nobody enumerated.
 
 That is the shape a citation count takes when reported without its filter, measured in
-[Spec Kit 0.16.4, evaluated](FRAMEWORK-spec-kit.md).
+[Spec Kit 0.16.4 for a KORUS build](FRAMEWORK-spec-kit.md).
 
 ---
 
