@@ -17,15 +17,25 @@
 # renaming `url` is not.
 title: KORUS
 description: >-
-  KORUS: run four Claude Code sessions against one repository without them overwriting each other.
-  The build shape, the setup, and the tooling that enforces it.
+  KORUS -- Keep One Repo, Unblock Sessions. A practitioner's framework for better AI coding with
+  Claude Code: models and effort, account economics, backlog and decision records, concurrent
+  sessions, and the tooling that enforces the parts a convention cannot.
 
 # ONE DEFINITION, READ IN TWO PLACES, AND THE SECOND ONE IS A GATE. _layouts/default.html prints
 # this beside the title in the header AND appends it to the landing page's `<title>`. That second use
 # is load-bearing: site-build.yml checks that every page's `<title>` carries that page's leading H1,
 # and the landing page's H1 is `# KORUS`, which is a substring of "KORUS - <tagline>" and would not
 # be a substring of a tagline written only in the header. Change the H1 and this line together.
-tagline: Four Claude Code sessions, one repository
+#
+# IT SAID "Four Claude Code sessions, one repository" FOR ABOUT AN HOUR, AND THAT WAS WRONG TWICE
+# OVER. It pinned a session count the framework does not require -- four is the recommended BUILD
+# shape on docs/KORUS-BUILD.md, with an optional fifth -- and, worse, it reduced KORUS to its
+# concurrency layer. The framework page covers ten things: model and effort settings, the desktop
+# surface, account economics, backlog, decision records, an ASVS register, the session topology,
+# worktrees, inter-session communication, usage limits and CI. Concurrency is one of them.
+#
+# The expansion of the acronym is what the owner settled on, and it is the author's own words.
+tagline: Keep one repo, unblock sessions
 
 # WHERE THIS SITE LIVES, AND WHY IT IS NOT GITHUB PAGES. It was served from
 # wshallwshall.github.io/claude-multisession until 2026-08-10. The reader this site is written for

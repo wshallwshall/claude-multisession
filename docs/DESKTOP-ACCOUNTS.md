@@ -21,6 +21,7 @@ is on.
 
 Claude Desktop is an Electron application, installed by Squirrel under `%LOCALAPPDATA%`:
 
+<!-- no-copy -->
 ```
 %LOCALAPPDATA%\AnthropicClaude\claude.exe               <- version-stable stub launcher
 %LOCALAPPDATA%\AnthropicClaude\Update.exe

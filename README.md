@@ -12,9 +12,14 @@ nothing.
 > well as after. The full statement and what it costs you are on the
 > [documentation site](https://claude-multisession.pages.dev/).
 
-This repository is the tooling half of **KORUS**: four Claude Code sessions on one repository -- a
-dispatcher, two builders and a lander. The method and the operating procedure live on
-[the KORUS site](https://claude-multisession.pages.dev/); this file is the repository's front door.
+This repository is the enforcement half of **KORUS** -- Keep One Repo, Unblock Sessions -- a
+practitioner's framework for building with Claude Code.
+
+Most of that framework is convention: the model and effort to run, what the accounts cost, what to
+write down, and the session shape. This repository is the part a convention cannot hold on its own.
+
+The method lives on [the KORUS site](https://claude-multisession.pages.dev/). This file is the
+repository's front door.
 
 **Go:** [Quickstart](https://claude-multisession.pages.dev/QUICKSTART.html) -
 [What problem this solves](#what-problem-this-solves) - [Install](docs/INSTALL.md) -

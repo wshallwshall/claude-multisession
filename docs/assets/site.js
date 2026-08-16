@@ -42,9 +42,39 @@
      Every code block on this site is a command someone is meant to run, and several are long enough
      that selecting one by hand picks up the prompt or drops the trailing flag. */
 
+  /* NOT EVERY CODE BLOCK IS SOMETHING TO RUN, and the landing page is the reason this exists. Its
+     first block is `git checkout -B feature/parser origin/main` -- the command that CAUSES the
+     failure the whole site is about -- and a Copy button on it invites the reader to run the one
+     thing every gate here exists to refuse. The same applies to output samples, ASCII diagrams and
+     the two blocks in Tips and tricks that are labelled WRONG.
+
+     THE MARKER IS AN HTML COMMENT IMMEDIATELY BEFORE THE FENCE, `<!-- no-copy -->`. It was chosen
+     over kramdown's `{: .no-copy}` because these pages are read on github.com as well, where an IAL
+     renders as literal text in the middle of the document and the comment renders as nothing.
+     Verified against a real build: kramdown passes the comment through and leaves it as the code
+     block's preceding sibling. */
+  function isMarkedNoCopy(pre) {
+    var node = pre;
+    // Climb out of kramdown's wrappers -- div.highlight inside div.language-x.highlighter-rouge --
+    // because the comment is a sibling of the OUTERMOST one, not of the <pre>.
+    while (
+      node.parentNode &&
+      node.parentNode.nodeType === 1 &&
+      /(^|\s)(highlight|highlighter-rouge)(\s|$)/.test(node.parentNode.className || "")
+    ) {
+      node = node.parentNode;
+    }
+    var sib = node.previousSibling;
+    while (sib && sib.nodeType === 3 && !sib.nodeValue.replace(/\s/g, "")) {
+      sib = sib.previousSibling;
+    }
+    return !!(sib && sib.nodeType === 8 && sib.nodeValue.indexOf("no-copy") !== -1);
+  }
+
   function addCopyButtons() {
     var blocks = doc.querySelectorAll(".page-content pre");
     Array.prototype.forEach.call(blocks, function (pre) {
+      if (isMarkedNoCopy(pre)) { return; }
       var wrap = make("div", "code-wrap");
       pre.parentNode.insertBefore(wrap, pre);
       wrap.appendChild(pre);

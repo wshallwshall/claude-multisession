@@ -556,6 +556,7 @@ Run this after every install path above, and read **what it says it scanned** --
 repository -- from the tooling checkout, a long, mostly-green report about the tooling checkout. It
 cannot refuse to answer, so it prints two lines at the top of every run, marking the same-clone case:
 
+<!-- no-copy -->
 ```text
   repo examined    : <the-repo-you-governed>   (-Repo)
   tooling checkout : <tooling>   (every source hash below is read from here)

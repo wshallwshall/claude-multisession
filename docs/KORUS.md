@@ -1,4 +1,4 @@
-# The KORUS Framework: Lesson Learned the Hard Way
+# The KORUS framework: Lessons learned the hard way
 
 > **Take a copy:**
 > [markdown](https://claude-multisession.pages.dev/KORUS.md)
@@ -7,14 +7,22 @@
 Hello, I'm a senior developer working on a major project since late May, 2026.
 (See MessageFoundry.org). This is a personally written summary of what I've learned.
 
-Since things with an acronym are more trusted, Claude suggests the following be called
-**KORUS: Keep One Repo, Unblock Sessions**.
+I call it **KORUS: Keep One Repo, Unblock Sessions**. That is the whole idea in four words:
+everything below follows from keeping one repository and stopping the sessions blocking each other.
 
 ## BLUF/TLDR
 
 The following is a framework developed during months of Claude Code work. This document and this
 site provide a starting point for new projects. This framework contains technical elements
 supporting better AI coding.
+
+**This page is the reasoning. If you want the commands, they are elsewhere:**
+[Quickstart](QUICKSTART.md) installs the enforcement, and
+[Run a KORUS build](KORUS-BUILD.md) is the operating procedure for the session shape in section 6.
+
+**Last reviewed 2026-08-16.** The model, pricing and client advice below is the part that rots:
+check anything about plans, limits or model names against Anthropic's current documentation before
+relying on it.
 
 ## KORUS for Multi-session AI-Coding
 
@@ -71,6 +79,10 @@ click away from the current codebase.
 You might find it helpful to have a VS Code instance running alongside your Claude desktop app. Use
 the desktop app to generate the code and the VS Code to review and make manual edits.
 
+If you run more than one Claude account, set them up first:
+[Desktop accounts](DESKTOP-ACCOUNTS.md) covers one desktop instance per account, and the config root
+each one adds.
+
 ## 3. Subscribe to Claude Max 20x, Multiple Accounts: 60x Cheaper
 
 Yes, that header is correct: Claude's Max 20x accounts offer AI compute at 60x cheaper than the
@@ -82,8 +94,15 @@ As a result, the Max 20x plan is the best way to affordably create your applicat
 accounts lack the enterprise management features but can save you thousands.
 
 You may require multiple Max 20x accounts to cover a week of heavy development. You can sign up for
-as many $200 per month accounts as you want, just use different email addresses. This is fully
-compliant with Anthropic's rules.
+as many $200 per month accounts as you want, just use different email addresses.
+
+**Check this against the current terms yourself before you rely on it.** I believe separate accounts
+on separate email addresses are within the terms, and that belief is mine rather than a citation: I
+am not a lawyer, and these documents change. The ones that govern it are Anthropic's
+[Usage Policy](https://www.anthropic.com/legal/aup),
+[Consumer Terms](https://www.anthropic.com/legal/consumer-terms), and
+[the Claude Code plan guidance](https://support.anthropic.com/en/articles/11145838-using-claude-code-with-your-pro-or-max-plan).
+What is definitely not allowed is sharing one account between people.
 
 Max 20x limits your usage through five-hour session and weekly usage caps. Generally, 1% of weekly
 usage equals about 5% of session usage.
@@ -105,13 +124,13 @@ the Dispatcher session to create a plan for building down that backlog.
 
 ## 5. Documentation
 
-### 1. ADRs: Architecture Decision Records
+### 5.1 ADRs: Architecture decision records
 
 Have Claude create ADR documents for each significant build. When you ask the Dispatcher session to
 create a plan, just tell it to be sure to create ADRs as needed. This gives you a build record for
 your CISO and any auditor. It also provides ongoing context for the AI.
 
-### 2. ASVS Register
+### 5.2 ASVS register
 
 OWASP's ASVS 5 framework is a great way to harden your application against hackers. There are three
 security levels depending on what your application touches.
@@ -128,13 +147,16 @@ someone adds whitespace, comments, or moves unrelated code above it.
 
 Be sure Ultracode and Opus 5 are enabled for each session.
 
-### 1. Dispatcher Session
+[Run a KORUS build](KORUS-BUILD.md) is the operating procedure for this section: the opening prompt
+for each of the four sessions, the daily loop, and what to do when it goes wrong.
+
+### 6.1 Dispatcher session
 
 Dispatcher creates the build plan and assigns the work to builder sessions. It doles out initial
 work of about four tasks for each of the two build sessions. If a build session's task becomes
 blocked, the dispatcher takes back the task and updates the backlog.
 
-### 2. Two Build Sessions
+### 6.2 Two build sessions
 
 Each build session tackles about four tasks as sub-sessions/workflows/agents.
 
@@ -143,14 +165,14 @@ which may be a significant enhancement once it is out of beta. For now, your bui
 [dynamic workflows](https://code.claude.com/docs/en/workflows). See
 [Run agents in parallel - Claude Code Docs](https://code.claude.com/docs/en/agents).
 
-### 3. Lander Session
+### 6.3 Lander session
 
 Lander handles all external git repo work, including pushing and merging. It should have
 authority to handle these independently. This is needed because multisession coding creates merge
 conflicts when the repo's head is constantly changing. This is especially true with larger
 codebases, which created extended CI times.
 
-### 4. ASVS Monitor Session
+### 6.4 ASVS monitor session
 
 This is an extra concurrent session used when following the OWASP ASVS framework. It ensures that
 your ASVS register is always up to date.

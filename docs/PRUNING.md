@@ -99,6 +99,7 @@ with exactly one entry (`branch: Created from ...`) never advanced, and nothing 
 
 ## The rule: Merged AND clean AND NOT occupied
 
+<!-- no-copy -->
 ```text
 prune = merged AND clean AND NOT occupied
 ```

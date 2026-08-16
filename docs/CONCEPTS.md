@@ -17,6 +17,7 @@ trap below is one somebody already paid for. Not for you if you run one session 
 
 The whole system is three layers:
 
+<!-- no-copy -->
 ```text
   worktree-per-session      one checkout per concurrent session, so two sessions
                             cannot clobber each other's working tree
@@ -119,6 +120,7 @@ Setting up a new worktree's environment is `setupHook`'s job, not `new.ps1`'s. I
 
 Every piece of cross-session coordination state lives in exactly one place:
 
+<!-- no-copy -->
 ```text
 <git-common-dir>/<prefix>-coord/
     alloc/              one file per allocated sequence number
@@ -295,6 +297,7 @@ The roster (`presence.ps1`), the transcript-moving tool (`sessions.ps1`) and the
 
 The layering is strict:
 
+<!-- no-copy -->
 ```text
 prune-merged.ps1 / presence.ps1 / sessions.ps1     callers
         |
