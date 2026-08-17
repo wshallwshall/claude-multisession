@@ -97,6 +97,25 @@ Build the boxes under it. `<git-common-dir>/mail/` is a reasonable layout:
 
 The `OFF` file's mere presence suppresses delivery for every worktree, without losing what is queued.
 
+**That resolution assumes the session's cwd is inside the clone.** A session rooted at a directory that
+*contains* clones -- a worktree container -- has no common dir, so the drain resolves nothing and
+exits silently.
+
+That silence is byte-identical to a healthy channel with no peers. Measured in August 2026 on a
+separate implementation of this design. A container holding roughly 25 clones and worktrees was
+addressed: the mail queued, nothing was ever delivered, and every send reported success.
+
+**A session outside a clone has to be told where its queue lives.** Give the drain an explicit
+anchor parameter naming the repository whose queue to read, rather than inferring one from the cwd.
+
+**An anchor answers which queue, never which box.** Keep the box key a function of the session's own
+cwd, or an anchored session reads the anchor repository's mail.
+
+The key itself needed no change.
+[Step 2](#step-2-address-a-box-by-worktree-not-by-name-or-session-id) keys on a normalized path hash
+rather than a name, so the container got a valid box with no code written. That is a rule paying off
+in a case it was not written for.
+
 ---
 
 ## Step 2: address a box by worktree, not by name or session id
@@ -211,11 +230,9 @@ the message existed, and treated any receipt as backing it. Receipts were keyed 
 So one session's receipt backed another session's marker, and a message nobody had seen was consumed.
 The fix: the marker is the proof of display, written only once the display has actually happened.
 
-Two smaller traps from that same repair each stranded a message while reporting success:
-
-- A mandatory string parameter that rejected an empty string threw into a bare catch.
-- A file move that is non-terminating under a suppressed error preference completed with no receipt
-  written.
+Two smaller traps from that same repair each stranded a message while reporting success. Both sit in
+[PowerShell failures that are silent inside a hook](#powershell-failures-that-are-silent-inside-a-hook),
+with the rest of that class.
 
 Make every write in the consume path terminating, and catch specifically, not broadly.
 
@@ -276,6 +293,20 @@ Bound what the drain renders, and enforce every bound there rather than trusting
 stays in the inbox for the next drain. A single body over the per-message cap is still delivered,
 truncated, with a pointer to the full file on disk.
 
+**Measure the cap as rendered on every capped string the drain writes, not only on a body it
+delivers.** Its own receipt notes are capped, and are subject to the same rule.
+
+Measured in August 2026 on a separate implementation of this design. A receipt note capped at 80
+characters lost the word that told two causes apart, because that word sat at the end of the
+sentence.
+
+Two different failures then wrote identical receipts, which is the defect the note existed to
+prevent. It was caught by a test asserting on the rendered receipt, and nothing else would have
+caught it.
+
+**Lead a capped string with its discriminator, and assert on rendered output, never on the string
+you meant to write.**
+
 ---
 
 ## Step 8: prove delivery, do not infer it from a successful send
@@ -294,6 +325,27 @@ wired:
   it renders. A receipt written by hand can assert a delivery that never happened.
 - **Every observation carries its as-of time.** An undated observation reads as current and is not
   usable for anything.
+
+---
+
+## PowerShell failures that are silent inside a hook
+
+Every entry below reported success to whoever ran it. Each was measured in August 2026 on a separate
+implementation of this design, and hit by someone who had already read this page.
+
+Run down at least these three before you ship a drain:
+
+- **A mandatory string parameter rejects an empty string.** `[Parameter(Mandatory)][string]` given
+  `""` throws before the body runs. That throw landed in a bare catch and killed a diagnostic path.
+- **`$ErrorActionPreference = 'SilentlyContinue'` does not reach every error.** A
+  `ParameterBindingException` is outside it, and so is a command that does not exist. One landed in
+  a broad catch and produced a silent exit 0.
+- **An unwrapped call sits between one state write and the next.** A file move that is
+  non-terminating under a suppressed error preference completed, and no receipt was written after it.
+
+The third one generalizes.
+[Hooks](HOOKS.md#every-exit-from-a-stateful-hook-is-a-state-transition) carries the rule: a hook that
+persists state has a state machine, and a call between two writes is where a transition goes missing.
 
 ---
 

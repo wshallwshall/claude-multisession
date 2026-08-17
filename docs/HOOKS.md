@@ -345,6 +345,37 @@ You cannot detect a difference the producer never encoded. So:
   case (`NOT enforcing`), and has no log function at all -- so a grep for the upper-case string finds
   one of the two, and the deny log records one of the two.
 
+### Every exit from a stateful hook is a state transition
+
+A hook that writes state between invocations has a state machine, whether or not anyone drew one.
+Every exit is a transition in it, including the ones a guard takes and the one the outer catch takes.
+
+Enumerate the exits, route them through one writer, and test the **table**: outcome code by outcome
+code, asserting the state that results and whether each counter advanced. Testing the paths leaves
+the table unread.
+
+The throttle stamps in the rule above and announce's backoff ladder below are both this shape.
+
+Measured in August 2026 on a separate implementation of the design behind
+[session mail](SESSION-MAIL.md). One file had seven post-guard exits, each hand-rolling its own state
+write, and four were wrong:
+
+- One exit left the marker armed, so a kill ladder fired on the third consecutive prompt and injected
+  a false "lookup did not return" line hourly, forever.
+- That ladder never advanced the counter its own cap reads, so nothing could bound it.
+- One exit never cleared the backoff floor.
+- The outer catch left state armed entirely.
+
+**Care is not sufficient here, and that was measured too.** A mutant differing by one line passed the
+whole 50-test suite.
+
+Three consecutive review rounds each caught the previous instance and missed the next, because every
+new branch was audited against the last defect rather than against the invariant.
+
+**A single-invocation test is structurally blind to this class.** Most tests in this space assert an
+absence, and a hook that does nothing satisfies them. A defect here is silent and permanent: the
+state one invocation leaves is the state the next one reads.
+
 ### `[]` is not the same as nothing, and the fix belongs in the producer
 
 A helper had **no representation** for "nobody else": piping an empty array into `ConvertTo-Json`
