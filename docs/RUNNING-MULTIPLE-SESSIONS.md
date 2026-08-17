@@ -62,14 +62,24 @@ column, and only there.
 
 ## Which surface to run several sessions on
 
-> **Operating experience, dated 2026-08-06. Not a benchmark.** Sessions here are run several at a
-> time on the **Claude Code desktop app**. Running several at once in the **VS Code extension** has
-> run into worktree hijacking: one session checking its own branch out inside another session's
-> directory. Nothing in this repository measures a hijack rate per surface, so treat this as one
-> operator's result on one setup. If your own result differs, yours is the better data.
+**KORUS assumes Claude Code for Desktop. That is a requirement, not a preference.** A CLI-only or
+editor-extension setup is not a configuration this project supports.
 
-**The preference is worth stating only because each mechanism under it is checkable.** The four
-below do not rest on the same class of evidence, so each one names its own class:
+Your own contrary data does not change it: the coordination layer is *shaped* around the desktop
+client. [Limits and requirements](LIMITS.md) states it, and [Install](INSTALL.md) turns that reader
+away on its first screen.
+
+Two things follow from the client rather than from a measurement. Announce delivers through a
+desktop-only MCP server, and the session roster it reads is the desktop app's.
+
+> **Separately, one operator's observation, dated 2026-08-06. Not a benchmark.** Running several
+> sessions at once in the **VS Code extension** has run into worktree hijacking: one session checking
+> its own branch out inside another session's directory. Nothing here measures a hijack rate per
+> surface, so that part is an anecdote. It is a reason the requirement is not a hardship, not the
+> reason for it.
+
+**The mechanisms under it are checkable, which is why they are listed separately.** The four below do
+not rest on the same class of evidence, so each one names its own class:
 
 - *Cited upstream, not reproduced here.* **The hijack is harness-side, and nothing here ties it to a
   surface.** A per-session auto-worktree can half-fail on Windows, flipping the *primary's* HEAD
@@ -178,7 +188,17 @@ At least these channels exist. Each links to the page that owns it.
 
 One property explains the whole first band: **a file is re-read on every hook run**. An environment
 variable is read once at process start, and a settings edit reaches only the next session. So every
-channel that reaches a running session is a file. Each channel's page carries its costs.
+channel in **band A** is a file.
+
+**Announce is band B and is not a file.** It delivers through a desktop-only MCP server, which is
+why it reaches only peers in the desktop session list.
+
+That path has a known failure mode. A delivered message can leave the recipient's query emitting
+nothing, until the app's watchdog force-ends it about 16 minutes later. It surfaces only as an
+`Error` badge -- no other signal.
+
+Upstream: [claude-code#86012](https://github.com/anthropics/claude-code/issues/86012), observed on
+the machine this page was written on. Each channel's page carries its costs.
 
 ### Choosing one
 
@@ -227,9 +247,12 @@ the decision.
 Once several sessions are in flight, give one of them a different job. The **lander** holds the
 picture of what is in flight and decides what lands in what order, while the others build.
 
-**Nothing here implements this, and this page is introducing the term.** No lander script, no
-role flag, no routing. The working agreement already routes push, pull request and merge to the
-*human* owner, commits to the session. A lander delegates that line to one session.
+**No script implements this.** No lander script, no role flag, no routing -- the role is a prompt and
+a rule. The working agreement already routes push, pull request and merge to the *human* owner, and
+commits to the session. A lander delegates that line to one session.
+
+[Run a KORUS build](KORUS-BUILD.md) step 3 is the prompt to paste and the daily loop around it. This
+page owns the rule; that page owns the procedure.
 
 One sentence carries the boundary: **a lander arbitrates; it does not execute.**
 
@@ -288,7 +311,9 @@ are not overrides. What a bare approval earns is a question back about which rou
 
 Publish intent where a **tool** can read it: take a claim with a note before starting, and announce
 carries that note to joining sessions. The lander **reads state rather than being told it**.
-Ready-to-land needs no channel: the pushed branch, or a refreshed claim note, is the signal.
+
+Ready-to-land needs no channel: a refreshed claim note is the signal. **Not a pushed branch** -- the
+routing table gives push to the lander alone, so a worker that pushed has already done its job.
 
 ### When you do not need one
 
@@ -316,8 +341,17 @@ hop.
   authorized.
 - **State that lives only in one context.** Whatever it decides must end up in a claim, a number, a
   branch or a gate; a cleared context takes the rest with it.
-- **It inherits the timing table.** It reaches a busy worker only through the steering note, which
-  is opt-in per worktree and effective only in sessions started after it was wired.
+- **It inherits the timing table, and the one channel that interrupts a turn is closed to it.** The
+  steering note is the only channel reaching a *busy* session, and
+  [Steering](STEERING.md#the-trust-boundary) forbids this use of it in terms: "Do not route
+  machine-to-machine traffic through it."
+
+  Its premise is "this came from the user". A lander writing one puts words in the operator's mouth,
+  which is the bullet above.
+
+  So a lander reaches a busy worker through **no** channel. It waits for the turn to end, and uses
+  announce or a claim like any other peer. If you route lander traffic through `steer.txt` anyway,
+  you have broken the premise the recipient relies on.
 
 ---
 
