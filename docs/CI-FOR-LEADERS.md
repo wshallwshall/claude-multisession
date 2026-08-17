@@ -28,8 +28,9 @@ The kinds of error have not changed. The volume of output has, and
 [The CISO summary](https://secure-development-standards.pages.dev/standards/CISO-SUMMARY.html) makes
 that point. Reviewer hours did not rise with it, so attention per change fell.
 
-**[external]**, not measured here. On a 2022-generation model, developers with an AI assistant wrote
-less secure code while being more confident that it was secure (Perry et al., ACM CCS 2023).
+**This one is cited from outside, and not measured here.** On a 2022-generation model, developers
+with an AI assistant wrote less secure code while being more confident that it was secure (Perry et
+al., ACM CCS 2023).
 
 Re-baseline that finding against
 [Code quality](https://secure-development-standards.pages.dev/standards/CODE-QUALITY.html) before
@@ -77,9 +78,9 @@ conflicts, and two of the three pull requests closed as duplicates.
 the trunk moved seven times while a single pair of pull requests was open. Two branches that are
 green on their own can still break when combined, in either order.
 
-**A check on a branch tells you about that branch alone.** Nothing tests the merged result until it
-lands on the trunk. A check that runs after the merge earns its keep as soon as sessions run in
-parallel.
+**A check on a branch tells you about that branch alone.** A pull-request check tests a merge
+against the trunk as it stood when the run started. It says nothing about the trunk once it moves,
+nor about a second branch still open. A check after the merge earns its keep with parallel sessions.
 
 ## What a gate is, and what it replaces
 
@@ -149,10 +150,10 @@ Three costs follow from that:
 sequencing rule, under *"Sequence the queue deliberately"*.
 
 [CI enforcement](https://secure-development-standards.pages.dev/standards/CI-ENFORCEMENT.html) sets
-out the costs a single stream of work already carries, under *"What it buys you, and what it
-costs"*.
+out the costs a single stream of work already carries, under *"Costs"*.
 
-**The goal.** Know how many sessions your pipeline can carry before you pay for another seat.
+**The goal.** Know how many sessions your pipeline can carry before you pay for another account
+([Token accounting](TOKEN-ACCOUNTING.md) prices one).
 
 **What to do.** Do that arithmetic with your own two numbers: pipeline cycle time, and sessions in
 flight.
@@ -186,11 +187,16 @@ Controls here are installed by a script and fired by hooks, so one can be:
 - Wired to a dead script.
 - Failing open -- waving work through when the check itself errors.
 
-All four look exactly like a healthy quiet run: exit zero, no output, work proceeds. A dashboard
-shows all four as the same green.
+All four look like a healthy quiet run: exit zero, work proceeds, and a dashboard shows the same
+green. Only the silence is optional. A control that fails open can still say so: this repository's
+gate writes a receipt to stderr and to the deny log when it cannot load.
 
-This repository's worktree gate keeps each session in its own checkout. A shipped version of it
-crashed on its own default value, the one it uses when a caller omits an argument.
+This repository's [worktree gate](WORKTREES.md) keeps each session in its own checkout. A shipped
+version of it crashed on its own default value, the one it uses when a caller omits an argument.
+
+**That gate fails open, so the crash allowed every write it exists to deny.** It ran that way for
+one install, on every real tool call, with nothing on screen to say so. This page's own thesis,
+measured: the control was fully off and the machine looked identical.
 
 Every test supplied that argument explicitly, so the failing line never ran and the suite stayed
 green. A test that runs the gate with no arguments now pins it.
@@ -311,7 +317,8 @@ than the prose describing it, and a required-check count you recall is stale.
    - A work-claim register, declared before work starts and checked at commit.
    - A refusal to push to protected refs.
 5. **Make the server-side check the authoritative one, not the local hook.** A local hook is
-   advisory once a session can remove it, and the merge gate is the one nobody can skip.
+   advisory once a session can remove it. A merge gate is harder to remove, not impossible to skip:
+   a job that is skipped, or one nothing marks required, reports green.
 6. **Add a check that runs on the trunk after merge.** A branch-level pass asserts nothing about the
    combination.
 
@@ -331,7 +338,8 @@ Read these three shipped instances before you write a new gate:
 - `scripts/security/scan_forbidden.py` prints what it loaded and what it scanned, and exits `2` on
   an empty scan.
 - `bin/ccx-doctor.ps1` exits `0` only when every required control is installed, wired, and proved by
-  refusing a planted attack; `1` on any red; `2` when a check could not be determined.
+  refusing a planted attack. It exits `1` on any red **or any required control wired to nothing**,
+  and `2` when a check could not be determined.
 
 **Use three outcomes, not two: exit `0` proven, `1` red, `2` undetermined.** A skip that exits `0`
 is a pass nobody granted.
