@@ -16,15 +16,16 @@ hook needs a Claude Desktop feature.
 
 ---
 
-Honest scope, up front:
+Honest scope, up front. **KORUS assumes Claude Code for Desktop**, and a CLI-only or
+editor-extension setup is not what any of this was built or measured against
+([Limits](LIMITS.md)):
 
 - **PowerShell 7 + Windows-first.** Most of this repo is `pwsh`. The Python gates -- the git-hook
   checkers under `scripts/hooks/` and the leak gate at `scripts/security/scan_forbidden.py` -- are
   stdlib-only and portable; nearly everything else assumes `pwsh 7.3+`.
 - **Announcing needs Claude Desktop.** `scripts/hooks/announce-session.ps1` resolves peers and asks
   the model to send, through `ccd_session_mgmt` -- an MCP server absent on a plain CLI install.
-  Without it the hook fires, finds peers, then names tools the model lacks. Nothing else here
-  depends on it.
+  Without it the hook fires, finds peers, then names tools the model lacks.
 - **Claude Code's session record schema is a vendor contract.** The whole liveness fence rests on
   `<config-root>/sessions/<pid>.json` and its `pid` / `startedAt` / `sessionId` / `cwd` /
   `entrypoint` fields. It can change under you without notice.
@@ -49,15 +50,20 @@ clone the first command is not an installer, it is the audit.
 **What to do.**
 
 ```powershell
-pwsh -NoProfile -File bin/ccx-doctor.ps1
+pwsh -NoProfile -File bin/ccx-doctor.ps1 -Repo <the-repo-you-governed>
 ```
 
-**What happens next.** The audit does three things, and prints what it scanned either way:
+**What happens next.** The audit does four things, and prints what it scanned either way:
 
 - it hashes every installed copy against this checkout's source;
 - it reads every config root's live matchers;
 - it **fires each control and requires a deny**, pairing each attack with a negative control the
-  guard must *allow*.
+  guard must *allow*;
+- it **names its own blind spots**, on every run, pass or fail.
+
+**Read the `repo examined` line before you read the verdict.** Without `-Repo` it audits whichever
+repository your current directory sits in. From the tooling checkout that is a long, mostly-green
+report about the tooling, not about the repo you governed.
 
 Four tokens carry the whole philosophy:
 
@@ -92,6 +98,10 @@ remote-tracking ref, not a local branch. Point it at a lagging branch and you ge
 lagging local trunk is the most common way parallel sessions build on old code, invisible until the
 merge.
 
+**The fetch fails open, so treat its warning as a stop.** Offline you get `git fetch <remote> failed
+(offline?). Proceeding with possibly-stale refs.` and the worktree is still created, off refs as old
+as your last fetch. No behind-count warning fires -- both stale refs agree.
+
 **Creating worktrees concurrently races `.git/config.lock`.** `git worktree add` writes the shared
 config; two adds at the same instant lose one. `new.ps1` takes a cross-session mutex
 (`Enter-CcxLock` in `scripts/coord/lock.ps1`) around the add. Take the same lock if you script your
@@ -117,8 +127,11 @@ run.
 ### Announce intent early, because coordination is pull-based
 
 Almost every signal here is **pull-based**: it waits to be asked. `overlap.ps1`, `presence.ps1` and
-`claim.ps1 -List` all work that way. The one push channel, `announce-session.ps1`, fires at the
-first prompt with a messageable peer, so it carries **intent**. It needs a Desktop-only MCP.
+`claim.ps1 -List` all work that way.
+
+Two channels push. `announce-session.ps1` fires at the first prompt with a messageable peer, so it
+carries **intent**, and it needs a Desktop-only MCP. The [steering note](STEERING.md) is a plain
+file, needs no MCP, and is the only channel that interrupts a turn already in progress.
 
 So **say what you are about to build, out loud, in your first or second prompt.** A peer that learns
 your intent at merge time learns it too late.
@@ -161,16 +174,22 @@ where it read as a measurement. Anything you did not observe gets hedged in the 
 **What to do.**
 
 ```powershell
-# Who else is changing this path right now? Empty output = nobody live holds it.
+# Who else is changing this path right now? The all-clear is a STATED line naming how many peer
+# worktrees it examined. No output at all means it never answered -- exit 2 is "no repository
+# resolved, nothing examined", which is not the same as "nobody holds it".
 pwsh -NoProfile -File scripts/coord/overlap.ps1 -File src/app/service.py
 
-# The gate's own read-only query, same answer, no state changed:
+# The gate's own query. NOT read-only and NOT the same answer: it prints only when somebody holds
+# the path, and an unresolved run stamps a 30-minute throttle under the shared state root.
 pwsh -NoProfile -File scripts/hooks/collision_gate.ps1 -PathOverride src/app/service.py
 ```
 
 **What happens next.** Only **live** sessions block. A dormant worktree with changes cannot be
-racing you, so it is reported and allowed. Blocking on dormant trees would deny edits to every file
-any abandoned branch ever touched, and a gate that cries wolf gets uninstalled.
+racing you, so it is allowed -- and the gate says nothing about it. Run `overlap.ps1 -File` yourself
+to see a dormant holder.
+
+Blocking on dormant trees would deny edits to every file any abandoned branch ever touched, and a
+gate that cries wolf gets uninstalled.
 
 ### The two id namespaces are not interchangeable
 
@@ -183,14 +202,20 @@ wins**.
 
 **The goal.** Redirect a session that is already mid-task, without waiting for the turn to end.
 
-**What to do.** From a second terminal:
+**Wire it first, in advance.** `steer-inject.ps1` is opt-in per worktree, nothing installs it, and
+hook wiring reaches only sessions started afterwards. A worktree you have not already wired cannot
+be steered today ([Steering](STEERING.md)).
+
+**What to do.** From a second terminal, standing in the target worktree -- `ccx-steer.ps1` takes no
+session argument and writes into whichever repository your terminal is in:
 
 ```powershell
 pwsh -NoProfile -File bin/ccx-steer.ps1 "stop after the current file; the API shape changed"
 ```
 
-**What happens next.** The note lands at the target session's next tool-call boundary, not at the
-end of its turn.
+**What happens next.** If that worktree was wired before its session started, the note lands at the
+next tool-call boundary rather than at the end of the turn. Nothing reports back, so an unwired
+target looks exactly like a delivered note from the sending terminal.
 
 The receiving half, `scripts/hooks/steer-inject.ps1`, is **opt-in per worktree**. It is a
 `PreToolUse` hook: one matching `*` spawns `pwsh` before every tool call, measured here at ~366 ms,
@@ -382,8 +407,9 @@ One scanner accepted a file path, dropped it, and exited 0. A later run that mix
 directories *also* exited 0. The tool's refusal only fires when **everything** it was given was
 dropped, and one surviving directory was enough to make the run look normal.
 
-Pass directories. Treat a green result from a file-argument invocation as **unproven**, and check
-the tool's own summary line for how many inputs it actually read.
+That is fixed here: a file argument is scanned, and a run that reads zero files names it and exits
+2. The transferable rule is the one it cost. Read the tool's own summary line for how many inputs it
+actually read: a refusal that fires only when *everything* was dropped is no refusal.
 
 ### A green gate is evidence only if you proved it can see that class
 
@@ -709,9 +735,12 @@ pwsh -NoProfile -File scripts/worktree/sessions.ps1 -Rehome <id-prefix>
 It honours `-WhatIf`, and refuses on a session whose transcript was touched within
 `-MinIdleMinutes`, because moving a file out from under its writer corrupts it.
 
-**Uncommitted work in a worktree you need to restore** goes through `rescue.ps1`, not through a
-manual reset. It runs `git stash --include-untracked` and prints the recovery instructions from a
-`finally` block, so they survive a failure.
+**Uncommitted work stranded in the shared primary** goes through `rescue.ps1`, not a manual reset.
+It stashes tracked and untracked work, creates a worktree off the primary's *current* commit, and
+pops it there. To re-attach a primary left on the wrong branch, use `restore-primary.ps1`.
+
+Nothing is discarded: a failed pop leaves the work in `git stash list`, and the recovery
+instructions print from a `finally` block so they survive the failure.
 
 ---
 
