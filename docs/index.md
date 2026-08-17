@@ -188,10 +188,8 @@ Then, in the order the work happens: [Worktrees](WORKTREES.md) - [Coordination](
 [Steering](STEERING.md) - [Sequence allocation](SEQUENCE-ALLOC.md) -
 [PRs and merges](PR-AND-MERGE.md) - [Pruning](PRUNING.md).
 
-**Every script, and what it does.** [The inventory](SCRIPTS.md), grouped by what you are trying to
-do. The site serves each script at its own path, so
-[/scripts/coord/claim.ps1](https://claude-multisession.pages.dev/scripts/coord/claim.ps1) needs no
-clone.
+**Every script, and what it does.** [The inventory](SCRIPTS.md) -- what each one is for, and the
+page that owns it.
 
 **Safety,** in descending order of how much actually ships:
 
