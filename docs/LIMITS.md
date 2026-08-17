@@ -5,12 +5,13 @@
 **What this is.** What KORUS needs to run, and the places it stops working. Both were on the
 landing page, above the first command, until 2026-08-16.
 
-**Why you should care.** Three of these limits come from one fact: session discovery rests on a
-vendor surface this project does not own. Read them before you trust a green report. Not for you if
-you have not installed anything yet, in which case start at [Quickstart](QUICKSTART.md).
+**Why you should care.** These controls do not share one on-switch, and the collision gate has more
+blind spots than the one everybody knows about. Read this before you trust a quiet session. Not for
+you if you have not installed anything yet, in which case start at [Quickstart](QUICKSTART.md).
 
-**How to use it.** Check the requirements table, then read the limit that matches your setup. The
-CLI-only limit is the one that changes what you install.
+**How to use it.** Check the requirements table, then read
+[what actually switches each control on](#what-actually-switches-each-control-on). If you run more
+than one session against a single checkout, read the collision gate section as well.
 
 ---
 
@@ -19,10 +20,13 @@ CLI-only limit is the one that changes what you install.
 | Need | Without it |
 |---|---|
 | **Claude Code for Desktop** | KORUS is a desktop framework. A CLI-only or editor-extension setup is not supported, and the coordination layer is shaped around the desktop client. See below. |
-| **PowerShell 7.3+** (`pwsh`) | Nothing installs. Most scripts carry `#Requires -Version 7.3`. |
-| **git** | Nothing installs. Everything is keyed on the git common directory. |
+| **PowerShell 7.3+** (`pwsh`) | Below 7.3, every installer but one refuses. Read the 7.0-7.2 row in the platform table before you assume that is safe. |
+| **git**, recent enough for `rev-parse --path-format=absolute` | Path resolution returns nothing, so the user-scope hooks resolve nothing and stay quiet. Nothing checks or reports your git version. |
 | **`python` on `PATH`** (or `CCX_PYTHON`) | The installed git gates are OFF and say so on stderr. Needed by the three git-hook checkers and the leak gate. |
-| **`ccx.config.json` at the target repo root** | User-scope hooks stay inert in that repo. It is both the knob file and the opt-in marker. |
+| **The scripts vendored into the target repo** | The three coordination hooks resolve nothing, and the doctor cannot reach exit 0. See below. |
+| **Your primary checkout listed in `~/.claude/hooks/ccx-gate.repos.txt`** | The worktree gate and the SessionStart backstop are OFF for that checkout. This file, not `ccx.config.json`, is their switch. |
+| **`ccx.config.json` at the target repo root** | Announce stays inert there, and every knob falls back to its default. It is **not** the opt-in for the other three user-scope hooks. |
+| **A plain terminal to install from** | All four installers throw when `$env:CLAUDECODE` is `1`. A session that can install these controls can remove them. |
 
 PowerShell 7 runs on Linux and macOS, but Windows is the exercised path. Self-marking and path
 case-folding degrade elsewhere.
@@ -30,6 +34,44 @@ case-folding degrade elsewhere.
 **There is no `ccx` on `PATH`.** Where these documents say `ccx doctor`, they mean
 `pwsh -NoProfile -File <this-checkout>/bin/ccx-doctor.ps1`.
 [MIT](https://claude-multisession.pages.dev/LICENSE).
+
+**Running the test suite additionally needs `pandoc`.** It is pinned by version and digest in CI, and
+`tests/test_word_copy_tracks_the_markdown.py` fails rather than skips without it.
+
+### Why a vendored layout is a requirement
+
+The three coordination hooks install as shims that re-resolve their script at run time. Both bases
+they resolve from sit inside the *session's own* repository: the primary checkout, and the worktree
+top level. The tooling checkout is never one of them.
+
+So in a separate-checkouts layout the shims resolve nothing. You get a wired `settings.json`, no
+session banner, no collision gate and no announce. The doctor models the same two bases and scores
+each unresolved row RED, which is why it cannot reach exit 0 there.
+
+The worktree gate, both git hooks and the backstop do not care about the layout.
+[Quickstart](QUICKSTART.md) step 3 is the procedure.
+
+### What actually switches each control on
+
+The requirements table above is not one switch repeated. Each control keys on something different,
+and a reader who deletes `ccx.config.json` to opt a repository out will find three of them still
+running.
+
+| Control | Switched on by | Does not read |
+|---|---|---|
+| Worktree gate (`PreToolUse`, denies) | An entry in the gate allowlist | `ccx.config.json` |
+| SessionStart backstop (runs `git checkout`) | The same allowlist | `ccx.config.json`, beyond the `prefix` knob |
+| Collision gate (`PreToolUse`, denies) | Its script resolving inside your repo | `ccx.config.json` |
+| Session banner (`SessionStart`) | Its script resolving inside your repo | `ccx.config.json` |
+| Announce | `ccx.config.json` present at the repo root | The allowlist |
+| `commit-msg` and `pre-push` | Installation into that clone's `.git/hooks` | The allowlist |
+
+**Deleting the allowlist turns off the two controls that act on a shared checkout**, everywhere and
+at once. That is the documented kill switch.
+
+**The config file's location rule is not uniform.** Announce tests the repository root and refuses to
+walk up. Every other consumer walks up from the current directory. A config one level above the root
+therefore satisfies the git-hook checkers and the doctor while leaving announce inert.
 
 ## Platform support
 
@@ -40,14 +82,26 @@ case-folding degrade elsewhere.
 | **Windows, PowerShell 7.3+** | The exercised path. In CI as `windows-latest` | Nothing known. This is the platform the defaults assume |
 | **Linux, PowerShell 7.3+** | In CI as `ubuntu-latest` | Path comparison stops folding case, and roster self-marking degrades. Both are named in the note under Requirements above |
 | **macOS** | **Not tested.** It is not in the CI matrix | `ccx doctor` prints its non-Windows blind spot there, but nothing in CI covers macOS. Treat it as unmeasured rather than working |
-| **Windows PowerShell 5.1** | Unsupported | `#Requires -Version 7.3` refuses to start most scripts there, and `powershell.exe` is a separate executable from `pwsh` |
+| **PowerShell 7.0-7.2** | **Worse than unsupported** | Only `install-selfheal.ps1` declares `-Version 7`, so it installs while every other installer refuses. You get the hook that runs `git checkout` on your shared primary, and none of the gates |
+| **Windows PowerShell 5.1** | Unsupported | 26 scripts carry `#Requires -Version 7.3` and refuse to start. Three carry no `#Requires` at all, and those fail quietly instead |
 
-CI is not the doctor. Those runners execute the ASCII gate, the leak scan, a parse of every shipped
-`.ps1` and the test suite on both platforms. They do not run `ccx doctor`, and the workflow's own
-header says why: some controls it fires need a live second session and a peer worktree.
+**The 5.1 refusal is not uniform, and the exceptions are the dangerous half.** `announce-session.ps1`
+and `steer-inject.ps1` have no version guard. Both are declared fail-open: the dot-source fails, the
+hook stands down, and the exit code is 0. You are not stopped. You are ignored.
+
+CI is not the doctor. The runners install a pinned, digest-verified `pandoc`, then run the ASCII
+gate, the leak scan, a parse of every shipped `.ps1` and the test suite. They never run `ccx doctor`:
+some controls it fires need a live second session and a peer worktree.
+
+**The leak scan in CI is structural-only** unless the `CCX_FORBIDDEN_TOKENS` repository secret is
+set. Shape detectors are armed; private-name detectors are empty. A green run has not cleared any
+private name, and the workflow says so in capitals on every run.
 
 So a green Linux run says the scripts parse and the suite passes there. Whether the hooks, the
 gates and the roster behave on Linux in a real session is not established by it.
+
+The pandoc step also explains the macOS gap. The workflow refuses to guess a pandoc for any runner
+other than Linux or Windows, rather than install an unverified one.
 
 ## Session discovery rests on a vendor surface this project does not own
 
@@ -77,6 +131,58 @@ refusing rather than waving edits through. Designed for in `scripts/coord/sessio
 **Only one kind of change shows up in the doctor's census.** A moved directory drops records read to
 zero. A renamed field or a changed unit leaves that count untouched, because those records still
 parse and still place. A healthy count is not evidence the schema still matches.
+
+**Of the two, a moved directory is the one to fear.** Zero records reads as a genuine all-clear.
+Nobody is live, so no fence has anything to veto, and the collision gate allows every edit with empty
+output. The census catches this. Nothing inside a session does.
+
+## What the collision gate does not see
+
+This is the control the project exists for, so its edges matter more than any other. It refuses an
+edit when a **live peer worktree** holds **uncommitted** changes to **that file**. Every one of those
+words is load-bearing, and each excludes something.
+
+**A session in your own worktree is invisible.** `overlap.ps1` skips your own worktree before
+comparing any path, because a worktree cannot collide with itself. Two sessions on one checkout
+collide in silence. One worktree per session is the assumption this control is built on.
+
+**Its answer can be up to a minute stale.** The overlap map is cached for 60 seconds, and the gate
+never asks for a refresh. A peer who reached your file inside that window does not appear.
+
+**Three ordinary file states cannot produce a refusal.** The peer's changes are read from
+`git status --porcelain`, and that command does not surface them as paths:
+
+- A new file inside a new directory. Git reports the directory, not the file.
+- A rename. Porcelain prints `R old -> new`, which matches neither path.
+- Anything git-ignored, including the `.env` named further down this page.
+
+Staged, unstaged and ordinary untracked files do count.
+
+**An absolute path into another worktree is never checked.** The query goes repo-relative only when
+the target sits under your own worktree root. Otherwise it stays absolute, compared against
+repo-relative entries, and can never match. Writing into a peer's checkout is what it cannot see.
+
+**Symlinks are not resolved.** A link reaching the same file compares as a different path.
+
+**A dormant peer is allowed without a word.** The gate's own header says such a worktree "is reported
+and allowed". In practice it exits 0 with empty output, so an abandoned worktree holding uncommitted
+changes to your file tells you nothing.
+
+**Four paths end in an allow with no output at all**, outside the notice machinery entirely:
+
+| Path | Why nothing is printed |
+|---|---|
+| The dormant-peer case above | The gate exits before it composes a message |
+| The 20-second hook timeout | A killed hook writes no decision, and the edit proceeds |
+| The shim resolving no script | Unlike announce, this shim prints no missing-script notice |
+| PowerShell below 7.3 | `#Requires` fires before the body runs, so its own error handling never gets a turn |
+
+**The "could not check" notice is rate-limited.** One function carries every fail-open path, and it
+suppresses a repeat of the same reason, in the same worktree, for 30 minutes. Against a broken
+overlap script, one edit in that window warns you and the rest look like an all-clear.
+
+That rate limit is deliberate, and it is why the doctor is the instrument rather than the in-session
+warning. Run it when you want to know.
 
 ## Shared runtime state is out of scope
 
