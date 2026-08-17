@@ -575,7 +575,8 @@ doctor reports each of these rather than letting it pass quietly. Which tag you 
 control:
 
 - The two `PreToolUse` guards are `--` while nothing wires them. Wire one by hand and the doctor
-  reports `OK` with the locations, and attacks it like any other control.
+  reports `OK` with the locations. It then attacks the **blanket-stage guard**; the steering injector
+  gets a receipt row and no attack, so `OK` there means wired, never proven to fire.
 - The **sequence gate reads your configuration**. With no `sequences` key in `ccx.config.json` it is
   `[-- ] sequence gate`, off by configuration. With one, as the shipped file has and this checkout
   prints, it is `[OFF] sequence gate`: nothing at commit time defends the numbers you allocate.

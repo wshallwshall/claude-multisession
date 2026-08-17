@@ -82,7 +82,7 @@ purpose.
         "hooks": [
           {
             "type": "command",
-            "command": "pwsh -NoProfile -File <absolute path to this repo>/scripts/hooks/steer-inject.ps1",
+            "command": "pwsh -NoProfile -File \"<absolute path to this repo>/scripts/hooks/steer-inject.ps1\"",
             "timeout": 5,
             "statusMessage": "Checking for steering notes"
           }
@@ -92,6 +92,14 @@ purpose.
   }
 }
 ```
+
+**Keep the escaped quotes around the path.** This is the one hook you wire by hand, so nothing
+corrects it for you. Unquoted, a checkout path containing a space -- `C:/Users/First Last/...`, a
+redirected OneDrive profile -- makes `pwsh` read only the first word as `-File`.
+
+Measured: it exits 64 with a usage dump on stderr and nothing on stdout. Because this hook fails
+open, that is byte-identical to "no note waiting", which the page's own
+[fail-open section](#it-fails-open-and-what-that-costs-you) calls the failure you cannot detect.
 
 **What happens next.** Wiring takes effect in **newly started sessions** only. Enable it before you
 need it, not while the session you want to steer is already running.
@@ -204,17 +212,28 @@ pwsh -NoProfile -File bin/ccx-steer.ps1 "throwaway probe, ignore"
 
 $env:CLAUDE_PROJECT_DIR = (git rev-parse --show-toplevel)
 pwsh -NoProfile -File scripts/hooks/steer-inject.ps1
+
+Remove-Item Env:\CLAUDE_PROJECT_DIR      # do not skip this -- see below
 ```
 
 **What happens next.** Expect one line of compact JSON containing your text, and `.claude/steer.txt`
-to be gone afterwards. No output means the hook did not see a note.
+to be gone afterwards.
 
-Two cautions:
+Three cautions:
 
+- **Unset `CLAUDE_PROJECT_DIR` afterwards.** It outranks the worktree root in `ccx-steer.ps1`'s own
+  resolution order. Left set, it silently aims every later `ccx-steer` run at the directory you
+  probed from -- including notes you meant for another worktree.
 - **This consumes the note.** Probe with a throwaway message, never with one you actually queued
   for a session.
 - **Run the copy your settings name**, not the repo copy, if the two differ. A control is enforced
   by the file that is wired, and it can drift arbitrarily far from the file you are reading.
+
+**No output does not mean the note survived.** It means the hook emitted nothing, and several of
+those paths destroy the note first: a read-then-delete that fails after the delete, or a timeout
+that kills the hook mid-run.
+
+Read an empty result as "gone and undelivered", never as "still queued".
 
 ## The trust boundary
 
