@@ -1640,8 +1640,11 @@ Add-BlindSpot ('DELIVERY MCP. Announce does not send anything itself: it resolve
     'still fires, still finds peers, and then instructs the model to call tools it does not have -- announce ' +
     'is decorative there.')
 Add-BlindSpot ('SESSION RECORD SCHEMA. Every liveness answer rests on a per-session JSON record written by the ' +
-    'client. That is a vendor contract, not ours: a renamed field, a moved directory or a changed unit turns ' +
-    'the counts printed above into zeros. Read the record census as the instrument, not the sessions.')
+    'client. That is a vendor contract, not ours, and its two failure modes do NOT look alike here. A moved ' +
+    'directory or a removed record turns the counts printed above into zeros. A renamed field or a changed ' +
+    'unit leaves those counts untouched, because such records still parse and still place -- every verdict ' +
+    'simply becomes UNVERIFIED, which vetoes, so the gates keep refusing rather than waving work through. ' +
+    'The census is the instrument for the first kind only; a healthy count is not evidence of a matching schema.')
 Add-BlindSpot ('LIST-SESSIONS BLINDNESS. The client-side session listing tool enumerates only sessions the ' +
     'desktop app itself spawned; an editor-extension session is never entered into it. This command reads the ' +
     'on-disk registry for that reason, but no roster anywhere is guaranteed complete.')

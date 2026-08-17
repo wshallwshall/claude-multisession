@@ -71,9 +71,12 @@ app itself spawned*. An editor-extension session is never registered, so it cann
 is authoritative for who can be **messaged**, the on-disk records for who **exists**.
 
 **A schema change degrades to "cannot tell", not to a wrong answer.** Rename a field or change
-`startedAt`'s unit and every fence says it cannot tell -- designed for in
-`scripts/coord/session-registry.ps1`. The doctor prints records read and placed, so the change
-surfaces as a count going to zero.
+`startedAt`'s unit and every fence says it cannot tell. That verdict is a veto, so the gates keep
+refusing rather than waving edits through. Designed for in `scripts/coord/session-registry.ps1`.
+
+**Only one kind of change shows up in the doctor's census.** A moved directory drops records read to
+zero. A renamed field or a changed unit leaves that count untouched, because those records still
+parse and still place. A healthy count is not evidence the schema still matches.
 
 ## Shared runtime state is out of scope
 
