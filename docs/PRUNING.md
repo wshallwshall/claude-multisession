@@ -300,8 +300,8 @@ like "everything is tidy". Three refusals exist for this class:
 ## Re-check immediately before each destructive step
 
 The decision table is built up front. `-Apply` then **re-evaluates everything from scratch in the
-same run and acts on that table**, never on a table you read a minute ago. Before *each individual
-removal* it re-reads:
+same run and acts on that table**, never on a table you read a minute ago.
+Immediately before *each individual removal*, it re-reads:
 
 1. fence availability -- a fence that **dies mid-run** stops the rest of the run;
 2. occupants, including nested;
