@@ -379,9 +379,10 @@ pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Fetch -Apply   # act on
 **What happens next.** The dry run prints the decision table and changes nothing. `-Apply`
 re-derives that table at the moment it acts, rather than trusting the one you just read.
 
-**`-Fetch` on both, or the preview is not the run.** Without it the dry run judges merge state against
-the refs you already have, while `-Apply` refreshes -- so `-Apply` can act on a larger set than you
-were shown. [Pruning](PRUNING.md) owns the full decision rule, and every flag that narrows it.
+**`-Fetch` on both, or the preview is not the run.** Why, and what the exit-2 refusal from a linked
+worktree is protecting you from, are
+[Pruning](PRUNING.md#a-wrong-cwd-run-must-refuse-loudly-never-green-no-op)'s to state. It owns the
+decision rule and every flag that narrows it.
 
 For a single finished worktree, [`remove.ps1`](https://claude-multisession.pages.dev/scripts/worktree/remove.ps1) is the manual path. Two
 of its behaviors matter at merge time:
