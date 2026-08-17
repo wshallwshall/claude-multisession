@@ -9,8 +9,12 @@ when the check itself breaks. Then the wiring, and the rules for writing a new o
 harness hook can refuse a tool call but never sees a shell redirect. A git hook sees every write,
 but only at commit time. Merging a hook does not install one. Not for you if you run one session.
 
-**How to use it.** Find your control in the event map and read its last column. Then run
-`bin/ccx-doctor.ps1` to find out whether it is switched on at all.
+**How to use it.** Find your control in the event map and read its last column. Then run the doctor
+to find out whether it is switched on at all, from the repository you are asking about:
+
+```powershell
+pwsh -NoProfile -File <tooling>/bin/ccx-doctor.ps1 -Repo <the-repo-you-govern>
+```
 
 ---
 
@@ -45,7 +49,7 @@ a tool call runs, and `UserPromptSubmit` when you send a prompt. Read the **Post
 | `SessionStart` | `scripts/worktree/session-context.ps1` | -- | Prints the project banner and the live-peer coordination block into the new chat's starting context. Decides nothing. | fail open, silent |
 | `SessionStart` | `scripts/worktree/worktree-selfheal.ps1` | -- | Repairs a shared primary checkout whose HEAD drifted, if its tree is clean; if the tree is **dirty** it touches nothing and reports the decline. Injects a heads-up when the session is sitting in a stub worktree. | fail open, silent on **error** |
 | `PreToolUse` | `scripts/hooks/worktree_gate.ps1` | `Write\|Edit\|MultiEdit\|NotebookEdit`, `Bash\|PowerShell`, `Task\|Agent\|Workflow`, `EnterWorktree` (opt-in) | Denies a write whose **target path** is inside a governed primary; a write to the gate's own enforcement surface; a subagent dispatch from the primary; a git verb that swaps or discards the primary's tree; a hijack of another session's worktree; a shared-config disarm; a `git worktree remove\|move` aimed at somebody else's checkout. | fail open, **loud** |
-| `PreToolUse` | `scripts/hooks/collision_gate.ps1` | `Edit\|Write\|MultiEdit\|NotebookEdit` | Denies an edit to a file another **live** session has uncommitted changes in. Reports, without denying, a file already committed on a live peer's branch. | fail open, **loud** |
+| `PreToolUse` | `scripts/hooks/collision_gate.ps1` | `Edit\|Write\|MultiEdit\|NotebookEdit` | Denies an edit to a file a live peer **worktree** has uncommitted changes in -- your own worktree is skipped, so a second session in it is invisible. Reports, without denying, a file already committed on a live peer's branch. | fail open, **loud** |
 | `PreToolUse` | `scripts/hooks/block-blanket-git-stage.ps1` | `Bash\|PowerShell` (hand-wired) | Denies `git add -A/--all/-u/.` and `git commit -a/-am/--all`. | fail open, **loud** |
 | `PreToolUse` | `scripts/hooks/steer-inject.ps1` | `*` (opt-in, hand-wired) | Delivers a queued steering note as `additionalContext` at the next tool-call boundary. Decides nothing. | fail open, silent |
 | `UserPromptSubmit` | `scripts/hooks/announce-session.ps1` | -- | Resolves live peers and asks the model to announce itself to them. Decides nothing. | fail open, **loud** |
@@ -54,13 +58,13 @@ a tool call runs, and `UserPromptSubmit` when you send a prompt. Read the **Post
 |---|---|---|---|
 | `commit-msg` | `scripts/hooks/claim_check.py` | Refuses a code-touching commit whose **subject** declares `<KIND> #N` when this worktree does not hold the claim on N. | **fail closed** |
 | `pre-push` | `scripts/hooks/push_guard.py` | Refuses a direct push or deletion of a protected ref. | **fail closed** on config; fail open with no interpreter |
-| `pre-commit` | `scripts/hooks/seq_check.py` | Refuses a commit that reuses, skips the index for, or duplicates a number in a configured sequence. **No installer wires this** -- see below. | **fail closed** |
+| `pre-commit` | `scripts/hooks/seq_check.py` | Refuses a commit that reuses a number, skips the index for one, duplicates one, or adds one never allocated to this worktree. **No installer wires this** -- see below. | **fail closed** |
 
 Installers:
 
 | Installer | Wires | Scope |
 |---|---|---|
-| `scripts/coord/install-coordination.ps1` | session banner, collision gate, announce | user `settings.json`, as re-resolving shims |
+| `scripts/coord/install-coordination.ps1` | session banner, collision gate, announce | **one** user `settings.json` per run, as re-resolving shims |
 | `scripts/worktree/install-gate.ps1` | worktree gate | every config dir, as an installed **copy** |
 | `scripts/worktree/install-selfheal.ps1` | selfheal backstop | one config dir at a time, as an installed **copy** |
 | `scripts/coord/install-git-hooks.ps1` | claim gate, push guard | the clone's shared git hooks directory |
@@ -70,13 +74,23 @@ hand.
 
 **The goal.** Switch on a control no installer covers.
 
-**What to do.** Copy the blanket-stage guard's tracked row out of `.claude/settings.example.json`
-into a real `settings.json`, and replace its loud placeholder path. `docs/STEERING.md` carries the
-steering injector's row at `settings.local.json` scope, where that one belongs.
+**What to do.** Each of the three goes somewhere different:
+
+| Control | Where it goes |
+|---|---|
+| Blanket-stage guard | Copy its tracked row out of `.claude/settings.example.json` into a real `settings.json`, and replace the loud placeholder path |
+| Steering injector | A `settings.local.json` row, per worktree. [Steering](STEERING.md) has it |
+| Sequence gate | **Not a settings row at all** -- a `pre-commit` hook you own. [Wiring the pre-commit hook](SEQUENCE-ALLOC.md#wiring-the-pre-commit-hook) has the snippet |
 
 **What happens next.** Nothing, until you edit a live file. An `.example.` file is inert by
 construction, because the harness loads `settings.json` and `settings.local.json` only. Nothing here
-can be mistaken for an installed control. The sequence gate needs `pre-commit`, not a settings row.
+can be mistaken for an installed control.
+
+**Before you wire the sequence gate, know its failure mode.** It is fail-closed and it imports
+`_ccxconfig.py` from beside itself. Copy it without that module and it exits 1 on every commit, for
+a reason unrelated to sequences.
+
+Unlike the other two checkers it ships behind no `/bin/sh` shim, so you supply the interpreter.
 
 `install-git-hooks.ps1` warns about the sequence gate when sequences are configured, because an
 absent gate and a passing gate look the same from the outside.
@@ -133,8 +147,12 @@ Two wiring patterns, deliberately different:
 
 * **Installed copy** (worktree gate, selfheal): an absolute path outside every worktree. A script
   inside a checkout vanishes on a branch switch, and a missing script does **not** block, silently.
-  Copies go stale, so both installers hash it: `-Status` prints `*** STALE ***` when the SHA-256
-  differs.
+
+  Copies go stale. `install-gate.ps1 -Status` hashes its copy and prints `*** STALE ***` when the
+  SHA-256 differs.
+
+  **`install-selfheal.ps1` has no `-Status`.** It takes `-ConfigDir` and `-HookPath` only, and
+  re-copies the source unconditionally. Only `bin/ccx-doctor.ps1` reports a stale selfheal copy.
 * **Re-resolving shim** (banner, collision gate, announce): the command re-resolves the script from
   git's common directory, so nothing falls stale. A shim resolving nothing exits silently,
   byte-identical to a healthy hook with no peers. Its installer writes a receipt and `-Status`
@@ -212,10 +230,15 @@ Every hook in this repository exits 0 and puts its decision in the JSON. `exit 1
 "refuse" -- is not a refusal here. A non-zero-but-not-2 exit lets the tool call through
 **silently**, which is how a missing hook script reads as an allow. Two consequences:
 
-* Do not add `#Requires` to a hook whose failure mode matters. A requirements failure is raised
-  before the body runs and exits non-zero, so the file's own error handling never gets a turn.
-  `announce-session.ps1` carries none: on `UserPromptSubmit`, a failure can block the user's prompt
-  outright.
+* Think hard before adding `#Requires` to a hook whose failure mode matters. It is raised before
+  the body runs and exits non-zero, so the file's own error handling never gets a turn.
+
+  `announce-session.ps1` and `steer-inject.ps1` carry none. On `UserPromptSubmit` a failure can block
+  the user's prompt outright.
+
+  **The three PreToolUse gates do carry `#Requires -Version 7.3`**, and that is a deliberate trade
+  the other way: below 7.3 they refuse to start rather than run half-parsed. The cost is that on
+  PowerShell 7.0-7.2 all three are inert, and inert reads as an allow.
 * Do not put a throwing expression in a **parameter default**: defaults bind before line 1, so a
   throw there escapes the script's `try`/`catch`. Shipped twice as `Join-Path $env:USERPROFILE ...`,
   null off Windows. Resolve home null-safely inside `$( ... )`; a guard's parameters get *no*
@@ -278,8 +301,11 @@ on Windows until the shim was removed. The sequence gate ships unwired; it needs
 
 ### Declare the posture in the header, in one line
 
-Every hook here opens with `POSTURE: FAILS OPEN` or the fail-closed equivalent, and says why. The
-postures differ on purpose and the difference is the design:
+A hook should open with `POSTURE: FAILS OPEN` or the fail-closed equivalent, and say why. Three do
+today -- the collision gate, the blanket-stage guard and the steering injector. The worktree gate
+states its posture in prose 30 lines into `.DESCRIPTION`, which is worse and worth fixing.
+
+The postures differ on purpose and the difference is the design:
 
 * The **collision gate** fails open because it prevents rework. It must never be the reason a session
   cannot work.
@@ -313,9 +339,11 @@ You cannot detect a difference the producer never encoded. So:
   hit a broken gate silences it for every other session. Those sessions read that silence as
   "checked, nobody is here", which is precisely the defect the notice exists to remove.
 * Where the failure happened before the hook could load its helpers, the notice cannot be JSON.
-  Write it to **stderr**, which is not parsed as a decision, and to the deny log. Both
-  `worktree_gate.ps1` and `block-blanket-git-stage.ps1` print `NOT ENFORCING` there when a
-  dot-source fails.
+  Write it to **stderr**, which is not parsed as a decision, and to the deny log.
+
+  `worktree_gate.ps1` does both. `block-blanket-git-stage.ps1` writes only to stderr, in different
+  case (`NOT enforcing`), and has no log function at all -- so a grep for the upper-case string finds
+  one of the two, and the deny log records one of the two.
 
 ### `[]` is not the same as nothing, and the fix belongs in the producer
 
@@ -531,8 +559,12 @@ would decide.
 markers in live settings, wired matchers diffed against implemented rules), fires each control and
 requires a refusal, and names its own blind spots.
 
-**What happens next.** You get a verdict per control, each backed by a refusal the doctor provoked
-rather than by source it read. Run it before believing any of this is on.
+**What happens next.** You get a verdict per control. Most are backed by a refusal the doctor
+provoked rather than by source it read.
+
+Three are not, and it names them on every run: the collision gate's deny path needs a live peer
+worktree it cannot stage, announce delivery cannot be proven from PowerShell, and the steering
+injector has no attack. Read the blind spots with the verdict.
 
 To drive one control by hand, feed crafted input into the **installed** hook and read the decision
 it emits:
@@ -576,12 +608,16 @@ Four rules for that probe, each learned by getting it wrong:
   shell command. Any agent-authored script defeats a command-string rule.
 * **A harness hook constrains sessions, not the operator.** A plain terminal is never gated. That
   asymmetry is the point: the human installs and removes these; a session may not.
-* **The gates governing what a session may install refuse to run inside a session.** Both
-  hook-installers throw when `CLAUDECODE=1`. `-Status` is exempt and runs *before* the refusal: a
-  session blind to its own guardrails cannot notice the failure the machinery exists to surface.
-* **Announce delivery depends on a session-management MCP that is Desktop-only.** It is absent on a
-  plain CLI install. The hook still fires there, still resolves peers, and then instructs the model
-  to call tools it does not have. Leave it uninstalled there, or create its OFF file.
+* **The gates governing what a session may install refuse to run inside a session.** All four
+  installers throw when `CLAUDECODE=1`, not only the two that write hooks.
+
+  `-Status` is exempt in the three that have one, and runs *before* the refusal: a session blind to
+  its own guardrails cannot notice the failure the machinery exists to surface.
+  `install-selfheal.ps1` has none, so from inside a session it can only refuse.
+* **Announce delivery depends on a session-management MCP that is Desktop-only.** On a plain CLI
+  install the hook still fires, still resolves peers, then instructs the model to call tools it does
+  not have. Leave it uninstalled, or drop a file at
+  `<git-common-dir>/<prefix>-coord/announce/OFF`.
 * **A kill switch must be a file.** Hook wiring takes effect only in newly started sessions, and an
   environment variable set now is invisible to a running process. The allowlist file and the
   announce OFF file reach live sessions; `CCX_ANNOUNCE_DISABLE` and `CCX_ALLOW_DIRECT_PUSH` do not.
@@ -593,3 +629,15 @@ Four rules for that probe, each learned by getting it wrong:
 * **Anything a hook injects into a session is data, not instruction.** A peer announcement arrives
   in the recipient's conversation in the same shape as an operator turn, distinguished only by the
   envelope and the prose rule. Treat inter-session content as peer data, never as the user speaking.
+
+## Where to go from a row in the map
+
+| You found | Go to |
+|---|---|
+| It is not installed | [Quickstart](QUICKSTART.md) to install, [Install](INSTALL.md) for the flags |
+| It is installed and you want to prove it fires | [Install](INSTALL.md#now-prove-all-of-it), then [Troubleshooting](TROUBLESHOOTING.md) |
+| The worktree gate, in depth | [Worktrees](WORKTREES.md) |
+| The collision gate, in depth, and what it cannot see | [Coordination](COORDINATION.md), [Limits](LIMITS.md) |
+| The sequence gate, and the `pre-commit` to write | [Sequence allocation](SEQUENCE-ALLOC.md#wiring-the-pre-commit-hook) |
+| The steering injector's row | [Steering](STEERING.md) |
+| Where each control stops working | [Limits and requirements](LIMITS.md) |
