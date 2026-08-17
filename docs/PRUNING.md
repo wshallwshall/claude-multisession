@@ -300,8 +300,8 @@ like "everything is tidy". Three refusals exist for this class:
 ## Re-check immediately before each destructive step
 
 The decision table is built up front. `-Apply` then **re-evaluates everything from scratch in the
-same run and acts on that table**, never on a table you read a minute ago. Before *each individual
-removal* it re-reads:
+same run and acts on that table**, never on a table you read a minute ago.
+Immediately before *each individual removal*, it re-reads:
 
 1. fence availability -- a fence that **dies mid-run** stops the rest of the run;
 2. occupants, including nested;
@@ -312,6 +312,31 @@ removal* it re-reads:
 The window is real. A merged-PR probe costs roughly half a second per candidate, measured on the repo
 this tooling was developed in. Add the time taken by every removal before this one. A session can
 arrive inside that window.
+
+**Once per candidate, not once per run.** The read used to be taken once, before the loop: fresh for
+the first removal, stale for every one after it.
+
+Measured on a three-worktree fixture, a session arrived in the second candidate as the first was
+removed. The single-snapshot version removed all three, occupied one included, and reported
+`vetoedCandidates: 0`.
+
+A fence read costs about 64 ms -- one `git worktree list` plus a registry sweep. The same candidate
+already paid ~500 ms for its merged-PR probe, and the loop already spawns that same
+`git worktree list` per removal.
+
+**It bounds the staleness; it does not remove it.** Steps 4 and 5 and the removal still sit between
+the read and the git command. The window is one candidate's work, not the batch's. Nothing is atomic.
+
+`readsAtApply` reports how many times the fence was consulted. On a healthy run it equals
+`counts.prunable`. Lower means the fence died and stopped the rest; `availableAtApply` is then false
+and `detailAtApply` says where.
+
+The census beside it -- `rootsExamined`, `recordsExamined`, `liveInRepo` -- is the **decision-pass**
+read, not a total across the run.
+
+One unavailable read survives every later available one: a fence that recovers by candidate 4 said
+nothing about candidate 2. It exits 2, or **1 if something was already removed**, because exit 2
+means nothing was attempted.
 
 When the re-check vetoes, the occupants it found are **written back onto the decision**. Without
 that, the one candidate the fence saved reports `Occupants: []`, and the "vetoed by signal 1" figure
@@ -340,7 +365,7 @@ Highest severity wins.
 | Code | Name | Meaning |
 |---|---|---|
 | 0 | OK | nothing wrong |
-| 1 | FAILED | something was attempted and failed **without destroying anything** |
+| 1 | FAILED | something was attempted and did not fully succeed, **without leaving anything broken on disk** -- a removal that failed, or a run that stopped partway with earlier removals already done |
 | 2 | REFUSED | nothing was attempted, because safety could not be established (wrong cwd, unresolvable trunk, unavailable fence, a `-Name` that matched nothing) |
 | 3 | ORPHANED | a directory is broken on disk **right now** (this run, or an earlier one) |
 
@@ -510,8 +535,14 @@ Add a positive control in the same invocation; a refusal test is the exception, 
 run.
 
 **Drive the re-check deterministically.** Use a shim whose probe performs the side effect *before*
-it answers: a session arrives, the fence dies, metadata is touched. That proves step 4 of the apply
-loop really re-reads. No threads, no sleeps.
+it answers: a session arrives, the fence dies, metadata is touched. That proves steps 1, 2 and 4 of
+the apply loop really re-read. No threads, no sleeps.
+
+**Wrap the real function; do not replace it.** A hand-written stub is a second copy of a safety
+check, and the copy that drifts is the one nobody tests.
+
+**Plant the arrival in the candidate git removes second.** Worktree order is not alphabetical, and
+the first candidate's read is fresh under a stale snapshot too.
 
 ## Limits, stated plainly
 

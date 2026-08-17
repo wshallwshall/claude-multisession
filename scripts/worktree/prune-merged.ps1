@@ -78,8 +78,13 @@
     that failed to parse (an unparseable record's cwd is unknowable, so it cannot be cleared from any
     candidate -- and a file caught half-written is precisely what a session that launched a second ago
     looks like). When it is unavailable every candidate becomes SKIP and the run exits non-zero rather
-    than silently pruning unfenced, and THE FENCE IS RE-READ IMMEDIATELY BEFORE EACH REMOVAL so a
-    fence that DIES mid-run stops the rest. There is deliberately no override flag.
+    than silently pruning unfenced, and THE FENCE IS RE-READ IMMEDIATELY BEFORE EACH REMOVAL -- once
+    per candidate, not once per run -- so a fence that DIES mid-run stops the rest. That re-read
+    BOUNDS the staleness; it does not remove it. The cleanliness check and the removal itself still
+    sit between the read and the git command, so the window is one candidate's worth of work instead
+    of the whole batch's, and it is still not atomic. The receipt reports how many reads there were,
+    because "the fence ran" must never imply "the fence covered it". There is deliberately no
+    override flag.
 
     EVERYTHING THAT NARROWS THE FENCE IS DECLARED IN RED, on the run and in the JSON receipt --
     -IdleHours 0, an -IdleHours below the floor, an explicit -ConfigRoot, a FAILED fetch (merge
@@ -977,31 +982,74 @@ function Remove-BranchSafely {
     return @{ Outcome = 'kept'; Detail = ($out -join ' ').Trim() }
 }
 
+# The apply-phase fence read the RECEIPT has to answer for. There is one read per candidate now (see
+# the loop), so this holds the read that came back unavailable if one did, and the last read
+# otherwise -- the sticky assignment below is what makes that true.
 $occ2 = $null
+# STICKY, AND NEVER CLEARED. A fence that died mid-run stops the rest, which is a promise made in this
+# script's own header and in docs/PRUNING.md, and it was kept only by accident while there was one
+# snapshot per run: the single unavailable verdict was loop-invariant, so every candidate skipped. One
+# read per candidate makes it a real decision, and a fence that recovers by candidate 4 has told us
+# nothing about candidate 2 -- so the run stops rather than resuming destruction after a gap.
+$fenceDied = $false
+# Counted, and reported, because "the fence ran" has never been allowed to imply "the fence covered
+# it" here. On a run whose fence stayed up this equals counts.prunable -- one read per candidate. It
+# is LOWER only when the fence died and stopped the rest; a run reporting 1 read for 4 candidates that
+# were all judged is this script having regressed to a single pre-loop snapshot.
+$fenceReads = 0
 if ($Apply -and $prunable.Count -gt 0) {
-    # RE-READ OCCUPANCY BEFORE THE APPLY LOOP. The decision pass above costs a gh round trip per
-    # candidate -- roughly half a second each, measured on the repo this was developed in -- and a
-    # session can arrive inside that window.
-    #
-    # HONEST LIMIT, because the comment here used to overstate it: this is ONE snapshot, taken before
-    # the first removal, and every candidate in the loop below is judged against it. For the second and
-    # later removals in a batch it is already stale by exactly the interval it exists to close. Moving
-    # the call inside the loop would cost a fence read per candidate; that trade has not been made.
-    # Until it is, do not read the per-candidate checks below as a fresh look at the registry.
-    $occ2 = Get-WorktreeOccupancy -Repo $RepoRoot -ConfigRoot $ConfigRoot -StartSkewMinutes $StartSkewMinutes
     Write-Note ""
     foreach ($d in $prunable) {
         if (-not $Json) { Write-Host "Removing $($d.Leaf) [$($d.Branch)]..." -ForegroundColor Cyan }
 
-        # Re-check the things that can change under us in seconds.
-        if (-not $occ2.Available) {
+        # The fence is already known dead. Skip without re-asking it: the answer cannot authorise
+        # anything, and every candidate still needs an Outcome for the counts to cover the table.
+        if ($fenceDied) {
             $d.Outcome = 'skipped'
-            $d.OutcomeDetail = "re-check: fence became unavailable ($($occ2.Detail))"
-            Set-Exit $EXIT_REFUSED
+            $d.OutcomeDetail = "re-check: the fence died earlier in this run, which stops the rest ($($occ2.Detail))"
             Write-Note "  SKIPPED: $($d.OutcomeDetail)" 'Yellow'
             continue
         }
-        $now = @(Get-WorktreeOccupants -Occupancy $occ2 -Path $d.Path -IncludeNested)
+
+        # RE-READ OCCUPANCY, ONCE PER CANDIDATE, INSIDE THE LOOP. The decision pass above costs a gh
+        # round trip per candidate -- roughly half a second each, measured on the repo this was
+        # developed in -- and a session can arrive inside that window.
+        #
+        # THIS CALL USED TO SIT ABOVE THE LOOP, and the trade was recorded as not made. One snapshot
+        # taken before the first removal judged every candidate in the batch, so from the second
+        # removal onwards it was stale by exactly the interval it exists to close: a session arriving
+        # in worktree B while worktree A was being removed was not seen, and a nested worktree that
+        # appeared mid-batch was invisible to a frozen Worktrees array. The cost of closing it is one
+        # fence read per candidate, measured at ~64 ms on this machine (5 config roots, 10 records, 5
+        # worktrees) against the ~500 ms gh probe already spent on each of those candidates, and
+        # against the `git worktree list` this same loop already spawns per candidate below. Signal 2
+        # was already re-read per candidate; signal 1 now matches it.
+        #
+        # IT BOUNDS THE STALENESS, IT DOES NOT REMOVE IT. The cleanliness check and the removal itself
+        # still sit between this read and the git command, so the window is one candidate's worth of
+        # work instead of the whole batch's. Nothing here is atomic and nothing here takes a lock.
+        $occNow = Get-WorktreeOccupancy -Repo $RepoRoot -ConfigRoot $ConfigRoot -StartSkewMinutes $StartSkewMinutes
+        $fenceReads++
+        # STICKY, AND FAIL-CLOSED, because the receipt speaks for the whole apply phase and there is
+        # more than one read in it now. One unavailable read has to survive every later available one:
+        # a fence that died on candidate 2 and recovered by candidate 5 would otherwise report
+        # `availableAtApply: true` next to the skip it caused and the exit that skip set.
+        if ($null -eq $occ2 -or $occ2.Available) { $occ2 = $occNow }
+
+        # Re-check the things that can change under us in seconds. Against $occNow, this candidate's
+        # own read -- $occ2 is the receipt's variable and may be an earlier, worse one.
+        if (-not $occNow.Available) {
+            $fenceDied = $true
+            $d.Outcome = 'skipped'
+            $d.OutcomeDetail = "re-check: fence became unavailable ($($occNow.Detail))"
+            # EXIT 2 MEANS "nothing was attempted", and with the read inside the loop the fence can now
+            # die AFTER a removal has already succeeded -- which is a partial run, not a refusal. Same
+            # rule the -Name miss below uses, and the same rule docs/PRUNING.md states for it.
+            Set-Exit $(if ($removed -gt 0) { $EXIT_FAILED } else { $EXIT_REFUSED })
+            Write-Note "  SKIPPED: $($d.OutcomeDetail)" 'Yellow'
+            continue
+        }
+        $now = @(Get-WorktreeOccupants -Occupancy $occNow -Path $d.Path -IncludeNested)
         if ($now.Count -gt 0) {
             $d.Outcome = 'skipped'
             $d.OutcomeDetail = "re-check: a session arrived ($(($now | ForEach-Object { $_.Short }) -join ', '))"
@@ -1012,7 +1060,7 @@ if ($Apply -and $prunable.Count -gt 0) {
             Write-Note "  SKIPPED: $($d.OutcomeDetail)" 'Yellow'
             continue
         }
-        $nestedNow = @(Get-NestedWorktrees -Occupancy $occ2 -Path $d.Path)
+        $nestedNow = @(Get-NestedWorktrees -Occupancy $occNow -Path $d.Path)
         if ($nestedNow.Count -gt 0) {
             $d.Outcome = 'skipped'
             $d.OutcomeDetail = "re-check: a nested worktree appeared ($((($nestedNow | ForEach-Object { Split-Path $_.Path -Leaf }) -join ', ')))"
@@ -1186,6 +1234,20 @@ if (-not $Json -and $fenceVetoed -gt $fenceVetoedAtDecision) {
     Write-Host ("  Signal 1 vetoed {0} further candidate(s) during the removal pass (total {1} of {2})." -f
         ($fenceVetoed - $fenceVetoedAtDecision), $fenceVetoed, $decisions.Count) -ForegroundColor DarkCyan
 }
+# Say how many times it was consulted, not just what it found. Equal numbers ARE the guarantee: every
+# candidate was judged against a read taken after the removal before it. They differ only when the
+# fence died and stopped the rest, so that case says so rather than leaving a bare short count for the
+# operator to misread as a run that quietly reverted to one snapshot.
+if (-not $Json -and $Apply -and $fenceReads -gt 0) {
+    if ($fenceReads -eq $prunable.Count) {
+        Write-Host ("  Occupancy re-read {0} time(s) for {0} candidate(s) -- one each, immediately before its removal." -f
+            $fenceReads) -ForegroundColor DarkCyan
+    }
+    else {
+        Write-Host ("  Occupancy re-read {0} time(s) for {1} candidate(s): the fence died and the rest were stopped untouched." -f
+            $fenceReads, $prunable.Count) -ForegroundColor DarkCyan
+    }
+}
 
 # -Name asked for something that does not exist, so the operator's instruction was NOT carried out. It
 # used to print one yellow line and exit 0 with a green summary -- the same "green no-op" shape as the
@@ -1218,14 +1280,23 @@ if ($Json) {
         apply    = [bool]$Apply
         trunk    = $MainRef
         fence    = [pscustomobject]@{
-            # FAIL-CLOSED HEADLINE: false if the fence was unavailable at EITHER read. It used to report
+            # FAIL-CLOSED HEADLINE: false if the fence was unavailable at ANY read. It used to report
             # the decision-pass verdict only, so a fence that died mid-run produced `available: true`
-            # next to `exitCode: 2` with no field to reconcile them.
+            # next to `exitCode: 2` with no field to reconcile them. $occ2 is sticky-unavailable across
+            # the apply phase's per-candidate reads, so one bad read cannot be papered over by a later
+            # good one here either.
             available          = ([bool]$occ.Available -and ($null -eq $occ2 -or [bool]$occ2.Available))
             availableAtDecision = [bool]$occ.Available
             availableAtApply   = if ($null -eq $occ2) { $null } else { [bool]$occ2.Available }
             detail             = $occ.Detail
             detailAtApply      = if ($null -eq $occ2) { '' } else { [string]$occ2.Detail }
+            # HOW MANY TIMES THE FENCE WAS ACTUALLY CONSULTED during the apply phase. One read per
+            # candidate, taken immediately before that candidate's checks, so on a healthy run this
+            # equals counts.prunable. It is lower ONLY when the fence died and stopped the rest (then
+            # availableAtApply is false and it says where it stopped). It is 0 on a dry run. A run that
+            # judged every candidate on a single read would report 1 here, which is the whole point of
+            # publishing it: "the fence ran" must never imply "the fence covered it".
+            readsAtApply       = $fenceReads
             rootsExamined      = $occ.RootsExamined
             recordsExamined    = $occ.RecordsExamined
             recordsUnplaceable = $occ.RecordsUnplaceable
@@ -1338,12 +1409,20 @@ if ($priorOrphans.Count -gt 0) {
 if ($ledgerNote) { Write-Host "  NOTE: $ledgerNote" -ForegroundColor Yellow }
 
 foreach ($r in $reducedAssurance) { Write-Host "  REDUCED ASSURANCE: $r" -ForegroundColor Red }
+# REPORTED OUTSIDE THE EXIT-2 BRANCH, because a mid-run death can now land on either code: 2 when it
+# died before anything was removed, 1 when it died after. Nesting this under exit 2 -- where it used
+# to live, correctly, while one snapshot made a death mean nothing was ever attempted -- would leave
+# the partial run with no explanation for why it stopped with candidates still standing.
+if ($null -ne $occ2 -and -not $occ2.Available) {
+    Write-Host "  The occupancy fence was available when the table was built and GONE by the time of the removals: $($occ2.Detail)" -ForegroundColor Red
+    Write-Host "  A fence that dies mid-run stops the rest, so every candidate after it was skipped untouched. Fix the fence and re-run; don't bypass it." -ForegroundColor Red
+    if ($removed -gt 0) {
+        Write-Host "  Exit 1, not 2: $removed worktree(s) had already been removed when it died, so this run is a partial success rather than a refusal." -ForegroundColor Red
+    }
+}
 if ($exit -eq $EXIT_REFUSED) {
     if (-not $occ.Available -or ($null -ne $occ2 -and -not $occ2.Available)) {
         Write-Host "  Exit 2: the occupancy fence was unavailable, so nothing was eligible. Fix the fence, don't bypass it." -ForegroundColor Red
-        if ($null -ne $occ2 -and -not $occ2.Available) {
-            Write-Host "    It was available when the table was built and gone by the time of the removal: $($occ2.Detail)" -ForegroundColor Red
-        }
     }
     if ($namedMisses.Count -gt 0) {
         Write-Host "  Exit 2: -Name named $($namedMisses -join ', '), which matched no prunable sibling, so what you asked for did not happen." -ForegroundColor Red
