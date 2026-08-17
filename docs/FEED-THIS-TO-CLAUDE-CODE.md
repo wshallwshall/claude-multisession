@@ -192,9 +192,9 @@ and why. That sentence is more useful to the human than the workaround.
 - **You cannot prove a gate can fail.** Breaking a control on purpose to watch it refuse is the
   only proof that it is live. Doing that convincingly needs a second live session and a peer
   worktree. Say that the deny path is unproven rather than implying it is proven.
-- **Announce needs a desktop-only server.** On a plain CLI install, the announce hook finds peers
-  and then instructs you to call tools you do not have. Leave that one hook uninstalled, and say
-  why.
+- **KORUS assumes Claude Code for Desktop.** Announce delivers through a desktop-only MCP server,
+  and the session roster is the desktop app's. If this repository is worked from a CLI-only or
+  editor-extension setup, say that plainly: it is not a configuration this project supports.
 
 ## Where the detail lives
 

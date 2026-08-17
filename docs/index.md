@@ -13,11 +13,12 @@ accounts cost, what to write down, and running several sessions without collisio
 
 `claude-multisession` is the tooling that enforces that last part.
 
-**Why you should care.** Most of the framework is convention you can adopt by reading. The
-concurrency part is not: sessions sharing one repository collide in ways git cannot report as a
-conflict, so every branch merges clean and the loss lands later.
+**Why you should care.** Several sessions at once is how a build gets dramatically faster. The only
+thing in the way is them conflicting, and the conflicts that cost you are the ones git cannot report:
+every branch merges clean, and the loss lands later.
 
 Not for you if Claude Code is an occasional convenience rather than how the project gets built.
+KORUS also assumes Claude Code for Desktop throughout.
 
 **How to use it.** [Quickstart](QUICKSTART.md) installs the enforcement and ends with you watching a
 collision get refused. [Run a KORUS build](KORUS-BUILD.md) is the session shape.
@@ -150,7 +151,7 @@ throughput comes from.
 | Read the account this came from | [The KORUS framework](KORUS.md) |
 | Have Claude Code assess your own repository | [Feed this to Claude Code](FEED-THIS-TO-CLAUDE-CODE.md) |
 
-Nothing beyond `pwsh`, `git` and a `python`. PowerShell 7, Windows-first, MIT. Cloning installs
+Claude Code for Desktop, `pwsh` 7.3+, `git` and a `python`. Windows-first, MIT. Cloning installs
 nothing.
 
 ## What it costs you

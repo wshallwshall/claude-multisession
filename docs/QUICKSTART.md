@@ -9,16 +9,15 @@ other. Eight steps, run from a plain terminal, against a repository you already 
 second one get refused. Until you have seen that refusal, nothing here is proven to be running. Not
 for you if you have no repository to govern yet.
 
-**How to use it.** Work the steps in order. Read
-[Limits and requirements](LIMITS.md) first if you are on a CLI-only install, because one of the four
-controls needs the desktop client.
+**How to use it.** Work the steps in order. KORUS assumes Claude Code for Desktop throughout, so
+check [Limits and requirements](LIMITS.md) before you start if you are not on it.
 
 ---
 
 ## What you need
 
-`pwsh` 7.3 or newer, `git`, and a `python` on `PATH`. The full table, and what breaks when each is
-missing, is on [Limits and requirements](LIMITS.md).
+Claude Code for Desktop, `pwsh` 7.3 or newer, `git`, and a `python` on `PATH`. The full table, and
+what breaks when each is missing, is on [Limits and requirements](LIMITS.md).
 
 Every command below runs in a **plain terminal**, not inside a Claude Code session. All four
 installers refuse when `$env:CLAUDECODE` is `1`, because a session that can install these controls
@@ -60,12 +59,27 @@ Copy the scripts into the target and commit them, so tooling *is* target. That i
 which the doctor can reach exit 0.
 
 ```powershell
-Copy-Item "$tooling/ccx.config.json" "$target/ccx.config.json"   # then edit it
-Copy-Item "$tooling/scripts" $target -Recurse
-Copy-Item "$tooling/bin" $target -Recurse
+Copy-Item "$tooling/ccx.config.json" "$target/ccx.config.json"
+Copy-Item "$tooling/scripts" $target -Recurse -Force
+Copy-Item "$tooling/bin" $target -Recurse -Force
 ```
 
+`-Force` is not optional. Without it, a target that already has a `scripts/` or `bin/` prints one
+red error per existing directory, ten of them on a re-run, while still copying the files.
+
+These two lines merge into what is there rather than replacing it. Re-running them is how you
+upgrade.
+
 Then commit them, so every worktree of the target gets them.
+
+**Now edit `ccx.config.json`, because two keys in the shipped file will bite you.**
+
+- `setupHook` points at `.ccx/worktree-setup.ps1`. No such file ships. Leave it and every spawn warns
+  that the worktree has NOT been set up. Delete the key, or write the hook
+  (`examples/worktree-setup.ps1.example` is the model, and [Worktrees](WORKTREES.md) has the
+  contract).
+- `sequences` declares an `adr` sequence. Leave it on a repository that numbers nothing and the
+  doctor prints an `OFF (opt-in)` row for a gate no installer wires.
 
 **Trap.** After vendoring there are two copies on disk. Install and audit from **one** of them.
 Installing from one and hashing against the other is exactly the drift the doctor calls `STALE`.
@@ -112,12 +126,16 @@ pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target
 ```
 
 The doctor's default target is the current directory, so a run started in the wrong place produces a
-long, plausible, mostly-green report about the wrong clone. These four lines say which clone it read:
+long, plausible, mostly-green report about the wrong clone. These two lines say which clone it read:
 
 ```powershell
 pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target |
-    Select-String 'repo examined|tooling checkout|gate: allowlist|LIVE allowlist'
+    Select-String 'repo examined|tooling checkout'
 ```
+
+**Expect one `OFF (opt-in)` row even on a good install**, for the sequence gate, if you left
+`sequences` in the config. It does not raise the exit code, which is the one place `OFF` is not
+exit 1.
 
 ## 7. Spawn two sessions
 
@@ -126,16 +144,28 @@ pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name alerts
 pwsh -NoProfile -File "$tooling/scripts/worktree/spawn.ps1" -Name parser
 ```
 
-Each call creates an isolated worktree on its own branch and opens an editor window in it. `new.ps1`
-does the same without the editor. Neither takes a target flag: both act on the primary you are
-standing in, so stay in the target.
+Each call creates an isolated worktree on its own branch, named after `-Name`.
 
-Start a session in each window, then confirm they can see each other:
+It then opens an editor window **if** one is found: `-Editor`, else `$CCX_EDITOR`, else `$EDITOR`,
+else `code`. With none of them on `PATH` it warns and prints the worktree path for you to open
+yourself. `new.ps1` skips the editor entirely.
+
+Neither takes a target flag: both act on the primary you are standing in, so stay in the target.
+
+You may also see a warning that `setupHook` was not found. That is the config key from step 3, and
+it does not affect the drill below.
+
+Start a session in each worktree, then confirm they can see each other:
 
 ```powershell
-pwsh -NoProfile -File "$tooling/scripts/coord/presence.ps1"   # both sessions listed
-pwsh -NoProfile -File "$tooling/scripts/coord/overlap.ps1"    # what each is changing
+pwsh -NoProfile -File "$tooling/scripts/coord/presence.ps1"
+pwsh -NoProfile -File "$tooling/scripts/coord/overlap.ps1"
+$LASTEXITCODE
 ```
+
+**Read the exit code, not the rows.** `0` is a complete roster, including one that lists nobody. `2`
+is a roster that could not be completed -- and it fires even when rows *are* listed, because two
+named peers say nothing about a third.
 
 ## 8. Watch a collision get refused
 
@@ -151,7 +181,7 @@ this:
 ```text
 service.py has UNCOMMITTED changes in another LIVE session's worktree -- editing it now means one of you loses work at merge.
 
-  parser (desktop) in C:/repo/.claude/worktrees/parser [claude/parser-4f2a1c]
+  4f2a1c9b (desktop) in myrepo-parser [parser]
       building: the CSV column parser
 
 Before overriding: that session may already be doing what you are about to do.
@@ -159,6 +189,10 @@ Before overriding: that session may already be doing what you are about to do.
   who is live              :  pwsh -NoProfile -File scripts/coord/presence.ps1
 If you genuinely need this file, coordinate first -- or edit a different one.
 ```
+
+Read the peer line by its shape: an 8-character session id, the surface, the worktree's directory
+name, and its branch. The branch is `parser` because `spawn.ps1 -Name parser` names both. The
+`building:` line appears only when that peer has a task list to report.
 
 That refusal is the whole product. Everything else on this site exists to widen it or to prove it is
 still there.

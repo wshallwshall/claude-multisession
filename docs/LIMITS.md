@@ -18,6 +18,7 @@ CLI-only limit is the one that changes what you install.
 
 | Need | Without it |
 |---|---|
+| **Claude Code for Desktop** | KORUS is a desktop framework. A CLI-only or editor-extension setup is not supported, and the coordination layer is shaped around the desktop client. See below. |
 | **PowerShell 7.3+** (`pwsh`) | Nothing installs. Most scripts carry `#Requires -Version 7.3`. |
 | **git** | Nothing installs. Everything is keyed on the git common directory. |
 | **`python` on `PATH`** (or `CCX_PYTHON`) | The installed git gates are OFF and say so on stderr. Needed by the three git-hook checkers and the leak gate. |
@@ -56,7 +57,14 @@ follow.
 
 **Announce needs the desktop client.** It delivers through `ccd_session_mgmt`, an MCP server a plain
 CLI install lacks. The hook never sends: it asks the model to, so nothing is delivered and the model
-says so. **If you are CLI-only, leave that one hook uninstalled** -- nothing else depends on it.
+says so.
+
+**This is why KORUS is a desktop framework rather than a preference.** Announce is one of the
+coordination surfaces shaped by the desktop client, alongside the two below and the automatic
+worktree every new desktop session gets.
+
+Some scripts here run anywhere `pwsh` does. Running them without the desktop app is not KORUS, and
+nothing here measures how far it gets you.
 
 **The desktop app's own session list is incomplete.** `list_sessions` enumerates only sessions *that
 app itself spawned*. An editor-extension session is never registered, so it cannot be messaged. It

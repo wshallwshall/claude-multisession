@@ -13,8 +13,8 @@ They can also build the *same thing* in *different files*: zero conflicts, two g
 nothing structural sees it. Measured on the repo this tooling was developed in: three sessions fixed
 the same dependency advisory, and two of the three pull requests closed as duplicates.
 
-Not for you if you run one session at a time. Announce is not for you on a plain CLI install either,
-because delivery needs the desktop client.
+Not for you if you run one session at a time. Everything here assumes Claude Code for Desktop:
+announce delivers through a desktop-only MCP server, and the roster it reads is the desktop app's.
 
 **How to use it.** Start at [The pieces](#the-pieces), which routes each question to a script. Run
 [Proving any of this is live](#proving-any-of-this-is-live) before you trust an answer. Read
