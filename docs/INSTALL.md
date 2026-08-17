@@ -9,15 +9,22 @@ Four installers, four scopes, and how to prove each one is live rather than mere
   refused. Come here for what each flag means and how to prove a control is live.
 - **What it demands.** Claude Code for Desktop, `pwsh` 7.3+, `git`, a `python` on `PATH`, the scripts
   vendored into the repository you want governed, and a `ccx.config.json` at its root.
-- **What it costs.** Everything is written **outside** the repository you are governing, and three of
-  the four installers write at user scope -- so their hooks load in every repository on the machine.
-  Each control is bounded by a different thing, and `ccx.config.json` bounds only one of them.
+- **What it costs.** Three of the four write at user scope, so their hooks load in every repository
+  on the machine. Only installer 2 writes inside the repository you govern, into its git hooks
+  directory. Each control has its own on-switch, and `ccx.config.json` is only one of them.
 - **Not for you if you are not on Claude Code for Desktop.** A CLI-only or editor-extension setup is
   not supported, and this page does not describe one. Linux and macOS run the scripts but are not the
   exercised path. [Limits and requirements](LIMITS.md) has both tables.
-- **Where to start.** Step 0, opt in, then the doctor -- and read what it says it scanned, not just
-  the verdict. Expect `OFF` from the ASCII gate, and from the sequence gate once `sequences` is set;
-  both count as [`OFF (opt-in)`](#controls-no-installer-wires), not as holes.
+- **Where to start.** A baseline doctor run, then Step 0, then the four installers, then the doctor
+  again -- and read what it says it scanned, not just the verdict. When something comes back `RED`,
+  `OFF` or `??`, [Troubleshooting](TROUBLESHOOTING.md) is the symptom table.
+- **Expect two `OFF (opt-in)` rows** even on a good install: the ASCII gate, and the sequence gate
+  once `sequences` is set. They do not fail the run, but the sequence one **is** a real hole -- you
+  have to close it. [What that means](#controls-no-installer-wires).
+
+**Every command here refuses to run inside a Claude Code session.** All four installers throw when
+`$env:CLAUDECODE` is `1`, because a session that can install these controls can remove them. Use a
+plain `pwsh` terminal. `-Status` is exempt, and that exemption is deliberate.
 
 ---
 
@@ -29,9 +36,11 @@ That failure is invisible by construction. A repository with no controls install
 session banner, a per-prompt status message, and green output -- no error, no warning, nothing in
 the settings file that looks wrong.
 
-On the repository this tooling was developed in: a coordination hook sat wired and resolving nothing
-for hours while an unrelated project's similarly-named entry held its slot, and a gate with dozens
-of passing tests bound the repository's copy while enforcement ran from a stale installed one.
+Two examples, both from the repository this tooling was developed in. A coordination hook sat wired
+and resolving nothing for hours, while an unrelated project's similarly-named entry held its slot.
+
+And a gate with dozens of passing tests bound the repository's copy, while enforcement ran from a
+stale installed one.
 
 ---
 
@@ -44,17 +53,23 @@ rows that change what these four commands do:
 |---|---|---|
 | Claude Code for Desktop | The coordination layer is shaped around the desktop client | Announce cannot deliver, and the roster is incomplete |
 | PowerShell 7.3+ (`pwsh`) | 26 scripts carry `#Requires -Version 7.3` | Three installers refuse. On 7.0-7.2 the backstop still installs -- see below |
-| git | Everything is keyed on the git common directory | Nothing installs |
+| git, recent enough for `rev-parse --path-format=absolute` (2.31+) | Every shim and checker resolves its repository through it | On an older git the shims resolve nothing and stay silent: installed, wired, enforcing nothing. Nothing checks your version |
 | A `python` on `PATH` (or `CCX_PYTHON`) | The git hooks installer 2 writes are `/bin/sh` shims that exec a stdlib-only Python checker; the sequence gate and leak gate are Python too | **The installed git gates are OFF** and say so on stderr |
 | The scripts vendored into the target | The three coordination shims resolve inside the session's own repository | Those three rows never resolve, and the doctor cannot reach exit 0 |
 | `ccx.config.json` at the target repo root | The knob file, and announce's opt-in marker | Announce stays inert there. The other three user-scope controls are unaffected |
 
-**"Nothing installs" is not true below 7.3.** `install-selfheal.ps1` declares `#Requires -Version 7`,
-so on PowerShell 7.0-7.2 it installs while all three gate installers refuse. You end up with the
-SessionStart backstop -- the most privileged control here -- and none of the guards.
+**A missing requirement does not always stop an install.** `install-selfheal.ps1` declares
+`#Requires -Version 7` and calls git nowhere, so on PowerShell 7.0-7.2, or on a machine with no git,
+it installs while the gate installers refuse.
+
+You get a wired SessionStart backstop over an allowlist holding two comment lines and no entries.
+Only `install-gate.ps1` writes entries, and it needs 7.3. So the backstop is armed and inert.
+
+It stops being inert the moment anyone seeds that allowlist from a 7.3 machine. Then it runs
+`git checkout` on your shared primary, unattended.
 
 **Platform honesty.** PowerShell 7, Windows-first. Only the stdlib-only Python checkers port: the
-git-hook gates under `scripts/hooks/` (`docs/HOOKS.md` says which hook each belongs to) and the leak
+git-hook gates under `scripts/hooks/` ([Hooks](HOOKS.md) says which hook each belongs to) and the leak
 gate at `scripts/security/scan_forbidden.py`.
 
 Linux is in CI and works with two named degradations. Off Windows the doctor prints one blind spot
@@ -80,7 +95,10 @@ elsewhere.
 ### What this file actually bounds, and what it does not
 
 **Deleting `ccx.config.json` does not opt a repository out.** It stops announce and resets every
-knob to its default. Three other controls carry on, and two of those act on your shared checkout.
+knob to its default. The other four controls carry on, and two of those act on your shared checkout.
+
+It also stops the doctor. With no config at or above the path it prints `CANNOT DETERMINE ANYTHING`
+and exits 2, before scanning a single control.
 
 | Control | Bounded by | Reads `ccx.config.json`? |
 |---|---|---|
@@ -94,12 +112,18 @@ The real off-switch for the last two is deleting the allowlist, which disarms th
 once. [Limits and requirements](LIMITS.md#what-actually-switches-each-control-on) has the full
 statement.
 
-**The lookup rule is not uniform either.** Announce tests the repository root and refuses to walk up.
-Every other consumer walks up from the current directory, so a config one level above the root
-satisfies the checkers and the doctor while leaving announce inert.
+**The lookup rule is not uniform either.** Two consumers test one directory and stop: announce at
+the repository root, the backstop at the governed root. The checkers, the doctor and the worktree
+scripts walk **up** from the current directory.
 
-Without this file, installers 1 and 2 print a `NOTE` saying announce will stay inert. Installers 3
-and 4 never look for it and say nothing -- so their silence is not evidence the file is there.
+So a config one level above the root satisfies the second group and leaves the first inert.
+`CCX_CONFIG` moves the lookup only for that second group. Announce ignores the variable entirely.
+
+**Do not read installer silence as evidence the file is there.** Installers 3 and 4 never look for
+it. Installer 2 checks the clone it governs, so its `NOTE` is about the right repository.
+
+Installer 1 checks its **own** checkout root, which always ships one. On the install path its NOTE
+therefore never fires. Its `-Status` mode checks your current directory instead.
 
 ---
 
@@ -143,8 +167,15 @@ Two consequences worth keeping:
   all.
 - **`install-gate.ps1` REPLACES the allowlist, it does not add to it.** The file is rewritten from
   this run's `-Repo` values. Run it for a second repository on its own and the first is silently
-  removed, which turns off both the gate and the backstop for that checkout, in every session,
-  immediately. To govern two, name both in one run.
+  removed, which turns off both the gate and the backstop there, in every session, immediately.
+
+**Naming two takes `-Command`, not `-File`.** Under `pwsh -File` every argument arrives as a literal
+string, so `-Repo <a>,<b>` binds one string and the install aborts on `Resolve-Path`. It fails
+loudly, which is the good case. It just does not do what it looks like. Use:
+
+```powershell
+pwsh -NoProfile -Command "& '<tooling>/scripts/worktree/install-gate.ps1' -Repo '<path-a>','<path-b>'"
+```
 
 Nothing above changes the one rule that makes it checkable: after any of it, run the doctor with an
 explicit `-Repo` and read the `repo examined` line back before you believe anything under it.
@@ -155,9 +186,9 @@ The coordination installer writes a **shim**: a one-liner that locates the scrip
 runs it. Nothing falls stale -- a pull updates the hook everywhere at once. The price: a shim
 resolving nothing exits silently and writes nothing, byte-identical to a healthy hook with no peers.
 
-**Announce is the exception, and it is worth knowing which row you are reading.** Its shim probes for
-`ccx.config.json` and, in a repository that opted in but where the script does not resolve, prints a
-named notice. The banner and collision-gate shims do not: those two fail invisibly.
+**Announce is the exception.** Its shim probes for `ccx.config.json` and, where a repository opted in
+but the script does not resolve, prints a named notice. The banner and collision-gate shims do not:
+those two fail invisibly.
 
 The gate and git-hook installers write a **copy**, because their scripts must survive a checkout. The
 primary is routinely on a detached HEAD or an old commit, and a hook whose script lives inside a
@@ -199,13 +230,15 @@ Wires three rows into `~/.claude/settings.json`:
 | `PreToolUse` (`Edit\|Write\|MultiEdit\|NotebookEdit`) | `scripts/hooks/collision_gate.ps1` | Refuses a file a live session is already changing |
 | `UserPromptSubmit` | `scripts/hooks/announce-session.ps1` | Tells peers you exist, and what you intend |
 
-**Target:** a settings file, and nothing else. This installer never resolves a repository -- its rows
-are shims that resolve one per session, at run time, from that session's own directory -- so no
-checkout is the wrong one to run it from and there is no `-Repo` to get wrong.
+**Target:** a settings file, and nothing else. This installer never resolves a repository. Its rows
+are shims that resolve one per session, at run time, from that session's own directory. So no
+checkout is the wrong one to run it from, and there is no `-Repo` to get wrong.
 
 It writes exactly **one settings file** per run: `~/.claude/settings.json` unless `-SettingsPath`
 moves it. A backup and a receipt land beside it. If your client reads more than one config root, run
 it once per root; the doctor lists the roots it found under `config roots`.
+
+Its `-Uninstall` has the same scope. Wire two roots, uninstall once, and the second stays armed.
 
 Useful flags: `-Only <event>` and `-Except <event>` scope install, uninstall and `-Status` alike.
 Announce lives on its own event, so `-Only UserPromptSubmit -Uninstall` removes announce **without**
@@ -338,6 +371,12 @@ It re-hashes the installed copies against **both** the receipt and this checkout
 with the right name is there" is not "the running code is the code you are reading".
 Read `checker INSTALLED COPY DIFFERS FROM SOURCE` as *the running gate is not the code here*.
 
+**The verdict only hashes the checker.** For the hook shim it asks whether our marker is present,
+not whether the bytes match. A receipt mismatch prints yellow and changes nothing.
+
+So a shim someone appended `exit 0` to still reads `=> INSTALLED`, and the command still exits 0.
+Read the yellow lines above the green one.
+
 `-Status` also names its own blind spot: nothing in it executes either checker. A hook that exists and
 hashes correctly still does nothing if the checker it execs refuses to run. Driving a real commit --
 or running the doctor, which fires each control on purpose -- is the only answer.
@@ -350,8 +389,16 @@ or running the doctor, which fires each control on purpose -- is the only answer
 pwsh -NoProfile -File <tooling>/scripts/worktree/install-gate.ps1 -Repo <the-primary-to-govern>
 ```
 
-**Target:** `-Repo` names the **primary checkout(s)** written into the allowlist, several at once if
-you like (`-Repo <path-a>,<path-b>`). The primary and not a worktree, on purpose: you will usually
+Wires the gate to refuse three things in an allowlisted primary:
+
+| It refuses | Outcome |
+|---|---|
+| An `Edit`, `Write`, `MultiEdit` or `NotebookEdit` writing into that primary | The tool call never runs |
+| A `Bash` or `PowerShell` call carrying a tree-swapping git verb aimed at it | The tool call never runs |
+| A `Task`, `Agent` or `Workflow` dispatch made from it, since a subagent inherits the directory | Unless `-NoDispatchGate` |
+
+**Target:** `-Repo` names the **primary checkout(s)** written into the allowlist -- see the `-Command`
+note above for naming more than one. The primary and not a worktree, on purpose: you will usually
 install from a worktree, and governing that worktree instead would be exactly backwards.
 
 Leave `-Repo` off and the target is the primary of the clone **you are standing in** -- required to
@@ -432,6 +479,9 @@ Five things, reported separately:
 gate that is *running* has -- a rule can sit in source, be declared by an installer and be covered by
 green tests while the gate that actually runs has never heard of it.
 
+**This one has no verdict line and always exits 0**, including over `*** STALE ***` and an empty
+allowlist. Its siblings signal through the exit code; this one only prints.
+
 ---
 
 ## Installer 4 -- the SessionStart backstop
@@ -508,9 +558,9 @@ even defined. A stale or missing helper is invisible to both.
 Only the doctor checks either closure. That is why it is the third command above, rather than a
 nicety.
 
-The doctor goes further and **fires** each control, the only evidence that survives a dependency that
-lands but fails to load: a gate that cannot load its helpers allows what it should deny, and only an
-attack catches that.
+The doctor goes further and **fires** each control. That is the only evidence surviving a dependency
+that lands but fails to load: a gate that cannot load its helpers allows what it should deny, and
+only an attack catches it.
 
 The gate still writes its stderr receipt on a load failure, which is not redundant: an installed copy
 can lose its helpers later to a cleanup, a partial uninstall, a hand-edited hooks directory. Without
@@ -589,8 +639,8 @@ pwsh -NoProfile -File <tooling>/scripts/coord/install-git-hooks.ps1 -RepoRoot <t
 pwsh -NoProfile -File <tooling>/scripts/worktree/install-gate.ps1 -Uninstall
 ```
 
-Installer 1's `-Uninstall` clears **one settings file**, the same as its install. If you wired more
-than one config root, run it once per root or the others stay wired and keep firing.
+Installer 1's `-Uninstall` clears **one settings file**, the same as its install. Run it once per
+config root you wired, or the others stay wired and keep firing.
 
 Installer 2's `-Uninstall` resolves a clone as its install does, takes the same `-RepoRoot` and
 refuses on the same terms: removing the wrong clone's hooks is the same mistake as installing there.
@@ -611,7 +661,7 @@ environment variables, not settings edits.**
 | Delete `~/.claude/hooks/ccx-gate.repos.txt` | Gate and backstop both OFF everywhere | Yes -- the file is read on every invocation |
 | `<state-root>/announce/OFF` | Announce stands down | Yes |
 | `CCX_ANNOUNCE_DISABLE` | Announce stands down for sessions started from that environment | New sessions only |
-| `CCX_ALLOW_DIRECT_PUSH=1` | Push guard allows a protected ref | Yes, per environment |
+| `CCX_ALLOW_DIRECT_PUSH=1` | Push guard allows a protected ref | No. A process keeps the environment it started with; prefix the one `git push` |
 
 Hook **wiring** changes do not reach a running session: it keeps the configuration it booted with.
 (Installer 3's output says "every session, no restart" -- that is true of its allowlist, which is
@@ -652,17 +702,17 @@ somewhere else.
 The doctor never infers. It enumerates every control by receipt, hashes each installed copy against
 this checkout's source, and diffs wired matchers against the rules the installed script implements.
 
-Then it **fires each control on purpose and requires it to refuse**: crafted `PreToolUse` JSON at the
-installed gate, a blanket stage, a commit claiming an unclaimed item, a push to a protected ref, and
-a drifted throwaway primary in front of the `SessionStart` backstop.
+Then it **fires each control on purpose and requires it to refuse**. Five of them: crafted
+`PreToolUse` JSON at the installed gate, a blanket stage, a commit claiming an unclaimed item, a push
+to a protected ref, and a drifted throwaway primary in front of the backstop.
 
-Every attack is paired with a negative control -- an ordinary action the same control must allow --
-because a script that refuses everything is an outage, not a guard, and a probe with no positive
-control proves nothing.
+Every attack is paired with a negative control: an ordinary action the same control must allow. A
+script that refuses everything is an outage rather than a guard, and a probe with no positive control
+proves nothing.
 
-For the backstop the negative control is the load-bearing half: repairing a drifted **clean** primary
-passes whether or not the dirty-tree refusal is still in the code, so the pair is a drifted **dirty**
-one, which it must decline to touch and say why.
+For the backstop the negative control is the load-bearing half. Repairing a drifted **clean**
+primary passes whether or not the dirty-tree refusal is still in the code. So the pair is a drifted
+**dirty** one, which it must decline to touch and say why.
 
 The allocator is the one check with no allow/deny axis: it refuses nothing, so there is no ordinary
 action for it to allow. It is paired instead with the property that can be violated -- its read-only
@@ -671,9 +721,13 @@ floor inspection spends no number and moves no ratchet.
 The attacks run against throwaway git repositories in the temp directory, deleted on the way out;
 nothing in your repository is modified.
 
+**Exit 0 is not "every deny path was proven".** The collision gate's refusal needs a live peer
+worktree holding an uncommitted change to the same file. The doctor cannot stage that, so it proves
+only that the gate speaks up when it cannot check. It names the gap on every run.
+
 | Exit | Meaning |
 |---|---|
-| 0 | Every required control is installed and wired, and every attack was refused |
+| 0 | Every required control is installed and wired, and every attack it **could** fire was refused |
 | 1 | At least one control is broken or absent -- the guardrails you appear to have are not all there |
 | 2 | At least one check could not be determined. Not a pass. This command refuses to guess |
 
@@ -705,19 +759,19 @@ also proven broken or absent. A control that was not tested is not a control tha
 records read, records it could not place, worktrees, trunk, state root, both hooks directories, the
 interpreter, git, platform, and whether attacks were fired at all.
 
-Three of its blind spots are worth internalising before you trust any of this:
+The doctor prints its own blind spots on every run. Read them: that is where a green report stops
+meaning what it looks like. [Limits and requirements](LIMITS.md) states each one in full, with the
+caveat standing over every green line here -- guardrails against accidents, not security boundaries.
 
-- **Announce delivery.** Announce sends nothing itself: it asks the model to send, via a
-  session-management MCP server the desktop client provides and a plain CLI install lacks. Without
-  it the hook fires, finds peers, then names tools the model lacks. Decorative there, and invisible
-  to PowerShell.
-- **The session record schema is a vendor contract.** Every liveness answer rests on a per-session
-  JSON record written by the client. A renamed field, a moved directory or a changed unit turns the
-  counts into zeros. Read the record census as the instrument, not as the sessions.
-- **No roster is complete.** The client-side session-listing tool enumerates only sessions the desktop
-  app itself spawned; an editor-extension session is never entered into it. That is why the tooling
-  reads the on-disk registry instead -- but "no roster anywhere is guaranteed complete" remains true.
+## When it does not come back green
 
-The standing caveat on every green line above: guardrails against accidents, not security boundaries.
-`--no-verify` skips both git hooks and nothing local records it; the `PreToolUse` gates inspect tool
-**arguments**, so a file written by a shell command or an agent-authored script is invisible.
+That is the ordinary first result, not a sign you did something wrong.
+
+| You got | Go to |
+|---|---|
+| `RED`, `OFF`, `??`, or exit 1 or 2 | [Troubleshooting](TROUBLESHOOTING.md), whose first table is symptom to cause |
+| `*** STALE ***`, or a report about the wrong clone | [Troubleshooting](TROUBLESHOOTING.md) |
+| A green report you do not trust | [Drift audit](CASE-STUDY-drift-audit.md), which is the method for exactly that |
+| The sequence gate's `OFF (opt-in)` | [Sequence allocation](SEQUENCE-ALLOC.md) has the `pre-commit` hook to wire |
+| The ASCII gate's `OFF (opt-in)` | Wire `scripts/quality/check-ascii.ps1` into your own `pre-commit` and into CI |
+| A leak-gate question | [Leak gate](LEAK-GATE.md). No installer wires that one either |

@@ -110,8 +110,8 @@ pwsh -NoProfile -File "$tooling/scripts/coord/install-coordination.ps1"
 # one copy governs every worktree of that clone at once.
 pwsh -NoProfile -File "$tooling/scripts/coord/install-git-hooks.ps1" -RepoRoot $target
 
-# The worktree gate. -Repo names the PRIMARY checkout to allowlist (several allowed:
-# -Repo <path-a>,<path-b>). The allowlist is the kill switch.
+# The worktree gate. -Repo names the PRIMARY checkout to allowlist. It REPLACES the allowlist,
+# so name every governed primary in one run -- and that needs -Command, not -File. See INSTALL.md.
 pwsh -NoProfile -File "$tooling/scripts/worktree/install-gate.ps1" -Repo $target
 
 # The SessionStart backstop. ONE config root per run -- run it again for each root the doctor
@@ -133,9 +133,12 @@ pwsh -NoProfile -File "$tooling/bin/ccx-doctor.ps1" -Repo $target |
     Select-String 'repo examined|tooling checkout'
 ```
 
-**Expect one `OFF (opt-in)` row even on a good install**, for the sequence gate, if you left
-`sequences` in the config. It does not raise the exit code, which is the one place `OFF` is not
-exit 1.
+**Expect two `OFF (opt-in)` rows even on a good install.** The ASCII gate, which no installer wires,
+and the sequence gate if you left `sequences` in the config. Neither raises the exit code, which is
+the one place `OFF` is not exit 1.
+
+The sequence one is a real hole rather than a formality: nothing at commit time defends the numbers
+you allocate. [Sequence allocation](SEQUENCE-ALLOC.md) has the hook to wire.
 
 ## 7. Spawn two sessions
 
