@@ -6,18 +6,11 @@
 out. They cover what it must resolve, what it must refuse to say, and the failure behind each one.
 
 **Why you should care.** Each rule came from **an instrument that answered a narrower question than
-the one you asked, while looking completely healthy.** Not for you as code -- **no such hook ships
-here**: the mechanism depends on undocumented client internals.
+the one you asked, while looking completely healthy.** Not for you if you want something to install:
+**no hook ships here**, because it would break silently on internals that change.
 
 **How to use it.** Take the rules, not the implementation -- those transfer and the code does not.
 Start at [Why you want this at all](#why-you-want-this-at-all): the purpose decides the rules below.
-
----
-
-A hook that warns a session when the pool it bills is running out is much harder to get right than
-it looks. **No such hook ships in this repo**: the mechanism depends on undocumented client
-internals that can change without notice, so shipping one would ship a control that breaks
-silently.
 
 ---
 
@@ -49,8 +42,9 @@ Pointing the hardcoded value at a different account relocates the same lie. A ma
 logins the client switches between has no correct constant. Any hardcoded account is wrong for every
 session on the others, and wrong for all of them after the next switch.
 
-**Resolve the pool per session, from the surface that actually knows which login the session bills.**
-If you cannot resolve it, say so.
+**Resolve the pool per session, from the config root that session runs under.** Each login owns a
+root, and the account is in that path rather than in any record
+([Desktop accounts](DESKTOP-ACCOUNTS.md)). If you cannot resolve it, say so.
 
 ## Rule 2: Several signals look authoritative and are wrong
 
@@ -61,7 +55,7 @@ Each of these was checked and each was wrong for the case it appeared to answer:
 | The CLI's stored login | It is the *CLI's* login. A desktop session can bill a different account entirely, and did. |
 | A cached utilization figure beside it | Wrong account **and** hours stale. Two independent defects in one field. |
 | The CLI's credentials file | The CLI again. Same category error. |
-| The per-session record on disk | Carries no account field at all, so it cannot answer the question. |
+| The per-session liveness record on disk (pid, start time, session id, cwd) | Carries no account field, so the file's *contents* name no login. Its path does ([Token accounting](TOKEN-ACCOUNTING.md)). |
 | Token-file modification times | They track whichever account the tool last polled, so they point at its own most recent behavior. **A signal derived from your own tool's activity is a mirror, not a measurement.** |
 
 **That last row is the general one.** If your evidence for "which account is this" is a side effect
@@ -76,12 +70,13 @@ Two design details matter more than they look:
 
 - **Check the slow-moving figure, not the fast one.** The short-window figure drops to near zero
   when its window rolls -- 22 percent to 2 percent in one sample -- so it disagrees constantly. The
-  weekly one moves single points per hour and catches the original 93-against-5 bug on the first
+  weekly one moves single points per hour, and would have caught the 93-against-5 bug on its first
   run.
-- **Sample age is a validity condition.** Past a few missed sampling intervals, the second source is
-  no longer evidence. Old enough, and it must stop being treated as a check at all.
+- **Sample age is a validity condition.** Past a few missed sampling intervals the second source is
+  no longer evidence, and the result is **UNKNOWN** with staleness as the reason. It never falls
+  back to the unchecked number, which would look exactly like a passed check.
 
-## Rule 4: Never print a band beside an account unless you established both
+## Rule 4: Never print a band beside an account unless you established all three
 
 An UNKNOWN result names the pool by an opaque identifier and says the usage could not be determined.
 It never names a login as "this session's" on the strength of a token file.
@@ -89,6 +84,10 @@ It never names a login as "this session's" on the strength of a token file.
 Half-established results are where confident wrongness comes from. If you know the account but not
 the number, say that. If you know a number but not whose it is, that number is unusable. Do not
 print it next to a name to make the output look complete.
+
+If you know the account and the number but not when the window rolls, print both and say the reset
+time is unknown. Rule 8 cannot be decided without it, and output that omits it reads as a decision
+already made.
 
 ## Rule 5: The diagnostics are the payload when something fails
 
@@ -120,11 +119,15 @@ an unlabeled claim.
 
 ## Rule 8: A threshold is not a decision
 
-**The one most likely to bite you, and the one two sessions here got wrong on the same day.**
+**The one most likely to bite you, and the one a session here got wrong by pausing work on the
+number alone.**
 
-A percentage alone cannot answer "should I stop". **7 percent with 7 minutes to reset is abundant.
-The same 7 percent with four hours left is scarce.** A rule that fires on the number alone pauses
-work for no reason, and stays quiet when the number looks comfortable but the reset is far away.
+A percentage alone cannot answer "should I stop". **7 percent remaining with 7 minutes to reset is
+abundant. The same 7 percent remaining with four hours left is scarce.**
+
+A rule that fires on the number alone pauses work for no reason, and stays quiet when the number
+looks comfortable but the reset is far away. Note the polarity: every other figure on this page is
+percent *consumed*, and these two are not.
 
 A peer instructed a pause at a threshold, then retracted it after checking the clock: the window was
 minutes from resetting, which made the remaining budget effectively unlimited. Their own summary is
@@ -139,17 +142,22 @@ whose pool it is, and when the window rolls.
 
 ---
 
-## Platform trap worth its own line
+## On Windows, one interpreter can see a directory that another cannot
 
 On Windows, a directory can be **visible to an interpreter launched by full path and invisible to
 the same interpreter launched through an app-execution alias**. The cause is installer-level AppData
 virtualization. A hook that works by hand can read an empty directory when the client runs it.
 
-Wire hooks by full interpreter path, and make a missing path report UNKNOWN rather than OK. "I could
-not find the data" and "the data says you are fine" must never produce the same output.
+Wire hooks by full interpreter path, and treat a directory that is **present but empty** exactly
+like a missing one -- both report UNKNOWN. Virtualization substitutes the contents and leaves the
+path, so a check for existence alone passes while reading nothing.
+
+"I could not find the data" and "the data says you are fine" must never produce the same output.
 
 ## Related
 
 - [TIPS-AND-TRICKS.md](TIPS-AND-TRICKS.md) -- the general form of most of the above
 - [HOOKS.md](HOOKS.md) -- fail-open versus fail-closed, and declaring which you chose
 - [CASE-STUDY-drift-audit.md](CASE-STUDY-drift-audit.md) -- auditing controls that look installed
+- [TOKEN-ACCOUNTING.md](TOKEN-ACCOUNTING.md) -- what a weekly percentage counts, measured on four accounts
+- [DESKTOP-ACCOUNTS.md](DESKTOP-ACCOUNTS.md) -- one config root per account, and how to read which one a session is on

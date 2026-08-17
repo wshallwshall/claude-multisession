@@ -6,9 +6,9 @@
 questions. What unit does the weekly usage meter count, and what is a month of it worth at published
 per-token API prices?
 
-**Why you should care.** The meter ignores cache reads, so the percentage tracks cost and not work
-done. Read a fast-moving percentage as spend, not as progress. Not for you if you want a rate card:
-this is four samples of an undocumented meter, not vendor documentation.
+**Why you should care.** The meter ignores cache reads, so the percentage counts fresh tokens, not
+work done and not dollars -- equal meter points bought 21 to 41 USD of list value here. Not for you
+if you want a rate card: this is four samples of an undocumented meter, not vendor documentation.
 
 **How to use it.** Take the ratio, not the dollar figures. Roughly 1.35 million non-cache-read
 tokens buy 1 percent of a weekly window. That unit transfers between workloads. The dollar value
@@ -18,8 +18,8 @@ does not: it depends on how much cached context your sessions re-read.
 
 ## What was measured
 
-Four accounts on the same subscription tier, each billed at 200 USD per month. All four ran the
-same kind of work: long agentic coding sessions against one repository, with large cached contexts.
+Four Claude Max 20x accounts, each billed at 200 USD per month. All four ran the same kind of work:
+long agentic coding sessions against one repository, with large cached contexts.
 
 Each account's tokens were summed from its local session transcripts, which carry a usage block on
 every assistant message. Each sum was paired with that account's live weekly percentage, read at the
@@ -39,16 +39,20 @@ reading. Three of the four were near their end, so the extrapolation to a full w
 
 Raw tokens per 1 percent vary by a factor of 2.1 across the four rows, from 28,653,520 to
 60,475,507. Non-cache-read tokens per 1 percent vary by only 1.4, and two of the rows agree to
-within 0.5 percent: B at 1,351,906 and C at 1,358,912.
+within 0.6 percent: B at 1,351,906 and C at 1,358,912.
 
 **Working estimate: roughly 1.35 million non-cache-read tokens per 1 percent of a weekly window**,
-so a full weekly allowance is near 135 million and a month near 590 million. Cache reads are close
-to free against the meter, which matches their being priced at a tenth of fresh input on the API.
+so a full weekly allowance is near 135 million and a month near 590 million.
+
+Cache reads are close to free against the meter. That is a steeper discount than the API's, where a
+cache read still costs a tenth of fresh input. At the 27-to-40 cache ratios measured here, a tenth
+would have dominated the bill.
 
 Two consequences for anyone reading a percentage:
 
-- **A fast-moving percentage does not mean much work went by.** A session re-reading a large cached
-  context burns raw tokens at forty times the rate it burns metered ones.
+- **A slow-moving percentage does not mean little happened.** A session re-reading a large cached
+  context burns raw tokens at about thirty times the rate it burns metered ones -- forty times in
+  the most cache-heavy of the four. The meter barely moves while the context churns.
 - **A percentage is a cost signal, not a progress signal.** For progress, count output tokens or
   completed steps.
 
@@ -77,7 +81,7 @@ a workload difference the reader can expect to reproduce.
 
 Per million tokens, the subscription works out near 0.013 USD counting raw tokens, or 0.35 USD
 counting only non-cache-read tokens. The same traffic mix at list price is roughly 0.75 USD raw and
-6.00 USD non-cache-read.
+21 USD non-cache-read. Both pairs divide to the 60x above, which is the check on it.
 
 ## What these numbers are not
 
@@ -95,30 +99,36 @@ any token was spent against them. A window boundary cannot be inferred from obse
 ## Reproducing it
 
 The mechanism is the same one [USAGE-AWARENESS.md](USAGE-AWARENESS.md) describes and declines to
-ship: undocumented client internals that can change without notice. Nothing here is packaged, and
-the surfaces are named by shape rather than by path for that reason.
+ship: undocumented client internals that can change without notice. Nothing here is packaged.
 
 **The goal.** Pair one account's own token total with that account's own weekly percentage, read at
 the same moment.
 
-**What to do.** Read three surfaces, all local:
+**What to do.** Read three surfaces -- two local files and one live reading:
 
 1. **Session transcripts.** One JSON line per message, carrying a usage block with four counters:
    input, output, cache write and cache read. Subagent transcripts nest under the parent session, so
    a scan that reads only top-level files misses most of the volume.
-2. **The client's per-session account record.** Maps a session to the account it bills. Without it,
-   every number is a total over an unknown mixture of accounts, which is the failure
-   [USAGE-AWARENESS.md](USAGE-AWARENESS.md) is written around.
-3. **The live usage endpoint.** Supplies the percentage, and must be gated on an identity lookup so
-   a reading is provably about the account you think it is.
+2. **The config root the session ran under.** The account is that root's own name, never a field
+   inside the per-session record, which carries none
+   ([USAGE-AWARENESS.md](USAGE-AWARENESS.md)). Without it every number is a total over an unknown
+   mixture of accounts.
+3. **The live usage endpoint.** Supplies the percentage *and the window's reset time*, and must be
+   gated on an identity lookup so a reading is provably about the account you think it is.
 
-**What happens next.** You get one row of the table above: a token total, a percentage, and the
-ratio between them.
+**Bound the window before summing.** A window's start cannot be inferred from activity, so work it
+back from the reset time and sum only messages at or after it. A total over the wrong span still
+divides into a percentage, and still looks plausible.
 
 **Deduplicate messages by their request identifier before summing.** Retries and streamed messages
 otherwise get counted twice.
+
+**What happens next.** You get one row of the table above: a token total, a percentage, and the
+ratio between them.
 
 ## Related
 
 - [USAGE-AWARENESS.md](USAGE-AWARENESS.md) -- reading a percentage safely, and why a threshold alone is not a decision
 - [TIPS-AND-TRICKS.md](TIPS-AND-TRICKS.md) -- the general form of an instrument answering a narrower question than the one asked
+- [KORUS.md](KORUS.md) -- why the plan, and why more than one account for a week of heavy work
+- [DESKTOP-ACCOUNTS.md](DESKTOP-ACCOUNTS.md) -- running several accounts, one desktop instance each
