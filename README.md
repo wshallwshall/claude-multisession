@@ -48,7 +48,8 @@ record the *client* writes.
 2. **The desktop app's own `list_sessions` is incomplete.** It cannot see editor-extension sessions,
    so it answers who can be *messaged*, never who *exists*.
 3. **A client schema change degrades every fence to "cannot tell"**, never to a confident wrong
-   answer -- and the doctor surfaces it as a record count going to zero.
+   answer. A moved directory shows up as a record count going to zero. A renamed field or a changed
+   unit leaves that count untouched, so a healthy census is not evidence the schema still matches.
 
 Full statement, with what each one costs you, in
 [the section that owns it](https://claude-multisession.pages.dev/LIMITS.html#session-discovery-rests-on-a-vendor-surface-this-project-does-not-own).
