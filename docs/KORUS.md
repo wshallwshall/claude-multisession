@@ -36,16 +36,18 @@ Here is the shape of what I've learned.
 
 4. Set up four sessions:
 
-   1. A dispatcher, which plans the build, tracks backlog, and dispatches work to the build
-      sessions.
+   **4.1.** A dispatcher, which plans the build, tracks backlog, and dispatches work to the build
+   sessions.
 
-   2. Two build sessions, each running four sub-session build tasks.
+   **4.2.** Two build sessions, each running four sub-session build tasks.
 
-   3. A lander session, which handles all external repo work (pushes, merges, etc.)
+   **4.3.** A lander session, which handles all external repo work (pushes, merges, etc.)
+
+   There are additional, optional sessions as described below.
 
 5. Use worktrees with hooks enforcing Claude Code's behavior.
 
-6. Use inter-session communication, allowing the sessions to talk with each other.
+6. Use the Kynet method to enable inter-session communication (see below).
 
 I'll go through each of those and more in the following sections. Note: these recommendations are
 based on the Claude tools as of 8/12/2026. Things will change as Anthropic releases improvements.
@@ -130,7 +132,13 @@ Have Claude create ADR documents for each significant build. When you ask the Di
 create a plan, just tell it to be sure to create ADRs as needed. This gives you a build record for
 your CISO and any auditor. It also provides ongoing context for the AI.
 
-### 5.2 ASVS register
+### 5.2 GitHub Spec Kit
+
+GitHub's Spec Kit is a strong starting point for SDD (Spec-Driven Development). It is an antidote to
+vibe coding's flaws. See
+[this Spec Kit page](https://claude-multisession.pages.dev/FRAMEWORK-spec-kit).
+
+### 5.3 ASVS register
 
 OWASP's ASVS 5 framework is a great way to harden your application against hackers. There are three
 security levels depending on what your application touches.
@@ -185,7 +193,9 @@ Worktrees deconflict workflows sharing a repo. See
 
 ## 8. Inter-session Communication & Coordination
 
-Claude Code for Desktop contains an almost hidden method for your sessions to talk to each other.
+Claude Code sessions can be configured to speak with each other. The method differs between sessions
+inside of the desktop app and those in the VS Code extension.
+
 Combined with the coordination methods listed in
 [Coordination](https://claude-multisession.pages.dev/COORDINATION), the sessions can build your
 project without conflict -- mostly. When there is a conflict, the build sessions can talk with the
