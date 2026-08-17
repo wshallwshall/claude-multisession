@@ -345,7 +345,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/SESSION-MAIL.md` | Step-by-step instructions for building the async lane a KORUS build needs to reach a VS Code peer or a second-account peer. Ships nothing here -- a build guide, not an installed tool |
 | `docs/LEAK-GATE.md` | The forbidden-content scanner: what a shape detector catches before a repo goes public, what a token file adds, and the two things no scanner can ever see |
 | `docs/CASE-STUDY-drift-audit.md` | A redacted account of auditing a multi-session estate as one system -- the method, not a status snapshot |
-| `docs/CASE-STUDY-correction-chain.md` | One finding restated four times across two sessions, three statements wrong -- what a correction sequence licenses and what it does not |
+| `docs/CASE-STUDY-correction-chain.md` | One finding restated four times across two sessions, two statements wrong -- what a correction sequence licenses and what it does not |
 | `docs/TIPS-AND-TRICKS.md` | The "wish I'd known" file, ordered by when it bites: setting up, running two at once, writing a guardrail, proving it works, cleaning up |
 | `docs/USAGE-AWARENESS.md` | Warning a session before it hits a hard usage cutoff, and why that is harder than it looks. Ships no hook -- the mechanism depends on undocumented client internals, so what transfers is the design and the eight ways it reports confidently wrong numbers |
 | `CLAUDE.md.template` | A working agreement to drop into your own repo: plan first, commit-versus-push approval split, never grep for a number, shared memory across worktrees |

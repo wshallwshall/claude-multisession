@@ -3,11 +3,11 @@
 ## TLDR/BLUF
 
 **What this is.** One finding, recorded **2026-08-12**, restated four times across two sessions on
-one repository. Three of the four statements were wrong. Here is what that sequence licenses you to
+one repository. Two of the four statements were wrong. Here is what that sequence licenses you to
 claim, and what it does not.
 
 **Why you should care.** Each session produced a confident, checkable, wrong answer, and each was
-wrong in a different direction. Neither reached the correct statement alone. Not for you if you run
+wrong in a different direction. Neither reached the correct statement until the other contradicted it. Not for you if you run
 one session at a time, where the second reading never happens.
 
 **How to use it.** The rule is one sentence, in
@@ -31,12 +31,13 @@ Passes 2 and 3 each contradicted their predecessor. Pass 4 did not: it narrowed 
 marked correct.
 
 **Both sessions were about to file. Both are wrong.** Session A would have filed "unguarded".
-Session B would have filed "no reader exists". A reviewer refutes either by opening one test file.
+Session B would have filed "no reader exists". A reviewer refutes B by opening one test file, and A by reading one path filter in the workflow.
 
 ## What moved each pass
 
-Every pass was moved by running a command. No pass was moved by re-reading, by reasoning about the
-file, or by a session reconsidering its own claim.
+Passes 1 to 3 were each moved by running a command, never by re-reading, by reasoning about the
+file, or by a session reconsidering its own claim. Pass 4 is the exception: it narrowed pass 3
+rather than measuring again.
 
 Pass 2 is the instructive one. It came from **a grep requiring the filename and a read verb on the
 same line**. The one true positive builds the path on one line and reads it later through a
