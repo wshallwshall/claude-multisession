@@ -7,8 +7,11 @@ one check to run first. The four states that all read as "can't merge". How to r
 without dropping half a file.
 
 **Why you should care.** Every failure in the last mile looks like something else. Being ahead of
-the trunk is not evidence of unmerged work, and reading it that way has destroyed commits. Not for
-you if only one branch is ever in flight.
+the trunk is not evidence of unmerged work, and reading it that way has destroyed commits.
+
+Not for you if only one branch is ever in flight. The `git` commands here are portable; the `pwsh`
+scripts are PowerShell 7.3+ with Windows as the exercised path, and every `gh` command assumes
+GitHub. [Limits and requirements](LIMITS.md) has the platform matrix.
 
 **How to use it.** Run the merge-base check below before you trust any "is it merged?" answer.
 [WORKTREES.md](WORKTREES.md) covers creating and living in worktrees.
@@ -85,8 +88,17 @@ git diff --stat origin/main HEAD      # two-dot: what still DIFFERS from the tru
 git diff --stat origin/main...HEAD    # three-dot: what the BRANCH AUTHORED
 ```
 
-A non-zero **deletion** count from the two-dot form, on a branch that only adds files, is the signal:
-it means the trunk holds content your branch would remove.
+A non-zero **deletion** count from the two-dot form is the signal that the branch does not contain
+the trunk's tree. **It does not mean your branch would remove that content.**
+
+Two-dot compares two trees, so everything the trunk gained since the merge base reads as a deletion.
+
+Measured on a three-commit fixture: a branch one commit behind, adding one file and removing nothing,
+reported 4 deletions across 2 files. Merging the trunk in removed none of them.
+
+The page's own numbers below say the same thing -- 22 two-dot deletions before the merge, identical
+forms after. [Coordination](COORDINATION.md) records a branch 63 commits behind whose 3,247 two-dot
+deletions were briefly read as what landing it would do.
 
 **Fix by merging, not rebasing.** Run `git merge origin/main` into the branch. The trunk's side of
 the squashed files is authoritative. A rebase re-raises the squash seam once per commit --
@@ -284,8 +296,19 @@ each conflicting path. [Coordination](COORDINATION.md) records a run where the b
 # A real trial merge, isolated, disposable.
 pwsh -NoProfile -File scripts/worktree/new.ps1 -Name mergetrial -Base my-branch
 # ...in the new worktree:  git merge origin/main
-pwsh -NoProfile -File scripts/worktree/remove.ps1 -Name mergetrial -DeleteBranch
+# then, from ANOTHER checkout -- and abort first if it conflicted:
+pwsh -NoProfile -File scripts/worktree/remove.ps1 -Name mergetrial -DeleteBranch -Force
 ```
+
+**The teardown refuses in exactly the case the trial exists to find.** A conflicted merge leaves
+modified tracked files, and `remove.ps1` refuses on those without `-Force`.
+
+It also refuses while you are standing inside the worktree it is removing. So `git merge --abort`
+first, or pass `-Force`, and run it from elsewhere.
+
+`-DeleteBranch` deletes the branch that worktree had checked out, and `git branch -d` will refuse it
+while the merge is unlanded -- leaving the trial branch behind. That is the safe direction; delete it
+by hand once you are sure.
 
 **What happens next.** The trial merge either succeeds or raises the real conflicts, in a worktree
 you throw away either way. Do not expect `gh pr update-branch` to rescue a conflicting merge: it
@@ -299,7 +322,14 @@ pwsh -NoProfile -File scripts/coord/overlap.ps1 -File path/to/file.md
 
 That reports peer worktrees whose **committed-and-unlanded** or **uncommitted** work touches the
 same path. It intersects the two-dot and three-dot file sets, so a branch that has already landed
-stops claiming its files. See [COORDINATION.md](COORDINATION.md).
+usually stops claiming its files.
+
+**Two caveats before you trust the answer.** The map is served from a cache up to 60 seconds old
+unless you pass `-Refresh`.
+
+And **the self-clearing holds only while nobody else edits that file.** Once a later branch touches
+it, two-dot reports it as differing from the trunk again, the intersection stops being empty, and the
+landed branch is blamed for somebody else's edit. [Coordination](COORDINATION.md) measured both.
 
 ## Writing up the result: Two true numbers can make a false sentence
 
@@ -341,12 +371,17 @@ never sufficient on its own. See [PRUNING.md](PRUNING.md).
 **What to do.**
 
 ```powershell
-pwsh -NoProfile -File scripts/worktree/prune-merged.ps1            # dry run, prints the decision table
-pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Apply     # act on a table it re-derives now
+# from the PRIMARY checkout -- it refuses from a linked worktree, exit 2
+pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Fetch          # dry run, decision table
+pwsh -NoProfile -File scripts/worktree/prune-merged.ps1 -Fetch -Apply   # act on a table re-derived now
 ```
 
 **What happens next.** The dry run prints the decision table and changes nothing. `-Apply`
 re-derives that table at the moment it acts, rather than trusting the one you just read.
+
+**`-Fetch` on both, or the preview is not the run.** Without it the dry run judges merge state against
+the refs you already have, while `-Apply` refreshes -- so `-Apply` can act on a larger set than you
+were shown. [Pruning](PRUNING.md) owns the full decision rule, and every flag that narrows it.
 
 For a single finished worktree, [`remove.ps1`](https://claude-multisession.pages.dev/scripts/worktree/remove.ps1) is the manual path. Two
 of its behaviors matter at merge time:
