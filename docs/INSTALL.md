@@ -4,15 +4,17 @@
 
 Four installers, four scopes, and how to prove each one is live rather than merely merged.
 
-- **What it demands.** `pwsh` 7.3+, `git`, a `python` on `PATH`, and a `ccx.config.json` at the root
-  of the repository you want governed. That file is the opt-in marker as well as the knob file:
-  without it the user-scope hooks stay inert in that repository, whatever they are wired to.
-- **What it costs.** Everything is written **outside** the repository you are governing, and three
-  of the four installers write at user scope -- so their hooks fire in every repository on the
-  machine, which is what the opt-in marker exists to bound.
-- **Not for you if you are not on Windows.** This is PowerShell 7 and Windows-first. The Python
-  checkers are portable and almost nothing else is, and off Windows path comparison stops
-  case-folding, which the doctor prints as a blind spot rather than working around.
+- **What this is.** The reference for the installers, not the procedure.
+  [Quickstart](QUICKSTART.md) is the eight steps in order, and ends with you watching a collision get
+  refused. Come here for what each flag means and how to prove a control is live.
+- **What it demands.** Claude Code for Desktop, `pwsh` 7.3+, `git`, a `python` on `PATH`, the scripts
+  vendored into the repository you want governed, and a `ccx.config.json` at its root.
+- **What it costs.** Everything is written **outside** the repository you are governing, and three of
+  the four installers write at user scope -- so their hooks load in every repository on the machine.
+  Each control is bounded by a different thing, and `ccx.config.json` bounds only one of them.
+- **Not for you if you are not on Claude Code for Desktop.** A CLI-only or editor-extension setup is
+  not supported, and this page does not describe one. Linux and macOS run the scripts but are not the
+  exercised path. [Limits and requirements](LIMITS.md) has both tables.
 - **Where to start.** Step 0, opt in, then the doctor -- and read what it says it scanned, not just
   the verdict. Expect `OFF` from the ASCII gate, and from the sequence gate once `sequences` is set;
   both count as [`OFF (opt-in)`](#controls-no-installer-wires), not as holes.
@@ -35,26 +37,35 @@ of passing tests bound the repository's copy while enforcement ran from a stale 
 
 ## Before you start
 
+[Limits and requirements](LIMITS.md) owns this table in full, including the platform matrix. The
+rows that change what these four commands do:
+
 | Requirement | Why | If missing |
 |---|---|---|
-| PowerShell 7.3+ (`pwsh`) | Most scripts carry `#Requires -Version 7.3` | Nothing installs |
+| Claude Code for Desktop | The coordination layer is shaped around the desktop client | Announce cannot deliver, and the roster is incomplete |
+| PowerShell 7.3+ (`pwsh`) | 26 scripts carry `#Requires -Version 7.3` | Three installers refuse. On 7.0-7.2 the backstop still installs -- see below |
 | git | Everything is keyed on the git common directory | Nothing installs |
-| A `python` on `PATH` (or `CCX_PYTHON`) | The git hooks installer 2 writes are `/bin/sh` shims that exec a stdlib-only Python checker; the hand-wired sequence gate and the leak gate are Python too | **The installed git gates are OFF** and say so on stderr |
-| `ccx.config.json` at the target repo root | It is both the knob file and the opt-in marker | User-scope hooks stay inert in that repo |
+| A `python` on `PATH` (or `CCX_PYTHON`) | The git hooks installer 2 writes are `/bin/sh` shims that exec a stdlib-only Python checker; the sequence gate and leak gate are Python too | **The installed git gates are OFF** and say so on stderr |
+| The scripts vendored into the target | The three coordination shims resolve inside the session's own repository | Those three rows never resolve, and the doctor cannot reach exit 0 |
+| `ccx.config.json` at the target repo root | The knob file, and announce's opt-in marker | Announce stays inert there. The other three user-scope controls are unaffected |
+
+**"Nothing installs" is not true below 7.3.** `install-selfheal.ps1` declares `#Requires -Version 7`,
+so on PowerShell 7.0-7.2 it installs while all three gate installers refuse. You end up with the
+SessionStart backstop -- the most privileged control here -- and none of the guards.
 
 **Platform honesty.** PowerShell 7, Windows-first. Only the stdlib-only Python checkers port: the
 git-hook gates under `scripts/hooks/` (`docs/HOOKS.md` says which hook each belongs to) and the leak
 gate at `scripts/security/scan_forbidden.py`.
 
-Off Windows the doctor prints two blind spots: path comparison stops case-folding, and the roster's
-self-marking degrades.
+Linux is in CI and works with two named degradations. Off Windows the doctor prints one blind spot
+covering both: path comparison stops case-folding, and the roster's self-marking degrades.
 
 ---
 
 ## Step 0 -- opt in
 
-The user-scope hooks fire in **every** repository on the machine, so they need a way to know which
-repositories asked for them. That marker is `ccx.config.json` at the repository root.
+The user-scope hooks load in **every** repository on the machine, so each needs a way to know which
+repositories asked for it. They do not share one answer.
 
 ```powershell
 # from the repo you want to govern
@@ -62,11 +73,33 @@ Copy-Item <path-to-this-checkout>/ccx.config.json ./ccx.config.json
 ```
 
 Set `trunk`, `worktreeLayout`, `protectedRefs` and optionally `sequences` to match. `CCX_CONFIG`
-moves the lookup elsewhere. The probe is the file's **presence**, not "is an implementation script
-here": that question is true in a half-installed tree and false where the scripts live elsewhere.
+moves the lookup elsewhere. Announce's probe is the file's **presence**, not "is an implementation
+script here": that question is true in a half-installed tree and false where the scripts live
+elsewhere.
 
-Without this file the installers still run, and each one prints a `NOTE` telling you the rest of the
-tooling will stay inert.
+### What this file actually bounds, and what it does not
+
+**Deleting `ccx.config.json` does not opt a repository out.** It stops announce and resets every
+knob to its default. Three other controls carry on, and two of those act on your shared checkout.
+
+| Control | Bounded by | Reads `ccx.config.json`? |
+|---|---|---|
+| Announce (`UserPromptSubmit`) | This file, at the repository root | Yes. This is its opt-in |
+| Collision gate (`PreToolUse`, denies) | Its script resolving inside your repo | No |
+| Session banner (`SessionStart`) | Its script resolving inside your repo | No |
+| Worktree gate (`PreToolUse`, denies) | The shared allowlist | No |
+| SessionStart backstop (runs `git checkout`) | The same allowlist | Only for the `prefix` knob |
+
+The real off-switch for the last two is deleting the allowlist, which disarms them everywhere at
+once. [Limits and requirements](LIMITS.md#what-actually-switches-each-control-on) has the full
+statement.
+
+**The lookup rule is not uniform either.** Announce tests the repository root and refuses to walk up.
+Every other consumer walks up from the current directory, so a config one level above the root
+satisfies the checkers and the doctor while leaving announce inert.
+
+Without this file, installers 1 and 2 print a `NOTE` saying announce will stay inert. Installers 3
+and 4 never look for it and say nothing -- so their silence is not evidence the file is there.
 
 ---
 
@@ -95,7 +128,7 @@ layout:
 |---|---|---|---|---|
 | `install-coordination.ps1` | A settings **file**. It resolves no repository at all -- each shim resolves one per session, at run time, from that session's own directory | `~/.claude/settings.json` | `-SettingsPath <file>`, once per config root your client reads | Not applicable: nothing here is repository-keyed |
 | `install-git-hooks.ps1` | A **clone**. Its git common directory is where `commit-msg` and `pre-push` land | The clone you are standing in | `-RepoRoot <path>`. `-HooksDir <path>` overrides the derived directory, for a layout neither `core.hooksPath` nor the common dir covers | **Refuses.** If the clone you are standing in is not the one this script ships from, it stops and prints both, with the `-RepoRoot` line to re-run |
-| `install-gate.ps1` | **Primary checkouts**, written into the shared allowlist | The primary of the clone you are standing in | `-Repo <path>`, or several: `-Repo <path-a>,<path-b>`. `-ConfigDir` selects which config roots get wired | **Refuses**, the same way, naming both primaries |
+| `install-gate.ps1` | **Primary checkouts**, written into the shared allowlist | The primary of the clone you are standing in | `-Repo <path>`. **Pass every governed primary at once**: `-Repo <path-a>,<path-b>`. `-ConfigDir` selects which config roots get wired | **Refuses**, the same way, naming both primaries |
 | `install-selfheal.ps1` | A **config root** only. What it repairs is whatever the gate's allowlist names | Nothing -- `-ConfigDir` is mandatory | `-ConfigDir <path>` (required), `-HookPath <path>` for the shared script copy | It cannot: with no allowlist entries it installs and reports itself inert |
 | `bin/ccx-doctor.ps1` | The repository the whole report is **about** | The current directory's repository | `-Repo <path>`, plus `-ConfigDir` and `-SettingsPath` for the wiring it reads | It cannot refuse -- it is a report. So it prints `repo examined` and `tooling checkout` on every run and says outright when they are the same clone |
 
@@ -108,6 +141,10 @@ Two consequences worth keeping:
   take the same `-RepoRoot` and refuse on the same terms: auditing the wrong clone's hooks is the
   same error as installing there. `install-gate.ps1` is the opposite, deliberately: no `-Repo` at
   all.
+- **`install-gate.ps1` REPLACES the allowlist, it does not add to it.** The file is rewritten from
+  this run's `-Repo` values. Run it for a second repository on its own and the first is silently
+  removed, which turns off both the gate and the backstop for that checkout, in every session,
+  immediately. To govern two, name both in one run.
 
 Nothing above changes the one rule that makes it checkable: after any of it, run the doctor with an
 explicit `-Repo` and read the `repo examined` line back before you believe anything under it.
@@ -117,6 +154,10 @@ explicit `-Repo` and read the `repo examined` line back before you believe anyth
 The coordination installer writes a **shim**: a one-liner that locates the script in a checkout and
 runs it. Nothing falls stale -- a pull updates the hook everywhere at once. The price: a shim
 resolving nothing exits silently and writes nothing, byte-identical to a healthy hook with no peers.
+
+**Announce is the exception, and it is worth knowing which row you are reading.** Its shim probes for
+`ccx.config.json` and, in a repository that opted in but where the script does not resolve, prints a
+named notice. The banner and collision-gate shims do not: those two fail invisibly.
 
 The gate and git-hook installers write a **copy**, because their scripts must survive a checkout. The
 primary is routinely on a detached HEAD or an old commit, and a hook whose script lives inside a
@@ -147,7 +188,7 @@ Hook definitions from the user, project and local scopes are unioned, so install
 ## Installer 1 -- coordination hooks
 
 ```powershell
-pwsh -NoProfile -File scripts/coord/install-coordination.ps1
+pwsh -NoProfile -File <tooling>/scripts/coord/install-coordination.ps1
 ```
 
 Wires three rows into `~/.claude/settings.json`:
@@ -162,9 +203,9 @@ Wires three rows into `~/.claude/settings.json`:
 are shims that resolve one per session, at run time, from that session's own directory -- so no
 checkout is the wrong one to run it from and there is no `-Repo` to get wrong.
 
-It writes exactly **one** file per run: `~/.claude/settings.json` unless `-SettingsPath` moves it. If
-your client reads more than one config root, run it once per root; the doctor lists the roots it
-found under `config roots`.
+It writes exactly **one settings file** per run: `~/.claude/settings.json` unless `-SettingsPath`
+moves it. A backup and a receipt land beside it. If your client reads more than one config root, run
+it once per root; the doctor lists the roots it found under `config roots`.
 
 Useful flags: `-Only <event>` and `-Except <event>` scope install, uninstall and `-Status` alike.
 Announce lives on its own event, so `-Only UserPromptSubmit -Uninstall` removes announce **without**
@@ -175,15 +216,18 @@ uniform: two sessions running different versions of the collision protocol are e
 shared liveness fence prevents. The calling worktree is only a fallback.
 
 Both candidates are inside the session's **own** repository, which is why only the vendored layout
-makes these three rows `OK`.
-[Quickstart](https://claude-multisession.pages.dev/QUICKSTART.html) covers the layout
-choice, and what a target without these scripts gets instead.
+makes these three rows `OK`. [Quickstart](QUICKSTART.md) covers the layout choice, and what a target
+without these scripts gets instead.
 
 ### Prove it
 
 ```powershell
-pwsh -NoProfile -File scripts/coord/install-coordination.ps1 -Status
+pwsh -NoProfile -File <tooling>/scripts/coord/install-coordination.ps1 -Status
 ```
+
+**Run this from the repository you are asking about, not from the tooling checkout.** `resolves` is
+answered from your current directory, so a `-Status` run in the tooling clone reports on the tooling
+clone. In a vendored layout the two are the same directory and it does not matter.
 
 Read four separate lines per row, and do not let any of them stand in for another:
 
@@ -194,8 +238,13 @@ Read four separate lines per row, and do not let any of them stand in for anothe
 | `current` | Does the wired command match what this checkout would write? | SHA-256 of both command strings |
 | `resolves` | Does the shim's own resolution order find a real script **right now**? | The filesystem, from your current directory |
 
-`=> LIVE` requires wired **and** resolving **and** matching the receipt. `resolves NOTHING` is its own
-red line, printed with the bases it tried, because that is the state that reads as healthy.
+`=> LIVE` requires wired **and** resolving, and a receipt that matches **if there is one**.
+`resolves NOTHING` is its own red line, printed with the bases it tried, because that is the state
+that reads as healthy.
+
+**Read the `receipt` line separately.** An absent receipt satisfies the verdict's third clause
+(`-not $rec -or $wiredSha -eq $rec.commandSha256`), so a row wired by hand or restored from a backup
+prints `receipt no` and then green. The doctor is stricter, and reports that state as `??`.
 
 `-Status` models the shim's resolution rather than using a better helper: a check that resolves the
 primary better than the hook does reports a healthy hook that does not work. It resolves from your
@@ -266,6 +315,10 @@ says so out loud.
 That one failure turns both gates off everywhere at once, every file still present and still looking
 installed. So `-Status` names the interpreter it found and asks it for its version: on Windows a
 `python` on `PATH` is often an execution-alias stub that resolves cleanly and runs nothing.
+
+**`-Status` and the shim do not pick the same interpreter.** `-Status` skips a candidate that will
+not answer `--version`. The shim takes `python` whenever `command -v` succeeds, which a stub does.
+Where `python` is a stub and `python3` real, `-Status` goes green for the wrong one.
 
 `git commit --no-verify` and `git push --no-verify` bypass both. That is a guardrail against accident,
 not a security boundary; back it with a server-side check if you need one.
@@ -350,34 +403,10 @@ With both it and the dispatch rule live, a session started in the primary has no
 isolation: it can neither dispatch a subagent nor relocate itself, and a human must restart it
 elsewhere. Turn both on deliberately, not as a side effect of an unrelated install.
 
-### The SessionStart backstop
-
-```powershell
-pwsh -NoProfile -File <tooling>/scripts/worktree/install-selfheal.ps1 -ConfigDir ~/.claude
-```
-
-**Target:** a config directory. `-ConfigDir` is **mandatory** -- no default to get wrong -- and names
-no repository: what it repairs is whatever the gate's allowlist names, so installing it before
-installer 3 leaves it reporting itself inert. `-HookPath` moves the shared script copy it refreshes.
-
-Wires `scripts/worktree/worktree-selfheal.ps1` into **one** config directory; run it once per
-directory a session can use. The doctor reports an unwired config root as `OFF` -- a required
-control with zero enforcement, which is exit 1 -- so "once per root" is checkable rather than
-advisory.
-
-Honest limits, both of them current: this installer has no `-Status` and no `-Uninstall` of its own
-(removing the gate's allowlist is what renders it inert), and it takes one `-ConfigDir` per run rather
-than discovering them the way its sibling does.
-
-One note that generalizes: neither installer gives `$HookPath` or `$SettingsPath` a parameter
-default. Defaults bind before the body's first line, so one that throws pre-empts the refusal guard
-below it and the script dies with an unrelated error. A guard is only a guard if nothing runs ahead
-of it.
-
 ### Prove it
 
 ```powershell
-pwsh -NoProfile -File scripts/worktree/install-gate.ps1 -Status
+pwsh -NoProfile -File <tooling>/scripts/worktree/install-gate.ps1 -Status
 ```
 
 Five things, reported separately:
@@ -385,8 +414,9 @@ Five things, reported separately:
 - **`installed` / `source` / `parity`.** SHA-256 of the installed copy against the source, printed as
   hashes and not asserted. A hand-bumped version label can lie, and has: rules shipped without a bump,
   so both lines read the same version directly above a `*** STALE ***` verdict.
-- **`governing`.** The allowlist contents. No file, no entries, nothing governed -- and it says
-  `gate is OFF` rather than printing nothing.
+- **`governing`.** The allowlist contents. With no file it says `gate is OFF`. **With a file holding
+  no entries it prints the bare header and nothing** -- the all-clear shape, for a gate governing
+  nothing. Installer 4 seeds that file, so count entries rather than look for the word OFF.
 - **`wiring`, per config directory.** The matchers in that file, diffed against the rules the
   **installed** script has. `UNWIRED` is implemented but never fires; `stray`, matched but ignored;
   `opt-in`, off by design. A count of "3" says nothing unless you know 3 is right, so it asserts an
@@ -404,6 +434,40 @@ green tests while the gate that actually runs has never heard of it.
 
 ---
 
+## Installer 4 -- the SessionStart backstop
+
+```powershell
+pwsh -NoProfile -File <tooling>/scripts/worktree/install-selfheal.ps1 -ConfigDir ~/.claude
+```
+
+**Target:** a config directory. `-ConfigDir` is **mandatory** -- no default to get wrong -- and names
+no repository: what it repairs is whatever the gate's allowlist names, so installing it before
+installer 3 leaves it reporting itself inert. `-HookPath` moves the shared script copy it refreshes.
+
+Wires `scripts/worktree/worktree-selfheal.ps1` into **one** config directory; run it once per
+directory a session can use. The doctor reports an unwired config root as `OFF` -- a required
+control with zero enforcement, which is exit 1 -- so "once per root" is checkable rather than
+advisory.
+
+**This one runs on PowerShell 7.0.** It declares `#Requires -Version 7` where every other installer
+declares 7.3, so on a 7.0-7.2 machine this is the one control that installs, and it is the one that
+runs `git checkout` on your shared primary unattended.
+
+### Prove it
+
+**There is nothing to run.** This installer has no `-Status` and no `-Uninstall` of its own; removing
+the gate's allowlist is what renders it inert. Ask the doctor instead, which reports an unwired config
+root as `OFF` and fires the backstop against a dirty throwaway repository.
+
+It also takes one `-ConfigDir` per run rather than discovering them the way its sibling does.
+
+One note that generalizes: neither installer gives `$HookPath` or `$SettingsPath` a parameter
+default. Defaults bind before the body's first line, so one that throws pre-empts the refusal guard
+below it and the script dies with an unrelated error. A guard is only a guard if nothing runs ahead
+of it.
+
+---
+
 ## What the installers guarantee about a control's dependencies
 
 A checker installed **without the module it imports** raises at import: it refuses every commit, for
@@ -418,21 +482,31 @@ neither will install a partial one:
 | `scripts/coord/install-git-hooks.ps1` | `scripts/hooks/_ccxconfig.py`, which both checkers import | refuses before writing anything | re-reads the copy and compares SHA-256 against the source; a mismatch aborts before the receipt is written |
 | `scripts/worktree/install-gate.ps1` | `_command.ps1`, `_gittarget.ps1`, `_common.ps1` -- the gate's dot-source closure | refuses before writing anything | re-reads each copy after writing it |
 
-The substrate is copied **first**, before the checkers that import it: a checker that lands ahead of
-its module is briefly a gate that refuses everything, and ordering is cheap insurance against an
-interrupted install.
+**Only the git-hook installer copies the substrate first.** A checker that lands ahead of its module
+is briefly a gate that refuses everything, so ordering there is cheap insurance against an interrupted
+install.
+
+`install-gate.ps1` copies in the other order: the gate, then its three helpers. An install
+interrupted between the two leaves a gate whose dot-source fails, which exits 0 after a stderr
+receipt and enforces nothing. Re-run it rather than reasoning about what landed.
 
 How to see it rather than take it on trust:
 
 ```
-pwsh -NoProfile -File scripts/coord/install-git-hooks.ps1 -Status
-pwsh -NoProfile -File scripts/worktree/install-gate.ps1 -Status
-pwsh -NoProfile -File bin/ccx-doctor.ps1
+pwsh -NoProfile -File <tooling>/scripts/coord/install-git-hooks.ps1 -Status
+pwsh -NoProfile -File <tooling>/scripts/worktree/install-gate.ps1 -Status
+pwsh -NoProfile -File <tooling>/bin/ccx-doctor.ps1
 ```
 
-`-Status` on the git-hook installer hashes each installed checker against this checkout's source and
-reports a difference as `INSTALLED COPY DIFFERS FROM SOURCE`, so a missing or stale dependency shows
-up as a fact about bytes rather than a claim.
+`-Status` on the git-hook installer hashes each installed **checker** against this checkout's source
+and reports a difference as `INSTALLED COPY DIFFERS FROM SOURCE`.
+
+**Neither `-Status` hashes the dependencies**, which is the closure this section is about. The
+git-hook status branch walks the two checkers only; the gate's returns before its helper list is
+even defined. A stale or missing helper is invisible to both.
+
+Only the doctor checks either closure. That is why it is the third command above, rather than a
+nicety.
 
 The doctor goes further and **fires** each control, the only evidence that survives a dependency that
 lands but fails to load: a gate that cannot load its helpers allows what it should deny, and only an
@@ -450,7 +524,8 @@ Absence here is a choice, not a defect -- but an unwired control is still zero e
 doctor reports each of these rather than letting it pass quietly. Which tag you get depends on the
 control:
 
-- The two `PreToolUse` guards are always `--` (not wired anywhere it can see).
+- The two `PreToolUse` guards are `--` while nothing wires them. Wire one by hand and the doctor
+  reports `OK` with the locations, and attacks it like any other control.
 - The **sequence gate reads your configuration**. With no `sequences` key in `ccx.config.json` it is
   `[-- ] sequence gate`, off by configuration. With one, as the shipped file has and this checkout
   prints, it is `[OFF] sequence gate`: nothing at commit time defends the numbers you allocate.
@@ -491,8 +566,12 @@ The selfheal backstop is the most privileged: it runs `git checkout` on the shar
 unattended, from a script the calling session can freely edit. Its only safety property is that it
 refuses a **dirty** tree, so that is the thing to verify rather than assume.
 
-`bin/ccx-doctor.ps1` fires it on every run against a drifted, dirty throwaway repository and requires
-it to decline and say why (`selfheal negative: dirty primary refused`). A repair there is `RED`.
+`bin/ccx-doctor.ps1` fires it against a drifted, dirty throwaway repository and requires it to
+decline and say why (`selfheal negative: dirty primary refused`). A repair there is `RED`.
+
+**That probe needs a python, and it is skipped without one.** Unlike the claim and push probes it
+records no "attack skipped" row, so the line is simply absent from the report. `-SkipAttacks`
+suppresses it too. An absent row is an untested control, not a passed one.
 
 Run them from a plain `pwsh` terminal.
 
@@ -509,6 +588,9 @@ pwsh -NoProfile -File <tooling>/scripts/coord/install-coordination.ps1 -Uninstal
 pwsh -NoProfile -File <tooling>/scripts/coord/install-git-hooks.ps1 -RepoRoot <the-clone> -Uninstall
 pwsh -NoProfile -File <tooling>/scripts/worktree/install-gate.ps1 -Uninstall
 ```
+
+Installer 1's `-Uninstall` clears **one settings file**, the same as its install. If you wired more
+than one config root, run it once per root or the others stay wired and keep firing.
 
 Installer 2's `-Uninstall` resolves a clone as its install does, takes the same `-RepoRoot` and
 refuses on the same terms: removing the wrong clone's hooks is the same mistake as installing there.
