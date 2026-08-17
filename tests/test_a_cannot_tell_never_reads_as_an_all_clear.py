@@ -610,5 +610,142 @@ class RemoveActsOnTheBranchTheWorktreeWasOn(ScriptCase):
         )
 
 
+class TheLivenessFenceCannotBeInvertedByAUnitChange(ScriptCase):
+    """`startedAt`'s unit is an assumption, and it used to be the one that inverted this fence.
+
+    THE DEFECT. `Test-RecordLiveness` parses `startedAt` as unix MILLISECONDS, unconditionally. Let the
+    client emit seconds instead and the same integer parses as January 1970. The recorded session then
+    looks decades older than the process hosting it, which is precisely the shape of a recycled pid, so
+    every live session resolved STALE.
+
+    WHY THAT WAS THE WORST AVAILABLE ANSWER. STALE is not in `$OccupancyVetoStates` -- deliberately, and
+    correctly, because a genuinely recycled pid must not hold a lock forever. So the collision gate would
+    have found every peer, judged every one of them gone, and waved through every edit. Silently: the
+    doctor's census counts records that PARSE and records that will not PLACE, and a seconds-valued
+    record is neither. The counts stay green while the fence is answering backwards.
+
+    A wrong unit is a thing this fence CANNOT TELL, and its own header promises that a unit change
+    degrades to "cannot tell" rather than to a confident wrong answer. It did not. These cases pin that
+    promise to behaviour.
+
+    THE NEGATIVE CONTROLS matter more than usual here, because "return UNVERIFIED for everything" would
+    satisfy the positive cases perfectly and destroy the fence in the other direction -- UNVERIFIED
+    vetoes, so a fence stuck there refuses every edit forever. Two controls stop that: a correctly
+    milliseconds-valued record must still resolve LIVE, and a genuine pid reuse must still resolve STALE.
+    """
+
+    UNITS = {
+        # label            -> the expression that produces that record's startedAt, given $ms
+        "milliseconds": "$ms",
+        "seconds": "[int64]($ms / 1000)",
+        "microseconds": "([int64]$ms * 1000)",
+        "nanoseconds": "([int64]$ms * 1000000)",
+        "iso8601": "'2026-08-16T10:00:00Z'",
+    }
+
+    def verdicts(self) -> tuple[dict, str]:
+        """Resolve one live pid under every plausible spelling of `startedAt`.
+
+        Runs in-process against $PID rather than against a fixture session record: the fence reads the
+        OS process table, so the one pid guaranteed to be alive and to have a readable start time is the
+        one doing the asking. `procStart` is set 30 seconds after the process began, which is the normal
+        relationship -- a session registers shortly after its host starts.
+        """
+        registry = t.REPO_ROOT / "scripts" / "coord" / "session-registry.ps1"
+        occupancy = t.REPO_ROOT / "scripts" / "coord" / "occupancy.ps1"
+        lines = [
+            "$ErrorActionPreference = 'Stop'",
+            f". '{registry}'",
+            f". '{occupancy}'",
+            "$ms = [DateTimeOffset]::new((Get-Process -Id $PID).StartTime.AddSeconds(30))"
+            ".ToUnixTimeMilliseconds()",
+            "$out = [ordered]@{}",
+        ]
+        for label, expr in self.UNITS.items():
+            lines.append(
+                f"$out['{label}'] = (Test-RecordLiveness -Record "
+                f"([pscustomobject]@{{ pid = $PID; startedAt = {expr} }})).State"
+            )
+        lines += [
+            # No startedAt at all: the shape a renamed field produces.
+            "$out['absent'] = (Test-RecordLiveness -Record "
+            "([pscustomobject]@{ pid = $PID })).State",
+            # A genuine recycled pid: correct unit, and a session that really did register days before
+            # this process existed.
+            "$out['reused'] = (Test-RecordLiveness -Record ([pscustomobject]@{ pid = $PID; "
+            "startedAt = [DateTimeOffset]::new((Get-Date).AddDays(-3)).ToUnixTimeMilliseconds() })).State",
+            "$out['unverified_vetoes'] = [bool](Test-OccupancyVeto -State 'UNVERIFIED')",
+            "$out['stale_vetoes'] = [bool](Test-OccupancyVeto -State 'STALE')",
+            "$out | ConvertTo-Json -Compress",
+        ]
+        r = subprocess.run(
+            [self.pwsh, "-NoProfile", "-Command", "\n".join(lines)],
+            capture_output=True, text=True, timeout=TIMEOUT_SECONDS, cwd=str(self.base),
+        )
+        self.assertEqual(0, r.returncode, f"the probe itself failed:\n{r.stdout}\n{r.stderr}")
+        return json.loads(r.stdout), r.stderr
+
+    def test_every_unit_this_fence_does_not_assume_resolves_to_cannot_tell(self):
+        seen, _ = self.verdicts()
+        for label in ("seconds", "microseconds", "nanoseconds", "iso8601", "absent"):
+            self.assertEqual(
+                "UNVERIFIED",
+                seen[label],
+                f"a startedAt in {label} resolved {seen[label]}, not UNVERIFIED. This fence assumes "
+                f"milliseconds and cannot verify anything else, so any other spelling has to read as "
+                f"'could not tell'. STALE in particular is NOT a veto: answering STALE here hands the "
+                f"collision gate a confident all-clear for a session that is running.",
+            )
+
+    def test_a_cannot_tell_verdict_actually_vetoes(self):
+        seen, _ = self.verdicts()
+        self.assertTrue(
+            seen["unverified_vetoes"],
+            "UNVERIFIED left $OccupancyVetoStates. Degrading to 'cannot tell' only protects anything "
+            "while 'cannot tell' still blocks the destructive action.",
+        )
+        self.assertFalse(
+            seen["stale_vetoes"],
+            "STALE became a veto. That is the other failure: a genuinely recycled pid would then hold "
+            "a lock nothing can release. The fix for the unit was never meant to reach this list.",
+        )
+
+    def test_a_record_written_in_the_expected_unit_is_still_trusted(self):
+        seen, _ = self.verdicts()
+        self.assertEqual(
+            "LIVE",
+            seen["milliseconds"],
+            "the fence stopped trusting a correctly-formed record. A fence stuck on UNVERIFIED passes "
+            "every case above and refuses every edit forever.",
+        )
+
+    def test_a_genuinely_recycled_pid_is_still_caught(self):
+        seen, _ = self.verdicts()
+        self.assertEqual(
+            "STALE",
+            seen["reused"],
+            "a session recorded three days before its host process started resolved as something other "
+            "than STALE. That is the case this fence was built for, and a plausibility bound placed too "
+            "loosely swallows it.",
+        )
+
+    def test_an_unparseable_value_is_caught_rather_than_thrown(self):
+        """The first version of this fix let the parse throw, then threw again formatting the message.
+
+        `FromUnixTimeMilliseconds` raises outside roughly year 1 to 9999, and a microsecond-valued field
+        is three orders of magnitude past the ceiling. Uncaught, the verdict depended on whichever caller
+        had `$ErrorActionPreference` set to what -- and one of these callers is a SessionStart hook,
+        where a terminating error replaces the chat's whole starting context.
+        """
+        _, err = self.verdicts()
+        for noise in ("Exception calling", "MethodInvocationException", "null-valued expression"):
+            self.assertNotIn(
+                noise,
+                err,
+                f"the probe wrote {noise!r} to stderr. Every verdict above is reachable without an "
+                f"exception escaping; one that escapes here reaches a SessionStart hook.",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

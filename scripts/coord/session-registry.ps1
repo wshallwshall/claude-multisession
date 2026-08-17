@@ -36,9 +36,14 @@
     Fields we do not consume may appear; they are ignored. If a future client renames a field, moves
     the directory, or changes `startedAt`'s unit, every fence here degrades to "cannot tell" rather
     than to a confident wrong answer -- which is the whole reason the states below distinguish "not
-    alive" from "could not be evaluated", and why only the positive answer licenses anything. The
-    doctor command reports how many records it read and placed, so a schema change shows up as a
-    count going to zero instead of as a silent all-clear.
+    alive" from "could not be evaluated", and why only the positive answer licenses anything.
+
+    THE TWO KINDS OF SCHEMA CHANGE DO NOT SURFACE THE SAME WAY, and it is worth knowing which you are
+    looking at. A moved directory or a removed record shows up in the doctor's census as a count going
+    to zero. A renamed field or a changed unit does NOT: those records still parse and still place, so
+    the counts stay exactly as they were and every verdict turns UNVERIFIED instead. That is a veto, so
+    the gates keep refusing rather than waving edits through -- it costs precision, not the guarantee.
+    Do not read a healthy census as evidence the schema still matches.
 
     WHY THIS IS NOT A PID CHECK. Pids get reused, and these records outlive their process. The client
     ships a `procStart` field intended for exactly this fence -- do not depend on it. It may be absent
@@ -151,7 +156,56 @@ function Test-RecordLiveness {
         return @{ State = "UNVERIFIED"; Detail = "pid $procId alive; record has no startedAt" }
     }
 
-    $registered = [DateTimeOffset]::FromUnixTimeMilliseconds([int64]$Record.startedAt).LocalDateTime
+    # THE PARSE ITSELF THROWS ON A BIG ENOUGH NUMBER, so it is guarded before the bound below can be
+    # reached. FromUnixTimeMilliseconds accepts roughly year 1 to year 9999 and raises outside that,
+    # and a microsecond-valued field is three orders of magnitude past the ceiling. Caught here, the
+    # first version of this fix let the exception escape, left $registered null, and then threw a
+    # second time formatting the message -- so the record's verdict depended on which caller had
+    # $ErrorActionPreference set to what. An unparseable field is exactly "cannot tell".
+    $registered = $null
+    try {
+        $registered = [DateTimeOffset]::FromUnixTimeMilliseconds([int64]$Record.startedAt).LocalDateTime
+    } catch {
+        return @{
+            State  = "UNVERIFIED"
+            Detail = ("pid $procId alive; startedAt '$($Record.startedAt)' is not readable as a " +
+                "millisecond epoch, so the field's unit or format is not what this fence assumes")
+        }
+    }
+
+    # THE UNIT IS AN ASSUMPTION, AND IT IS THE ONE THAT INVERTS THIS FENCE.
+    #
+    # This header promises that a change to `startedAt`'s unit degrades to "cannot tell" rather than
+    # to a confident wrong answer. Until 2026-08-16 it did the opposite, and the path was short: the
+    # parse above is unconditionally milliseconds, so a switch to SECONDS lands `$registered` in 1970,
+    # the delta below is roughly 29 million minutes, and every record falls straight through to STALE.
+    #
+    # STALE IS NOT A VETO. `$OccupancyVetoStates` in occupancy.ps1 is LIVE/UNVERIFIED/UNREADABLE, and
+    # this file defines STALE as "The session is gone." So one vendor-side unit change would have made
+    # presence.ps1 print "No live sessions found for this repo." with exit 0 -- a roster asserting its
+    # own completeness while naming nobody -- and collision_gate.ps1 exit 0 in silence. A wrong answer
+    # delivered confidently, in the fence every other control is built on.
+    #
+    # THE BOUND IS ON PLAUSIBILITY, NOT ON THE DELTA, because the delta cannot tell a recycled pid
+    # from a misparsed field: both are "the process started long after the session". A registration
+    # time is only meaningful if reading it as milliseconds puts it in a window a session could
+    # actually have registered in. Outside that, the field is not what this fence assumes, which is
+    # the definition of UNVERIFIED rather than of STALE.
+    #
+    # Seconds land in 1970 and trip the floor here. Microseconds and nanoseconds never reach this
+    # check at all -- they are past what the parse itself accepts, so the guard above takes them. The
+    # ceiling covers what is left: a value inside the parseable range but ahead of now, which is a
+    # future-dated record rather than a unit change. Every one of them becomes a veto.
+    $floor = [datetime]'2020-01-01'
+    if ($registered -lt $floor -or $registered -gt (Get-Date).AddDays(1)) {
+        return @{
+            State  = "UNVERIFIED"
+            Detail = ("pid $procId alive; startedAt $($Record.startedAt) parses as " +
+                "$($registered.ToString('yyyy-MM-dd')) in milliseconds, which is not a time a session " +
+                "could have registered -- the field's unit or format is not what this fence assumes")
+        }
+    }
+
     # A process cannot have started after the session it hosts registered (small forward slop for
     # clock jitter). Started much later => this pid was recycled onto a different process.
     $delta = ($procStart - $registered).TotalMinutes
