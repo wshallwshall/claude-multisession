@@ -8,11 +8,19 @@ issue headings, migration numbers. `scripts/coord/alloc.ps1` issues a number nob
 
 **Why you should care.** Two sessions can take the same number, name their files differently, and
 git merges both with no conflict. This is the one collision class every other control here is blind
-to. Not for you if your repository maintains no numbered sequence.
+to.
+
+Not for you if your repository maintains no numbered sequence. Not yet for you if your sessions
+share one checkout: the ownership rule is keyed to a worktree, so it collapses to "somebody here
+allocated it" ([Worktrees](WORKTREES.md)).
+
+**What it needs first.** These scripts vendored into the repository you govern, `pwsh` 7.3+, and a
+`python` on `PATH`. Even `bin/ccx-doctor.ps1` refuses to start below 7.3.
+[Install](INSTALL.md) is the procedure.
 
 **How to use it.** Start at [Configuring a sequence](#configuring-a-sequence): one key in
 `ccx.config.json` defines a sequence, and both scripts are inert without it. The gate ships
-**unwired**, so run `bin/ccx-doctor.ps1` before assuming it enforces anything.
+**unwired**, so run the doctor before assuming it enforces anything.
 
 ---
 
@@ -22,6 +30,13 @@ reach for at once:
 - Decision records named `0001-*.md`, `0002-*.md`.
 - Issues written as `## 58.` headings in one file.
 - Migration numbers, RFC numbers, schema versions.
+
+**The gate covers the first and third shapes, not the second.** Rules 1 to 3 iterate added *files*
+whose repo-relative path matches `filePattern`. A number living inside one file never changes that
+path.
+
+So for a headings-in-one-file sequence, only rule 4 can fire. The allocator still hands out unique
+numbers there; nothing at commit time defends them.
 
 `examples/sequence-adr/` is the worked example, and nothing in the mechanism is specific to decision
 records. A sequence is defined entirely in `ccx.config.json`.
@@ -63,7 +78,7 @@ design, so two repositories issuing from one series share no allocator, and the 
 
 **The same shape ships in third-party tooling.** [spec-kit](https://github.com/github/spec-kit), read
 at `main` on 2026-08-12, numbers a feature by scanning spec directories for the highest
-3-or-more-digit prefix and adding one. No lock, no atomic claim, in all three script parities.
+3-or-more-digit prefix and adding one. No lock, no atomic claim, in the script tree that was read.
 
 An opt-in `--timestamp` mode substitutes a `YYYYMMDD-HHMMSS` prefix and sidesteps the sequence. The
 default path is the unlocked scan, and the explicit `--number` path auto-increments on collision with
@@ -82,8 +97,9 @@ concurrency one open: it auto-numbers, and nothing in it allocates atomically or
 
 ### The index is gated, and that is the auditability half
 
-`seq_check.py` refuses three things: a number already taken, a number never allocated, and a number
-missing from the index. The third reads as pedantry until the record is evidence rather than notes.
+`seq_check.py` refuses four things: a number already taken, a number never allocated, a number
+missing from the index, and a **duplicate** index row for one number. The third reads as pedantry
+until the record is evidence rather than notes.
 
 Whoever reviews a set of decisions reads the index. A record that exists and is unlisted is one
 nobody assessed, and its absence never announces itself.
@@ -153,8 +169,12 @@ from `examples/sequence-adr/`:
 | `indexFile` | no | An index/table file that must carry a row per number |
 | `indexRowPattern` | with `indexFile` | Regex recognizing one row. **Group 1 must capture the number.** |
 
-**What happens next.** Both scripts validate this key **before touching the registry**, and both
-name the file and the key in every message they print.
+**What happens next.** Both scripts validate this key **before touching the registry**, and name the
+offending key in what they print.
+
+**Most per-sequence errors do not name the config file.** Discovery walks upward and `CCX_CONFIG` can
+redirect it, so the file you are editing may not be the one that loaded. Run the doctor to see which
+path it resolved.
 
 Omit `sequences` entirely and both scripts are inert. The allocator refuses with a message naming
 the file to edit, and the gate returns 0 without a word.
@@ -162,6 +182,12 @@ the file to edit, and the gate returns 0 without a word.
 `indexFile` and `indexRowPattern` must be given together **or not at all**. Half a configuration
 silently drops a whole term from the floor. A floor that is **silently** too low is the **exact**
 failure the allocator exists to prevent.
+
+**Only the allocator enforces both directions.** The gate raises on `indexFile` without
+`indexRowPattern`. The reverse it accepts, then skips rules 3 and 4 and exits 0.
+
+The gate is the half you wire by hand, so that is exactly the silent half-configuration this rule
+exists to prevent. Check both keys, or neither.
 
 ### `indexRowPattern` is compiled multiline, and that was once a silent hole
 
@@ -190,6 +216,15 @@ the one that term is for.
 **The goal.** Get a number that is yours, or read the **floor** without spending one. The floor is
 the highest number already taken anywhere this clone can see.
 
+**Stand in the repository you are allocating in.** The allocator resolves the config and the git
+repository from your current directory, never from its own location.
+
+The relative paths below therefore assume the vendored layout, where the two are one checkout. From a
+separate tooling clone, `Set-Location` to the target and give the script an absolute path.
+
+**Fetch before you allocate.** The floor sweeps remote-tracking refs, so a peer's pushed number is
+invisible until you have it: `git fetch origin --prune`.
+
 **What to do.**
 
 ```powershell
@@ -203,11 +238,12 @@ pwsh -NoProfile -File scripts/coord/alloc.ps1 -Kind adr -ShowFloor
 pwsh -NoProfile -File scripts/coord/alloc.ps1 -List
 ```
 
-**What happens next.** A **successful** allocation prints:
+**What happens next.** A **successful** allocation prints the number, the directory to put it in, and
+the pattern the path must match.
 
-- the number, and the directory to put it in;
-- the pattern the path must match, and a suggested filename;
-- a reminder to add the index row **in the same commit**.
+Two more lines are conditional: a suggested filename, when the title slugs to something non-empty;
+and an index-row reminder, only when the sequence has an `indexFile`. Fewer lines is not a partial
+run.
 
 The two parameters:
 
@@ -321,8 +357,9 @@ Per configured sequence:
 1. An **added** file carrying number N must not reuse an N already on trunk, unless the index row
    for N names the new file as a declared companion. Only an *undeclared* reuse is a collision. The
    companion is matched with and without its extension, since an index row links the stem.
-2. An **added** number must have been allocated to *this worktree*. Local only -- see the mode
-   asymmetry below.
+2. An **added** number **not already on trunk** must have been allocated to *this worktree*. The
+   check sits behind rule 1, so a declared companion at an existing number is not asked for a claim.
+   Local only -- see the mode asymmetry below.
 3. An **added** number must have a row in the sequence's `indexFile`.
 4. The index must not gain a **duplicate** row for one number.
 
@@ -330,6 +367,12 @@ Per configured sequence:
 
 Anything about numbers already on trunk. Rule 3 applies only to files this change adds; rule 4 only
 to duplicates this change introduces (duplicates already on the base are subtracted out).
+
+**And one it does not check by accident: a rename onto a taken number.** Both modes list added files
+with `--diff-filter=A`, which drops git's `R` entries.
+
+So `git mv docs/adr/0009-foo.md docs/adr/0004-bar.md` presents no added path, and rules 1 to 3 never
+run on `0004`. Reviewing renames in a numbered directory is still yours.
 
 > **Rule.** A gate that fails on pre-existing debt is a gate that gets uninstalled, and it takes the
 > real protection with it when it goes.
@@ -385,14 +428,38 @@ or missing from the index.
 python scripts/hooks/seq_check.py || exit 1
 ```
 
-**What happens next.** Verify by receipt, not by presence:
+**That path resolves from the repository root, so it needs the vendored layout.** A pre-commit hook
+runs with the working tree's top as its current directory.
 
-```powershell
-pwsh -NoProfile -File bin/ccx-doctor.ps1
+Where `scripts/` is not committed in the governed repo, python cannot open the file -- and `|| exit 1`
+turns that into a refusal of **every** commit:
+
+<!-- no-copy -->
+```text
+python.exe: can't open file '<repo>\scripts\hooks\seq_check.py': [Errno 2] No such file or directory
 ```
 
-The doctor reports whether any `pre-commit` in the resolved hooks directory invokes `seq_check`. It
-separately fires a **read-only floor probe** at the allocator, `-ShowFloor`, which never spends a
+Read that as "the hook cannot find the gate", not as the gate refusing something. Use an absolute
+path to the gate if your layout keeps the scripts elsewhere.
+
+**With no python at all it fails closed, not open.** This gate is behind no `/bin/sh` shim, unlike the
+claim gate and the push guard, so a missing interpreter makes the shell return non-zero and `exit 1`
+blocks the commit. That is the opposite direction from the two installed hooks.
+
+**What happens next.** Check it, and know what the check is worth:
+
+```powershell
+pwsh -NoProfile -File <tooling>/bin/ccx-doctor.ps1 -Repo <the-repo-you-govern>
+```
+
+**The doctor greps, it does not run the gate.** It matches the literal text `seq_check` in the one
+file named `pre-commit` in the resolved hooks directory.
+
+So it reports `OK` for a commented-out line, a wrong relative path, or a non-executable hook. And it
+reports `OFF` when you wired the call through a framework, whose generated `pre-commit` only calls
+the framework. Drive a real commit to prove it.
+
+It separately fires a **read-only floor probe** at the allocator, `-ShowFloor`, which never spends a
 number. A broken allocator is caught without corrupting the sequence to find out.
 
 ---
@@ -495,7 +562,8 @@ Stated plainly, because each one is a hole somebody will otherwise assume is cov
 | `git commit --no-verify` bypasses the gate | This is a guardrail against accident, not a security boundary. The `--ci` run is the backstop. |
 | Ownership is never checked in CI | A green CI is not evidence the number was allocated. |
 | No installer writes `pre-commit` | Until you wire it, nothing at commit time stops two sessions using the same number. The doctor reports this as OFF, not as absent. |
-| The shims fail open with no python | Both Python-backed git hooks print to stderr and exit 0 when no interpreter is found. `install-git-hooks.ps1 -Status` and the doctor both report the interpreter: that one condition turns every gate off at once, with every file still present. |
+| This gate fails **closed** with no python | Behind no `/bin/sh` shim, so a missing interpreter blocks every commit. The two *installed* git hooks go the other way: their shims exit 0. The doctor reports the interpreter. |
+| `sequences` also arms the claim gate | `claim_check.py` takes its `<KIND>` tokens from the configured sequence names, so a commit subject naming an unclaimed item is refused too ([Coordination](COORDINATION.md)). |
 | Ownership is worktree-keyed | Where every session shares one checkout, it collapses to "somebody here allocated it". |
 | Two sessions can still build the same thing under two *different* numbers | Nothing structural sees duplicated work. That is what claims and announce are for -- see [coordination](COORDINATION.md). |
 | The high-water ratchet cannot restore history | It stops re-issue. The commits those refs pointed at are still gone. |
