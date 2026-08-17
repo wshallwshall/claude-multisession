@@ -14,5 +14,12 @@
 #
 # /CHORUS was live from 01:33 on 2026-08-13 and was renamed to /KORUS at 15:06 the same day, in #48.
 # It is named in #45, in this repository's history, and in anything anyone saved in those 13 hours.
-/CHORUS     /KORUS     301
-/CHORUS.md  /KORUS.md  301
+#
+# THE .html FORM WAS MISSING UNTIL 2026-08-17, AND IT IS THE ONE THE SITE ACTUALLY SERVES. Jekyll
+# renders each page to <NAME>.html, so a link saved from the address bar in those 13 hours reads
+# /CHORUS.html -- which matched neither rule below and 404'd, while the two forms nobody had in
+# their history were forwarded. The extensionless rule catches a hand-typed path and the .md rule
+# catches the source copy; only this one catches a saved link.
+/CHORUS      /KORUS      301
+/CHORUS.md   /KORUS.md   301
+/CHORUS.html /KORUS.html 301
