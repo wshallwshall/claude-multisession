@@ -59,6 +59,12 @@ OVERLAP = REPO_ROOT / "scripts" / "coord" / "overlap.ps1"
 PRESENCE = REPO_ROOT / "scripts" / "coord" / "presence.ps1"
 WORKTREE_REMOVE = REPO_ROOT / "scripts" / "worktree" / "remove.ps1"
 
+# The reaper. It is in this group because it shares the failure mode -- but it is the one surface here
+# that DELETES, so "I could not tell" costing a worktree is not hypothetical for it. It is also the
+# only consumer of occupancy.ps1 that consults the fence more than once in a run: once to build the
+# decision table, then again immediately before each removal.
+PRUNE_MERGED = REPO_ROOT / "scripts" / "worktree" / "prune-merged.ps1"
+
 # The consumer that makes overlap.ps1's exit code load-bearing. It runs overlap with stderr
 # DISCARDED, so a receipt on stderr is invisible to it and the exit code is the only channel that
 # reaches it -- which is why one case here drives this gate rather than asserting on overlap alone.
@@ -161,6 +167,48 @@ def _close_paren(text: str, start: int) -> int:
                 return i
         i += 1
     raise AssertionError("unbalanced parentheses while reading a PowerShell array literal")
+
+
+def close_brace(text: str, start: int) -> int:
+    """Index of the `}` that closes a block already open at `start`.
+
+    The brace counterpart of `_close_paren`, and public because a caller outside this module asks
+    "is this call inside that block?". It skips quotes and comments for the same reason its twin
+    does: these scripts are full of `"...$($d.Detail)"` and of prose containing braces, and either
+    unbalances a naive count. BOTH directions of error are dangerous and they fail differently --
+    closing EARLY reports a block smaller than it is, so a call really inside a loop reads as
+    outside it and a healthy file reddens; closing LATE swallows whatever follows the block, so a
+    call hoisted OUT of a loop reads as inside it and a broken file passes.
+    """
+    depth = 1
+    i = start
+    n = len(text)
+    quote = None
+    while i < n:
+        c = text[i]
+        if quote is not None:
+            if c == "`" and quote == '"':
+                i += 2
+                continue
+            if c == quote:
+                if i + 1 < n and text[i + 1] == quote:  # PowerShell doubles a quote to escape it
+                    i += 2
+                    continue
+                quote = None
+        elif c in "\"'":
+            quote = c
+        elif c == "#":
+            nl = text.find("\n", i)
+            i = n if nl == -1 else nl
+            continue
+        elif c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                return i
+        i += 1
+    raise AssertionError("unbalanced braces while reading a PowerShell block")
 
 
 def array_literal(text: str, variable: str, source: Path) -> str:
