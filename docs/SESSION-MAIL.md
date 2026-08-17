@@ -29,13 +29,18 @@ KORUS recommends a VS Code instance alongside the desktop app for review, and se
 accounts to cover a week of build work. Both of those peers sit outside announce's reach, and the
 gap is structural, not a setting to flip.
 
-[Announce](COORDINATION.md#announcing-yourself) enumerates an in-memory map of sessions the desktop
-app itself spawned. Neither peer is in it.
+**The gap is delivery, not discovery.**
+[Announce](COORDINATION.md#announcing-yourself) finds peers through `presence.ps1`, which reads the
+on-disk registry across every config root and sees every surface. So it can *list* both peers below.
+
+What it cannot do is send to them. Delivery runs through `list_sessions` and `send_message` on a
+desktop-only MCP server, and that map holds only sessions the desktop app itself spawned, under the
+account it authenticated against.
 
 | Peer | Why announce cannot reach it |
 |---|---|
-| A VS Code companion session | Never entered into the desktop app's session map. Not filtered out -- never registered |
-| A session under a second Claude account | Its config root is independent, and announce reads only the one it authenticated against |
+| A VS Code companion session | Visible in the roster, but never entered into the desktop app's session map -- not filtered out, never registered. There is no id to send to |
+| A session under a second Claude account | Its config root is independent. The roster spans it; the messaging map does not |
 
 A file drop is blind to both axes. It does not care which app spawned the reader or which account it
 logged into. That is the whole reason the lane is a file, not a second realtime channel.

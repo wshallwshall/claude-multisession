@@ -14,11 +14,19 @@ nothing structural sees it. Measured on the repo this tooling was developed in: 
 the same dependency advisory, and two of the three pull requests closed as duplicates.
 
 Not for you if you run one session at a time. Everything here assumes Claude Code for Desktop:
-announce delivers through a desktop-only MCP server, and the roster it reads is the desktop app's.
+announce delivers through a desktop-only MCP server. The roster it reads is the on-disk registry,
+which sees every surface -- the desktop app's own list is authoritative only for messaging.
+
+**What it costs.** Roughly half a second on every prompt, plus about a second more where the peer
+lookup runs, and roughly 1.3 s per edit tool call for the collision gate. Those hooks are wired at
+user scope, so the per-prompt cost is paid in every repository on the machine.
 
 **How to use it.** Start at [The pieces](#the-pieces), which routes each question to a script. Run
 [Proving any of this is live](#proving-any-of-this-is-live) before you trust an answer. Read
 [Honest limits, stated first](#honest-limits-stated-first) before relying on any of it.
+
+[Quickstart](QUICKSTART.md) installs all of this; [Install](INSTALL.md) is the flag reference.
+Every installer refuses to run inside a Claude Code session, so use a plain `pwsh` terminal.
 
 ## Honest limits, stated first
 
@@ -110,10 +118,12 @@ editor-extension session is never entered into it -- not filtered out, never reg
 live one on the **default** config root was absent while desktop siblings were listed. Not a login
 split.
 
-**Rule.** `<config-root>/sessions/<pid>.json` is the one registry with every surface. Discover
-config roots (`~/.claude` plus any `~/.claude-account-N`; a session is visible only to its own
-login). `list_sessions` is authoritative only for **messaging**. When the two disagree, **both are
-true**.
+**Rule.** `<config-root>/sessions/<pid>.json` is the one registry with every surface.
+`list_sessions` is authoritative only for **messaging**. When the two disagree, **both are true**.
+
+Discovery is a **glob**, not a naming convention: every `<home>/.claude*` directory holding a
+`sessions/` directory counts, so `.claude-work` is found as readily as `.claude-account-2`. A session
+is visible only to its own login.
 
 ### Liveness is a fence, not a PID check
 
@@ -171,11 +181,14 @@ Those are the same two bytes a completed fence emits having read every config ro
 **A receipt on the paths you were thinking about is not a receipt.**
 
 **The receipt alone was still not enough.** `session-context.ps1` -- the SessionStart banner whose
-entire job is telling a new session who else is live -- reads presence's **stdout only**.
+entire job is telling a new session who else is live -- **used to read** presence's stdout only.
 
 Handed `[]` it found no rows and silently omitted its "LIVE sessions in this repo right now"
 section. The receipt sat correct on stderr, unread. `overlap.ps1` hit the identical trap with the
 collision gate.
+
+That is fixed: the banner now reads presence's exit code as well, and prints an explicit
+`THE ROSTER COULD NOT BE COMPLETED` block when it is non-zero.
 
 Presence carries it in the **exit code** too: `0` means the roster is *complete* (including one
 listing nobody), `2` means it could not be completed. `2` fires **even when rows are listed**: a
@@ -427,9 +440,9 @@ Measured: a claim read `STALE ~21h` while its holder had committed **two minutes
 Releasing frees the key for the duplicate build the registry exists to prevent -- on the tool's own
 advice.
 
-**Rule.** `Get-HolderLiveness` reports only what it can prove, and all three surfaces (`-List`,
-`-Take`, `-Release`) use it. They used to disagree, and the two *blocking* paths were the ones that
-did not probe at all:
+**Rule.** `Get-HolderLiveness` reports only what it can prove, and all three `claim.ps1` surfaces
+(`-List`, `-Take`, `-Release`) use it. They used to disagree, and the two *blocking* paths were the
+ones that did not probe at all:
 
 | Holder state | What the tool says |
 |---|---|
@@ -437,8 +450,19 @@ did not probe at all:
 | `present` | Names the hours since its last commit and says **do not `-Force`** -- quiet is not dead. |
 | `unknown` / `failed` | Says so. Confirm before `-Force`. An empty annotation would read as "nothing notable". |
 
+`-Force` is a switch on `-Release`, and only there:
+`pwsh -NoProfile -File scripts/coord/claim.ps1 -Release <item> -Force`. `-Take` has no `-Force`; you
+release the holder's claim first, then take it.
+
 Never print "if that session is gone, re-run with `-Force`" unconditionally. That is an instruction
 to guess, printed at exactly the moment the operator is deciding whether to take someone else's key.
+
+**One surface still labels by age, and it is the one every session reads first.** The SessionStart
+banner prints `[stale ~Nh]` at 12 hours, from the timestamp alone, with no liveness probe -- directly
+under the line telling you not to start on a claimed item.
+
+The rule above holds for `claim.ps1` and has not reached `session-context.ps1`. Read that marker as
+"old", never as "free", and ask `claim.ps1 -List` before acting on it.
 
 ### No TTL, anywhere
 
@@ -474,7 +498,10 @@ broadcast, and stamp the refresh time. (`claimed` is the claim's identity and ne
 ### Serialisation details that are not cosmetic
 
 - **UTF-8 without a BOM.** A Python-side gate reads these files with `encoding="utf-8"`; a BOM makes
-  `json.loads` raise, and a swallowed parse error becomes "not claimed", i.e. the gate silently off.
+  `json.loads` raise, and the claim then reads as **unclaimed**.
+
+  That direction is fail-*closed*, not off. `claim_check.py` refuses a commit naming an unclaimed
+  item, so a BOM blocks those commits rather than waving them through. One command recovers it.
 - **Round-trip ISO-8601 timestamps.** `ConvertFrom-Json` coerces an ISO-8601 *string* to
   `[datetime]`, so `[string]$c.claimed` gives the local short form, losing sub-second precision and
   the offset. Writing that back downgrades the stamp on every refresh, and it still parses, so
@@ -818,7 +845,8 @@ rather than deleting one wholesale. One quoted the target document's heading ver
 carried the framing that fitted the surrounding paragraph. Picking a winner throws away half the
 work.
 
-This is the same shape as [`isRunning`](#the-id-rules-the-most-valuable-part-of-the-hook): an
+This is the same shape as
+[`isRunning`](#a-matched-row-is-enough-isrunning-is-not-a-reachability-flag): an
 instrument answering a narrower question than the one being asked of it, and reporting success while
 it does.
 
@@ -882,8 +910,19 @@ Two things make `-Status` trustworthy, and both make it *less* clever than it co
   status check that finds the target by a better route than the hook uses reports a healthy hook
   that does not work. **Model the mechanism you are auditing, not the one you wish it used.**
 
-`collision_gate.ps1 -PathOverride <path>` is also the read-only "who holds this path right now"
-query: no output means no live session holds it. It changes nothing.
+`collision_gate.ps1 -PathOverride <path>` is also the "who holds this path right now" query. Two
+caveats, and both are the kind of thing this page exists to state:
+
+**No output has three meanings, not one.** Nobody holds it; or the gate could not check and said so;
+or the gate could not check and the notice was **throttled**. Every can't-check path is rate-limited
+per reason, per worktree, for 30 minutes, after which it exits 0 in silence.
+
+**It is not read-only.** Each unresolved run stamps a file under the shared state root's
+`gate-unresolved/` directory -- which is what arms that throttle for the next half hour, including
+for the real edits the gate is meant to guard.
+
+**And its answer can be 60 seconds stale.** It calls `overlap.ps1` without `-Refresh`, so a peer who
+reached your file inside the cache window is simply absent.
 
 ### Blind spots that are printed on every run
 
@@ -940,11 +979,22 @@ rename.
 | `CCX_TRUNK` | the process that reads it | Overrides `ccx.config.json`'s `trunk`. |
 | `install-coordination.ps1 -Only <event> -Uninstall` | sessions started after it runs | Removes one event without disarming the others. |
 
-### Opt-in
+### Opt-in, and what it does not cover
 
-The user-scope hooks fire in **every** repository on the machine. Each one first asks "is this
-repository governed?" by testing for **`ccx.config.json` at the repository root**, before it writes a
+The user-scope hooks load in **every** repository on the machine. Only **announce** asks "is this
+repository governed?" by testing for **`ccx.config.json` at the repository root** before it writes a
 byte.
+
+**The collision gate and the session banner have no such test.** Neither script mentions
+`ccx.config.json` anywhere.
+
+What bounds them is their shim, which runs the script only if it resolves inside the session's own
+repository. So an unrelated repository gets nothing -- but a fork that copied `scripts/` and opted
+into nothing gets both, config file or not.
+
+Deleting `ccx.config.json` therefore stops announce and nothing else.
+[Limits and requirements](LIMITS.md#what-actually-switches-each-control-on) tabulates all five
+controls. `install-coordination.ps1 -Only <event> -Uninstall` is what removes one.
 
 That is deliberately *not* "does one of the scripts happen to exist". That second test is:
 
