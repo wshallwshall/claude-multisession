@@ -267,8 +267,14 @@ A content spot-check answers "are these equal right now". It does not answer "wi
 cleanly", and with an armed PR queued against the same files the first question stops predicting the
 second at all.
 
-**Rule:** use `git merge-tree`, or an actual trial merge in a throwaway worktree. Those are the two
-commands that answer the question you asked.
+**Rule:** use `git merge-tree --write-tree`, or an actual trial merge in a throwaway worktree. Those
+are the two commands that answer the question you asked.
+
+**Pass `--write-tree`, not the bare form.** The old three-argument
+`git merge-tree <base> <ours> <theirs>` exits 0 whether or not the merge conflicts.
+
+So it reports a confident clean about a branch that does not merge. `--write-tree` exits 1 and names
+each conflicting path. [Coordination](COORDINATION.md) records a run where the bare form did that.
 
 **The goal.** Find out whether the merge conflicts, without risking the branch you care about.
 
@@ -405,6 +411,6 @@ Stated plainly, because at merge time an assumption that is wrong is expensive:
 | `--ours` on an append-only file | Well-formed file, clean status, green CI | Union both sides, then verify surviving entries by name |
 | Unanchored renumber | `cp1252` became `cp1316` | Anchor the pattern; re-verify **after** conflict resolution |
 | Rebasing a one-block stack | Clean tree, one heading, half the prose | One `git merge`; grep for a string only the latest revision has |
-| Blob comparison | Five files identical -- twenty minutes ago | `git merge-tree` or a trial merge; `update-branch` cannot resolve conflicts |
+| Blob comparison | Five files identical -- twenty minutes ago | `git merge-tree --write-tree` or a trial merge; `update-branch` cannot resolve conflicts |
 | Two true numbers | Both figures verified individually | Confirm they describe the same commit at the same moment |
 | Ahead of the trunk | "This branch is not merged" | Under squash-merge, reachability lies in both directions |
