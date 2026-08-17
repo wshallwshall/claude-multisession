@@ -203,6 +203,17 @@ rather than creating an empty worktree.
 
 ---
 
+## What actually stops the failure
+
+Three mechanisms touch a `git checkout` that swaps the shared primary under another session. Only
+the first prevents it.
+
+| Role | Script | What it does |
+|---|---|---|
+| **Prevention** | `scripts/hooks/worktree_gate.ps1` | Refuses the git verbs that would swap or discard the primary's tree, before the tool call runs. It reads command strings, so a script or a shell redirect is invisible to it, and it fails open |
+| **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the primary when its HEAD has drifted and the tree is clean. On a dirty tree it declines and touches nothing |
+| **Detection** | the home-branch record | Covers a **linked worktree** that drifted, not the primary -- so it does not see the failure above. Warn-only, and [wrong by design](#the-sidecar-home-branch-record-is-wrong-by-design) |
+
 ## Restoring the primary
 
 **The goal.** Put the shared primary back on its home branch. Several sessions stand in it at once,

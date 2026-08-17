@@ -20,6 +20,12 @@ every branch merges clean, and the loss lands later.
 Not for you if Claude Code is an occasional convenience rather than how the project gets built.
 KORUS also assumes Claude Code for Desktop throughout.
 
+**What it costs.** You copy this project's `scripts/`, `bin/` and `ccx.config.json` into your own
+repository and **commit** them, then edit two keys in the shipped config.
+
+One allowlist file lands under your user config root, per machine rather than per repository.
+Cloning alone installs nothing.
+
 **How to use it.** [Quickstart](QUICKSTART.md) installs the enforcement and ends with you watching a
 collision get refused. [Run a KORUS build](KORUS-BUILD.md) is the session shape.
 [The KORUS framework](KORUS.md) is the whole account, in its author's words.
@@ -42,9 +48,8 @@ work is now on the wrong branch.
 
 **Nothing on either screen says so.** Each session believes it owns the directory.
 
-That is the loudest failure, not the only one. Six more -- same file, same work in different files,
-same reserved number, same config lock, same shared list, same agent memory -- are tabulated in the
-[README](https://claude-multisession.pages.dev/README.md), *"What problem this solves"*.
+That is the loudest failure, not the only one. Six more: same file, same work in different files,
+same reserved number, same config lock, same shared list, same agent memory.
 
 The one that costs most is the quietest. Two sessions build the *same thing* in *different files*:
 zero conflicts, two green pull requests, one of them thrown away.
@@ -99,30 +104,30 @@ branch, while the repository history stays shared. [Worktrees](WORKTREES.md)
 live session has uncommitted changes in, the edit is refused before it runs, and the refusal names
 who is in that file and what they are building. [Coordination](COORDINATION.md)
 
-**Guardrails that hold whether the agent cooperates or not.** A commit whose subject claims work
-this worktree does not hold is refused. So is a direct push to a protected branch.
-[Hooks](HOOKS.md)
+**Guardrails at commit and push time.** A commit whose subject claims work this worktree does not
+hold is refused. So is a direct push to a protected branch. Both are skipped by `--no-verify`, which
+leaves no local record, so pair them with protection on the remote. [Hooks](HOOKS.md)
 
-**Numbers that cannot be handed out twice.** Two sessions asking for the next free decision-record
-number get different ones, because allocation is an atomic create rather than a read and a write.
-[Sequence allocation](SEQUENCE-ALLOC.md)
+**Numbers that cannot be handed out twice, if both sessions ask.** `alloc.ps1` claims a number by an
+atomic create, so two sessions asking for the next free number get different ones.
 
-**Cleanup that declines rather than guesses.** Worktrees are pruned only when they are merged
-**and** clean **and** unoccupied, and the reaper stops when it cannot tell which of those a worktree
-is. [Pruning](PRUNING.md)
+The commit-time gate catching a session that never asked ships **unwired**: no installer writes
+`pre-commit`, and the doctor reports it `OFF` until you do. [Sequence allocation](SEQUENCE-ALLOC.md)
 
-**A shape for the work itself.** One session plans and tracks, two build, one lands. The roles are
-what stop two sessions deciding the same thing. [Run a KORUS build](KORUS-BUILD.md)
+**Cleanup that declines rather than guesses.** Worktrees are pruned only when merged **and** clean
+**and** unoccupied, and the reaper stops wherever it *knows* it cannot tell.
 
-### What actually stops the failure above
+It prints, every run, the four cases where it cannot tell and does not know it. An occupant editing
+by absolute path from elsewhere is one. [Pruning](PRUNING.md)
 
-Three mechanisms touch it. Only the first prevents it.
+That list is what ships as code. **The session shape is not on it**: one session plans and tracks,
+two build, one lands, and nothing enforces any of that.
 
-| Role | Script | What it does |
-|---|---|---|
-| **Prevention** | `scripts/hooks/worktree_gate.ps1` | Refuses the git verbs that would swap or discard the shared primary checkout's tree. The tool call does not run. |
-| **Repair** | `scripts/worktree/worktree-selfheal.ps1` | Restores the primary when its HEAD has drifted and the tree is clean. On a dirty tree it declines and touches nothing. |
-| **Detection** | the home-branch record | Kept where a checkout cannot move it. A later session finding the worktree elsewhere warns and offers the restore command. Warn-only, and [wrong by design](WORKTREES.md#the-sidecar-home-branch-record-is-wrong-by-design). |
+The roles are a convention you set in each opening prompt, and they are what stop two sessions
+deciding the same thing. [Run a KORUS build](KORUS-BUILD.md)
+
+Three mechanisms touch the failure at the top of this page, and only the worktree gate prevents it.
+[Worktrees](WORKTREES.md#what-actually-stops-the-failure) has the three, and what each cannot do.
 
 ## The rest of the framework
 
@@ -132,7 +137,7 @@ throughput comes from.
 | Part | What it decides | Where |
 |---|---|---|
 | Model and effort | Which model to run, and why the slower setting still wins | [The KORUS framework](KORUS.md) |
-| Surface | Which client to run sessions on, and one instance per account | [Desktop accounts](DESKTOP-ACCOUNTS.md) |
+| Surface | One desktop instance per Claude account, and the config root each adds | [Desktop accounts](DESKTOP-ACCOUNTS.md) |
 | Account economics | What a plan buys, measured against published API rates | [Token accounting](TOKEN-ACCOUNTING.md) |
 | What you write down | A backlog, decision records, and a security register | [The KORUS framework](KORUS.md) |
 | The session shape | Who plans, who builds, who lands | [Run a KORUS build](KORUS-BUILD.md) |
@@ -151,30 +156,30 @@ throughput comes from.
 | Read the account this came from | [The KORUS framework](KORUS.md) |
 | Have Claude Code assess your own repository | [Feed this to Claude Code](FEED-THIS-TO-CLAUDE-CODE.md) |
 
-Claude Code for Desktop, `pwsh` 7.3+, `git` and a `python`. Windows-first, MIT. Cloning installs
-nothing.
-
 ## What it costs you
 
 **These are guardrails against accidents, not security boundaries.** The edit-time gates read tool
-arguments, so a file written by a shell command is invisible to them, and `--no-verify` bypasses
-both git hooks.
+arguments, so a file a shell command writes is invisible to them.
 
 **Everything here fails the same way it succeeds.** An uninstalled gate and a working one look
-identical from inside a session, because both let the edit through. That is why `ccx doctor` exists
-and why you run it before installing as well as after.
+identical from inside a session, because both let the edit through. That is why the doctor exists,
+and why you run it before installing as well as after:
 
-**Announce needs the desktop client.** On a CLI-only install, leave that one hook uninstalled.
-Nothing else depends on it.
+```powershell
+pwsh -NoProfile -File <tooling>/bin/ccx-doctor.ps1 -Repo <the-repo-you-govern>
+```
 
-The full statement, with the requirements table and the three consequences of building on a vendor
-surface this project does not own, is on [Limits and requirements](LIMITS.md).
+There is no `ccx` on `PATH`. When a red or undetermined row comes back,
+[Troubleshooting](TROUBLESHOOTING.md) is the symptom table.
+
+**KORUS assumes the desktop client throughout.** A CLI-only or editor-extension setup is not
+supported. [Limits and requirements](LIMITS.md) carries the requirements table, the platform matrix,
+and what each control cannot see.
 
 ## Where to go next
 
-**Running sessions.** [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) owns three things no
-other page does: which surface to run on, the channels sessions reach each other on, and the lander
-role.
+**Running sessions.** [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) owns the channels
+sessions reach each other on, and the lander role.
 
 [Desktop accounts](DESKTOP-ACCOUNTS.md) is the setup step before any of it, if you run more than one
 Claude account.
@@ -194,15 +199,15 @@ clone.
 - [Usage awareness](USAGE-AWARENESS.md) -- a design; ships no hook.
 - [Session mail](SESSION-MAIL.md) -- how to build the lane that reaches the peers announce cannot.
 
-**In practice:** [Tips and tricks](TIPS-AND-TRICKS.md), ordered by when each item bites.
-[Drift audit](CASE-STUDY-drift-audit.md) is a method rather than a finding list.
-[Correction chain](CASE-STUDY-correction-chain.md) covers one finding, four statements, three wrong.
+**In practice:** [Tips and tricks](TIPS-AND-TRICKS.md), ordered by when each item bites. Three case
+studies: [Drift audit](CASE-STUDY-drift-audit.md),
+[Correction chain](CASE-STUDY-correction-chain.md), and
+[a claim three verifiers refuted](CASE-STUDY-refuted-but-true.md).
 
-**The standards are a separate project now.**
-[secure-development-standards](https://secure-development-standards.pages.dev/) holds what used to
-live here: a bar for agent-written code, plus its CI discipline and assessment method.
+**Elsewhere:** [Install](INSTALL.md) is the installer reference -- every scope, and how to prove
+each control is live.
+[CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template) is a working
+agreement for your own repository.
 
-**The long form:** [Install](INSTALL.md) is the record of record for the installers -- every scope,
-and how to prove each one is live rather than merely merged.
-[CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template)
-is a working agreement to drop into your own repository.
+The standards moved to
+[secure-development-standards](https://secure-development-standards.pages.dev/).
