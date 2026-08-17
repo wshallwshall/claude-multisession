@@ -979,10 +979,15 @@ function Remove-BranchSafely {
 
 $occ2 = $null
 if ($Apply -and $prunable.Count -gt 0) {
-    # RE-CHECK IMMEDIATELY BEFORE EACH DESTRUCTIVE STEP. Re-read occupancy before acting: the decision
-    # pass above costs a gh round trip per candidate -- roughly half a second each, measured on the
-    # repo this was developed in -- plus every removal before this one, and a session can arrive inside
-    # that window.
+    # RE-READ OCCUPANCY BEFORE THE APPLY LOOP. The decision pass above costs a gh round trip per
+    # candidate -- roughly half a second each, measured on the repo this was developed in -- and a
+    # session can arrive inside that window.
+    #
+    # HONEST LIMIT, because the comment here used to overstate it: this is ONE snapshot, taken before
+    # the first removal, and every candidate in the loop below is judged against it. For the second and
+    # later removals in a batch it is already stale by exactly the interval it exists to close. Moving
+    # the call inside the loop would cost a fence read per candidate; that trade has not been made.
+    # Until it is, do not read the per-candidate checks below as a fresh look at the registry.
     $occ2 = Get-WorktreeOccupancy -Repo $RepoRoot -ConfigRoot $ConfigRoot -StartSkewMinutes $StartSkewMinutes
     Write-Note ""
     foreach ($d in $prunable) {

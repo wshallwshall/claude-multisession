@@ -39,8 +39,13 @@ can run them from any checkout. Three exceptions, all deliberate:
   directory, which is how a long green report about the wrong clone happens.
 
 Five of the eight take `-Name`, validated against `\A[A-Za-z0-9._-]+\z`, because the name becomes a
-directory name and a branch name. `restore-primary.ps1`, `sessions.ps1` and the doctor take none, and
-`prune-merged.ps1`'s `-Name` is an unvalidated list of worktrees to skip.
+directory name and a branch name. `restore-primary.ps1`, `sessions.ps1` and the doctor take none.
+
+**`prune-merged.ps1`'s `-Name` is different, and it points the dangerous way.** It is an unvalidated
+list that *restricts* the sweep to those worktrees **and confirms them past the recent-activity
+veto** -- widening the blast radius rather than narrowing it.
+
+It never overrides the liveness fence, a nested worktree, or a worktree lock ([Pruning](PRUNING.md)).
 
 **The pattern is `\A...\z` rather than `^...$` on purpose.** In .NET `$` also matches before a
 trailing newline, so the `^...$` spelling would accept a name ending in one.

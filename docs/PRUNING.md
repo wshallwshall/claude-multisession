@@ -10,8 +10,12 @@ at a time from a human.
 `prune-merged.ps1` is the most destructive tool here: it destroyed a live session's worktree once,
 and every rule below came from that or a near miss. Not for you if you never create worktrees.
 
-**How to use it.** Run `prune-merged.ps1` with no flags. It is a dry run, and only `-Apply` removes
-anything. Read the first two sections before you type `-Apply`.
+**How to use it.** Run `prune-merged.ps1` with no flags, from the primary checkout. It is a dry run,
+and only `-Apply` removes anything. Read the first two sections before you type `-Apply`.
+
+**Preview with `-Fetch`, or the preview is not the run.** Without it a dry run judges merge state
+against the refs you already have, so `-Apply` can remove candidates the preview never showed. The
+refresh is hardcoded to `origin`; a trunk on another remote is judged on stale refs either way.
 
 ---
 
@@ -19,8 +23,15 @@ Two scripts remove a worktree:
 
 | Script | Who runs it | Posture |
 |---|---|---|
-| `scripts/worktree/prune-merged.ps1` | unattended sweep over every sibling worktree | dry run by default; `-Apply` acts |
-| `scripts/worktree/remove.ps1` | a human, one named worktree at a time | acts immediately, refuses on uncommitted tracked changes |
+| `scripts/worktree/prune-merged.ps1` | unattended sweep over every sibling worktree | dry run by default; `-Apply` acts. Consults the liveness fence |
+| `scripts/worktree/remove.ps1` | a human, one named worktree at a time | acts immediately, refuses on uncommitted tracked changes. **Consults no fence at all** |
+
+**`remove.ps1` has no occupancy check.** It refuses when you are standing inside the worktree, and it
+refuses on uncommitted *tracked* changes without `-Force`. It never asks whether a live session is
+sitting in that checkout. You are the fence.
+
+It also removes with `git worktree remove --force` on every path, so untracked files in that worktree
+-- a `.env`, a local database, build output -- are deleted, and git never had them to give back.
 
 Read the next two sections before you run either script. Every rule on this page is the residue of a
 removal that went wrong, or one that nearly did.
@@ -34,23 +45,36 @@ admits the work existed. This is the only failure in the whole system that git c
 So `remove.ps1` resolves and prints the tip *before* anything destructive happens. With
 `-DeleteBranch` it first writes a **keep-ref**: a spare pointer at the tip that outlives the branch.
 
+**`-Name` is the worktree directory; `-DeleteBranch` deletes the branch that worktree had checked
+out**, read from its `HEAD`. Those differ whenever the branch was namespaced. On a detached `HEAD` it
+deletes nothing and warns. The script prints the branch and the tip before it acts -- read them.
+
 **The goal.** Get back the commits of a branch `remove.ps1 -DeleteBranch` has already deleted.
 
 **What to do.** The script writes the keep-ref for you. You read it back.
 
 ```powershell
 # remove.ps1 -DeleteBranch, before the branch goes:
-git -C <primary> update-ref refs/<prefix>/removed/<name> <tip>
+git -C <primary> update-ref refs/<prefix>/removed/<worktree-name> <tip>
 
 # later, to see what is being kept and to get one back:
 git for-each-ref refs/<prefix>/removed/
-git branch <name> refs/<prefix>/removed/<name>
-git update-ref -d refs/<prefix>/removed/<name>
+git branch <real-branch-name> refs/<prefix>/removed/<worktree-name>
+git update-ref -d refs/<prefix>/removed/<worktree-name>
 ```
 
-**What happens next.** `for-each-ref` lists every tip kept this way, and `git branch` restores one
-under its old name. The keep-ref costs nothing and is the difference between "recoverable" and "gone
-at the next gc".
+`<prefix>` is `ccx` unless you changed `prefix` in `ccx.config.json`.
+
+**Those two names are not the same name.** The keep-ref is labelled with the worktree *directory*,
+because that label is always ref-safe. The branch deleted is whatever that worktree had checked out,
+and `new.ps1 -Name my-task -Branch feature/my-task` is a documented invocation.
+
+So substituting the directory name into both slots hands you the right commits on a **differently
+named branch**, with nothing saying so. `remove.ps1` prints the exact recovery command with the real
+branch name -- use that line rather than retyping this one.
+
+**What happens next.** `for-each-ref` lists every tip kept this way. The keep-ref costs nothing and
+is the difference between "recoverable" and "gone at the next gc".
 
 ### Under squash-merge, the obvious merge tests lie
 
@@ -276,8 +300,8 @@ like "everything is tidy". Three refusals exist for this class:
 ## Re-check immediately before each destructive step
 
 The decision table is built up front. `-Apply` then **re-evaluates everything from scratch in the
-same run and acts on that table**, never on a table you read a minute ago. Immediately before *each
-individual removal*, it re-reads:
+same run and acts on that table**, never on a table you read a minute ago. Before *each individual
+removal* it re-reads:
 
 1. fence availability -- a fence that **dies mid-run** stops the rest of the run;
 2. occupants, including nested;
@@ -507,5 +531,8 @@ loop really re-reads. No threads, no sleeps.
   to be closed later; it is why occupancy may only ever veto.
 - **Signal 1 has measurably low coverage of the population this tool prunes.** Treat signal 2, and the
   refusal to run without a fence, as load-bearing rather than as belt-and-braces.
-- **Only the sibling layout has scripted teardown.** Nested worktrees under `.claude/worktrees/` are
-  excluded unconditionally and are never removed by anything in this repository.
+- **Only the sibling layout has scripted teardown *here*.** `prune-merged.ps1` excludes nested
+  worktrees under `.claude/worktrees/` unconditionally, and the gate leaves them alone.
+
+  `remove.ps1` applies no such test. Under `worktreeLayout: nested` it resolves its target to that
+  path and removes it ([Worktrees](WORKTREES.md#two-layouts-coexist-and-only-one-has-scripted-teardown)).
