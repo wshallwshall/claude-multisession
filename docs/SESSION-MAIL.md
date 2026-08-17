@@ -3,8 +3,8 @@
 ## TLDR/BLUF
 
 **What this is.** Build instructions for a mailbox that reaches a [KORUS](KORUS.md) peer the
-realtime channel cannot see. Two peers need one: a VS Code companion session, and a session under a
-second Claude account.
+realtime channel can *list* but cannot *send* to. Two peers need one: an editor-extension session,
+and a session under a [second Claude account](DESKTOP-ACCOUNTS.md).
 
 **This page ships nothing. No script here implements it.** It is the design, staged as buildable
 steps, plus every failure a first attempt hits. Each failure below was measured, not reasoned about.
@@ -55,8 +55,9 @@ Confirm which tool you called before deciding a peer is unreachable.
 
 ## The shape of a working lane
 
-The lane is a **file drop** in the shared state root. A send command writes the file. A hook in the
-recipient's session reads it, and that hook is the **drain** every step below refers to.
+The lane is a **file drop** under the git common directory, in a mail root of its own -- not the
+shared state root the coordination scripts use ([Coordination](COORDINATION.md)). A send command
+writes the file; a hook in the recipient's session reads it. That hook is the **drain** below.
 
 Three design choices carry the rest of this page, and each earns its place from a measured failure
 below.
@@ -132,12 +133,20 @@ switch.
 Write one function that computes the key, dot-sourced by both the sender and the drain, so the two
 ends can never compute a different key from the same path:
 
-1. Normalize case, trailing separator and slash direction.
+0. **Resolve first.** Take the path to an absolute one, then to its worktree root
+   (`git rev-parse --show-toplevel`). A relative `-To ..\peer` and a session launched in a
+   subdirectory are both routine, and neither yields the same string as the recipient's own cwd.
+1. Normalize trailing separator and slash direction, and fold case **only on a case-insensitive
+   filesystem** ([Canonicalise before comparing](CONCEPTS.md)).
 2. Hash the normalized string for injectivity: two different paths can never land in one box.
 3. Keep a readable slug beside the hash, only so a human can tell boxes apart in a listing.
 
 **What happens next.** Sender and drain compute the same key from the same path, and a listing shows
 one box per worktree.
+
+**Step 0 is the whole guarantee.** The promise above is that the two ends agree *from the same path*
+-- it says nothing about them starting from the same path, and by default they do not. Skip it and
+you build the silent misdelivery the next paragraph warns about.
 
 **Match the key exactly, never by prefix, and expect getting it wrong to be silent.** A message
 addressed to a peer's primary checkout instead of its worktree queued, reported success, and landed in
@@ -370,8 +379,9 @@ next opens. An urgent tier can close part of that gap.
 
 **The goal.** Wake an idle recipient mid-turn, rather than waiting for its next turn boundary.
 
-**What to do.** Arm a watcher at `Stop`. It sleeps, then wakes the session through an `asyncRewake`
-hook. Arm it again on `UserPromptSubmit`, so it re-arms once per real turn.
+**What to do.** Arm a watcher at `Stop`, waking the session through a hook that carries **both**
+`async` and `asyncRewake` -- [`asyncRewake` alone can block it](HOOKS.md). Arm it again on
+`UserPromptSubmit`, so it re-arms once per real turn.
 
 **What happens next.** It works, and then it stops. It cannot re-arm itself. The wake belongs to a
 process the client spawned and is tracked by hook id, so a self-respawn produces a grandchild whose
