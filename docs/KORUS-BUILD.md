@@ -70,7 +70,7 @@ changes in; the lander is the only session that reaches the remote.</figcaption>
 | **Lander** | Every operation that touches the remote, and the order branches land in | Build |
 
 A fifth session is worth running when you keep a security register: an **ASVS monitor** whose only
-job is keeping that register current as the other three land work.
+job is keeping that register current as the build sessions land work.
 
 **Work too large for one context is the case this shape pays off in.** An OWASP ASVS 5.0 assessment
 runs to several hundred requirements, more than one session can hold. Split across sessions, the
@@ -88,9 +88,10 @@ method for that case.
 | Wire the steering hook | It only takes effect in sessions started afterwards | [Steering](STEERING.md) |
 | Write the working agreement | It only reaches sessions that start later | [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template) |
 | Turn on Ultracode and pick Opus 5 in every session | The build shape assumes workflows and adversarial review | [The KORUS framework](KORUS.md) |
+| Be on Max 20x, and expect to need more than one account | This shape spends a weekly window in about two days. Check current plan terms yourself; that page dates from 2026-08 | [The KORUS framework](KORUS.md) |
 
-If you run more than one Claude account, set the accounts up first: one desktop instance per
-account, and each one adds a config root the installers have to reach
+**Plan on more than one account rather than treating it as a wrinkle.** Set them up before you start:
+one desktop instance per account, and each one adds a config root the installers have to reach
 ([Desktop accounts](DESKTOP-ACCOUNTS.md)).
 
 ## 1. Open the dispatcher
@@ -128,20 +129,38 @@ at a time as workflows.
 Before starting a task, take a claim on it with a one-line note saying what you are building:
   pwsh -NoProfile -File scripts/coord/claim.ps1 -Take "<task>" -Note "<what you are building>"
 
-Before editing a file you did not create, check who else is in it:
-  pwsh -NoProfile -File scripts/coord/overlap.ps1
+A free-text key like this is ADVISORY: peers can see it, and nothing enforces it. Only a
+numbered key is enforced, by the commit-msg gate, and only when your commit subject names it.
+A claim can also be refused because somebody holds it -- read the result.
+
+Before editing a file you did not create, check who else is in it. Pass the path -- a bare
+run prints the whole-repo roster and never names a file:
+  pwsh -NoProfile -File scripts/coord/overlap.ps1 -File <path>
+
+Read the exit code, not just the rows. 0 means the question was answered, including an
+answer of nobody. 2 means it could not be, and silence there is not an all-clear.
 
 Commit at logical stops. Do not push, open pull requests, or merge -- tell the lander the
-branch is ready instead.
+branch is ready instead, by name.
 ```
 
 **What happens next.** Each session announces itself to the peers it can reach, takes its claims,
-and starts building. When both reach for the same file, the second one is refused rather than merged
-([Coordination](COORDINATION.md)).
+and starts building. When both reach for the same file, the second edit is normally refused rather
+than merged ([Coordination](COORDINATION.md)).
+
+**"Normally" is doing work in that sentence.** The gate refuses only when the peer worktree is live
+**and** holds uncommitted changes to that exact path. A peer that committed and went clean is
+reported and allowed.
+
+It also fails open, and its blind spots are worth reading before you rely on it
+([Limits](LIMITS.md#what-the-collision-gate-does-not-see)).
 
 **Why two rather than eight.** Two builders running four tasks each normally stay under the
-five-hour session cap, where eight separate sessions multiply the coordination traffic instead. That
-reasoning is in [The KORUS framework](KORUS.md).
+five-hour session cap, where eight separate sessions multiply the coordination traffic instead.
+
+**The five-hour cap is not the binding one.** At that rate you spend a weekly window in about two
+days, which is why the framework page expects more than one account. That reasoning is in
+[The KORUS framework](KORUS.md).
 
 [Token accounting](TOKEN-ACCOUNTING.md) measures the other half: what one percent of a weekly window
 is worth, and what a month of it costs at published API rates.
@@ -164,8 +183,11 @@ Decide which of two branches on the same ground lands first, and who re-syncs af
 You arbitrate and land. You do not build.
 ```
 
-**What happens next.** It reads the branches rather than waiting to be told about them. A pushed
-branch is the signal that work is ready.
+**What happens next.** It reads the branches rather than waiting to be told about them.
+
+**A pushed branch cannot be the signal here**, because the builder prompt forbids builders to push.
+The signal is a builder naming a ready branch, and the lander confirming it is committed and clean
+before it pushes anything.
 
 **Read the role page before you rely on it.** The authority is not transferable, the route is
 absolute, and a worker that cannot reach the lander is blocked rather than promoted.
@@ -174,12 +196,18 @@ absolute, and a worker that cannot reach the lander is blocked rather than promo
 ## The daily loop
 
 1. **Ask the dispatcher what is in flight.** It answers from the backlog, not from memory.
-2. **Check the builders have not collided.** `overlap.ps1` answers what each is changing.
+2. **Check the builders have not collided.** A bare `overlap.ps1` gives the roster; `-File <path>`
+   answers who is in one file.
 3. **Steer rather than wait.** A session deep in the wrong approach does not see your typing until
    its turn ends ([Steering](STEERING.md)).
-4. **Let the lander land.** It decides the order; you approve the grant once, in words.
-5. **Prune what merged.** The reaper removes worktrees that are merged **and** clean **and**
-   unoccupied, and declines when it cannot tell ([Pruning](PRUNING.md)).
+4. **Let the lander land.** It decides the order. You approve the push-and-merge in words, once, and
+   that approval does not carry to the next branch.
+5. **Prune what merged**, from the primary checkout. `prune-merged.ps1` refuses to run from a linked
+   worktree, and every session here is in one. It removes worktrees that are merged **and** clean
+   **and** unoccupied ([Pruning](PRUNING.md)).
+6. **Re-prove the gates when something surprises you.** They fail byte-identically to succeeding, so
+   a quiet week is not evidence: `pwsh -NoProfile -File <tooling>/bin/ccx-doctor.ps1 -Repo <target>`
+   ([Troubleshooting](TROUBLESHOOTING.md)).
 
 ## When it goes wrong
 
@@ -189,7 +217,7 @@ absolute, and a worker that cannot reach the lander is blocked rather than promo
 | Two records took the same number | The collision git cannot see | [Sequence allocation](SEQUENCE-ALLOC.md) |
 | A session is deep in the wrong approach | Your typing queues until the turn ends | [Steering](STEERING.md) |
 | Branches will not land | Four states with three different fixes | [PRs and merges](PR-AND-MERGE.md) |
-| A peer cannot be reached at all | Extension session, or another login | [Session mail](SESSION-MAIL.md) |
+| A peer cannot be reached at all | Extension session, or another login | [Session mail](SESSION-MAIL.md) -- a design to build, not a shipped lane |
 | Everything is green and you cannot tell if any of it runs | Every failure here looks like success | [Limits and requirements](LIMITS.md) |
 
 ## What this shape does not decide for you

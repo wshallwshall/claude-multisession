@@ -167,12 +167,18 @@ clone has no hooks installed, not because they could not run.
 
 ## What happens when Claude Code changes the session registry format?
 
-Everything answering "who is live" degrades to "cannot tell", and the doctor surfaces it as a record
-count going to zero.
+Everything answering "who is live" degrades to "cannot tell". How that surfaces depends on which
+half changed, and the two do not look alike.
 
-**That is not the same as fail-closed.** A fence that cannot tell issues no veto, so the collision
-gate allows the edit and says it could not check. Absence of a refusal is never evidence of absence
-of a peer.
+**A renamed field, or a changed unit.** The records still parse and still place, so the doctor's
+counts do not move. Every verdict becomes `UNVERIFIED`, which **is** a veto -- so the gates keep
+refusing rather than waving work through. You lose precision, not the guarantee.
+
+**A moved directory.** Now there are no records, the counts go to zero, and an empty roster reads
+exactly like a real all-clear. The collision gate allows every edit in silence. The census catches
+this one; nothing inside a session does.
+
+Absence of a refusal is never evidence of absence of a peer.
 
 ## How many sessions should I run?
 
