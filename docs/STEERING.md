@@ -94,8 +94,9 @@ purpose.
 ```
 
 **Keep the escaped quotes around the path.** This is the one hook you wire by hand, so nothing
-corrects it for you. Unquoted, a checkout path containing a space -- `C:/Users/First Last/...`, a
-redirected OneDrive profile -- makes `pwsh` read only the first word as `-File`.
+corrects it for you. Unquoted, a checkout path containing a space -- a two-word account name, a
+redirected OneDrive profile, a `My Projects` directory -- makes `pwsh` read only the first word as
+`-File`.
 
 Measured: it exits 64 with a usage dump on stderr and nothing on stdout. Because this hook fails
 open, that is byte-identical to "no note waiting", which the page's own
