@@ -4,8 +4,8 @@ Working state for `claude/spec-kit-verification-review-1p4fnn`. Written so anoth
 this up without replaying the conversation. Kept current as work lands.
 
 Deliberately at the repository root, not under `docs/`: it is operational, not a site page. Files
-under `docs/` are bound by `OPEN-2`, `OPEN-7` and the prose ratchets, and a handoff should not have
-to satisfy them.
+under `docs/` are bound by the house style and the prose ratchets, and a handoff should not have to
+satisfy them.
 
 Last updated 2026-08-15, after the third revision of the ADR brief.
 

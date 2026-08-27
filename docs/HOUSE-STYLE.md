@@ -3,9 +3,8 @@
 ## TLDR/BLUF
 
 **What this is.** Each rule is one testable statement with a permanent identifier, cited in a
-review comment. They demand an opening with the three labels this section carries. Then sentences
-each carrying a fact, a number, a constraint or a link, and prose that never describes its own
-structure.
+review comment. They demand sentences that each carry a fact, a number, a constraint or a link, and
+prose that never describes its own structure. No rule demands a summary section.
 
 **Why you should care.** Applying them costs length only where length was doing nothing. Not for
 you on generated files, on `PD` itself, or on `SECURE-DEVELOPMENT.md`, which left with
@@ -71,20 +70,16 @@ orientation sections were deleted for restating the page rather than opening it.
 
 | ID | Rule | Evidence |
 |---|---|---|
-| OPEN-1 | The first screen **MUST** answer, in this order: what this is, why the reader should care, and how to use it | The three answers, above the first explanatory section |
-| OPEN-2 | A page **MUST** carry a summary section, and **MUST** spell its heading `## TLDR/BLUF` exactly | `tests/test_docs_do_not_drift.py` pins the string and the presence |
 | OPEN-3 | An opening **MUST NOT** describe the page's own structure, sections, or reading order | No "this page is organized as", no "first we cover" |
-| OPEN-4 | An opening **MUST** state who the page is not for, where that set is non-empty, and **MUST** say it as a plain no. It belongs in the `Why you should care` slot | A sentence a reader can fail |
 | OPEN-5 | An opening **SHOULD** link rather than summarise, where the target says it already | A link, not a paraphrase |
-| OPEN-6 | A page longer than roughly 2,000 words **SHOULD** name its own starting point | One link, in the `How to use it` slot |
-| OPEN-7 | An opening **MUST** address the three answers, in OPEN-1's order, each its own paragraph -- in the author's own words, no fixed labels required | Checked by eye. No gate: a semantic check needs a reader, not a substring match |
-| OPEN-8 | A page published in its author's own words is exempt from `OPEN-2`, `OPEN-7` and the prose ratchets, and **MUST** be named in `AUTHORED_VERBATIM` in `tests/_ccxtest.py`. It stays bound by every rule that does not require rewriting the author: ASCII, `HS-16`, and every link resolving | One tuple, one entry. `tests/test_docs_do_not_drift.py` fails when it names a file this page does not |
+| OPEN-6 | A page longer than roughly 2,000 words **SHOULD** name its own starting point | One link, near the top |
+| OPEN-8 | A page published in its author's own words is exempt from the prose ratchets and from the extensionless half of the source-link scan, and **MUST** be named in `AUTHORED_VERBATIM` in `tests/_ccxtest.py`. It stays bound by every rule that does not require rewriting the author: ASCII, `HS-16`, and every link resolving | One tuple, one entry. `tests/test_docs_do_not_drift.py` fails when it names a file this page does not |
 
 ### OPEN-8 names one file, and that is the whole of the exemption
 
 `docs/KORUS.md` is the only page under it: a document its author asked to publish unedited. Four
-gates were red against it before this rule existed -- `OPEN-2`, `OPEN-7`, the source-link scan, and
-`HS-20` at 94 paragraphs against a baseline of 88.
+gates were red against it before this rule existed -- `OPEN-2` and `OPEN-7`, both since retired,
+the source-link scan, and `HS-20` at 94 paragraphs against a baseline of 88.
 
 **The exemption is a tuple of exact paths, never a pattern.** `AUTHORED_VERBATIM` in
 `tests/_ccxtest.py` is its only definition, and three tests in two files read it rather than
@@ -101,36 +96,42 @@ clean-URL fallback, measured on 2026-08-12 against `/WORKTREES` and `/USAGE-AWAR
 What OPEN-8 does not touch: the ASCII gate, `HS-16`, every link resolving, and the site building.
 An exempt page is still one a reader has to be able to load.
 
-### What OPEN-7 demanded before 2026-08-16
+### OPEN-1, OPEN-2, OPEN-4 and OPEN-7: retired 2026-08-27, and no rule replaces them
 
-It required the three answers **verbatim and labelled**: `**What this is.**`, `**Why you should
-care.**`, `**How to use it.**`, matched by exact substring in `tests/test_docs_do_not_drift.py`.
+Retired on the owner's instruction. `PD-6` keeps the four identifiers; none is reissued.
 
-A reworded or unbolded label read as absent, on purpose -- the labels were meant to be the same
-three words on every page.
+Between them they required an opening summary on every rendered page. `OPEN-2` demanded the heading
+`## TLDR/BLUF`, spelled exactly that way, and `tests/test_docs_do_not_drift.py` gated its presence.
 
-**That gate is retired.** The three elements are still required; the fixed phrasing is not. A page
-may open in its own words, as long as a reader can find what this is, why to care, and how to use
-it, in that order.
+`OPEN-1` and `OPEN-7` demanded three answers inside that section -- what this is, why the reader
+should care, and how to use it -- in that order, each its own paragraph.
 
-Nothing checks the wording for that anymore. A semantic check needs a reader, not a substring
-match.
+`OPEN-4` demanded a plain statement of who the page is not for, in the `Why you should care` slot.
 
-### What OPEN-1 and OPEN-2 demanded before 2026-08-10
+**The presence gate is deleted. The spelling ban is not.** `tests/test_docs_do_not_drift.py` still
+refuses `## In short` and `**TL;DR --**`, the two spellings the set replaced.
 
-Both were reworded rather than reissued, and both changed what they demand, which is normally the
-trigger for a new identifier. The change is recorded here instead so that a citation written against
-the old text resolves to something rather than to a rule that quietly means something else.
+That ban holds a page that HAS a summary section to one spelling. It requires no page to have one.
 
-- **OPEN-1** required four answers -- what this is, *what it costs the reader*, who it is not for, and
-  where to start. It now requires the three above. "What it costs" is no longer a slot of its own;
-  where a page has a real cost to state, it goes in `Why you should care`.
-- **OPEN-2** ended with "A page **MAY** have no summary section at all". That permission is gone.
-  Every rendered page carries the section, which is what made OPEN-7 gateable: 15 of the 18 pages
-  had no summary section on 2026-08-10, so the rule had almost nothing to bind to.
+Pages carrying a summary section keep it. Retiring a rule does not delete what was written under it.
 
-`OPEN-4` was reworded under its own identifier without changing what it demands: the not-for-you
-sentence is still required, it is now told which slot to sit in.
+### What the four demanded before they were retired, so an old citation resolves
+
+`OPEN-1` first required four answers -- what this is, *what it costs the reader*, who it is not for,
+and where to start. It was cut to three on 2026-08-10, and cost moved into `Why you should care`.
+
+`OPEN-2` ended with "A page **MAY** have no summary section at all" until that same day. On
+2026-08-10, 15 of the 18 rendered pages carried no summary section, so it bound almost nothing.
+
+`OPEN-7` required the three answers **verbatim and labelled**: `**What this is.**`, `**Why you
+should care.**`, `**How to use it.**`, matched by exact substring. A reworded or unbolded label read
+as absent, on purpose.
+
+2026-08-16 relaxed it to the three answers in the author's own words. The substring gate outlived
+the rule by one day, and for that day this page described a control it no longer had.
+
+`OPEN-4` was reworded once under its own identifier without changing what it demanded: the
+not-for-you sentence stayed required, and was told which slot to sit in.
 
 ---
 
