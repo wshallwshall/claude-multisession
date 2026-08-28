@@ -730,20 +730,21 @@ class TheBlufConventionHasOneSpelling(unittest.TestCase):
     way, none of them wrong to do so because nothing recorded that the spelling had moved. Every one
     passed every gate. The set went from three pages to five to eight in a few hours.
 
-    WHAT IS PINNED HERE. Only that no page carries a SUPERSEDED spelling. Whether a page must HAVE a
-    BLUF is now a separate question, answered by EveryRenderedPageOpensWithTheThreeAnswers below.
+    WHAT IS PINNED HERE. Only that no page carries a SUPERSEDED spelling. Nothing requires a page to
+    have a summary section at all, and this class has never been the place that did.
 
-    THAT SPLIT USED TO BE A DELIBERATE RESTRAINT, AND THE REASON FOR IT EXPIRED. This class once
-    declined to require a BLUF at all, on the stated grounds that requiring one would be an editorial
+    THAT SPLIT WAS A DELIBERATE RESTRAINT, IT EXPIRED, AND IT IS THE WHOLE RULE AGAIN. This class
+    once declined to require a BLUF, on the stated grounds that requiring one would be an editorial
     rule about what every future standard must contain, and that two published pages --
     WHICH-STANDARDS-APPLY.md and STANDARDS-REFERENCE.md -- deliberately had none, each opening on a
-    bold lede doing the same job unheaded. Both of those pages left with the standards for their own
-    repository. No page here was under that reasoning any more, and on 2026-08-10 the owner settled
-    the editorial question the restraint was protecting: every rendered page carries the section, and
-    carries three labelled answers inside it. The restraint was right while the decision was open. It
-    was not a permanent property of the check.
+    bold lede doing the same job unheaded. Both left with the standards for their own repository, and
+    on 2026-08-10 the owner settled the editorial question by requiring the section on every rendered
+    page, gated by OPEN-2. On 2026-08-27 the owner retired OPEN-2, and the three rules describing
+    what went inside the section with it. That gate is deleted; docs/HOUSE-STYLE.md carries the
+    tombstone.
 
-    So: spell it the way the rest of the set does, and see below for who must have one.
+    So: a page may open however it opens, and a page that heads a summary section spells that heading
+    the way the rest of the set does.
     """
 
     def test_no_page_carries_a_superseded_bluf_spelling(self):
@@ -767,24 +768,24 @@ class TheBlufConventionHasOneSpelling(unittest.TestCase):
             "same commit.",
         )
 
-    def test_the_canonical_heading_is_actually_in_use(self):
+    def test_the_scan_actually_reads_markdown(self):
         """The empty-match guard. A scan for absences passes trivially against an empty corpus.
 
-        If nothing carries the canonical spelling, either the convention was renamed again without
-        this file being told, or `tracked_files` has stopped returning markdown -- and in both cases
-        the case above is asserting nothing while reporting success.
+        IT COUNTS THE FILES SCANNED, NOT THE PAGES CARRYING THE HEADING. Until 2026-08-27 it counted
+        the latter and required five, which was sound while OPEN-2 required the section on every
+        rendered page, and became a back-door copy of that rule the moment OPEN-2 was retired. A
+        corpus where four pages choose a summary section is now legitimate, and a gate that reddens a
+        legitimate editorial choice is one people delete.
+
+        What it still catches is the failure that would silence the ban above: `tracked_files`
+        returning no markdown, which leaves it asserting nothing while reporting success.
         """
-        carrying = [
-            relpath
-            for relpath in tracked_files()
-            if relpath.endswith(".md") and BLUF_HEADING in t.read(t.REPO_ROOT / relpath)
-        ]
+        scanned = [relpath for relpath in tracked_files() if relpath.endswith(".md")]
         self.assertGreaterEqual(
-            len(carrying),
-            5,
-            f"only {len(carrying)} tracked pages carry {BLUF_HEADING!r}. The absence scan above "
-            "would pass against a corpus where the convention had been renamed out from under it, "
-            "so this number is what makes that scan mean anything.",
+            len(scanned),
+            20,
+            f"the ban above scanned only {len(scanned)} markdown files. It would pass against a "
+            "corpus it cannot read, so this number is what makes that scan mean anything.",
         )
 
     def test_the_superseded_patterns_match_the_spellings_they_exist_to_catch(self):
@@ -878,33 +879,29 @@ class TheNextFreeIdentifierIsAboveEverythingThisPageIssues(unittest.TestCase):
         self.assertEqual([("B", "18")], self.DECLARED_NEXT_FREE.findall(row))
 
 
-class EveryRenderedPageCarriesItsSummarySection(unittest.TestCase):
-    """OPEN-2: the summary section exists on every rendered page, spelled the one way.
+class TheAuthoredVerbatimExemptionStaysVisible(unittest.TestCase):
+    """OPEN-8: the one page published unedited is a real page, and the rule sheet names it.
 
-    THIS CLASS USED TO ENFORCE OPEN-7 AS WELL, and the half that went is worth recording rather than
-    silently deleting. It pinned three labels -- `**What this is.**`, `**Why you should care.**`,
-    `**How to use it.**` -- verbatim and in order on every page, so a reworded or unbolded one read
-    as absent. OPEN-7 was relaxed on 2026-08-16 to require the three ANSWERS in the author's own
-    words rather than three fixed phrases, and docs/HOUSE-STYLE.md carries the tombstone.
-
-    The gate was removed the day after the rule was, on the owner's instruction. It is called out
-    here because for that day the rule sheet said "No gate: a semantic check needs a reader, not a
-    substring match" while the substring match was still running and still green -- a document
+    THIS CLASS USED TO GATE THE OPENING CONVENTION, and what went is worth recording rather than
+    silently deleting. It enforced OPEN-7 by pinning three labels -- `**What this is.**`, `**Why you
+    should care.**`, `**How to use it.**` -- verbatim and in order on every rendered page, so a
+    reworded or unbolded one read as absent. OPEN-7 was relaxed on 2026-08-16 to require the three
+    ANSWERS in the author's own words, and that half of the gate went the day after, on the owner's
+    instruction. For that one day the rule sheet said "No gate: a semantic check needs a reader, not
+    a substring match" while the substring match was still running and still green -- a document
     describing a control it did not have, which is the defect this whole suite exists to refuse.
 
-    WHAT REPLACES IT IS NOTHING, deliberately. A semantic check needs a reader. OPEN-2 below is the
-    part a substring match can honestly hold: the section is there, and it is spelled one way.
+    THE OTHER HALF WENT ON 2026-08-27, also on the owner's instruction. It held OPEN-2: every page
+    docs/ renders carries `## TLDR/BLUF`, spelled that one way. OPEN-1, OPEN-2, OPEN-4 and OPEN-7
+    are retired together in docs/HOUSE-STYLE.md, and no rule now requires a page to open with a
+    summary section. What survives is one class up: the BAN on the spellings the set replaced, which
+    binds a page that has such a section and demands nothing of a page that does not.
 
-    WHY THIS IS GATED RATHER THAN LEFT TO REVIEW. On 2026-08-10, 15 of the 18 rendered pages had no
-    summary section at all -- the convention existed on COORDINATION, HOUSE-STYLE and index and
-    nowhere else, and nothing recorded that the other 15 were missing it. That is the same shape as
-    the drift the class above exists for: a convention that is real on some pages, absent on most,
-    and green either way.
+    AN EMPTY-MATCH GUARD WENT WITH THE SCAN IT GUARDED. It asserted at least 15 rendered pages,
+    because the deleted scan reported success over an empty list. The assertion below cannot: it
+    reads each exempt path and fails when the list of rendered pages does not contain it.
 
-    SCOPE IS THE RENDERED SITE, NOT THE CORPUS. README.md and INSTALL.md carry a BLUF and are
-    deliberately NOT under OPEN-7. They live at the repository root, outside the Jekyll source, so
-    the site links them as raw `.md` rather than serving them, and they are written for a reader
-    arriving from GitHub rather than from the nav. 404.md is a Jekyll stub, not a page.
+    WHAT IS LEFT IS THE EXEMPTION'S OWN INTEGRITY, which was always this class's other job.
     """
 
     NOT_A_PAGE = ("docs/404.md",)
@@ -915,25 +912,6 @@ class EveryRenderedPageCarriesItsSummarySection(unittest.TestCase):
             for f in tracked_files()
             if f.startswith("docs/") and f.endswith(".md") and f not in self.NOT_A_PAGE
         ]
-
-    def pages_under_the_open_rules(self) -> list[str]:
-        """Rendered pages minus the OPEN-8 exemptions.
-
-        OPEN-2 demands a specific heading in a specific place, which cannot be applied to a page
-        published in its author's own words without editing those words. OPEN-8 names the pages that
-        are, and t.AUTHORED_VERBATIM is its only list.
-        """
-        return [f for f in self.rendered_pages() if f not in t.AUTHORED_VERBATIM]
-
-    def test_the_scan_actually_reads_the_rendered_pages(self):
-        """The empty-match guard. Every assertion below passes trivially over an empty list."""
-        pages = self.rendered_pages()
-        self.assertGreaterEqual(
-            len(pages),
-            15,
-            f"only {len(pages)} rendered pages found. The checks below would report success while "
-            "measuring nothing. If docs/ really shrank this far, lower the number deliberately.",
-        )
 
     def test_the_open_8_exemption_is_real_tracked_and_named_in_the_house_style(self):
         """An exemption nobody can see is the failure mode of every exemption.
@@ -963,19 +941,6 @@ class EveryRenderedPageCarriesItsSummarySection(unittest.TestCase):
                 "file under OPEN-8 there, with the reason it is published unedited.",
             )
 
-    def test_every_rendered_page_carries_the_section(self):
-        missing = [
-            f for f in self.pages_under_the_open_rules() if BLUF_HEADING not in t.read(t.REPO_ROOT / f)
-        ]
-        self.assertEqual(
-            [],
-            missing,
-            "OPEN-2: these rendered pages carry no summary section:\n  "
-            + "\n  ".join(missing)
-            + f"\nEvery page the site renders must carry {BLUF_HEADING!r}. If a page genuinely "
-            "should not have one, that is a change to OPEN-2 in docs/HOUSE-STYLE.md and to this "
-            "test, not an exemption added here.",
-        )
 
 if __name__ == "__main__":
     unittest.main()
