@@ -1,0 +1,7 @@
+{
+  "key": "13",
+  "note": "retry backoff",
+  "branch": "feat/retry",
+  "worktree": "/ccx-fixture/wt-b",
+  "claimed": "2026-01-01T09:00:00.0000000Z"
+}

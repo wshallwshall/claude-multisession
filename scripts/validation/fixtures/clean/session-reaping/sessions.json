@@ -1,0 +1,16 @@
+[
+  {
+    "sessionId": "ccccccc3",
+    "cwd": "/ccx-fixture/wt-c",
+    "state": "DEAD",
+    "lastWriteAt": "2025-12-01T09:00:00.0000000Z",
+    "why": "gone, and quiet since the date above -- the state the check must stay silent about"
+  },
+  {
+    "sessionId": "ddddddd4",
+    "cwd": "/ccx-fixture/wt-d",
+    "state": "LIVE",
+    "lastWriteAt": "2099-01-01T00:00:00.0000000Z",
+    "why": "the date is absurd on purpose: a fixture must not age into a finding, and a live session that wrote a moment ago is the case that has to stay clean"
+  }
+]

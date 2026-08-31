@@ -82,6 +82,24 @@ No installer wires either of these. This repository's own CI does, in
 | `scripts/security/scan_forbidden.py` | The leak gate: refuse identifying content before a private repo goes public. `--path DIR`, `--show-context`. With no token source it scans shapes only and still exits 0; `--require-tokens` refuses instead | [Leak gate](LEAK-GATE.md) |
 | `scripts/quality/check-ascii.ps1` | The ASCII gate: names every non-ASCII character it finds, and `-Fix` rewrites the safe substitutions. The doctor reports it `OFF (opt-in)`, because nothing installs it | [House style](HOUSE-STYLE.md) |
 
+## Instruments for a run
+
+These fire only when something is wrong. Read
+[what broken looks like](https://claude-multisession.pages.dev/scripts/validation/README.md) before
+the first run, not after: it states what counts as broken, and when the run is over.
+
+| Script | Does | Doc |
+|---|---|---|
+| `scripts/validation/run-checks.ps1` | Proves every instrument against a planted broken corpus and a planted clean one, then runs the same checks against this machine. Exits 3 without measuring anything when a control misbehaves | [What broken looks like](https://claude-multisession.pages.dev/scripts/validation/README.md) |
+| `scripts/validation/check-message-delivery.ps1` | Messages written against messages rendered. Fires when a message sat past the settle window with no receipt naming it | [Session mail](SESSION-MAIL.md) |
+| `scripts/validation/check-message-expiry.ps1` | Receipts against deadlines. Fires when a message passed the ttl its sender set, unshown | [Session mail](SESSION-MAIL.md) |
+| `scripts/validation/check-claim-holders.ps1` | Claim holders per item. Fires when two keys naming one item are held by two live worktrees, or one claim's worktree holds two live sessions | [Coordination](COORDINATION.md) |
+| `scripts/validation/check-allocation-collisions.ps1` | Every ref, grouped by sequence number. Fires when one number maps to two paths its index row does not declare as companions | [Sequence allocation](SEQUENCE-ALLOC.md) |
+| `scripts/validation/check-session-reaping.ps1` | Liveness against last write. Fires when a live record's worktree has seen no commit and no file write for a day | [Pruning](PRUNING.md) |
+
+Nothing here gates a commit or a push. They report, and a CANNOT_TELL verdict means nothing was
+examined rather than nothing was wrong.
+
 ## Internals and installers
 
 [Quickstart](QUICKSTART.md) runs the four installers in order. [Install](INSTALL.md) is the

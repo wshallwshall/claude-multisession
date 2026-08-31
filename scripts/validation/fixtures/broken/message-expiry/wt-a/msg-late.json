@@ -1,0 +1,7 @@
+{
+  "id": "msg-late",
+  "to": "wt-a",
+  "sentAt": "2026-01-01T09:00:00.0000000Z",
+  "ttlMinutes": 30,
+  "body": "past its deadline with no receipt"
+}
