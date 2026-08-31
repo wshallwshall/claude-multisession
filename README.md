@@ -238,6 +238,7 @@ to be answerable without running anything.
   "worktreeLayout": "sibling",
   "setupHook": ".ccx/worktree-setup.ps1",
   "protectedRefs": ["refs/heads/main", "refs/heads/master"],
+  "ciRed": { "label": "ci-red" },
   "sequences": {
     "adr": {
       "dir": "docs/adr",
@@ -257,6 +258,7 @@ to be answerable without running anything.
 | `worktreeLayout` | `sibling` or `nested`. The path formula lives once, in `_common.ps1` |
 | `setupHook` | What a fresh checkout of *your* project needs. This is the key that makes the tooling language-agnostic -- see `examples/worktree-setup.ps1.example` |
 | `protectedRefs` | `push_guard.py`. An explicitly empty list disables the guard **with a message on stderr**, because a guard that is off must never look like a guard that passed |
+| `ciRed` | `watch-ci-red.ps1`: the label your repository puts on a pull request whose required check failed, plus optional `repo`, `claimPrefix` and `spawn` keys. The label is a contract the watcher reads, never one it defines -- see [Watching for a red](docs/CI-RED-WATCH.md) |
 | `sequences` | `alloc.ps1`, `seq_check.py`, and the item token `claim_check.py` matches. **Omit the key entirely and all sequence machinery is off** |
 
 Two optional files you own: `.ccx/session-banner.md` (your project's SessionStart policy text -- see
@@ -348,6 +350,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/CASE-STUDY-correction-chain.md` | One finding restated four times across two sessions, two statements wrong -- what a correction sequence licenses and what it does not |
 | `docs/TIPS-AND-TRICKS.md` | The "wish I'd known" file, ordered by when it bites: setting up, running two at once, writing a guardrail, proving it works, cleaning up |
 | `docs/USAGE-AWARENESS.md` | Warning a session before it hits a hard usage cutoff, and why that is harder than it looks. Ships no hook -- the mechanism depends on undocumented client internals, so what transfers is the design and the eight ways it reports confidently wrong numbers |
+| `docs/CI-RED-WATCH.md` | The cron watcher that notices a red required check and starts one session to attribute it. Zero model calls while your repository is quiet, one claim per red, and exit 2 rather than a zero it could not establish |
 | `CLAUDE.md.template` | A working agreement to drop into your own repo: plan first, commit-versus-push approval split, never grep for a number, shared memory across worktrees |
 
 **The standards are a separate project now** -- roughly half of this repository, sharing none of its
