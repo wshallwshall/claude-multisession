@@ -334,6 +334,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `INSTALL.md` | The installers, their scopes, how to *prove* each one is live rather than merely merged, and what the exit code means on a partial install |
 | `docs/FEED-THIS-TO-CLAUDE-CODE.md` | A page to paste into Claude Code so it evaluates *your* repository against this tooling and tells you which parts you need |
 | `docs/RUNNING-MULTIPLE-SESSIONS.md` | The entry point to the running-sessions group: which surface to run sessions on, the channels they have for reaching each other, and using one session as a lander |
+| `docs/WORKER-BRIEF.md` | The prompt template a coordinating session fills in when it spawns a worker, and the prohibition that makes a worker ask instead of guessing |
 | `docs/CONCEPTS.md` | The model: worktree-per-session, the shared state root, the liveness fence, exclusive-create, why there are no TTLs |
 | `docs/HOOKS.md` | The hook-event map, the wiring contract, and the house rules for writing one that cannot fail silently |
 | `docs/WORKTREES.md` | Day to day: create, rescue, restore, remove, and the two layouts that coexist |

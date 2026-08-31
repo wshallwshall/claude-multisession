@@ -144,6 +144,10 @@ Commit at logical stops. Do not push, open pull requests, or merge -- tell the l
 branch is ready instead, by name.
 ```
 
+**That prompt is a brief, and every brief runs out.**
+[Brief a worker session](WORKER-BRIEF.md) is the template for one, plus the rule that makes a worker
+ask rather than guess when it does.
+
 **What happens next.** Each session announces itself to the peers it can reach, takes its claims,
 and starts building. When both reach for the same file, the second edit is normally refused rather
 than merged ([Coordination](COORDINATION.md)).
@@ -235,6 +239,7 @@ the remedy is single-writer convention rather than a gate.
 
 | For | Read |
 |---|---|
+| The template for one worker's prompt, and the rule that stops it guessing | [Brief a worker session](WORKER-BRIEF.md) |
 | The account of why this shape, in its author's words | [The KORUS framework](KORUS.md) |
 | Which surface to run the sessions on, and the channels between them | [Running multiple sessions](RUNNING-MULTIPLE-SESSIONS.md) |
 | The model every page here applies | [Concepts](CONCEPTS.md) |
