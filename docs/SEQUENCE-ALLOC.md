@@ -130,6 +130,20 @@ A read-modify-write on a shared list is not an alternative. Measured on the repo
 developed in: eight concurrent PowerShell writers to one file lost **four** writes with no error
 raised. Eight concurrent allocator processes produced eight distinct numbers and zero collisions.
 
+**That claim is executed, not asserted.** `tests/test_a_number_is_claimed_by_creating_a_file.py`
+runs real allocator processes against throwaway repositories.
+
+It has already caught a regression against the sentence above. Eight simultaneous runs returned
+SEVEN numbers: one process died on the shared high-water file, inside the floor sweep, before it had
+claimed anything.
+
+The timing half is still not the strong half. Mutate the claim to `Create` and eight racers return
+eight distinct numbers anyway, because the floor skips a number a claim file exists for.
+
+So the case that matters supplies the collision. One line inserted into a copy of the claim loop
+writes the file the instant the number is chosen. That is a sibling winning by a microsecond, made
+to happen every time.
+
 The registry lives in `<git-common-dir>/<prefix>-coord/alloc`, resolved by `Get-CcxStateRoot` in
 `scripts/coord/_common.ps1` and by `state_root()` in `scripts/hooks/_ccxconfig.py`. Every linked
 worktree sees the same allocations, another clone gets its own, and `git add -A` cannot reach it.
@@ -171,6 +185,37 @@ from `examples/sequence-adr/`:
 
 **What happens next.** Both scripts validate this key **before touching the registry**, and name the
 offending key in what they print.
+
+### More than one ledger
+
+`sequences` is a map, so declare as many as the repository keeps. A repo holding decision records
+and a backlog declares both, each with its own five keys.
+
+```json
+{
+  "sequences": {
+    "adr":     { "dir": "docs/adr",     "filePattern": "^docs/adr/(\\d{4})-[^/]+\\.md$", "pad": 4 },
+    "backlog": { "dir": "docs/backlog", "filePattern": "^docs/backlog/(\\d+)-[^/]+\\.md$" }
+  }
+}
+```
+
+Each kind gets its own registry directory, so two ledgers never share a floor or a claim. Adding one
+edits no existing entry. `-Kind` becomes required at two, and the allocator lists the names on a
+miss.
+
+Two rules apply only once there are two. The allocator checks both before it touches the registry.
+
+| Rule | Why |
+|---|---|
+| A name must be one plain path segment | It becomes a directory under the registry. A sequence named `../escape` wrote its claims outside it and reported success |
+| No two entries may share a `filePattern`, or an `indexFile` plus `indexRowPattern` | The claim excludes per kind. Two entries recognising one set of files can each issue the same number |
+
+Identical patterns are the half that can be proved to overlap. Two different regexes can still
+describe overlapping sets, and nothing checks for that.
+
+So give each sequence a pattern only its own files match. The realistic way in is copy-paste: clone
+the `adr` block, rename it, forget to change the strings.
 
 **Most per-sequence errors do not name the config file.** Discovery walks upward and `CCX_CONFIG` can
 redirect it, so the file you are editing may not be the one that loaded. Run the doctor to see which

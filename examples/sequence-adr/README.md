@@ -181,7 +181,13 @@ question.
 
 Add a second entry under `sequences` and `-Kind` stops being optional; the allocator lists the
 configured names on a miss rather than restating them in a `ValidateSet` that would then have to be
-kept in step with the config.
+kept in step with the config. Each kind gets its own registry directory, so two ledgers never share
+a floor or a claim, and adding one edits no existing entry.
+
+Two rules apply only once there are two: a sequence name must be one plain path segment, and no two
+entries may share a `filePattern`, or an `indexFile` plus `indexRowPattern`. Both are checked before
+the registry is touched -- see
+[More than one ledger](../../docs/SEQUENCE-ALLOC.md#more-than-one-ledger).
 
 ### One shape this does not fully cover
 
