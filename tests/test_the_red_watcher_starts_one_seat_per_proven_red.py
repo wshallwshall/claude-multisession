@@ -481,8 +481,20 @@ class TheSpawnedSeatIsGivenAJournalRatherThanAMemory(WatcherCase):
         prompt = self.spawns()[0]
         journal = self.state_root() / "ci-red" / "pr-42.md"
         self.assertTrue(journal.exists(), f"no journal at {journal}")
-        self.assertIn(
-            str(journal), prompt,
+
+        # RESOLVE BOTH SIDES RATHER THAN COMPARING THE STRINGS. On the Windows CI runner, Python's
+        # temp directory comes back in the 8.3 short form (`RUNNER~1`) while PowerShell hands back
+        # the long one (`runneradmin`), so a substring test fails on two correct spellings of one
+        # path. Resolving also makes this a stronger assertion than the one it replaces: the prompt
+        # must name THE journal file, not merely contain a string that looks like its path.
+        named = re.search(r"Read '([^']+)'", prompt)
+        self.assertIsNotNone(
+            named,
+            "the prompt no longer quotes a path after the word Read, so this case can no longer "
+            f"find the journal it is supposed to check. Prompt was: {prompt}",
+        )
+        self.assertEqual(
+            journal.resolve(), Path(named.group(1)).resolve(),
             "the seat was started without being told where its journal is. It begins with no "
             "memory of the last red, so a prompt that does not name the journal produces a session "
             "that re-derives everything and records nothing.",
