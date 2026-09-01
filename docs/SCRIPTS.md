@@ -79,7 +79,7 @@ in the column above. Nothing installs it: you register the schedule.
 
 | Script | Does | Doc |
 |---|---|---|
-| `scripts/cron/watch-ci-red.ps1` | Polls for pull requests your repository labelled red and starts one session per red to attribute it. Zero model calls, so a quiet repository is free. Exits 2 rather than reporting a zero it could not establish. `-DryRun`, `-Json` | [Watching for a red](CI-RED-WATCH.md) |
+| `scripts/cron/watch-ci-red.ps1` | Polls for pull requests your repository labelled red and starts one session per red to attribute it. Zero model calls. Exits non-zero on a zero it could not establish, or on a claim whose seat has died. `-DryRun`, `-Json` | [Watching for a red](CI-RED-WATCH.md) |
 
 ## Gates you have to run yourself
 

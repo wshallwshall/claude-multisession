@@ -106,6 +106,42 @@ file is missing, the run refuses and says so instead of starting a seat.
 Nothing releases the claim on your behalf. The seat releases it when it is done, which is why the
 briefing carries the release command.
 
+## A held claim does not mean anyone is still working the red
+
+This is the mirror of the rule above, and it costs the same thing.
+
+Claims never expire. The claim also names the **watcher's own checkout** as the holder, because that
+is where `claim.ps1` gets run from. Every liveness probe in this project reads the holder's worktree,
+and that worktree is the one the cron ticks from, so it is always there.
+
+Put those together and a seat that died one second after it started reads exactly like a seat that is
+mid-attribution. Forever. The red waits on nobody while every tick prints a line that looks like
+coverage.
+
+So each spawn writes a dispatch record beside the journal. It holds the seat's process id, the start
+time that tells that id from a reused one, and the journal's length at briefing time.
+
+A later tick reads that record and answers in three different words.
+
+| The tick finds | It says | Exit |
+|---|---|---|
+| The seat process is still running | `ALREADY-CLAIMED` | 0 |
+| The process is gone, or its id now belongs to something else | `SEAT-GONE` | 1 |
+| No dispatch record, or a start time it cannot read | `SEAT-UNKNOWN` | 1 |
+| The key is held by another worktree | `ALREADY-CLAIMED` | 0 |
+
+`SEAT-GONE` also says whether the seat appended to the journal before it went. A seat that wrote
+nothing left the red unattributed; a seat that wrote left a verdict and only failed to release its
+key, and those need different things from you.
+
+**Nothing is released or respawned on the strength of that reading.** A seat that exits without
+releasing may have finished.
+
+Releasing on that inference frees the key for a second seat to re-attribute work already done.
+Respawning on it starts a session every tick for as long as the label stays on.
+
+The run reports what it can prove, fails, and hands you the release command.
+
 ## A missing label is not an all clear
 
 Measured 2026-08-31: `CLAUDE_CONFIG_DIR` pointing at a directory that does not exist makes
