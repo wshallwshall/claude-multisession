@@ -2,11 +2,11 @@
 
 ## TLDR/BLUF
 
-**What this is.** The four-session build shape, with the opening prompt for each session and what to
+**What this is.** The build shape, with the opening prompt for each session and what to
 expect back. The shape comes from [The KORUS framework](KORUS.md), one operator's account of months
 of Claude Code work; this page is the operating procedure for it.
 
-**Why you should care.** Four sessions with distinct jobs beat four sessions all doing the same job,
+**Why you should care.** Sessions with distinct jobs beat the same sessions all doing the same job,
 because the failures that cost you work come from two sessions deciding the same thing. Not for you
 until [Quickstart](QUICKSTART.md) is done: this page assumes the gates are installed and proven.
 
@@ -17,12 +17,12 @@ paste, and what the session should do first.
 
 ## The shape
 
-Four sessions, three jobs. **Nothing here implements the roles**: there is no dispatcher script, no
+A seat per job. **Nothing here implements the roles**: there is no seat script, no
 role flag, and no routing. The roles are a convention you establish in each session's opening prompt
 and in your `CLAUDE.md`.
 
 <figure role="group">
-<svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The four-session KORUS shape. A backlog feeds a dispatcher, which hands tasks to two build sessions. Each builder works in its own git worktree on its own branch, and a claim marks which task each holds. The collision gate sits between the two builders and refuses an edit to a file the other one already has uncommitted changes in. Both builders hand finished branches to a single lander session, which is the only one that pushes or merges, and a push guard sits between the lander and the trunk.">
+<svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The KORUS build shape. A backlog feeds a console, which writes a brief and spawns a build session for it. Each builder works in its own git worktree on its own branch, and a claim marks which task each holds. The collision gate sits between the two builders and refuses an edit to a file the other one already has uncommitted changes in. Each builder pushes its own branch and opens its own pull request, and the lander decides what enters the merge queue, with a push guard between the lander and the trunk.">
   <defs>
     <marker id="korus-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
@@ -32,8 +32,8 @@ and in your `CLAUDE.md`.
   <text x="95" y="55" font-size="12" text-anchor="middle" fill="currentColor">Backlog</text>
   <line x1="95" y1="70" x2="95" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
   <rect x="20" y="130" width="150" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
-  <text x="95" y="152" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Dispatcher</text>
-  <text x="95" y="170" font-size="11" text-anchor="middle" fill="currentColor">plans, tracks, assigns</text>
+  <text x="95" y="152" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Console</text>
+  <text x="95" y="170" font-size="11" text-anchor="middle" fill="currentColor">briefs and spawns</text>
   <line x1="170" y1="145" x2="286" y2="95" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
   <line x1="170" y1="172" x2="286" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
   <text x="205" y="105" font-size="10" font-style="italic" fill="currentColor">claim</text>
@@ -52,25 +52,27 @@ and in your `CLAUDE.md`.
   <line x1="520" y1="259" x2="620" y2="196" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
   <rect x="622" y="145" width="170" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
   <text x="707" y="167" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Lander</text>
-  <text x="707" y="185" font-size="11" text-anchor="middle" fill="currentColor">the only one that pushes</text>
+  <text x="707" y="185" font-size="11" text-anchor="middle" fill="currentColor">sets the merge order</text>
   <line x1="707" y1="201" x2="707" y2="279" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
   <text x="716" y="228" font-size="10" font-style="italic" fill="currentColor">push guard</text>
   <rect x="622" y="281" width="170" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
   <text x="707" y="306" font-size="12" text-anchor="middle" fill="currentColor">trunk</text>
 </svg>
-<figcaption>The dispatcher assigns; each builder holds a claim and its own worktree; the collision
-gate sits between the builders and refuses an edit to a file the other already has uncommitted
-changes in; the lander is the only session that reaches the remote.</figcaption>
+<figcaption>The console briefs and spawns; each builder holds a claim and its own worktree; the
+collision gate sits between the builders and refuses an edit to a file the other already has
+uncommitted changes in; the lander decides what enters the merge queue.</figcaption>
 </figure>
 
 | Session | Owns | Must not |
 |---|---|---|
-| **Dispatcher** | The plan, the backlog, and which task goes to which builder | Write application code |
-| **Builder** x2 | Building its own tasks on its own branch, about four at a time | Push, open a pull request, or merge |
-| **Lander** | Every operation that touches the remote, and the order branches land in | Build |
+| **Console** | The plan, the backlog, and which task gets briefed next | Write application code |
+| **Builder** | The change, the commit, the push, and the pull request for one brief | Guess at what the brief left open, or wait for an answer |
+| **Reviewer** | Reading the diff on one pull request, and the reviewed label | Merge, or label a pull request it did not read |
+| **Regulator** | Deciding whose failure a red is: the pull request's, the trunk's, a flake's, or the queue's | Assume it remembers an earlier red |
+| **Lander** | What enters the merge queue and in what order | Merge a pull request with no reviewed label |
 
-A fifth session is worth running when you keep a security register: an **ASVS monitor** whose only
-job is keeping that register current as the build sessions land work.
+**The ASVS monitor session is retired.** It ran as a fifth session whose only job was keeping a
+security register current as the build sessions landed work. That seat ended on 2026-09-01.
 
 **Work too large for one context is the case this shape pays off in.** An OWASP ASVS 5.0 assessment
 runs to several hundred requirements, more than one session can hold. Split across sessions, the
@@ -85,6 +87,7 @@ method for that case.
 |---|---|---|
 | Install and prove the gates | Roles are advisory; the gates are not | [Quickstart](QUICKSTART.md) |
 | Give each session its own worktree | Two sessions in one tree overwrite each other | [Worktrees](WORKTREES.md) |
+| Check the config root your console runs on can spawn a session | Spawning is granted per config root, not per machine, and a root without the grant refuses | [Desktop accounts](DESKTOP-ACCOUNTS.md) |
 | Wire the steering hook | It only takes effect in sessions started afterwards | [Steering](STEERING.md) |
 | Write the working agreement | It only reaches sessions that start later | [CLAUDE.md.template](https://claude-multisession.pages.dev/CLAUDE.md.template) |
 | Turn on Ultracode and pick Opus 5 in every session | The build shape assumes workflows and adversarial review | [The KORUS framework](KORUS.md) |
@@ -94,37 +97,41 @@ method for that case.
 one desktop instance per account, and each one adds a config root the installers have to reach
 ([Desktop accounts](DESKTOP-ACCOUNTS.md)).
 
-## 1. Open the dispatcher
+## 1. Open the console
 
-**The goal.** One session holds the plan, so the other three never have to guess what is next.
+**The goal.** One session holds the plan, so no builder has to guess what is next.
 
 **What to paste:**
 
 ```text
-You are the dispatcher for this build. You plan and track; you do not write application code.
+You are the console for this build. You plan and track; you do not write application code.
 
 Read the backlog. Produce a build plan that breaks it into tasks sized for one session each,
 and write an ADR for any decision that outlives the task that made it.
 
-Hand out at most four tasks per build session. When a build session reports a task blocked,
-take it back, update the backlog, and hand that session something else.
+Write one disposable brief per task and open a build session on it. When a builder reports a
+task blocked, its session ends: take the task back, update the backlog, and brief the next one.
 
-Do not push, open pull requests, or merge. The lander owns those.
+Do not wait on a message from a builder. Poll for state instead.
+
+Do not build. Do not merge.
 ```
 
 **What happens next.** It reads the repository and comes back with a plan and a task breakdown. Ask
-it to write the backlog to a tracked file before handing anything out, because a plan that lives
+it to write the backlog to a tracked file before it briefs anything, because a plan that lives
 only in one context dies with that context.
 
-## 2. Open the two build sessions
+## 2. Open a build session per brief
 
-**The goal.** Two sessions building in parallel, each unable to silently overwrite the other.
+**The goal.** One session per brief, each unable to silently overwrite the other.
 
 **What to paste,** into each:
 
 ```text
-You are a build session. Take the tasks the dispatcher hands you and build them, up to four
-at a time as workflows.
+You are a build session. Build the task in your brief as a workflow, then stop.
+
+If the brief leaves something open, do not guess and do not wait for an answer. Write the
+question to the console, comment it on the pull request, and stop.
 
 Before starting a task, take a claim on it with a one-line note saying what you are building:
   pwsh -NoProfile -File scripts/coord/claim.ps1 -Take "<task>" -Note "<what you are building>"
@@ -140,8 +147,8 @@ run prints the whole-repo roster and never names a file:
 Read the exit code, not just the rows. 0 means the question was answered, including an
 answer of nobody. 2 means it could not be, and silence there is not an all-clear.
 
-Commit at logical stops. Do not push, open pull requests, or merge -- tell the lander the
-branch is ready instead, by name.
+Commit at logical stops. Push your own branch and open your own pull request. Do not merge:
+the lander decides what enters the merge queue.
 ```
 
 **What happens next.** Each session announces itself to the peers it can reach, takes its claims,
@@ -155,8 +162,8 @@ reported and allowed.
 It also fails open, and its blind spots are worth reading before you rely on it
 ([Limits](LIMITS.md#what-the-collision-gate-does-not-see)).
 
-**Why two rather than eight.** Two builders running four tasks each normally stay under the
-five-hour session cap, where eight separate sessions multiply the coordination traffic instead.
+**Why one brief per session.** A session that ends when its brief is done spends nothing while it
+waits, where a session held open to poll pays for its whole context on every pass.
 
 **The five-hour cap is not the binding one.** At that rate you spend a weekly window in about two
 days, which is why the framework page expects more than one account. That reasoning is in
@@ -172,8 +179,11 @@ is worth, and what a month of it costs at published API rates.
 **What to paste:**
 
 ```text
-You are the lander. You own every operation that touches the remote: pushing, opening pull
-requests, arming auto-merge, and merging.
+You are the lander. You decide what enters the merge queue and in what order, and you
+merge-forward. Builders push their own branches and open their own pull requests.
+
+Do not merge a pull request that has no reviewed label. Keep one ledger-appending pull
+request in the queue at a time.
 
 Read state rather than being told it:
   pwsh -NoProfile -File scripts/coord/presence.ps1   # who is live
@@ -185,9 +195,8 @@ You arbitrate and land. You do not build.
 
 **What happens next.** It reads the branches rather than waiting to be told about them.
 
-**A pushed branch cannot be the signal here**, because the builder prompt forbids builders to push.
-The signal is a builder naming a ready branch, and the lander confirming it is committed and clean
-before it pushes anything.
+**A pushed branch is the signal here**, because builders push their own. The lander reads the open
+pull requests and takes the ones carrying a reviewed label.
 
 **Read the role page before you rely on it.** The authority is not transferable, the route is
 absolute, and a worker that cannot reach the lander is blocked rather than promoted.
@@ -195,12 +204,12 @@ absolute, and a worker that cannot reach the lander is blocked rather than promo
 
 ## The daily loop
 
-1. **Ask the dispatcher what is in flight.** It answers from the backlog, not from memory.
+1. **Ask the console what is in flight.** It answers from the backlog, not from memory.
 2. **Check the builders have not collided.** A bare `overlap.ps1` gives the roster; `-File <path>`
    answers who is in one file.
 3. **Steer rather than wait.** A session deep in the wrong approach does not see your typing until
    its turn ends ([Steering](STEERING.md)).
-4. **Let the lander land.** It decides the order. You approve the push-and-merge in words, once, and
+4. **Let the lander land.** It decides the order. You approve the merge in words, once, and
    that approval does not carry to the next branch.
 5. **Prune what merged**, from the primary checkout. `prune-merged.ps1` refuses to run from a linked
    worktree, and every session here is in one. It removes worktrees that are merged **and** clean
