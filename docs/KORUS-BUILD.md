@@ -190,8 +190,8 @@ It also fails open, and its blind spots are worth reading before you rely on it
 **Why one brief per session.** A session that ends when its brief is done spends nothing while it
 waits, where a session held open to poll pays for its whole context on every pass.
 
-**The five-hour cap is not the binding one.** At that rate you spend a weekly window in about two
-days, which is why the framework page expects more than one account. That reasoning is in
+**The five-hour cap is not the binding one.** This shape spends a weekly window in about two days,
+which is why the framework page expects more than one account. That reasoning is in
 [The KORUS framework](KORUS.md).
 
 [Token accounting](TOKEN-ACCOUNTING.md) measures the other half: what one percent of a weekly window
