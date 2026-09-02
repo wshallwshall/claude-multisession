@@ -578,11 +578,27 @@ function Get-DispatchFile {
     return (Join-Path $journalDir "dispatch-pr-$Number.json")
 }
 
+function Get-JournalSize {
+    <#
+    .SYNOPSIS
+        The journal's size right now, or $null if it cannot be read.
+    #>
+    [CmdletBinding()]
+    param([string]$Journal)
+    try { return (Get-Item -LiteralPath $Journal).Length } catch { return $null }
+}
+
 function Write-Dispatch {
     [CmdletBinding()]
-    param([int]$Number, [string]$Key, $Process, [string]$Journal)
-    $bytes = $null
-    try { $bytes = (Get-Item -LiteralPath $Journal).Length } catch { }
+    param([int]$Number, [string]$Key, $Process, [string]$Journal, $JournalBytes)
+    # THE BASELINE IS PASSED IN, because this function runs AFTER Start-Child returns. Under
+    # -WaitForSpawn that is after the child EXITED, so a size read here already includes everything
+    # the seat appended and the later comparison could never see it. Measured on one fixture with
+    # one variable changed: -WaitForSpawn on recorded 1202 bytes against a journal of 1202 and the
+    # next tick said "It never appended"; -WaitForSpawn off recorded 1168 against 1202 and said "It
+    # did append". Both seats wrote. Production does not pass the flag today -- no doc and no
+    # scheduler wiring mentions it -- so the wrong sentence was one flag away, not shipped.
+    $bytes = $JournalBytes
     $record = [ordered]@{
         number       = $Number
         claim        = $Key
@@ -660,7 +676,22 @@ function Get-SeatState {
                 "it cannot be told from a different program that was given the same number.")
         }
     }
-    if ([long]$liveTicks -ne [long]$record.startTicks) {
+    # A TOLERANCE, NOT AN EQUALITY, and the equality is what turned the ubuntu leg red. The two
+    # readings come from different calls -- one through Process.Start, one through Get-Process -- and
+    # on Linux .NET derives StartTime from the boot instant plus the process's own ticks. The boot
+    # instant is itself derived, so two reads of ONE LIVE PROCESS need not agree to the tick.
+    # Measured on gates (ubuntu-latest) at 37dd0de: a stub seat sleeping 600 seconds, certainly
+    # alive, reported SEAT-GONE with "the number was reused". Windows passed the same case.
+    #
+    # The size of the window follows from which way this must fail. A false 'gone' prints a
+    # confident false sentence, and an operator who believes it releases the claim, so a later tick
+    # starts a second seat on a red somebody is working -- the duplicate the registry exists to
+    # prevent, reached by following this tool's own advice. A false 'alive' only declines to start a
+    # seat. So the window is generous: a whole second is many orders of magnitude more than the
+    # derivation error, and a pid reused inside one second by a DIFFERENT program is not a case this
+    # watcher meets, since a seat runs for minutes.
+    $slackTicks = [System.TimeSpan]::TicksPerSecond
+    if ([Math]::Abs([long]$liveTicks - [long]$record.startTicks) -gt $slackTicks) {
         return [pscustomobject]@{
             State  = 'gone'
             Detail = ("Process $seatPid is now a different process from the seat that was started " +
@@ -790,11 +821,28 @@ try {
                 $holderPath = [string]$held.worktree
             } catch { }
 
+            # A HOLDER YOU CANNOT READ IS NOT A HOLDER YOU CAN NAME. An unparseable claim file
+            # left $holderPath empty, which made $mine false, which took the peer branch below --
+            # so the run reported ALREADY-CLAIMED, left `seat` empty, and exited 0 without ever
+            # asking whether a seat was running. That is this file's own failure arriving through a
+            # different door, and it contradicted the rest of the change on the same tick: an
+            # unreadable DISPATCH record becomes SEAT-UNKNOWN and exits 1, while an unreadable CLAIM
+            # record became an all-clear.
+            if (-not $holderPath) {
+                $row.decision = 'SEAT-UNKNOWN'
+                $row.seat = 'unknown'
+                $row.detail = ("The claim file '$claimFile' could not be read, so neither its holder " +
+                    "nor its seat can be named. A claim whose seat cannot be shown alive is not an " +
+                    "all-clear, so this run does not report this red as covered.")
+                $receipt.red += [pscustomobject]$row
+                $failedCount++
+                continue
+            }
+
             # A PEER'S CLAIM IS NOT THIS WATCHER'S TO JUDGE. Another worktree took the key, which is
             # the cross-session exclusion working exactly as designed, and this run has no dispatch
             # record for a seat it never started. Skipping is the whole answer.
-            $mine = ($holderPath -and
-                (ConvertTo-CcxComparablePath $holderPath) -eq (ConvertTo-CcxComparablePath $RepoRoot))
+            $mine = ((ConvertTo-CcxComparablePath $holderPath) -eq (ConvertTo-CcxComparablePath $RepoRoot))
             if (-not $mine) {
                 $row.decision = 'ALREADY-CLAIMED'
                 $row.detail = "Held by $holder. Two seats attributing one failure is worse than none."
@@ -865,6 +913,8 @@ try {
         }
 
         $journal = Write-Journal -Number $number -Text (New-Briefing -Pr $pr -Key $key)
+        # BEFORE THE SPAWN, so the seat cannot have written yet whatever -WaitForSpawn is set to.
+        $journalBaseline = Get-JournalSize -Journal $journal
         $prompt = ("You are the attributing seat for a red required check. Read '$journal'. It is " +
             "your only memory of this pull request. Follow the instructions in its last entry, and " +
             "append what you find to the same file before you finish.")
@@ -885,7 +935,8 @@ try {
                 -ArgumentList (@($spawnFixed) + @($prompt)) -Wait:$WaitForSpawn
             # Written before the row is reported, so a tick that is killed between the spawn and its
             # own receipt still leaves the next tick able to see what it started.
-            $dispatch = Write-Dispatch -Number $number -Key $key -Process $started -Journal $journal
+            $dispatch = Write-Dispatch -Number $number -Key $key -Process $started `
+                -Journal $journal -JournalBytes $journalBaseline
             $row.decision = 'SPAWNED'
             $row.seat = 'started'
             $row.detail = "pid $($started.Id), journal $journal, dispatch $dispatch"

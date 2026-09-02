@@ -120,6 +120,14 @@ Add-Content -LiteralPath $env:STUB_SPAWN_LOG -Value ($args -join ' ') -Encoding 
 Start-Sleep -Seconds 600
 """
 
+# The stub seat that WRITES. Every "did append" reading elsewhere in this file is produced by the
+# harness appending to the journal itself, which proves the comparison and not the path a real seat
+# takes. This one appends the way a briefed seat is told to, from inside the spawned process.
+APPENDING_SPAWNER_STUB = r"""
+Add-Content -LiteralPath $env:STUB_SPAWN_LOG -Value ($args -join ' ') -Encoding utf8
+Add-Content -LiteralPath $env:STUB_SEAT_JOURNAL -Value "`nThe seat wrote this from inside the spawn." -Encoding utf8
+"""
+
 
 def open_json(*numbers: int) -> str:
     return json.dumps([{"number": n} for n in numbers])
@@ -516,6 +524,139 @@ class ASeatThatDiedIsNotASeatThatIsWorking(WatcherCase):
             "all-clear by default",
         )
         self.assertEqual([], self.spawns()[1:], "an unreadable seat state started another seat")
+
+
+    def test_a_start_time_that_disagrees_slightly_is_the_same_process(self):
+        """The equality that turned the ubuntu leg red, pinned as a tolerance.
+
+        `startTicks` is read through `Process.Start` and re-read through `Get-Process`. On Linux
+        .NET derives StartTime from the boot instant plus the process's own ticks, and the boot
+        instant is itself derived, so two reads of ONE LIVE PROCESS need not agree to the tick.
+        Measured on gates (ubuntu-latest) at 37dd0de: a stub seat sleeping 600 seconds, certainly
+        alive, reported SEAT-GONE with "the number was reused". Windows passed the same case, which
+        is why the branch was red on one leg only.
+
+        The disagreement is supplied rather than raced, for the reason the rest of this file
+        supplies its contention: a defect that needs a particular clock derivation reports on the
+        platform, not on the code. Half a second is far beyond any real derivation error and far
+        inside the window, so this case fails if the comparison goes back to equality.
+        """
+        self.seat.write_text(LIVE_SPAWNER_STUB, encoding="utf-8")
+        self.kill_seat_later(42)
+
+        first, _, err = self.watch(wait_for_spawn=False)
+        self.assertEqual("SPAWNED", first["red"][0]["decision"], err)
+        self.await_spawns(1)
+
+        record = json.loads(self.dispatch(42).read_text(encoding="utf-8"))
+        self.assertIsNotNone(
+            record.get("startTicks"),
+            "no start time was recorded, so this case is not measuring the comparison at all",
+        )
+        record["startTicks"] = int(record["startTicks"]) + 5_000_000  # half a second in ticks
+        self.dispatch(42).write_text(json.dumps(record), encoding="utf-8")
+
+        second, code, _ = self.watch()
+        row = second["red"][0]
+        self.assertEqual(
+            "ALREADY-CLAIMED", row["decision"],
+            "a live seat whose two start-time readings differ by half a second was called gone. "
+            "That sentence invites an operator to release the claim, and the next tick then starts "
+            f"a second seat on a red somebody is working. Detail: {row['detail']}",
+        )
+        self.assertEqual("alive", row["seat"])
+        self.assertEqual(0, code)
+
+    def test_a_start_time_that_disagrees_wildly_is_a_reused_number(self):
+        """The control for the tolerance, and the property it must not cost.
+
+        Without it, the window could widen until every pid matched and the reuse check meant
+        nothing. An hour is not clock derivation error; it is a different program.
+        """
+        self.seat.write_text(LIVE_SPAWNER_STUB, encoding="utf-8")
+        self.kill_seat_later(42)
+
+        first, _, err = self.watch(wait_for_spawn=False)
+        self.assertEqual("SPAWNED", first["red"][0]["decision"], err)
+        self.await_spawns(1)
+
+        record = json.loads(self.dispatch(42).read_text(encoding="utf-8"))
+        record["startTicks"] = int(record["startTicks"]) - 36_000_000_000  # one hour in ticks
+        self.dispatch(42).write_text(json.dumps(record), encoding="utf-8")
+
+        second, code, _ = self.watch()
+        row = second["red"][0]
+        self.assertEqual(
+            "SEAT-GONE", row["decision"],
+            "a process whose start time is an hour from the record is not the seat that was "
+            f"started, and the tick called it {row['decision']}. Detail: {row['detail']}",
+        )
+        self.assertIn("the number was reused", row["detail"])
+        self.assertEqual(1, code)
+
+    def test_a_claim_this_watcher_cannot_read_asks_about_the_seat_anyway(self):
+        """An unreadable CLAIM used to be an all-clear, on the same tick that an unreadable DISPATCH
+        record was a refusal.
+
+        The holder is parsed inside a try with an empty catch, so a claim file that will not parse
+        left the holder path empty, which made the "is it mine" test false, which took the peer
+        branch. Measured on the reviewed head: decision ALREADY-CLAIMED, `seat` empty, status OK,
+        exit 0 -- and the seat behind that claim never looked at. A holder you cannot read is not a
+        holder you can name.
+        """
+        first, _, err = self.watch()
+        self.assertEqual("SPAWNED", first["red"][0]["decision"], err)
+        claim = self.state_root() / "claims" / "ci-red-pr-42.json"
+        self.assertTrue(claim.exists(), "this watcher wrote no claim, so there is nothing to corrupt")
+        claim.write_text("{ this is not json", encoding="utf-8")
+
+        second, code, _ = self.watch()
+        row = second["red"][0]
+        self.assertEqual(
+            "SEAT-UNKNOWN", row["decision"],
+            "an unreadable claim was reported as held by a peer, so the run never asked whether a "
+            f"seat was running and exited clean over it. Detail: {row['detail']}",
+        )
+        self.assertEqual("unknown", row["seat"])
+        self.assertEqual(
+            1, code,
+            "a red whose claim cannot even be read exited 0. That is the all-clear this whole file "
+            "exists to refuse",
+        )
+        self.assertEqual("INCOMPLETE", second["status"])
+        self.assertEqual([], self.spawns()[1:], "it started a second seat over an unreadable claim")
+
+    def test_a_seat_that_appends_is_reported_as_having_written(self):
+        """The journal baseline has to predate the seat, and under -WaitForSpawn it did not.
+
+        `Write-Dispatch` runs after `Start-Child` returns, and with -Wait that is after the child
+        EXITED -- so the recorded size already included everything the seat appended and the later
+        comparison could never see it. Measured on one fixture with one variable changed: with the
+        flag on, 1202 bytes recorded against a journal of 1202 and the next tick said "It never
+        appended"; with it off, 1168 against 1202 and "It did append". Both seats wrote.
+
+        This is also the only case in the file where a real spawned process does the appending. Every
+        other "did append" reading is produced by the harness writing to the journal itself, which
+        proves the comparison and not the path a briefed seat takes.
+        """
+        self.seat.write_text(APPENDING_SPAWNER_STUB, encoding="utf-8")
+        journal = self.state_root() / "ci-red" / "pr-42.md"
+
+        first, _, err = self.watch(env_overrides={"STUB_SEAT_JOURNAL": str(journal)})
+        self.assertEqual("SPAWNED", first["red"][0]["decision"], err)
+        self.assertIn(
+            "The seat wrote this from inside the spawn", journal.read_text(encoding="utf-8"),
+            "the stub seat did not append, so this case is measuring nothing",
+        )
+
+        second, _, _ = self.watch(env_overrides={"STUB_SEAT_JOURNAL": str(journal)})
+        row = second["red"][0]
+        self.assertIn(
+            "did append", row["detail"],
+            "the seat appended to its journal and the next tick said it never did. An operator "
+            "reading that re-attributes a red somebody already answered. The baseline was taken "
+            f"after the seat had written:\n{row['detail']}",
+        )
 
     def test_the_gone_reading_hands_over_the_command_that_clears_it(self):
         self.watch()
@@ -950,12 +1091,14 @@ class TheSourceSaysWhatItStartsAndWhereAClaimLives(unittest.TestCase):
         )
 
     def test_the_dispatch_path_is_written_in_exactly_one_place(self):
-        """Property 3, and the same drift the claim path already has a runtime check for.
+        """One literal for the dispatch filename, so a second copy cannot drift from the first.
 
-        The spawn writes this file and a later tick reads it. Two spellings of the name would make
-        every later tick report SEAT-UNKNOWN on a healthy watch, which is a failure that argues for
-        turning the reading off.
-        """
+        WHAT THIS DOES NOT CATCH, stated because an earlier docstring claimed it. A reader that used
+        a DIFFERENT literal would leave this count at one and pass. Planted: the reader returning
+        `seatrecord-$Number.json` while the writer kept `dispatch-pr-$Number.json` -- this case
+        passed, and five behavioural cases in this file went red. Those cases own that property.
+        What this owns is the cheaper failure: a second copy of the SAME literal, which reads as
+        correct until one of them is edited."""
         hits = re.findall(r"dispatch-pr-", self.code)
         self.assertEqual(
             1, len(hits),

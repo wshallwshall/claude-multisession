@@ -128,7 +128,18 @@ A later tick reads that record and answers in three different words.
 | The seat process is still running | `ALREADY-CLAIMED` | 0 |
 | The process is gone, or its id now belongs to something else | `SEAT-GONE` | 1 |
 | No dispatch record, or a start time it cannot read | `SEAT-UNKNOWN` | 1 |
+| The claim file itself cannot be read | `SEAT-UNKNOWN` | 1 |
 | The key is held by another worktree | `ALREADY-CLAIMED` | 0 |
+
+**The start times are compared with a one-second window, not for equality.** The two readings come
+from two different calls, and on Linux .NET derives the start time from the boot instant, which is
+itself derived.
+
+Two reads of one live process need not agree to the tick. An exact match called a running seat gone
+on the ubuntu leg, and that sentence is the one that gets a working seat's claim released.
+
+The window only ever errs toward `ALREADY-CLAIMED`, which costs a tick. A seat runs for minutes, so
+a number reused inside one second is not a case this meets.
 
 `SEAT-GONE` also says whether the seat appended to the journal before it went. A seat that wrote
 nothing left the red unattributed; a seat that wrote left a verdict and only failed to release its
