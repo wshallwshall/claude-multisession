@@ -139,6 +139,12 @@
     - label: CI for leaders
       title: "CI for leaders: What done means when the author cannot vouch for the change"
       path: /CI-FOR-LEADERS.html
+    # Under Guardrails rather than Run a build because it is a control that runs unattended, like the
+    # hooks above it. A reader arrives at it from "what watches CI", not from "how do I start a
+    # session".
+    - label: Watching for a red
+      title: Noticing a red without a session watching for it
+      path: /CI-RED-WATCH.html
 
 - group: Reference
   items:
