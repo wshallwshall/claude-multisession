@@ -34,14 +34,15 @@ Here is the shape of what I've learned.
 
 3. Use one or more Claude Max 20x accounts instead of Teams or Enterprise pricing.
 
-4. Set up four sessions:
+4. Set up the sessions:
 
-   **4.1.** A dispatcher, which plans the build, tracks backlog, and dispatches work to the build
-   sessions.
+   **4.1.** A console, the one session you talk to. It reads the record, picks an item, writes a
+   short brief, and starts a builder for it.
 
-   **4.2.** Two build sessions, each running four sub-session build tasks.
+   **4.2.** A builder for each brief. It makes the change, commits, pushes, and opens the pull
+   request, then its process exits.
 
-   **4.3.** A lander session, which handles all external repo work (pushes, merges, etc.)
+   **4.3.** A lander session, which decides what enters the merge queue and in what order.
 
    There are additional, optional sessions as described below.
 
@@ -109,12 +110,12 @@ What is definitely not allowed is sharing one account between people.
 Max 20x limits your usage through five-hour session and weekly usage caps. Generally, 1% of weekly
 usage equals about 5% of session usage.
 
-The per-session usage limits are a key factor in my recommendations. If you run two build sessions
-each executing four tasks at a time, you'll normally run under the session limits. You'll use up
-your weekly limit in about two days.
+The per-session usage limits are a key factor in my recommendations. If you keep about eight build
+tasks running at a time, you'll normally run under the session limits. You'll use up your weekly
+limit in about two days.
 
-You could split those eight build tasks into individual sessions, but that increases your
-intersession communication costs.
+Splitting those tasks into separate sessions costs some intersession communication. It costs
+nothing to leave a session idle once it has ended its turn.
 
 If you run tasks that fan out into many-agent workflows, especially /deep-research work, you'll
 need to reduce the number of tasks running.
@@ -122,13 +123,13 @@ need to reduce the number of tasks running.
 ## 4. Backlog
 
 Have Claude Code create a project backlog. Then tell it to add things as they come up. Later, tell
-the Dispatcher session to create a plan for building down that backlog.
+the console session to create a plan for building down that backlog.
 
 ## 5. Documentation
 
 ### 5.1 ADRs: Architecture decision records
 
-Have Claude create ADR documents for each significant build. When you ask the Dispatcher session to
+Have Claude create ADR documents for each significant build. When you ask the console session to
 create a plan, just tell it to be sure to create ADRs as needed. This gives you a build record for
 your CISO and any auditor. It also provides ongoing context for the AI.
 
@@ -151,39 +152,57 @@ the code; that changes when you update the code. Sym/ctx identifies code by its 
 position. That means the reference only changes when the actual code structure changes -- not when
 someone adds whitespace, comments, or moves unrelated code above it.
 
-## 6. Four Concurrent Sessions
+## 6. Each Session Does One Job
 
 Be sure Ultracode and Opus 5 are enabled for each session.
 
 [Run a KORUS build](KORUS-BUILD.md) is the operating procedure for this section: the opening prompt
-for each of the four sessions, the daily loop, and what to do when it goes wrong.
+for each session, the daily loop, and what to do when it goes wrong.
 
-### 6.1 Dispatcher session
+### 6.1 Console session
 
-Dispatcher creates the build plan and assigns the work to builder sessions. It doles out initial
-work of about four tasks for each of the two build sessions. If a build session's task becomes
-blocked, the dispatcher takes back the task and updates the backlog.
+The console is the only session you talk to. It reads the record, picks an item, writes a short
+brief, and starts a builder for it. It then polls for state instead of waiting on a message. If a
+builder hits a question its brief did not answer, the builder writes the question back to the
+console and stops, and the console starts a fresh builder with a better brief.
 
-### 6.2 Two build sessions
+### 6.2 Builder sessions
 
-Each build session tackles about four tasks as sub-sessions/workflows/agents.
+A builder takes one brief and runs it to a pull request: the change, the commit, the push, and the
+PR. Then its process exits. It never guesses at what the brief left open, and it never waits for an
+answer.
 
 Note that Anthropic is working on [Agentic Teams](https://code.claude.com/docs/en/agent-teams),
-which may be a significant enhancement once it is out of beta. For now, your build sessions will use
+which may be a significant enhancement once it is out of beta. For now, your builders will use
 [dynamic workflows](https://code.claude.com/docs/en/workflows). See
 [Run agents in parallel - Claude Code Docs](https://code.claude.com/docs/en/agents).
 
 ### 6.3 Lander session
 
-Lander handles all external git repo work, including pushing and merging. It should have
+Lander decides what enters the merge queue and in what order, and it merge-forwards. It should have
 authority to handle these independently. This is needed because multisession coding creates merge
 conflicts when the repo's head is constantly changing. This is especially true with larger
-codebases, which created extended CI times.
+codebases, which created extended CI times. It will not merge a pull request that no reviewer has
+labelled.
 
-### 6.4 ASVS monitor session
+### 6.4 Reviewer session
 
-This is an extra concurrent session used when following the OWASP ASVS framework. It ensures that
-your ASVS register is always up to date.
+This section used to describe an ASVS monitor session, which was retired on 2026-09-01.
+
+Start a reviewer for each pull request. It reads the diff. On a pass it applies the reviewed label
+and posts the head SHA it read, so you can tell which version was actually looked at. On a fail it
+posts the findings on the pull request, for whichever builder comes next. A reviewer never merges.
+
+### 6.5 Regulator session
+
+Start a regulator when a required check goes red. Its job is deciding whose failure it is: the
+pull request's, the trunk's, a flake's, or the queue's. Only the first is a builder's to fix.
+Sending the other three back is the mistake it prevents. It has no memory of earlier reds, so
+it keeps a log.
+
+**A steward is not on this list, because it is not a session.** It is a cron with no model calls.
+It reads account usage and names the account with headroom, and it cannot interrupt a session
+that is already running.
 
 ## 7. Worktrees
 
@@ -198,8 +217,8 @@ inside of the desktop app and those in the VS Code extension.
 
 Combined with the coordination methods listed in
 [Coordination](https://claude-multisession.pages.dev/COORDINATION), the sessions can build your
-project without conflict -- mostly. When there is a conflict, the build sessions can talk with the
-Lander and Dispatcher and find solutions. Also see
+project without conflict -- mostly. When there is a conflict, a builder writes the problem to the
+console rather than guessing, and the console decides what happens next. Also see
 [Message your other Claude Code sessions - Claude Code Docs](https://code.claude.com/docs/en/cross-session-messaging)
 
 ## 9. Don't Hit Usage Limits: It Causes Lost Work

@@ -4,7 +4,7 @@
 
 **What this is.** The three things this page owns: **which surface to run the sessions on**, **the
 channels sessions have for reaching each other**, and **using one session as a lander**. A lander is
-the session every push, pull request and merge routes through; nothing here implements it.
+the session the merge routes through; nothing here implements it.
 
 **Why you should care.** Several sessions at once buy real parallelism and a set of failures,
 nearly all invisible while they happen. Four preparations work only *before* the second session
@@ -273,13 +273,11 @@ At least these, and the two catch-all rows at the bottom are the rule the rest a
 
 | Routes through the lander | Does **not** route through it |
 |---|---|
-| Pushing a branch to the remote | **Committing** -- the worker's own judgment, at logical stops, one layer each. A lander asked before a commit is a queue. |
-| Opening a pull request | Editing, running tests, iterating on its own branch |
-| Merging, and arming or disarming auto-merge | Creating its own worktree -- already serialized by a mutex |
-| The **order** decision: which of two branches on the same ground lands first, and who re-syncs after | **Allocating a sequence number** |
-| Which of two overlapping **efforts** continues, and which stops | **Taking a claim** |
-| Writes to any shared last-write-wins state outside git | Taking a lock |
-| Anything whose answer must be identical for every session and no gate can compute | Any read-only query |
+| Merging, and arming or disarming auto-merge | **Pushing its own branch, and opening its own pull request.** Owner ruling 2026-08-29: sessions push their own |
+| The **order** decision: which of two branches on the same ground lands first, and who re-syncs after | **Committing** -- the worker's own judgment, at logical stops, one layer each. A lander asked before a commit is a queue. |
+| Which of two overlapping **efforts** continues, and which stops | Editing, running tests, iterating on its own branch |
+| Writes to any shared last-write-wins state outside git | Creating its own worktree -- already serialized by a mutex |
+| Anything whose answer must be identical for every session and no gate can compute | **Allocating a sequence number**, **taking a claim**, taking a lock, any read-only query |
 
 **Allocation is atomic**: the failed exclusive create *is* the mutual exclusion. A lander handing
 out numbers is the read-modify-write that loses. **A claim is keyed to the working tree**, so a
@@ -290,19 +288,21 @@ Serialization is a primitive; single-ownership is a judgment; conflating them pr
 
 ### The route is absolute, and the authority is not transferable
 
-Writing "push, pull request and merge stay with the lander" as one flat rule collapses two rules
-that fail in different directions.
+Writing "push, pull request and merge stay with the lander" was the rule until 2026-08-29, when
+the owner ruled that sessions push their own. Only the merge stayed. Even for what remains, one
+flat rule collapses two that fail in different directions.
 
-**The route is absolute.** Every remote operation goes through the lander whenever one is
-running, and a session can adopt that on sight.
+**The route is absolute for what it still covers.** A merge goes through the lander whenever one
+is running, and a session can adopt that on sight. A push and a pull request do not, and have not
+since 2026-08-29.
 
 **The grant is not, and no lander can hand it on.** It came from the human owner, in words, in
 one session. A successor inherits the route and not the grant, so a role that exists is not a role
 that has been authorized.
 
-The fallback runs to the owner rather than downward. With no lander running, a remote operation
-goes to the **owner**, never to whichever worker happens to be holding the branch. **A worker that
-cannot reach a lander is blocked, not promoted.**
+The fallback runs to the owner, not downward. With no lander running a **merge** goes to the
+**owner**, never to whichever worker holds the branch. **A worker that cannot reach a lander is
+blocked from merging, not promoted to it.** Its own push and pull request were never blocked.
 
 **An override has to name the route it overrides.** "Yes", "go ahead" and "use your best judgment"
 are not overrides. What a bare approval earns is a question back about which route it meant.
@@ -312,8 +312,10 @@ are not overrides. What a bare approval earns is a question back about which rou
 Publish intent where a **tool** can read it: take a claim with a note before starting, and announce
 carries that note to joining sessions. The lander **reads state rather than being told it**.
 
-Ready-to-land needs no channel: a refreshed claim note is the signal. **Not a pushed branch** -- the
-routing table gives push to the lander alone, so a worker that pushed has already done its job.
+Ready-to-land needs no channel: a refreshed claim note is the signal. **Not a pushed branch.** A
+worker pushes its own branch as a matter of course, so a push says nothing about whether the work
+is ready. Before 2026-08-29 a push meant the lander had already acted; now it means a worker
+started.
 
 ### When you do not need one
 

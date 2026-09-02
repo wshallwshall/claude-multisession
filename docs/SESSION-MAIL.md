@@ -450,10 +450,10 @@ Measured against one editor extension, and the kind of fact that changes under a
 
 ## Fitting it into a KORUS build
 
-The dispatcher and lander sessions are the two most likely to need this lane. Both are roles in the
+The console and lander sessions are the two most likely to need this lane. Both are roles in the
 [build shape](KORUS-BUILD.md) that [KORUS](KORUS.md) sets out.
 
-The dispatcher reaches a VS Code review instance running alongside the desktop app. The lander reaches
+The console reaches a VS Code review instance running alongside the desktop app. The lander reaches
 a build session parked under a second account while its own account is out of weekly usage.
 
 A build session that never leaves the desktop app, on the account driving it, has no gap for this lane
@@ -465,7 +465,7 @@ to close. [Announce](COORDINATION.md) already reaches it.
 
 | For | Read |
 |---|---|
-| The build these dispatcher and lander sessions sit in | [Run a KORUS build](KORUS-BUILD.md) |
+| The build these console and lander sessions sit in | [Run a KORUS build](KORUS-BUILD.md) |
 | The realtime channel, and who it can reach | [Coordination](COORDINATION.md) |
 | Delivering a note into a running session, mid-turn | [Steering](STEERING.md) |
 | Why held state and a message expire for opposite reasons | [Concepts](CONCEPTS.md) |
