@@ -216,6 +216,44 @@ half of the older document's problem is fixed.
 **Only the three values above were supplied to this session.** The earlier document's full token list
 was not, so this page cannot say whether its other values changed.
 
+### Seven more failing pairings from the earlier palettes
+
+The full material reached another session the same day, so the gap above is now partly closed. Two
+palettes were supplied on 2026-08-31 for restyling a working-model diagram: Microsoft **Fluent**, a
+hex palette with a role table, and Microsoft **Fluent 2**, the alias-token document named above.
+
+Each maps a token to a job, and each demands WCAG AA at 4.5 to 1 in its own accessibility section.
+**Seven assignments cannot meet it.**
+
+| Foreground | Background | Ratio | Target | Assigned role |
+|---|---|---|---|---|
+| Gray 70 `#737373` | Brand Tint 20 `#C7E0F4` | **3.48** | 4.5 | secondary text |
+| Gray 70 `#737373` | Gray 8 `#F2F2F2` | **4.24** | 4.5 | secondary text |
+| Gray 70 `#737373` | Gray 32 `#C8C8C8` | **2.83** | 4.5 | secondary text on a panel |
+| Gray 100 `#1F1F1F` | Brand `#0078D4` | **3.64** | 4.5 | text on every process step |
+| White `#FFFFFF` | Shared Orange fg `#B8860B` | **3.25** | 4.5 | the obvious repair for a pale fill |
+| Gray 36 `#C2C2C2` | Gray 4 `#F8F8F8` | **1.68** | 3.0 | optional-path strokes |
+| Gray 20 `#DEDEDE` | Gray 4 `#F8F8F8` | **1.27** | 3.0 | note connectors |
+
+The last two rows are graphics rather than text, so their target is the 3 to 1 of SC 1.4.11, the
+same clause the stroke rows above are measured against.
+
+**Four corrections held when the palettes were applied.** They are stated as rules because each one
+survived a restyle:
+
+- Secondary text goes one step darker than the palette assigns.
+- Hairline strokes go to a mid grey near 3 to 1, not the near-invisible light greys.
+- Light greys serve as panel fills, never as a surface behind text.
+- Text on a brand-filled shape takes the on-brand token, never the neutral foreground.
+
+**The method was the lowest ratio, not a spot check.** Every pairing that actually occurs in the
+restyled diagram was measured in both themes, and the lowest ratio across them decides. Sampling a
+few representative pairs passes a palette whose worst case is the one nobody sampled.
+
+**Every row above names both sides, and that is the point.** An earlier statement of these seven
+figures named no background, and four of them did not reproduce. The conclusion survived
+recomputation and got worse. The figures did not survive it at all.
+
 ## Implementing the dark palette in CSS
 
 Define the whole light palette on bare `:root`. Redefine only the token values under the two dark
