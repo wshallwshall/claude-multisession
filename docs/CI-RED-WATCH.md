@@ -127,9 +127,33 @@ red.
 Each finding also has to appear in the open pull request list, which is fetched separately. One that
 does not is reported and skipped rather than spawned on.
 
+**Unless that list was capped.** The open list is fetched with a `-Limit`, and a list that fills it
+may be short.
+
+A labelled pull request missing from a capped list might be closed. It might also just sit past the
+cap, and the watcher cannot tell which.
+
+So it reports `NOT-OPEN-UNVERIFIABLE`, starts no seat, and the run ends `INCOMPLETE`. Reporting
+success there would hide the red it exists to catch. Raise `-Limit` past your open pull request
+count.
+
 A check that reads back nothing makes the whole run **CANNOT-LOOK**, exit 2, and no all clear. Every
 run prints what it scanned: the repository, the label, where each came from, and how many open pull
 requests it examined.
+
+### The three exit codes
+
+| Code | Status | What it means |
+|---|---|---|
+| 0 | `OK` | It looked, and every red it found reached a seat |
+| 1 | `INCOMPLETE` | It looked, and at least one red did not reach a seat |
+| 2 | `CANNOT-LOOK` | It could not establish what it was looking at |
+
+Exit 2 is reserved for a failed look, and the difference is worth keeping. A claim the watcher takes
+but cannot then see is a failure to **act**, so it ends at exit 1 with the drift named in the reason.
+
+A tick that finds the pass lock held by a sibling ends at exit 2. It examined nothing, so it has no
+count to report.
 
 ## The seat starts fresh and keeps a journal
 
