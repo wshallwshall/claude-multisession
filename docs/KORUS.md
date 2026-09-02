@@ -193,6 +193,17 @@ Start a reviewer for each pull request. It reads the diff. On a pass it applies 
 and posts the head SHA it read, so you can tell which version was actually looked at. On a fail it
 posts the findings on the pull request, for whichever builder comes next. A reviewer never merges.
 
+### 6.5 Regulator session
+
+Start a regulator when a required check goes red. Its job is deciding whose failure it is: the
+pull request's, the trunk's, a flake's, or the queue's. Only the first is a builder's to fix.
+Sending the other three back is the mistake it prevents. It has no memory of earlier reds, so
+it keeps a log.
+
+**A steward is not on this list, because it is not a session.** It is a cron with no model calls.
+It reads account usage and names the account with headroom, and it cannot interrupt a session
+that is already running.
+
 ## 7. Worktrees
 
 Worktrees deconflict workflows sharing a repo. See
