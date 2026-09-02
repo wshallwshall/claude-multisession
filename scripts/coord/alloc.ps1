@@ -34,6 +34,17 @@
     Nothing about that shape is baked into this script. Omit the "sequences" key entirely and
     allocation is simply off.
 
+    AS MANY SEQUENCES AS THE REPOSITORY HAS LEDGERS. "sequences" is a map, so a repository keeping
+    decision records and a backlog declares both, each with its own five keys; -Kind picks one and
+    becomes required at two. Each kind gets its own registry directory, so their floors and their
+    claims never meet. Adding one never changes an existing entry.
+
+    TWO RULES THAT ONLY MATTER ONCE THERE ARE TWO, both checked before the registry is touched.
+    A name must be one plain path segment, because it becomes a directory under the registry. And
+    no two sequences may declare the same filePattern, or the same indexFile plus indexRowPattern:
+    the claim below excludes per kind, so two kinds recognising one set of files can each issue the
+    same number.
+
     THE FLOOR is the max over: the trunk, every local and remote ref, the working tree, and every
     existing allocation -- then ratcheted against a persisted high-water mark. The all-refs term
     closes the "registry wiped -> re-issue a number that only exists on an unpushed branch" hole. It
@@ -95,6 +106,77 @@ if ($cfg.sequences.Count -eq 0) {
 
 $kinds = @($cfg.sequences.Keys | Sort-Object)
 
+function Get-SeqField($Obj, [string]$Name) {
+    if ($null -ne $Obj -and $Obj.PSObject.Properties.Name -contains $Name -and $null -ne $Obj.$Name) {
+        return $Obj.$Name
+    }
+    return $null
+}
+
+# WHOLE-CONFIG CHECKS, RUN BEFORE ANY BRANCH REACHES THE REGISTRY.
+#
+# Both hazards below are relationships between the config and something outside one entry, so a
+# per-entry check cannot see either. Both were unreachable while a single kind was effectively
+# hardcoded, and both arrive with the second ledger a repository declares.
+# ORDINAL, because a PowerShell hashtable compares keys case-INSENSITIVELY while .NET regexes are
+# case-sensitive by default. Two sequences whose filePatterns differ only in case are distinct
+# namespaces on a case-sensitive filesystem, and a folding hashtable refuses them as duplicates.
+# $seenIndexes below is left folding ON PURPOSE: its key joins a PATH, case-insensitive on
+# Windows, to a regex, which is not, so ordinal there would trade this false refusal for a false
+# ACCEPTANCE of two sequences reading one file. That half needs a split comparison, not this fix.
+$seenPatterns = [System.Collections.Generic.Dictionary[string, string]]::new(
+    [System.StringComparer]::Ordinal)
+$seenIndexes = @{}
+foreach ($k in $kinds) {
+    # THE NAME BECOMES A DIRECTORY under the registry root, so it is a path component carrying
+    # whatever the config author typed. Measured before this check existed: a sequence named
+    # "../escape" wrote its claims to <state-root>/escape, outside the allocation registry entirely,
+    # and reported success. A name of "../claims" would drop them into a sibling tool's state.
+    # Refuse anything that is not one plain segment rather than sanitising it into a name nobody
+    # typed -- a silently renamed sequence allocates from a registry its owner cannot find.
+    # \A and \z, NOT ^ and $. In .NET `$` also matches immediately before a trailing newline,
+    # so a name ending in one passed this check while the prose beside it promised a single
+    # plain segment. \z is the end of the string and nothing else.
+    if ($k -notmatch '\A[A-Za-z0-9][A-Za-z0-9._-]{0,63}\z') {
+        throw ("Sequence name '$k' in $($cfg.ConfigPath) is not usable. It becomes a directory name " +
+            "under the allocation registry, so it must be a single path segment: a letter or digit " +
+            "first, then letters, digits, dot, underscore or hyphen, 64 characters at most.")
+    }
+
+    # TWO NAMES FOR ONE NAMESPACE. The claim below is exclusive per (kind, number) and nothing
+    # excludes ACROSS kinds, so two sequences that recognise the same paths can each issue the same
+    # number, into differently-named files, that merge clean. That is the corruption the registry
+    # exists to prevent, reintroduced through the config. The realistic way in is copy-paste: clone
+    # the `adr` block, rename it, forget to change the strings.
+    #
+    # Identical patterns are the half that can be PROVED to overlap, and this claims no more than
+    # that: two different regexes can still describe overlapping sets. Give each sequence a pattern
+    # only its own files match.
+    $entry = $cfg.sequences[$k]
+    $pat = [string](Get-SeqField $entry 'filePattern')
+    if ($pat) {
+        if ($seenPatterns.ContainsKey($pat)) {
+            throw ("Sequences '$($seenPatterns[$pat])' and '$k' in $($cfg.ConfigPath) declare the same " +
+                "filePattern, so they recognise the same files while claiming numbers from separate " +
+                "registries, and both can issue the same number. Give each its own filePattern.")
+        }
+        $seenPatterns[$pat] = $k
+    }
+    # The same argument over the other membership test. A sequence whose numbers are rows in a file
+    # is recognised by indexFile plus indexRowPattern, so sharing both is sharing a namespace.
+    $ixFile = [string](Get-SeqField $entry 'indexFile')
+    $ixRow = [string](Get-SeqField $entry 'indexRowPattern')
+    if ($ixFile -and $ixRow) {
+        $ixKey = "$ixFile`n$ixRow"
+        if ($seenIndexes.ContainsKey($ixKey)) {
+            throw ("Sequences '$($seenIndexes[$ixKey])' and '$k' in $($cfg.ConfigPath) read the same rows " +
+                "out of $ixFile, so they share one index namespace while claiming numbers from separate " +
+                "registries. Give each its own index, or its own row pattern.")
+        }
+        $seenIndexes[$ixKey] = $k
+    }
+}
+
 if ($List) {
     $me = ConvertTo-CcxComparablePath $repo
     foreach ($k in $kinds) {
@@ -118,13 +200,6 @@ if (-not $cfg.sequences.ContainsKey($Kind)) {
     throw "Unknown sequence '$Kind'. Configured in $($cfg.ConfigPath): $($kinds -join ', ')."
 }
 $seq = $cfg.sequences[$Kind]
-
-function Get-SeqField($Obj, [string]$Name) {
-    if ($null -ne $Obj -and $Obj.PSObject.Properties.Name -contains $Name -and $null -ne $Obj.$Name) {
-        return $Obj.$Name
-    }
-    return $null
-}
 
 $seqDir = [string](Get-SeqField $seq 'dir')
 $filePattern = [string](Get-SeqField $seq 'filePattern')
@@ -302,10 +377,64 @@ function Get-Floor {
     # DANGEROUS: `git remote prune <name>` / `git remote remove <name>` for any other remote, deleting
     #            a block of remote-tracking refs, or an aggressive `gc` / `reflog expire` that drops
     #            unreachable objects. Those are what this ratchet defends against.
+    #
+    # THE RATCHET IS SHARED STATE AND THE CALLERS ARE CONCURRENT, which the first version of it did
+    # not account for: `Set-Content` and `Get-Content` each open the file without sharing, so two
+    # allocators reaching this line together threw an unhandled IOException. Measured before this
+    # fix, eight simultaneous allocations returned SEVEN numbers -- one process died here, before it
+    # had claimed anything, and the doc's own promise of eight distinct numbers was false. The claim
+    # loop below was never the problem; a session simply never reached it.
+    #
+    # The two sides are guarded differently ON PURPOSE. A lost WRITE is recoverable: the floor this
+    # run computed is already correct in memory, and the registry term re-derives it next time, so it
+    # warns and carries on. A lost READ is not: treating an unreadable ratchet as zero silently
+    # lowers the floor, which is the one failure this script exists to prevent, so it raises.
     $watermark = Join-Path $alloc ".floor-highwater"
     $computed = [int](($seen | Measure-Object -Maximum).Maximum)
     $previous = 0
-    if (Test-Path $watermark) { [void][int]::TryParse((Get-Content $watermark -Raw).Trim(), [ref]$previous) }
+    if (Test-Path $watermark) {
+        $raw = $null
+        $readOk = $false
+        $readErr = $null
+        foreach ($attempt in 1..20) {
+            # EVERY exception, not a list of the ones somebody thought of. Windows reports a
+            # contended file as UnauthorizedAccessException ("Access to the path is denied") about as
+            # often as it reports IOException, and the provider raises InvalidOperationException for
+            # a path that is a DIRECTORY. Two typed catches let that third one escape the loop and
+            # kill the run inside Get-Content, so the operator got a provider message about using
+            # Get-ChildItem instead of the refusal below -- the very bug this guard exists to fix,
+            # surviving in the cases the list did not name. The fail direction here is refusal, so a
+            # broad catch cannot lower the floor; it can only make the run stop and say why.
+            try { $raw = Get-Content $watermark -Raw -ErrorAction Stop; $readOk = $true; break }
+            catch { $readErr = $_; Start-Sleep -Milliseconds 25 }
+        }
+        if (-not $readOk) {
+            throw ("Could not read the $Kind high-water mark at $watermark after 20 attempts: " +
+                "$($readErr.Exception.Message). Refusing to allocate -- ignoring the ratchet would " +
+                "silently lower the floor, which is how a number already in use gets re-issued.")
+        }
+        # A SUCCESSFUL READ IS NOT YET A NUMBER, and the two ways it is not get separate sentences
+        # because they are separate operator problems. `Get-Content -Raw` returns $null for a
+        # zero-byte file and raises NOTHING, so an empty ratchet used to reach the contention throw
+        # above having made one attempt that WORKED: it reported 20 attempts, and printed an empty
+        # cause after "attempts:", so an absent cause and a real one rendered identically. An
+        # unparseable value took the quieter road -- TryParse failed, $previous stayed 0, and the run
+        # allocated. That is the silent floor-lowering the refusal exists to prevent, arriving
+        # through the door marked success.
+        $text = ""
+        if ($null -ne $raw) { $text = $raw.Trim() }
+        if ($text -eq "") {
+            throw ("The $Kind high-water mark at $watermark is empty. Refusing to allocate -- an " +
+                "empty ratchet is not a floor of zero, and reading it as one forgets every number " +
+                "that lived only in the ratchet. Restore it from a clone that still has those refs, " +
+                "or delete the file to restart the ratchet from the numbers this clone can see.")
+        }
+        if (-not [int]::TryParse($text, [ref]$previous)) {
+            throw ("The $Kind high-water mark at $watermark does not hold a number: '$text'. " +
+                "Refusing to allocate -- a value that will not parse reads as a floor of zero, " +
+                "which is how a number already in use gets re-issued.")
+        }
+    }
 
     if ($previous -gt $computed) {
         Write-Host "NOTE: computed $Kind floor $computed is BELOW the recorded high-water $previous." -ForegroundColor Yellow
@@ -313,7 +442,41 @@ function Get-Floor {
         Write-Host "      re-fetch them before trusting any number-space reasoning here." -ForegroundColor Yellow
     }
     $floor = [Math]::Max($computed, $previous)
-    if ($floor -gt $previous -and -not $Peek) { Set-Content -Path $watermark -Value $floor -Encoding ASCII }
+    if ($floor -gt $previous -and -not $Peek) {
+        # Write beside it, then replace in one move, so the file a sibling reads is never a partly
+        # written one and readers never contend with a writer. All the waiting is on this side.
+        $temp = Join-Path $alloc (".floor-highwater." + [System.IO.Path]::GetRandomFileName())
+        try {
+            # -ErrorAction Stop, because Set-Content fails NON-TERMINATINGLY by default. Without it a
+            # failed stage emitted an error and execution carried straight on to the Move below,
+            # replacing a good ratchet with a missing or empty temp. An empty ratchet is what the
+            # read side above now refuses on, so one failed write would have stopped every later
+            # allocation of this kind. Caught rather than thrown: a lost WRITE is recoverable, so it
+            # warns and the allocation still succeeds, which is the asymmetry this block is built on.
+            $wrote = $false
+            try {
+                Set-Content -Path $temp -Value $floor -Encoding ASCII -ErrorAction Stop
+                $wrote = $true
+            } catch {
+                Write-Host "NOTE: could not stage the $Kind high-water mark ($($_.Exception.Message))." -ForegroundColor Yellow
+                Write-Host "      This allocation is unaffected -- the floor it computed is $floor either way." -ForegroundColor Yellow
+            }
+            $moved = $false
+            if ($wrote) {
+                foreach ($attempt in 1..20) {
+                    try { [System.IO.File]::Move($temp, $watermark, $true); $moved = $true; break }
+                    catch [System.IO.IOException] { Start-Sleep -Milliseconds 25 }
+                    catch [System.UnauthorizedAccessException] { Start-Sleep -Milliseconds 25 }
+                }
+            }
+            if ($wrote -and -not $moved) {
+                Write-Host "NOTE: could not raise the $Kind high-water mark to $floor (a sibling holds $watermark)." -ForegroundColor Yellow
+                Write-Host "      This allocation is unaffected -- the floor it computed is $floor either way." -ForegroundColor Yellow
+            }
+        } finally {
+            Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue
+        }
+    }
 
     [pscustomobject]@{
         Floor     = [int]$floor
