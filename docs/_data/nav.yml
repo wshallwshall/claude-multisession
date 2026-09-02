@@ -94,6 +94,9 @@
     - label: Running multiple sessions
       title: "Running multiple sessions"
       path: /RUNNING-MULTIPLE-SESSIONS.html
+    - label: Worker brief
+      title: "Brief a worker session"
+      path: /WORKER-BRIEF.html
     - label: Worktrees
       title: Worktrees
       path: /WORKTREES.html
@@ -157,6 +160,13 @@
     - label: Tips and tricks
       title: Tips and tricks
       path: /TIPS-AND-TRICKS.html
+    # A STORED EXTERNAL STANDARD, which is why it sits under Reference rather than Guardrails. It
+    # ships no gate and nothing checks a diagram against it. The page carries the owner's spec whole
+    # and adds a measured contrast audit of the spec's own tokens, so a reader arrives here to look
+    # something up rather than to install anything.
+    - label: Flowchart standard
+      title: Fluent 2 flowchart design standard
+      path: /FLOWCHART-STANDARD.html
 
 # Evaluations of third-party frameworks, one page each. The naming follows the CASE-STUDY-* series
 # already in docs/: a shared prefix, then a kebab-case name, so a second evaluation is

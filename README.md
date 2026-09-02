@@ -336,6 +336,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `INSTALL.md` | The installers, their scopes, how to *prove* each one is live rather than merely merged, and what the exit code means on a partial install |
 | `docs/FEED-THIS-TO-CLAUDE-CODE.md` | A page to paste into Claude Code so it evaluates *your* repository against this tooling and tells you which parts you need |
 | `docs/RUNNING-MULTIPLE-SESSIONS.md` | The entry point to the running-sessions group: which surface to run sessions on, the channels they have for reaching each other, and using one session as a lander |
+| `docs/WORKER-BRIEF.md` | The prompt template a coordinating session fills in when it spawns a worker, and the prohibition that makes a worker ask instead of guessing |
 | `docs/CONCEPTS.md` | The model: worktree-per-session, the shared state root, the liveness fence, exclusive-create, why there are no TTLs |
 | `docs/HOOKS.md` | The hook-event map, the wiring contract, and the house rules for writing one that cannot fail silently |
 | `docs/WORKTREES.md` | Day to day: create, rescue, restore, remove, and the two layouts that coexist |
@@ -350,6 +351,7 @@ be discovered. Measured on the repo this tooling was developed in:
 | `docs/CASE-STUDY-correction-chain.md` | One finding restated four times across two sessions, two statements wrong -- what a correction sequence licenses and what it does not |
 | `docs/TIPS-AND-TRICKS.md` | The "wish I'd known" file, ordered by when it bites: setting up, running two at once, writing a guardrail, proving it works, cleaning up |
 | `docs/USAGE-AWARENESS.md` | Warning a session before it hits a hard usage cutoff, and why that is harder than it looks. Ships no hook -- the mechanism depends on undocumented client internals, so what transfers is the design and the eight ways it reports confidently wrong numbers |
+| `docs/FLOWCHART-STANDARD.md` | The Fluent 2 flowchart design spec stored whole -- tokens, nine shapes, status variants, arrows, dark-mode overrides -- plus a measured contrast audit naming the 18 pairings that miss its own WCAG AA promise |
 | `docs/CI-RED-WATCH.md` | The cron watcher that notices a red required check and starts one session to attribute it. Zero model calls while your repository is quiet, one claim per red, and exit 2 rather than a zero it could not establish |
 | `CLAUDE.md.template` | A working agreement to drop into your own repo: plan first, commit-versus-push approval split, never grep for a number, shared memory across worktrees |
 

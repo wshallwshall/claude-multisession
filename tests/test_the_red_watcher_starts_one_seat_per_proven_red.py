@@ -51,6 +51,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import time
@@ -102,6 +103,12 @@ exit 0
 # what the spawned session would have been told to read.
 SPAWNER_STUB = r"""
 Add-Content -LiteralPath $env:STUB_SPAWN_LOG -Value ($args -join ' ') -Encoding utf8
+# A seat that TALKS, when a case asks for one. The shipped default seat is `claude -p`, which writes
+# its answer to stdout, and every other case here runs against a stub that is silent by construction
+# -- so the receipt could be corrupted by a real seat and the whole file would stay green.
+if ($env:STUB_SPAWN_CHATTER) {
+    for ($i = 0; $i -lt 40; $i++) { [Console]::Out.WriteLine($env:STUB_SPAWN_CHATTER) }
+}
 """
 
 # The stub seat that STAYS. Every case driven by the stub above runs a seat that has already exited
@@ -201,7 +208,8 @@ class WatcherCase(unittest.TestCase):
         return self.repo / ".git" / "ccx-coord"
 
     def watch(self, *extra: str, env_overrides: dict | None = None,
-              wait_for_spawn: bool = True) -> tuple[dict, int, str]:
+              wait_for_spawn: bool = True,
+              script: Path | None = None) -> tuple[dict, int, str]:
         """Run the watcher and return (receipt, exit code, stderr).
 
         Always -Json. The receipt is the contract every case below reads, and parsing prose would
@@ -225,16 +233,15 @@ class WatcherCase(unittest.TestCase):
         })
         env.update(env_overrides or {})
         wait_flag = ["-WaitForSpawn"] if wait_for_spawn else []
-        argv = [self.pwsh, "-NoProfile", "-File", str(t.WATCH_CI_RED),
+        argv = [self.pwsh, "-NoProfile", "-File", str(script or t.WATCH_CI_RED),
                 "-RepoRoot", str(self.repo), "-Repo", REPO,
                 "-Gh", str(self.gh),
                 *wait_flag, "-Json", *extra]
-        # CAPTURE TO FILES, NOT PIPES, WHEN THE SEAT OUTLIVES THE TICK. The watcher does not
-        # redirect the seat's streams, so the seat inherits whatever the watcher was given. With a
-        # pipe that means a seat still running holds the write end open after the watcher exits, and
-        # the reader waits for an end-of-file that only arrives when the seat does -- a hang that
-        # looks exactly like the watcher hanging. In production the inherited handle is the console,
-        # which nobody is waiting on.
+        # CAPTURE TO FILES, NOT PIPES, WHEN THE SEAT OUTLIVES THE TICK. A seat still running holds
+        # the write end of an inherited pipe open after the watcher exits, and the reader waits for
+        # an end-of-file that only arrives when the seat does -- a hang that looks exactly like the
+        # watcher hanging. The spawn now passes -Quiet, so the seat no longer inherits these
+        # handles at all; files are kept because they also survive a case that stops passing -Quiet.
         out_file = self.base / "watch-stdout.txt"
         err_file = self.base / "watch-stderr.txt"
         with out_file.open("w", encoding="utf-8") as out, err_file.open("w", encoding="utf-8") as err:
@@ -248,6 +255,7 @@ class WatcherCase(unittest.TestCase):
             f"the watcher emitted no receipt at all (exit {code}). It died before it could "
             f"say what it scanned:\n{stderr}",
         )
+        self.last_stdout = stdout
         return json.loads(stdout), code, stderr
 
     def spawns(self) -> list[str]:
@@ -716,6 +724,169 @@ class TheSpawnedSeatIsGivenAJournalRatherThanAMemory(WatcherCase):
             "the second spawn overwrote the first entry. The journal is the only thing that "
             "survives a session, so replacing it discards the record the next seat is told to read.",
         )
+
+
+
+class TheReceiptSurvivesTheThingsThatUsedToEatIt(WatcherCase):
+    """Four ways the run reported something other than what happened.
+
+    Every case here failed against the reviewed head. They share one shape: the receipt is the whole
+    interface -- an operator schedules this and reads an exit code, a consumer parses -Json -- and in
+    each case that interface said "fine" or said nothing at all while something real went unhandled.
+    """
+
+    def lock_file(self) -> Path:
+        """Where Enter-CcxLock puts the pass mutex, by the same formula lock.ps1 uses."""
+        return self.state_root() / "locks" / "ci-red-watch.lock"
+
+    def test_a_talking_seat_does_not_land_inside_the_json_receipt(self):
+        """The spawn was the one Start-Child call that ignored Start-Child's own rule.
+
+        Its parameter help says -Quiet is "Required for anything chatty, or -Json emits a receipt
+        with another script's console noise in the middle of it." The documented default seat is
+        `claude -p`, which writes its answer to stdout. Measured against the reviewed head with a
+        stub that prints: 362,318 bytes of the child's output ahead of the receipt, and the parse
+        failing at line 1 column 1.
+
+        The parse is the assertion. `watch()` calls json.loads on stdout, so this case cannot pass
+        against a run whose receipt has a seat's answer in the middle of it.
+        """
+        noise = "I am a model session and this is my answer."
+        self.open_file.write_text(open_json(7), encoding="utf-8")
+        self.red_file.write_text(red_json(7), encoding="utf-8")
+
+        receipt, code, _ = self.watch(env_overrides={"STUB_SPAWN_CHATTER": noise})
+
+        self.assertEqual(0, code)
+        self.assertEqual("SPAWNED", receipt["red"][0]["decision"])
+        self.assertEqual(1, len(self.spawns()), "the seat did not actually run, so it printed nothing")
+        self.assertNotIn(
+            noise, self.last_stdout,
+            "the seat's own output reached the watcher's stdout. A consumer parsing -Json gets the "
+            "seat's answer wrapped around the receipt:\n" + self.last_stdout[:400],
+        )
+
+    def test_a_contended_lock_still_produces_a_receipt(self):
+        """Exit 1 with an empty stdout, for a run that never looked at anything.
+
+        Enter-CcxLock throws on timeout and it threw from OUTSIDE the receipt path, so the run
+        produced exit 1 and stdout ''. The header defines exit 1 as "looked successfully, and at
+        least one red could not be handed to a seat" -- so an operator running this from schtasks
+        read a successful look, and a consumer parsing -Json read nothing at all. That is the
+        absent-versus-empty conflation the three controls refuse, one layer above them.
+
+        The lock's only other coverage is a grep for the string `Enter-CcxLock -Name 'ci-red-watch'`
+        in the source, which is present and was present while this was broken.
+        """
+        self.open_file.write_text(open_json(7), encoding="utf-8")
+        self.red_file.write_text(red_json(7), encoding="utf-8")
+        lock = self.lock_file()
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        lock.write_text('{"held":"by a sibling tick"}', encoding="utf-8")
+
+        receipt, code, _ = self.watch("-LockTimeoutSeconds", "2")
+
+        self.assertEqual(
+            2, code,
+            "a contended lock did not use the refusal code. Exit 1 here reads as a successful look:"
+            "\n" + self.last_stdout,
+        )
+        self.assertEqual("CANNOT-LOOK", receipt["status"])
+        self.assertIn(
+            "holds the pass lock", receipt["reason"],
+            "the receipt does not say a sibling tick held the lock:\n" + str(receipt.get("reason")),
+        )
+        self.assertEqual([], self.spawns(), "it reported a refusal and started a seat anyway")
+
+    def test_a_truncated_open_list_does_not_let_a_red_read_as_closed(self):
+        """`truncated` was computed, commented on, printed -- and never acted on.
+
+        The per-finding check treats "absent from the open list" as closed. When the open list filled
+        -Limit that inference does not hold: the pull request may simply sit past the cap. Measured
+        against the reviewed head with -Limit 2 and a genuinely open labelled #99: status OK, exit 0,
+        no seat, and a detail naming two causes that were both wrong -- while the same receipt
+        declared `truncated: true` two fields earlier.
+        """
+        self.open_file.write_text(open_json(1, 2), encoding="utf-8")
+        self.red_file.write_text(red_json(99), encoding="utf-8")
+
+        receipt, code, _ = self.watch("-Limit", "2")
+
+        self.assertTrue(
+            receipt["scanned"]["truncated"],
+            "the fixture did not fill the limit, so this case is not testing truncation at all",
+        )
+        self.assertEqual(
+            "NOT-OPEN-UNVERIFIABLE", receipt["red"][0]["decision"],
+            "a red absent from a CAPPED open list was still recorded as closed",
+        )
+        self.assertEqual(
+            1, code,
+            "the run reported success over a red it could neither confirm closed nor hand to a "
+            "seat:\n" + self.last_stdout,
+        )
+        self.assertEqual("INCOMPLETE", receipt["status"])
+        self.assertEqual([], self.spawns(), "it started a seat on a reading it could not make")
+
+    def test_the_same_red_is_ordinary_when_the_list_is_not_truncated(self):
+        """The control for the case above. Without it, a watcher that refused every NOT-OPEN would
+        pass, and the downgrade this file is careful about would be gone."""
+        self.open_file.write_text(open_json(1, 2), encoding="utf-8")
+        self.red_file.write_text(red_json(99), encoding="utf-8")
+
+        receipt, code, _ = self.watch("-Limit", "50")
+
+        self.assertFalse(receipt["scanned"]["truncated"])
+        self.assertEqual("NOT-OPEN", receipt["red"][0]["decision"])
+        self.assertEqual(0, code)
+
+
+class AClaimThatCannotBeSeenIsNotAFailureToLook(WatcherCase):
+    """Property 4, on the one path that spends the wrong word for it.
+
+    On the drift path the look SUCCEEDED -- the reds were found, named and counted. What failed is
+    the claim registry. The reviewed head set CANNOT-LOOK and exit 2 there, which the header reserves
+    for "could not look", and because that branch is tested first at the end of the file it also
+    masked any genuine INCOMPLETE in the same pass.
+    """
+
+    def watcher_whose_claim_script_writes_nothing(self) -> Path:
+        """A copy of the scripts tree whose claim.ps1 reports success and creates no file.
+
+        That is the drift the real check exists for: claim.ps1 exits 0 and the file this script
+        predicted is not where it looked. Stubbing it is the only way to reach the branch, because
+        the two path formulas currently agree.
+        """
+        tree = Path(self.tmp.name) / "drifted"
+        shutil.copytree(t.WATCH_CI_RED.parent.parent, tree / "scripts")
+        (tree / "scripts" / "coord" / "claim.ps1").write_text(
+            "# Stub: reports the claim taken, writes nothing.\nexit 0\n", encoding="utf-8",
+        )
+        return tree / "scripts" / "cron" / t.WATCH_CI_RED.name
+
+    def test_a_claim_that_cannot_be_confirmed_is_incomplete_not_cannot_look(self):
+        self.open_file.write_text(open_json(7), encoding="utf-8")
+        self.red_file.write_text(red_json(7), encoding="utf-8")
+
+        receipt, code, _ = self.watch(script=self.watcher_whose_claim_script_writes_nothing())
+
+        self.assertEqual(
+            "CLAIM-UNVERIFIABLE", receipt["red"][0]["decision"],
+            "the stub did not reach the drift branch, so this case measured nothing:\n"
+            + self.last_stdout,
+        )
+        self.assertEqual(
+            1, code,
+            "a drifted claim path still spends exit 2, the code reserved for a failed LOOK. The "
+            "look succeeded here -- the red was found and named:\n" + self.last_stdout,
+        )
+        self.assertEqual("INCOMPLETE", receipt["status"])
+        self.assertIn(
+            "drifted", receipt["reason"],
+            "the top-level reason does not name the drift, so the one failure here that means a "
+            "source defect reads like a busy peer:\n" + str(receipt.get("reason")),
+        )
+        self.assertEqual([], self.spawns(), "it spawned on a claim it could not see")
 
 
 class TheSourceSaysWhatItStartsAndWhereAClaimLives(unittest.TestCase):

@@ -182,8 +182,9 @@ Absence of a refusal is never evidence of absence of a peer.
 
 ## How many sessions should I run?
 
-The shape this is built around is four: a dispatcher, two builders and a lander, with an optional
-fifth for a security register. [Run a KORUS build](KORUS-BUILD.md) has the procedure.
+The shape this is built around is one long-lived console session and the short-lived ones it spawns.
+A builder takes a task, a reviewer reads a pull request, a regulator handles a red check, and a
+lander merges. [Run a KORUS build](KORUS-BUILD.md) has the procedure.
 
 More is not obviously better. The reported case that started this project was roughly fourteen
 sessions on one directory, and the limit there was not the tooling.

@@ -168,6 +168,42 @@ $EXIT_OK = 0
 $EXIT_FAILED = 1
 $EXIT_REFUSED = 2
 
+# ANY THROW BEFORE THE RECEIPT IS STILL A RESULT, and the vocabulary above has no code for "died".
+# Measured before this trap: a contended lock made Enter-CcxLock throw from outside the receipt path,
+# so the run exited 1 with an EMPTY stdout -- while exit 1 is defined three lines up as "looked
+# successfully, and at least one red could not be handed to a seat". An operator scheduling this from
+# schtasks read a successful look, and a consumer parsing -Json got "". That is the absent-versus-
+# empty conflation the three controls below refuse, arriving one layer above them. The malformed
+# config throw in the configuration block has the same shape, and so does every throw yet to be
+# written, which is why this is a trap rather than one more catch around one more call.
+#
+# SELF-CONTAINED ON PURPOSE. It cannot call Write-Receipt, because a throw can land here before that
+# function or $receipt exists. The flag stops a throw inside the reporting path re-entering forever.
+$script:receiptWritten = $false
+trap {
+    if ($script:receiptWritten) { exit $EXIT_REFUSED }
+    $script:receiptWritten = $true
+    $reason = "The pass stopped before it could report: $($_.Exception.Message)"
+    $r = $null
+    try { $r = $receipt } catch { }
+    if ($null -ne $r) {
+        $r.status = 'CANNOT-LOOK'
+        $r.reason = $reason
+    } else {
+        $r = [ordered]@{ status = 'CANNOT-LOOK'; reason = $reason; scanned = $null; controls = @(); red = @() }
+    }
+    if ($Json) {
+        $r | ConvertTo-Json -Depth 8
+    } else {
+        Write-Host ''
+        Write-Host 'ci-red watch: CANNOT-LOOK' -ForegroundColor Red
+        Write-Host "  reason : $reason"
+        Write-Host '  red    : NOT DETERMINED'
+        Write-Host ''
+    }
+    exit $EXIT_REFUSED
+}
+
 # ------------------------------------------------------------------------------------------------
 # Plumbing
 # ------------------------------------------------------------------------------------------------
@@ -366,6 +402,7 @@ $receipt = [ordered]@{
 function Write-Receipt {
     [CmdletBinding()]
     param([int]$Code)
+    $script:receiptWritten = $true
     if ($Json) {
         $receipt | ConvertTo-Json -Depth 8
         exit $Code
@@ -670,6 +707,7 @@ When you are done:
 }
 
 $failedCount = 0
+$claimDriftCount = 0
 
 if ($labelled.Count -eq 0) {
     Write-Receipt $EXIT_OK
@@ -679,7 +717,17 @@ if ($labelled.Count -eq 0) {
 # stop THIS watcher's next tick, because re-taking your own claim is a documented success. Every
 # tick runs from the same worktree, so without this lock two overlapping ticks would both pass the
 # claim step and both start a seat.
-$lock = Enter-CcxLock -Name 'ci-red-watch' -TimeoutSeconds $LockTimeoutSeconds -Repo $RepoRoot
+# A TIMEOUT HERE IS THE LOCK WORKING, not a fault -- a sibling tick is mid-pass. It is still not a
+# look, though, and reporting OK would print an all-clear over reds this tick never examined. So it
+# takes the refusal vocabulary, like every other reading this script cannot prove. The trap above
+# would catch this anyway; the catch is here so the reason names the cause instead of quoting a
+# stack.
+try {
+    $lock = Enter-CcxLock -Name 'ci-red-watch' -TimeoutSeconds $LockTimeoutSeconds -Repo $RepoRoot
+} catch {
+    Stop-CannotLook ("Another ci-red-watch tick holds the pass lock, so this tick examined no " +
+        "claim and started no seat: $($_.Exception.Message)")
+}
 try {
     foreach ($pr in $labelled) {
         $number = [int]$pr.number
@@ -702,9 +750,25 @@ try {
         # closes between the two calls lands here legitimately, which is why this downgrades one
         # finding instead of failing the run.
         if ($openNumbers -notcontains $number) {
-            $row.decision = 'NOT-OPEN'
-            $row.detail = ('Carries the label but is absent from the open pull request list. ' +
-                'Closed since the first call, or the two calls disagree.')
+            if ($receipt.scanned.truncated) {
+                # A CAPPED LIST CANNOT SAY "CLOSED". The open list filled -Limit, so a labelled pull
+                # request missing from it may simply sit past the cap. The receipt declared the
+                # truncation two fields earlier and this line then called the same pull request
+                # closed, pointing the reader at two causes that were both wrong. Measured before
+                # this branch, with -Limit 2 and a genuinely open labelled #99: status OK, exit 0,
+                # no seat. The red the watcher exists to catch went unattributed while the run
+                # reported success. Counting it failed makes the pass INCOMPLETE and exit 1, which
+                # is the vocabulary's case for "a red could not be handed to a seat".
+                $row.decision = 'NOT-OPEN-UNVERIFIABLE'
+                $row.detail = ('Absent from the open pull request list, but that list filled the ' +
+                    "-Limit of $Limit, so absence does not prove it closed. Not starting a seat on " +
+                    'a reading this run cannot make. Raise -Limit past the open pull request count.')
+                $failedCount++
+            } else {
+                $row.decision = 'NOT-OPEN'
+                $row.detail = ('Carries the label but is absent from the open pull request list. ' +
+                    'Closed since the first call, or the two calls disagree.')
+            }
             $receipt.red += [pscustomobject]$row
             continue
         }
@@ -790,8 +854,12 @@ try {
             $row.detail = ("claim.ps1 exited 0 but '$claimFile' does not exist, so the claim path in " +
                 "this script no longer matches claim.ps1. Not starting a seat.")
             $receipt.red += [pscustomobject]$row
-            $receipt.status = 'CANNOT-LOOK'
-            $receipt.reason = 'The claim registry path could not be confirmed, so a claim cannot be seen once taken.'
+            # NOT 'CANNOT-LOOK'. The look SUCCEEDED: the reds were found, named and counted. What
+            # failed is the claim registry, which is exit 1's case exactly -- "looked successfully,
+            # and at least one red could not be handed to a seat". Spending exit 2 here also MASKED
+            # any real INCOMPLETE in the same pass, because the CANNOT-LOOK branch is tested first at
+            # the end of the file, so one drifted claim hid every other red that failed to start.
+            $claimDriftCount++
             $failedCount++
             continue
         }
@@ -802,7 +870,18 @@ try {
             "append what you find to the same file before you finish.")
 
         try {
-            $started = Start-Child -FileName $spawnCmd -WorkingDirectory $RepoRoot `
+            # -Quiet, because the DEFAULT SEAT IS `claude -p` AND IT WRITES ITS ANSWER TO STDOUT.
+            # Without it the seat inherits ours and its answer lands inside the -Json receipt, which
+            # then parses as nothing at all. Measured with a stub that prints: 362,318 bytes of child
+            # output in the parent's stdout, and ConvertFrom-Json failing at line 1 column 1. With
+            # -Quiet: 26 bytes, the receipt alone. Start-Child's own parameter help states this rule;
+            # this call was the one place that did not follow it.
+            #
+            # The seat outlives us and nothing drains the pipe once we exit, so the question is
+            # whether a detached child survives that. Measured on this platform, 400 writes of 900
+            # bytes each after the parent had exited: all 400 completed and the child ran to the end.
+            # Not measured against a real `claude -p` seat, only against a pwsh stand-in.
+            $started = Start-Child -FileName $spawnCmd -WorkingDirectory $RepoRoot -Quiet `
                 -ArgumentList (@($spawnFixed) + @($prompt)) -Wait:$WaitForSpawn
             # Written before the row is reported, so a tick that is killed between the spawn and its
             # own receipt still leaves the next tick able to see what it started.
@@ -829,10 +908,18 @@ try {
 if ($receipt.status -eq 'CANNOT-LOOK') { Write-Receipt $EXIT_REFUSED }
 if ($failedCount -gt 0) {
     $receipt.status = 'INCOMPLETE'
-    # Covers three different ways a red ends a tick with nobody on it: a spawn that failed, a claim
-    # this script cannot verify, and a claim whose seat is gone or unprovable. All three mean the
-    # same thing to a reader -- this red is not being attributed -- and none of them may exit 0.
+    # Covers four different ways a red ends a tick with nobody on it: a spawn that failed, a claim
+    # this script cannot verify, a claim whose seat is gone or unprovable, and a red the open list
+    # was too short to resolve. All four mean the same thing to a reader -- this red is not being
+    # attributed -- and none of them may exit 0.
     $receipt.reason = "$failedCount red pull request(s) have no seat this run could show is working them."
+    if ($claimDriftCount -gt 0) {
+        # The top-level reason has to carry this, because it is the one failure here that means a
+        # SOURCE defect rather than a busy peer: claim.ps1 and this script no longer agree on where
+        # a claim lives, and every future tick will fail the same way.
+        $receipt.reason += (" $claimDriftCount of them because claim.ps1 exited 0 without creating " +
+            "the claim file this script predicted, so the two path formulas have drifted.")
+    }
     Write-Receipt $EXIT_FAILED
 }
 Write-Receipt $EXIT_OK

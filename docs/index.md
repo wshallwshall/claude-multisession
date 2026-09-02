@@ -120,8 +120,9 @@ The commit-time gate catching a session that never asked ships **unwired**: no i
 It prints, every run, the four cases where it cannot tell and does not know it. An occupant editing
 by absolute path from elsewhere is one. [Pruning](PRUNING.md)
 
-That list is what ships as code. **The session shape is not on it**: one session plans and tracks,
-two build, one lands, and nothing enforces any of that.
+That list is what ships as code. **The session shape is not on it.** One session briefs and
+polls. A short-lived one builds each brief, another reads the diff, another attributes a failed
+check, and one decides what merges. Nothing enforces any of that.
 
 The roles are a convention you set in each opening prompt, and they are what stop two sessions
 deciding the same thing. [Run a KORUS build](KORUS-BUILD.md)
@@ -140,7 +141,7 @@ throughput comes from.
 | Surface | One desktop instance per Claude account, and the config root each adds | [Desktop accounts](DESKTOP-ACCOUNTS.md) |
 | Account economics | What a plan buys, measured against published API rates | [Token accounting](TOKEN-ACCOUNTING.md) |
 | What you write down | A backlog, decision records, and a security register | [The KORUS framework](KORUS.md) |
-| The session shape | Who plans, who builds, who lands | [Run a KORUS build](KORUS-BUILD.md) |
+| The session shape | Who briefs, who builds, who reviews, who merges | [Run a KORUS build](KORUS-BUILD.md) |
 | Not losing work to a limit | Knowing when to stop. A design here, not a shipped hook | [Usage awareness](USAGE-AWARENESS.md) |
 | What "done" means | The check that runs when the author cannot vouch for the change | [CI for leaders](CI-FOR-LEADERS.md) |
 
@@ -150,7 +151,7 @@ throughput comes from.
 |---|---|
 | Work out whether you need this at all | [FAQ](FAQ.md) |
 | See it working on your own repository | [Quickstart](QUICKSTART.md) |
-| Set up the four-session build | [Run a KORUS build](KORUS-BUILD.md) |
+| Set up the session shape | [Run a KORUS build](KORUS-BUILD.md) |
 | Know what it needs, and where it stops working | [Limits and requirements](LIMITS.md) |
 | Understand the model everything else applies | [Concepts](CONCEPTS.md) |
 | Read the account this came from | [The KORUS framework](KORUS.md) |
