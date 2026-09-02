@@ -222,8 +222,8 @@ Four controls, and each one covers a failure the others do not:
 into the target as `CLAUDE.md` and cut it to what is true there. It is where you write down what the
 gates cannot see. Keep it short: a stale one still gets acted on.
 
-**Then scale up.** [Run a KORUS build](KORUS-BUILD.md) is the four-session shape this all exists to
-support: a dispatcher, two builders and a lander.
+**Then scale up.** [Run a KORUS build](KORUS-BUILD.md) is the session shape this all exists to
+support: a console, a builder per task, a reviewer per pull request, and a lander.
 
 [INSTALL.md](INSTALL.md) is the record of record for the
 installers: the annotated version of these steps, and how to prove each one is live rather than
