@@ -118,7 +118,14 @@ function Get-SeqField($Obj, [string]$Name) {
 # Both hazards below are relationships between the config and something outside one entry, so a
 # per-entry check cannot see either. Both were unreachable while a single kind was effectively
 # hardcoded, and both arrive with the second ledger a repository declares.
-$seenPatterns = @{}
+# ORDINAL, because a PowerShell hashtable compares keys case-INSENSITIVELY while .NET regexes are
+# case-sensitive by default. Two sequences whose filePatterns differ only in case are distinct
+# namespaces on a case-sensitive filesystem, and a folding hashtable refuses them as duplicates.
+# $seenIndexes below is left folding ON PURPOSE: its key joins a PATH, case-insensitive on
+# Windows, to a regex, which is not, so ordinal there would trade this false refusal for a false
+# ACCEPTANCE of two sequences reading one file. That half needs a split comparison, not this fix.
+$seenPatterns = [System.Collections.Generic.Dictionary[string, string]]::new(
+    [System.StringComparer]::Ordinal)
 $seenIndexes = @{}
 foreach ($k in $kinds) {
     # THE NAME BECOMES A DIRECTORY under the registry root, so it is a path component carrying
@@ -127,7 +134,10 @@ foreach ($k in $kinds) {
     # and reported success. A name of "../claims" would drop them into a sibling tool's state.
     # Refuse anything that is not one plain segment rather than sanitising it into a name nobody
     # typed -- a silently renamed sequence allocates from a registry its owner cannot find.
-    if ($k -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$') {
+    # \A and \z, NOT ^ and $. In .NET `$` also matches immediately before a trailing newline,
+    # so a name ending in one passed this check while the prose beside it promised a single
+    # plain segment. \z is the end of the string and nothing else.
+    if ($k -notmatch '\A[A-Za-z0-9][A-Za-z0-9._-]{0,63}\z') {
         throw ("Sequence name '$k' in $($cfg.ConfigPath) is not usable. It becomes a directory name " +
             "under the allocation registry, so it must be a single path segment: a letter or digit " +
             "first, then letters, digits, dot, underscore or hyphen, 64 characters at most.")
@@ -384,22 +394,46 @@ function Get-Floor {
     $previous = 0
     if (Test-Path $watermark) {
         $raw = $null
+        $readOk = $false
         $readErr = $null
         foreach ($attempt in 1..20) {
-            # BOTH exception types, and that is not defensive padding. Windows reports a contended
-            # file as UnauthorizedAccessException ("Access to the path is denied") about as often as
-            # it reports IOException, and a catch for only one of them lets the other kill the run --
-            # which is the bug this whole guard exists to fix, surviving in half the cases.
-            try { $raw = Get-Content $watermark -Raw -ErrorAction Stop; break }
-            catch [System.IO.IOException] { $readErr = $_; Start-Sleep -Milliseconds 25 }
-            catch [System.UnauthorizedAccessException] { $readErr = $_; Start-Sleep -Milliseconds 25 }
+            # EVERY exception, not a list of the ones somebody thought of. Windows reports a
+            # contended file as UnauthorizedAccessException ("Access to the path is denied") about as
+            # often as it reports IOException, and the provider raises InvalidOperationException for
+            # a path that is a DIRECTORY. Two typed catches let that third one escape the loop and
+            # kill the run inside Get-Content, so the operator got a provider message about using
+            # Get-ChildItem instead of the refusal below -- the very bug this guard exists to fix,
+            # surviving in the cases the list did not name. The fail direction here is refusal, so a
+            # broad catch cannot lower the floor; it can only make the run stop and say why.
+            try { $raw = Get-Content $watermark -Raw -ErrorAction Stop; $readOk = $true; break }
+            catch { $readErr = $_; Start-Sleep -Milliseconds 25 }
         }
-        if ($null -eq $raw) {
+        if (-not $readOk) {
             throw ("Could not read the $Kind high-water mark at $watermark after 20 attempts: " +
                 "$($readErr.Exception.Message). Refusing to allocate -- ignoring the ratchet would " +
                 "silently lower the floor, which is how a number already in use gets re-issued.")
         }
-        [void][int]::TryParse($raw.Trim(), [ref]$previous)
+        # A SUCCESSFUL READ IS NOT YET A NUMBER, and the two ways it is not get separate sentences
+        # because they are separate operator problems. `Get-Content -Raw` returns $null for a
+        # zero-byte file and raises NOTHING, so an empty ratchet used to reach the contention throw
+        # above having made one attempt that WORKED: it reported 20 attempts, and printed an empty
+        # cause after "attempts:", so an absent cause and a real one rendered identically. An
+        # unparseable value took the quieter road -- TryParse failed, $previous stayed 0, and the run
+        # allocated. That is the silent floor-lowering the refusal exists to prevent, arriving
+        # through the door marked success.
+        $text = ""
+        if ($null -ne $raw) { $text = $raw.Trim() }
+        if ($text -eq "") {
+            throw ("The $Kind high-water mark at $watermark is empty. Refusing to allocate -- an " +
+                "empty ratchet is not a floor of zero, and reading it as one forgets every number " +
+                "that lived only in the ratchet. Restore it from a clone that still has those refs, " +
+                "or delete the file to restart the ratchet from the numbers this clone can see.")
+        }
+        if (-not [int]::TryParse($text, [ref]$previous)) {
+            throw ("The $Kind high-water mark at $watermark does not hold a number: '$text'. " +
+                "Refusing to allocate -- a value that will not parse reads as a floor of zero, " +
+                "which is how a number already in use gets re-issued.")
+        }
     }
 
     if ($previous -gt $computed) {
@@ -413,14 +447,29 @@ function Get-Floor {
         # written one and readers never contend with a writer. All the waiting is on this side.
         $temp = Join-Path $alloc (".floor-highwater." + [System.IO.Path]::GetRandomFileName())
         try {
-            Set-Content -Path $temp -Value $floor -Encoding ASCII
-            $moved = $false
-            foreach ($attempt in 1..20) {
-                try { [System.IO.File]::Move($temp, $watermark, $true); $moved = $true; break }
-                catch [System.IO.IOException] { Start-Sleep -Milliseconds 25 }
-                catch [System.UnauthorizedAccessException] { Start-Sleep -Milliseconds 25 }
+            # -ErrorAction Stop, because Set-Content fails NON-TERMINATINGLY by default. Without it a
+            # failed stage emitted an error and execution carried straight on to the Move below,
+            # replacing a good ratchet with a missing or empty temp. An empty ratchet is what the
+            # read side above now refuses on, so one failed write would have stopped every later
+            # allocation of this kind. Caught rather than thrown: a lost WRITE is recoverable, so it
+            # warns and the allocation still succeeds, which is the asymmetry this block is built on.
+            $wrote = $false
+            try {
+                Set-Content -Path $temp -Value $floor -Encoding ASCII -ErrorAction Stop
+                $wrote = $true
+            } catch {
+                Write-Host "NOTE: could not stage the $Kind high-water mark ($($_.Exception.Message))." -ForegroundColor Yellow
+                Write-Host "      This allocation is unaffected -- the floor it computed is $floor either way." -ForegroundColor Yellow
             }
-            if (-not $moved) {
+            $moved = $false
+            if ($wrote) {
+                foreach ($attempt in 1..20) {
+                    try { [System.IO.File]::Move($temp, $watermark, $true); $moved = $true; break }
+                    catch [System.IO.IOException] { Start-Sleep -Milliseconds 25 }
+                    catch [System.UnauthorizedAccessException] { Start-Sleep -Milliseconds 25 }
+                }
+            }
+            if ($wrote -and -not $moved) {
                 Write-Host "NOTE: could not raise the $Kind high-water mark to $floor (a sibling holds $watermark)." -ForegroundColor Yellow
                 Write-Host "      This allocation is unaffected -- the floor it computed is $floor either way." -ForegroundColor Yellow
             }

@@ -570,12 +570,22 @@ class TheHighWaterMarkIsSharedStateAndTheCallersAreConcurrent(AllocatorFixture):
             "the one it would have computed alone:\n" + r.stdout,
         )
 
+    # The refusal's own wording. Asserting on it is what makes the cases below discriminate: the
+    # allocator must stop THROUGH ITS OWN GUARD, not because some provider error happened to escape.
+    REFUSAL = "Refusing to allocate"
+
     def test_an_unreadable_ratchet_refuses_rather_than_reading_as_zero(self):
         """The opposite asymmetry, and the one that matters more.
 
         A directory where the file should be is a stand-in for any read that cannot be satisfied. The
         wrong response is to shrug and carry on with `previous = 0`: the floor then silently forgets
         every number the ratchet was remembering, which is the exact hole it was added to close.
+
+        A NON-ZERO EXIT DOES NOT PIN THIS, and an earlier version of this case checked nothing else.
+        `Get-Content` on a directory raises whether or not the guard is there, so the case stayed
+        green with the refusal replaced by `previous = 0`, and green again with the whole guard
+        reverted to the unguarded one-liner. It was green in three states and told them apart in
+        none. The message assertion below is the discriminator: only the guard produces it.
         """
         self.watermark().mkdir(parents=True)
         r = self.alloc("-Kind", "adr", "-Title", "the ratchet cannot be read")
@@ -584,10 +594,85 @@ class TheHighWaterMarkIsSharedStateAndTheCallersAreConcurrent(AllocatorFixture):
             "the allocator allocated with the high-water mark unreadable. It has just forgotten "
             "every number that lived only in the ratchet, and it said nothing:\n" + r.stdout,
         )
+        self.assertIn(
+            self.REFUSAL, r.stderr,
+            "the run failed, but not through its own refusal. A directory raises "
+            "InvalidOperationException, which the typed catches did not name, so it escaped the "
+            "retry loop and killed the script inside Get-Content -- the operator gets a provider "
+            "message about using Get-ChildItem instead of the explanation:\n" + r.stderr,
+        )
         self.assertEqual(
             [], self.claimed_numbers(self.registry(self.repo, "adr")),
             "it refused, but only after claiming a number. A refusal that spends a number is not a "
             "refusal -- numbers are never reclaimed.",
+        )
+
+    def test_an_empty_ratchet_refuses_and_does_not_report_contention(self):
+        """The arm a broken guard actually fails, which is why it is here.
+
+        Every other case in this class supplies a ratchet that RAISES. This one supplies a ratchet
+        that reads perfectly and holds nothing: `Get-Content -Raw` returns $null for a zero-byte file
+        and raises nothing at all. So there is no exception to catch and no retry to exhaust, and an
+        allocator that treats a null read as `previous = 0` allocates happily -- exit 0, a number
+        handed out, the ratchet's memory gone and nothing said. That is the silent floor-lowering
+        this whole guard exists to prevent, and it is reachable without anyone truncating the file by
+        hand: the staged write was non-terminating, so a failed stage left an empty temp to be moved
+        over a good ratchet.
+
+        The second assertion is about honesty rather than safety. Before the fix this input reached
+        the CONTENTION throw, which reports twenty attempts and prints its cause after "attempts: ".
+        One attempt had been made and it had succeeded, and the cause was empty -- so an absent cause
+        and a real one rendered identically, in the one message an operator reads to tell them apart.
+        """
+        self.assertEqual("0002", self.allocate("adr", "raise the ratchet first"))
+        wm = self.watermark()
+        self.assertTrue(wm.is_file(), "the ratchet was never written, so this case supplies nothing")
+        wm.write_text("", encoding="utf-8")
+
+        r = self.alloc("-Kind", "adr", "-Title", "the ratchet is empty")
+        self.assertNotEqual(
+            0, r.returncode,
+            "the allocator read an empty high-water mark as a floor of zero and allocated. Every "
+            "number that lived only in the ratchet is now free to be handed out again:\n" + r.stdout,
+        )
+        self.assertIn(
+            self.REFUSAL, r.stderr,
+            "the run failed without the guard's own refusal in it:\n" + r.stderr,
+        )
+        self.assertIn(
+            "is empty", r.stderr,
+            "it refused, but did not say the file was empty, so the operator cannot tell this from "
+            "a locked file:\n" + r.stderr,
+        )
+        self.assertNotIn(
+            "after 20 attempts", r.stderr,
+            "it reported contention over a read that succeeded on its first attempt. There was no "
+            "contention, and the cause printed after 'attempts: ' is empty:\n" + r.stderr,
+        )
+
+    def test_a_ratchet_holding_something_other_than_a_number_refuses(self):
+        """The quietest road to the same place, and the only one with no failed read at all.
+
+        `[int]::TryParse` returns false and leaves its target untouched, so a ratchet holding a word
+        left `$previous` at its initialised 0 and the run allocated. Nothing raised, nothing was
+        null, and the floor silently forgot everything the ratchet knew.
+        """
+        self.assertEqual("0002", self.allocate("adr", "raise the ratchet first"))
+        self.watermark().write_text("not-a-number\n", encoding="utf-8")
+
+        r = self.alloc("-Kind", "adr", "-Title", "the ratchet is garbage")
+        self.assertNotEqual(
+            0, r.returncode,
+            "an unparseable high-water mark read as a floor of zero and the run allocated:\n" + r.stdout,
+        )
+        self.assertIn(
+            self.REFUSAL, r.stderr,
+            "the run failed without the guard's own refusal in it:\n" + r.stderr,
+        )
+        self.assertIn(
+            "not-a-number", r.stderr,
+            "the refusal did not quote what it found, which is the one thing that tells an operator "
+            "which file to go and look at:\n" + r.stderr,
         )
 
 
