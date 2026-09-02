@@ -126,5 +126,21 @@ function Get-CcxRenderedIds {
     param([Parameter(Mandatory)]$Lane)
     $set = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($r in $Lane.Receipts) { if ($r.Id) { [void]$set.Add([string]$r.Id) } }
-    return $set
+    # THE COMMA IS LOAD-BEARING. `return $set` hands the pipeline an enumerable, and PowerShell
+    # unrolls it, so this function returned three different types by receipt count -- measured:
+    # 0 receipts -> $null, 1 -> [string], 2+ -> [object[]]. Callers do $rendered.Contains($id), so
+    # each type answered a different question:
+    #
+    #   0 receipts  the call throws on a null. That is the DEAD DRAIN, the case the signal exists
+    #               for, and it rendered as `message-delivery BROKEN` with no receipt and no
+    #               finding -- a crash reported as a measurement.
+    #   1 receipt   [string].Contains is SUBSTRING matching. A receipt for 'note-12' marked
+    #               'note-1' delivered, and the run came back CLEAN with a healthy corpus beside it.
+    #   2+          [object[]] falls back to IList.Contains, which is ordinal, so the
+    #               case-insensitive comparer this set was built with stopped applying: a receipt
+    #               naming 'msg-a' no longer matched a message 'MSG-A'.
+    #
+    # Every message fixture holds exactly one receipt, which is the single branch where substring
+    # matching happens to give the right answer, so nothing went red.
+    return ,$set
 }

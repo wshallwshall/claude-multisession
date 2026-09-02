@@ -46,7 +46,7 @@ probe. So every check here ships with two planted corpora, under `fixtures/`.
 The broken one must come back BROKEN. The clean one must come back CLEAN. One alone is worth little:
 a check wired to always fail passes the first, and a check wired to always pass passes the second.
 
-`run-checks.ps1` runs all ten control cases before it looks at your machine.
+`run-checks.ps1` runs two control cases per check, both of them, before it looks at your machine.
 `tests/test_every_validation_check_is_proven_by_a_control.py` runs them again in the test suite, and
 refuses a check that arrives without both fixtures.
 
@@ -143,6 +143,13 @@ Named because a blind spot nobody states becomes a coverage claim.
 - **The fixtures for `claim-holders`, `allocation-collisions` and `session-reaping` enter through a
   second reader.** They prove the analysis fires. They do not prove the live reader found anything,
   which is what the corpus counts are for. Both halves are needed.
+- **PROVEN covers the verdict logic, not the live reader.** An instrument mutated so it can never
+  report a collision on real data still reads PROVEN here, because the fixture path is untouched.
+  Three real defects lived in that gap.
+  `tests/test_a_validation_check_reads_real_data_the_way_it_reads_a_fixture.py` closes it for the
+  three checks that read a live corpus, by building a mail root and a real git repository rather
+  than a fixture. The gap is narrower now, not gone: the two registry checks still enter through a
+  second reader.
 - **These are diagnostics, not gates.** Nothing here blocks a commit or a push. They report.
 
 ## The files

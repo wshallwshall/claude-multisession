@@ -243,6 +243,19 @@ function Get-CcxField {
     return ''
 }
 
+function ConvertTo-CcxLocalKind {
+    <#
+    .SYNOPSIS
+        A [datetime] in Local kind, whatever kind it arrived in.
+    #>
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][datetime]$Value)
+    # Utc converts. Unspecified does NOT: no offset was written, so the local wall clock is the only
+    # honest reading of it, and ToLocalTime() would treat it as UTC and shift it by the offset.
+    if ($Value.Kind -eq [System.DateTimeKind]::Utc) { return $Value.ToLocalTime() }
+    return $Value
+}
+
 function ConvertTo-CcxTime {
     <#
     .SYNOPSIS
@@ -251,13 +264,26 @@ function ConvertTo-CcxTime {
     [CmdletBinding()]
     param([AllowNull()]$Value)
     if ($null -eq $Value -or "$Value" -eq '') { return $null }
-    if ($Value -is [datetime]) { return $Value }
+    # EVERY RETURN IS LOCAL KIND, because every caller compares against (Get-Date), which is local,
+    # and PowerShell compares two DateTimes on ticks while IGNORING Kind. RoundtripKind gives a 'Z'
+    # string Kind=Utc, so west of UTC a message read as sent in the future and lateness up to the
+    # machine's offset was hidden; east of UTC the same code invented lateness. Measured at -05:00:
+    # one instant, spelled 'Z' and spelled '-05:00', four real hours past a thirty-minute ttl --
+    # CLEAN for the first and BROKEN for the second, over identical corpus counts.
+    #
+    # The fixtures all carry timestamps eight months stale, so five hours of skew could not flip
+    # them, which is why every control stayed green over it.
+    if ($Value -is [datetime]) { return (ConvertTo-CcxLocalKind $Value) }
     if ($Value -is [datetimeoffset]) { return $Value.LocalDateTime }
     # A bare number is epoch milliseconds -- the unit the session registry uses. Seconds would be a
     # second guess, and guessing the unit is how a fence silently changes what it measures.
     if ("$Value" -match '^\d{10,}$') {
         try { return [System.DateTimeOffset]::FromUnixTimeMilliseconds([long]"$Value").LocalDateTime } catch { return $null }
     }
-    try { return [datetime]::Parse("$Value", [System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.DateTimeStyles]::RoundtripKind) }
+    try {
+        return (ConvertTo-CcxLocalKind ([datetime]::Parse("$Value",
+                    [System.Globalization.CultureInfo]::InvariantCulture,
+                    [System.Globalization.DateTimeStyles]::RoundtripKind)))
+    }
     catch { return $null }
 }

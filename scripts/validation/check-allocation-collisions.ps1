@@ -180,9 +180,17 @@ foreach ($kind in @($cfg.sequences.Keys | Sort-Object)) {
                         $stem = if ($base.Contains('.')) { $base.Substring(0, $base.LastIndexOf('.')) } else { $base }
                         $row.Contains($base) -or $row.Contains($stem)
                     })
-                # A companion is declared when the row names every path but the first. Anything the
-                # row does not name is still an undeclared reuse.
-                if ($declared.Count -ge ($paths.Count - 1)) { continue }
+                # EVERY path, not all but one. The old rule allowed `count - 1`, and with two
+                # paths a single declared one was enough to skip -- so the allowance was spent on
+                # the ORIGINAL, which an index row names by convention, and an undeclared second
+                # file rode free. Measured on a real repository: 0084-main.md on main, 0084-rogue.md
+                # on another branch, an index row naming only 0084-main.md, verdict CLEAN. Deleting
+                # that row and changing nothing else made the same repository BROKEN, so the row was
+                # what suppressed it -- and every real allocated number has a row.
+                #
+                # "All but the first" is also order-dependent, and $paths comes out in ref-walk
+                # order, so which path got the free pass was not something the rule controlled.
+                if ($declared.Count -eq $paths.Count) { continue }
             }
         }
         if ($paths.Count -ge 2) {
