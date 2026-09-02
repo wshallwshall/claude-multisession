@@ -22,45 +22,70 @@ role flag, and no routing. The roles are a convention you establish in each sess
 and in your `CLAUDE.md`.
 
 <figure role="group">
-<svg viewBox="0 0 820 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The KORUS build shape. A backlog feeds a console, which writes a brief and spawns a build session for it. Each builder works in its own git worktree on its own branch, and a claim marks which task each holds. The collision gate sits between the two builders and refuses an edit to a file the other one already has uncommitted changes in. Each builder pushes its own branch and opens its own pull request, and the lander decides what enters the merge queue, with a push guard between the lander and the trunk.">
+<svg viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The KORUS build shape. The record feeds a console that writes one brief and spawns a builder, which edits in its own worktree on its own branch behind a dashed collision gate, then pushes its branch and opens a pull request; a reviewer reads the diff and either posts findings back on that pull request or hands it to the lander with a reviewed label, the lander enqueues it and the merge queue merges it into the trunk, and a red check on the pull request goes to a regulator that returns only the pull request's own red to the console.">
   <defs>
     <marker id="korus-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
     </marker>
   </defs>
-  <rect x="20" y="30" width="150" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
-  <text x="95" y="55" font-size="12" text-anchor="middle" fill="currentColor">Backlog</text>
-  <line x1="95" y1="70" x2="95" y2="128" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
-  <rect x="20" y="130" width="150" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
-  <text x="95" y="152" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Console</text>
-  <text x="95" y="170" font-size="11" text-anchor="middle" fill="currentColor">briefs and spawns</text>
-  <line x1="170" y1="145" x2="286" y2="95" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
-  <line x1="170" y1="172" x2="286" y2="252" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
-  <text x="205" y="105" font-size="10" font-style="italic" fill="currentColor">claim</text>
-  <text x="205" y="238" font-size="10" font-style="italic" fill="currentColor">claim</text>
-  <rect x="290" y="55" width="230" height="62" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
-  <text x="405" y="78" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Build session A</text>
-  <text x="405" y="97" font-size="11" text-anchor="middle" fill="currentColor">own worktree, own branch</text>
-  <rect x="290" y="228" width="230" height="62" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
-  <text x="405" y="251" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Build session B</text>
-  <text x="405" y="270" font-size="11" text-anchor="middle" fill="currentColor">own worktree, own branch</text>
-  <line x1="405" y1="120" x2="405" y2="225" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" />
-  <rect x="300" y="152" width="210" height="42" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3" />
-  <text x="405" y="169" font-size="11" font-weight="bold" text-anchor="middle" fill="currentColor">collision gate</text>
-  <text x="405" y="186" font-size="10" text-anchor="middle" fill="currentColor">refuses the second edit</text>
-  <line x1="520" y1="86" x2="620" y2="150" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
-  <line x1="520" y1="259" x2="620" y2="196" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
-  <rect x="622" y="145" width="170" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
-  <text x="707" y="167" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Lander</text>
-  <text x="707" y="185" font-size="11" text-anchor="middle" fill="currentColor">sets the merge order</text>
-  <line x1="707" y1="201" x2="707" y2="279" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
-  <text x="716" y="228" font-size="10" font-style="italic" fill="currentColor">push guard</text>
-  <rect x="622" y="281" width="170" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
-  <text x="707" y="306" font-size="12" text-anchor="middle" fill="currentColor">trunk</text>
+  <rect x="15" y="44" width="180" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="105" y="66" font-size="12" text-anchor="middle" fill="currentColor">The record</text>
+  <text x="105" y="84" font-size="11" text-anchor="middle" fill="currentColor">backlog and plan</text>
+  <line x1="105" y1="100" x2="105" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="113" y="136" font-size="10" font-style="italic" fill="currentColor">picks an item</text>
+  <rect x="15" y="164" width="180" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="105" y="194" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Console</text>
+  <text x="105" y="212" font-size="11" text-anchor="middle" fill="currentColor">the only seat you talk to</text>
+  <line x1="195" y1="200" x2="238" y2="200" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="216" y="156" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">one brief, spawns one</text>
+  <rect x="240" y="164" width="190" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="335" y="186" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Builder</text>
+  <text x="335" y="204" font-size="11" text-anchor="middle" fill="currentColor">one brief, then it exits</text>
+  <text x="335" y="222" font-size="11" text-anchor="middle" fill="currentColor">own worktree and branch</text>
+  <line x1="335" y1="164" x2="335" y2="102" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#korus-arrow)" />
+  <text x="343" y="136" font-size="10" font-style="italic" fill="currentColor">each edit</text>
+  <rect x="240" y="44" width="190" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3" />
+  <text x="335" y="66" font-size="12" text-anchor="middle" fill="currentColor">collision gate</text>
+  <text x="335" y="84" font-size="11" text-anchor="middle" fill="currentColor">refuses a file a peer holds</text>
+  <line x1="430" y1="200" x2="473" y2="200" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="451" y="156" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">pushes and opens</text>
+  <rect x="475" y="164" width="180" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="565" y="194" font-size="12" text-anchor="middle" fill="currentColor">Pull request</text>
+  <text x="565" y="212" font-size="11" text-anchor="middle" fill="currentColor">checks run here</text>
+  <line x1="525" y1="164" x2="525" y2="102" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="517" y="136" font-size="10" font-style="italic" text-anchor="end" fill="currentColor">the diff</text>
+  <rect x="475" y="44" width="180" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="565" y="66" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Reviewer</text>
+  <text x="565" y="84" font-size="11" text-anchor="middle" fill="currentColor">labels, or posts findings</text>
+  <line x1="605" y1="100" x2="605" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="613" y="136" font-size="10" font-style="italic" fill="currentColor">findings on a fail</text>
+  <line x1="655" y1="72" x2="698" y2="72" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="676" y="36" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">reviewed label</text>
+  <rect x="700" y="44" width="160" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="780" y="66" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Lander</text>
+  <text x="780" y="84" font-size="11" text-anchor="middle" fill="currentColor">sets the merge order</text>
+  <line x1="780" y1="100" x2="780" y2="162" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="788" y="136" font-size="10" font-style="italic" fill="currentColor">enqueues it</text>
+  <rect x="700" y="164" width="160" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="780" y="205" font-size="12" text-anchor="middle" fill="currentColor">Merge queue</text>
+  <line x1="780" y1="236" x2="780" y2="298" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="788" y="272" font-size="10" font-style="italic" fill="currentColor">merges</text>
+  <rect x="700" y="300" width="160" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="780" y="332" font-size="12" text-anchor="middle" fill="currentColor">Trunk</text>
+  <line x1="565" y1="236" x2="565" y2="298" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="573" y="272" font-size="10" font-style="italic" fill="currentColor">a red check</text>
+  <rect x="475" y="300" width="180" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" />
+  <text x="565" y="322" font-size="12" font-weight="bold" text-anchor="middle" fill="currentColor">Regulator</text>
+  <text x="565" y="340" font-size="11" text-anchor="middle" fill="currentColor">whose red is it</text>
+  <polyline points="475,328 105,328 105,238" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#korus-arrow)" />
+  <text x="290" y="320" font-size="10" font-style="italic" text-anchor="middle" fill="currentColor">only the pull request's own red</text>
 </svg>
-<figcaption>The console briefs and spawns; each builder holds a claim and its own worktree; the
-collision gate sits between the builders and refuses an edit to a file the other already has
-uncommitted changes in; the lander decides what enters the merge queue.</figcaption>
+<figcaption>The console writes one brief and spawns a builder for it, and that builder exits when the
+brief is done. Each builder gets its own worktree and its own branch. The collision gate still
+refuses an edit to a file a peer already holds. A pull request reaches the lander only through the
+reviewer, and the merge queue is what merges. A red check goes to the regulator, which sends back
+only the pull request's own failure. The dashed box and arrow mark machinery rather than a
+seat.</figcaption>
 </figure>
 
 | Session | Owns | Must not |
