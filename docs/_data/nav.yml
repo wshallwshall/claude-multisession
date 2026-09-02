@@ -94,6 +94,9 @@
     - label: Running multiple sessions
       title: "Running multiple sessions"
       path: /RUNNING-MULTIPLE-SESSIONS.html
+    - label: Worker brief
+      title: "Brief a worker session"
+      path: /WORKER-BRIEF.html
     - label: Worktrees
       title: Worktrees
       path: /WORKTREES.html
