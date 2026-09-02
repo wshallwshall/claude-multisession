@@ -132,7 +132,7 @@ sit inside the full path. Read the table above, not the grouping.
 
 **The goal.** One rules document that every later step is checked against.
 
-**What to do.** Run `/speckit-constitution [your rules]` in the dispatcher session, once, before any
+**What to do.** Run `/speckit-constitution [your rules]` in the console session, once, before any
 feature work starts.
 
 > `/speckit-constitution Python is our primary language. All source code must adhere to OWASP ASVS
@@ -147,7 +147,7 @@ design.
 **The goal.** A spec that says WHAT and WHY, with its gaps closed before work fans out.
 
 **What to do.** Run `/speckit-specify [feature requirements]`, then `/speckit-clarify [spec-name]`.
-Both belong in the dispatcher session, where a human is still in the loop.
+Both belong in the console session, where a human is still in the loop.
 
 > `/speckit-specify We need a session orchestration service that integrates with our Git-backed
 > database version control. It must handle temporary auth tokens and manage user sessions.`
@@ -170,7 +170,7 @@ WHAT. A `Technical Context` section holds language, storage and testing choices.
 Tracking` table records any rejected alternative, populated only when the constitution check fails.
 
 `plan.md` is architecture, not a checklist. The ordered work items are a separate artifact,
-`specs/<NNN-slug>/tasks.md`, written by `tasks`. A KORUS dispatcher should read both before
+`specs/<NNN-slug>/tasks.md`, written by `tasks`. A KORUS console should read both before
 splitting work across build sessions.
 
 ### Stage 4: Implement
@@ -244,11 +244,11 @@ KORUS build reports coverage from a requirement-ID grep, read the uncited items 
 
 | Stage | KORUS session |
 |---|---|
-| constitution, specify, clarify | Dispatcher. One human-reviewed pass before work fans out |
-| plan, tasks | Dispatcher, or the build session the dispatcher assigns the feature to |
+| constitution, specify, clarify | Console. One human-reviewed pass before work fans out |
+| plan, tasks | Console, or the builder the console hands the feature to |
 | implement | The build session holding that feature's worktree |
 | checklist, analyze, converge | The same build session, before it hands the feature back |
-| taskstoissues | Dispatcher, if an issue tracker is in the loop |
+| taskstoissues | Console, if an issue tracker is in the loop |
 
 The lander session is not involved. Spec Kit's artifacts live in the worktree and merge like any
 other file. Nothing about `feature.json` reaches git, so the lander session's push-and-merge job is
@@ -307,11 +307,11 @@ sprawling enough to need a what-before-how gate. In a KORUS build the other trig
 the work is always handed to another session.
 
 **Use the short path** -- `specify`, `plan`, `tasks`, `implement`, `converge`. Take it when the
-feature's own spec and plan would outweigh the code, or when the dispatcher was already reviewing
+feature's own spec and plan would outweigh the code, or when a reviewer was already reading
 every diff. That drops `constitution`, `clarify`, `checklist` and `analyze`.
 
 **Set an exit condition when you start.** If `specify` and `clarify` produce a document that reads
-as padding rather than decisions the dispatcher would defend, stop and build directly.
+as padding rather than decisions the console would defend, stop and build directly.
 
 ---
 
