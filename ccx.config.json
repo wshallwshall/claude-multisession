@@ -7,6 +7,9 @@
     "refs/heads/main",
     "refs/heads/master"
   ],
+  "ciRed": {
+    "label": "ci-red"
+  },
   "sequences": {
     "adr": {
       "dir": "docs/adr",

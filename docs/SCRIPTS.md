@@ -2,7 +2,7 @@
 
 ## TLDR/BLUF
 
-**What this is.** The inventory: every script this project ships -- all 38 of them on 2026-08-17 --
+**What this is.** The inventory: every script this project ships -- all 39 of them on 2026-08-31 --
 grouped by what you are trying to do, with the page that owns each one. It was the bottom half of
 the landing page until 2026-08-16.
 
@@ -71,6 +71,15 @@ Installed once, then invoked by the harness or by git.
 | `scripts/hooks/seq_check.py` | `pre-commit` | Refuses a colliding, unallocated, or unindexed sequence number; `--ci` re-runs the collision rules against a freshly fetched trunk. No installer wires it | [Sequence allocation](SEQUENCE-ALLOC.md) |
 | `scripts/hooks/block-blanket-git-stage.ps1` | `PreToolUse` | Opt-in. Denies `git add -A/--all/-u/.` and `git commit -a/-am/--all`. Fails open | [Hooks](HOOKS.md) |
 | `scripts/hooks/steer-inject.ps1` | `PreToolUse` | Opt-in per worktree. Delivers a queued steering note at the next tool-call boundary rather than at the end of the turn | [Steering](STEERING.md) |
+
+## Scheduled jobs
+
+Its own section because a scheduler runs it, not the harness and not git, so it has no event to name
+in the column above. Nothing installs it: you register the schedule.
+
+| Script | Does | Doc |
+|---|---|---|
+| `scripts/cron/watch-ci-red.ps1` | Polls for pull requests your repository labelled red and starts one session per red to attribute it. Zero model calls, so a quiet repository is free. Exits 2 rather than reporting a zero it could not establish. `-DryRun`, `-Json` | [Watching for a red](CI-RED-WATCH.md) |
 
 ## Gates you have to run yourself
 

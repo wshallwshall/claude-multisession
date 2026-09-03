@@ -34,6 +34,13 @@ ALL_INSTALLERS = (GIT_HOOK_INSTALLER, GATE_INSTALLER, COORD_INSTALLER, SELFHEAL_
 CLAIM_CHECK = REPO_ROOT / "scripts" / "hooks" / "claim_check.py"
 PUSH_GUARD = REPO_ROOT / "scripts" / "hooks" / "push_guard.py"
 
+# The work claim, and the unattended watcher that takes one. They are named together because the
+# watcher PREDICTS where claim.ps1 keeps a key, so it can test for an existing claim before taking
+# one -- and a path formula living in two files is exactly the drift this suite reads pairs of
+# declarations to catch.
+CLAIM_SCRIPT = REPO_ROOT / "scripts" / "coord" / "claim.ps1"
+WATCH_CI_RED = REPO_ROOT / "scripts" / "cron" / "watch-ci-red.ps1"
+
 # OPEN-8: the pages published in an author's own words, exempt from the house style rules that would
 # require rewriting those words. THIS TUPLE IS THE ONLY DEFINITION -- docs/HOUSE-STYLE.md states the
 # rule and names the same file, and three tests in two files read this constant rather than repeating
