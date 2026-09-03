@@ -1,0 +1,4 @@
+# One <ref><TAB><path> line per file. Every number has exactly one path.
+refs/heads/main	docs/adr/0001-first.md
+refs/heads/feature-a	docs/adr/0001-first.md
+refs/heads/feature-a	docs/adr/0002-second.md

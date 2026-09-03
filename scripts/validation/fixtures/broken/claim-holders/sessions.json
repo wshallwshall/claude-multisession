@@ -1,0 +1,12 @@
+[
+  {
+    "sessionId": "aaaaaaa1",
+    "cwd": "/ccx-fixture/wt-a",
+    "state": "LIVE"
+  },
+  {
+    "sessionId": "bbbbbbb2",
+    "cwd": "/ccx-fixture/wt-b",
+    "state": "LIVE"
+  }
+]

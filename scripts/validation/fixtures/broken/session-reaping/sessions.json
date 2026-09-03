@@ -1,0 +1,16 @@
+[
+  {
+    "sessionId": "aaaaaaa1",
+    "cwd": "/ccx-fixture/wt-a",
+    "state": "LIVE",
+    "lastWriteAt": "2025-12-01T09:00:00.0000000Z",
+    "why": "rated LIVE, and nothing has been written where it works since the date above"
+  },
+  {
+    "sessionId": "bbbbbbb2",
+    "cwd": "/ccx-fixture/wt-b",
+    "state": "LIVE",
+    "lastWriteAt": "2099-01-01T00:00:00.0000000Z",
+    "why": "a live session that wrote recently, so the check must not fire on this one"
+  }
+]

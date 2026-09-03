@@ -1,0 +1,6 @@
+# One <ref><TAB><path> line per file. 0084 landed twice, on two branches, with two filenames.
+refs/heads/main	docs/adr/0001-first.md
+refs/heads/feature-a	docs/adr/0001-first.md
+refs/heads/feature-a	docs/adr/0084-alpha.md
+refs/heads/feature-b	docs/adr/0001-first.md
+refs/heads/feature-b	docs/adr/0084-beta.md
