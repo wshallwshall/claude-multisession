@@ -52,6 +52,21 @@
     If the file is not there, the run refuses to spawn and reports CLAIM-UNVERIFIABLE rather than
     spawning on a claim it cannot see -- which would spawn again on every future tick.
 
+    A HELD CLAIM IS NOT EVIDENCE THAT ANYBODY IS STILL WORKING THE RED, and reading it as evidence
+    quietly restores the failure this file exists to end. Claims never expire, nothing releases one
+    on a seat's behalf, and the claim names THIS WATCHER'S checkout as the holder -- that is where
+    claim.ps1 gets run from -- so every liveness probe in this repository, all of which read the
+    holder's worktree, reports a live holder even when the seat died a second after it started. Every
+    later tick would then print a confident ALREADY-CLAIMED, on a red nobody is looking at.
+
+    So each spawn writes a dispatch record beside the journal: the seat's process id, the start time
+    that tells that id from a reused one, and the journal's length at the moment of briefing. A later
+    tick reads it and answers in three different words -- ALREADY-CLAIMED for a seat proven alive,
+    SEAT-GONE for one proven not running, SEAT-UNKNOWN when it cannot tell, and it says why. The last
+    two fail the run. Nothing is released or respawned on the strength of a liveness reading: a seat
+    that exits without releasing may have finished, and respawning on that inference would start a
+    session on every tick for as long as the label stayed on.
+
     4. AN EMPTY RESULT FROM AN UNPROVEN SOURCE IS UNKNOWN, NOT ZERO. Measured 2026-08-31:
     CLAUDE_CONFIG_DIR pointing at a directory that does not exist makes `claude agents --json`
     return an empty list and exit 0. No error, no warning, so a mistyped root and an empty fleet are
@@ -83,7 +98,8 @@
 
 .OUTPUTS
     Exit 0  Looked successfully. Reds may or may not have been found; the receipt says which.
-    Exit 1  Looked successfully, and at least one red could not be handed to a seat.
+    Exit 1  Looked successfully, and at least one red has no seat this run could show is working it
+            -- a spawn that failed, a claim it cannot verify, or a claim whose seat is gone.
     Exit 2  COULD NOT LOOK. A control came back empty. This is never an all-clear.
 
 .EXAMPLE
@@ -271,6 +287,13 @@ function Start-Child {
         $psi.RedirectStandardError = $true
     }
     $proc = [System.Diagnostics.Process]::Start($psi)
+    # STAMPED HERE, BEFORE ANY WAIT, and it is the difference between "that seat is working" and "a
+    # different program now owns that number". An operating system reuses process ids, so a pid on
+    # its own cannot identify a process an hour later. The start time can, and reading it after the
+    # child has exited is not reliable everywhere, so it is taken while the child is certainly alive.
+    $startTicks = $null
+    try { $startTicks = $proc.StartTime.ToUniversalTime().Ticks } catch { }
+    $proc | Add-Member -NotePropertyName CcxStartTicks -NotePropertyValue $startTicks -Force
     if ($Quiet) {
         # Drain both pipes before waiting. A child that fills a pipe buffer while the parent waits on
         # exit deadlocks, and claim.ps1 prints a block of text on every path.
@@ -532,6 +555,155 @@ function Write-Journal {
     return $file
 }
 
+# WHAT A CLAIM ON ITS OWN CANNOT SAY, and why this file exists.
+#
+# The claim stops a second seat starting. It does not say whether the first one is still there. Worse
+# here than in the usual case: claim.ps1 takes the key as THIS WORKTREE, because that is where the
+# watcher runs it, so the claim records the watcher's own checkout as the holder no matter which
+# session is actually attributing the red. Every liveness reading in the repository probes the
+# holder's worktree, and that worktree is this one, which is always present. So the seat could have
+# died a second after it started and every future tick would still read "held, by a live holder".
+#
+# The consequence is the exact failure the watcher exists to end, restored quietly: the claim never
+# expires, nothing releases it on the seat's behalf, and every subsequent tick prints a confident
+# ALREADY-CLAIMED that a reader takes for coverage. The red then waits on nobody, forever, and the
+# receipt looks the same as one where somebody is mid-attribution.
+#
+# So the watcher writes down what it started, beside the journal: the process id, the start time that
+# tells that id from a reused one, and how long the journal was at the moment the seat was briefed.
+# A later tick reads it and answers three different questions with three different words.
+function Get-DispatchFile {
+    [CmdletBinding()]
+    param([int]$Number)
+    return (Join-Path $journalDir "dispatch-pr-$Number.json")
+}
+
+function Get-JournalSize {
+    <#
+    .SYNOPSIS
+        The journal's size right now, or $null if it cannot be read.
+    #>
+    [CmdletBinding()]
+    param([string]$Journal)
+    try { return (Get-Item -LiteralPath $Journal).Length } catch { return $null }
+}
+
+function Write-Dispatch {
+    [CmdletBinding()]
+    param([int]$Number, [string]$Key, $Process, [string]$Journal, $JournalBytes)
+    # THE BASELINE IS PASSED IN, because this function runs AFTER Start-Child returns. Under
+    # -WaitForSpawn that is after the child EXITED, so a size read here already includes everything
+    # the seat appended and the later comparison could never see it. Measured on one fixture with
+    # one variable changed: -WaitForSpawn on recorded 1202 bytes against a journal of 1202 and the
+    # next tick said "It never appended"; -WaitForSpawn off recorded 1168 against 1202 and said "It
+    # did append". Both seats wrote. Production does not pass the flag today -- no doc and no
+    # scheduler wiring mentions it -- so the wrong sentence was one flag away, not shipped.
+    $bytes = $JournalBytes
+    $record = [ordered]@{
+        number       = $Number
+        claim        = $Key
+        pid          = $Process.Id
+        startTicks   = $Process.CcxStartTicks
+        spawnedAt    = (Get-Date).ToString('o')
+        journal      = $Journal
+        journalBytes = $bytes
+        watcherRoot  = $RepoRoot
+    }
+    $file = Get-DispatchFile $Number
+    New-Item -ItemType Directory -Force -Path $journalDir | Out-Null
+    Set-Content -LiteralPath $file -Value ($record | ConvertTo-Json -Depth 4) -Encoding utf8
+    return $file
+}
+
+# Three readings, and the third is the point. 'gone' and 'alive' are both proofs; anything this
+# cannot prove is 'unknown' and says why, because a liveness probe that answers 'gone' when it simply
+# could not look would invite an operator to release a working seat's claim -- the duplicate build
+# the registry exists to prevent, arrived at by following the tool's own advice.
+function Get-SeatState {
+    [CmdletBinding()]
+    param([int]$Number)
+
+    $file = Get-DispatchFile $Number
+    if (-not (Test-Path -LiteralPath $file)) {
+        return [pscustomobject]@{
+            State  = 'unknown'
+            Detail = ("No dispatch record at '$file', so this watcher cannot say whether a seat is " +
+                "running. The claim may be held by a seat started before this record existed, or by " +
+                "a session that took the key by hand.")
+        }
+    }
+
+    $record = $null
+    try { $record = Get-Content -LiteralPath $file -Raw -Encoding utf8 | ConvertFrom-Json } catch { }
+    if ($null -eq $record -or -not $record.pid) {
+        return [pscustomobject]@{
+            State  = 'unknown'
+            Detail = "The dispatch record '$file' could not be read, so the seat's process id is unknown."
+        }
+    }
+
+    $seatPid = [int]$record.pid
+    $live = $null
+    try { $live = Get-Process -Id $seatPid -ErrorAction Stop } catch { $live = $null }
+
+    # The journal is the other half of the reading, and it separates two states an operator treats
+    # differently: a seat that died before writing anything left the red unattributed, while a seat
+    # that wrote and exited left a verdict and only failed to release its key.
+    $wrote = $null
+    try {
+        $now = (Get-Item -LiteralPath ([string]$record.journal)).Length
+        if ($null -ne $record.journalBytes) { $wrote = ([long]$now -gt [long]$record.journalBytes) }
+    } catch { }
+    $journalNote = switch ($wrote) {
+        $true { "It did append to '$($record.journal)', so read that before you release the claim." }
+        $false { "It never appended to '$($record.journal)', so this red was not attributed." }
+        default { "Whether it appended to '$($record.journal)' could not be read." }
+    }
+
+    if ($null -eq $live) {
+        return [pscustomobject]@{
+            State  = 'gone'
+            Detail = "Seat process $seatPid, started $($record.spawnedAt), is no longer running. $journalNote"
+        }
+    }
+
+    $liveTicks = $null
+    try { $liveTicks = $live.StartTime.ToUniversalTime().Ticks } catch { }
+    if ($null -eq $record.startTicks -or $null -eq $liveTicks) {
+        return [pscustomobject]@{
+            State  = 'unknown'
+            Detail = ("Process $seatPid exists, but its start time could not be read on one side, so " +
+                "it cannot be told from a different program that was given the same number.")
+        }
+    }
+    # A TOLERANCE, NOT AN EQUALITY, and the equality is what turned the ubuntu leg red. The two
+    # readings come from different calls -- one through Process.Start, one through Get-Process -- and
+    # on Linux .NET derives StartTime from the boot instant plus the process's own ticks. The boot
+    # instant is itself derived, so two reads of ONE LIVE PROCESS need not agree to the tick.
+    # Measured on gates (ubuntu-latest) at 37dd0de: a stub seat sleeping 600 seconds, certainly
+    # alive, reported SEAT-GONE with "the number was reused". Windows passed the same case.
+    #
+    # The size of the window follows from which way this must fail. A false 'gone' prints a
+    # confident false sentence, and an operator who believes it releases the claim, so a later tick
+    # starts a second seat on a red somebody is working -- the duplicate the registry exists to
+    # prevent, reached by following this tool's own advice. A false 'alive' only declines to start a
+    # seat. So the window is generous: a whole second is many orders of magnitude more than the
+    # derivation error, and a pid reused inside one second by a DIFFERENT program is not a case this
+    # watcher meets, since a seat runs for minutes.
+    $slackTicks = [System.TimeSpan]::TicksPerSecond
+    if ([Math]::Abs([long]$liveTicks - [long]$record.startTicks) -gt $slackTicks) {
+        return [pscustomobject]@{
+            State  = 'gone'
+            Detail = ("Process $seatPid is now a different process from the seat that was started " +
+                "$($record.spawnedAt); the number was reused. $journalNote")
+        }
+    }
+    return [pscustomobject]@{
+        State  = 'alive'
+        Detail = "Seat process $seatPid, started $($record.spawnedAt), is still running."
+    }
+}
+
 function New-Briefing {
     [CmdletBinding()]
     param($Pr, [string]$Key)
@@ -599,6 +771,9 @@ try {
             claim    = $key
             decision = ''
             detail   = ''
+            # Empty on every row that never asked the question, so a consumer can tell "the seat was
+            # not looked at" from "the seat could not be found".
+            seat     = ''
         }
 
         # The per-finding control on the label query: a pull request it names must also appear in
@@ -639,12 +814,70 @@ try {
         $claimFile = Get-ClaimFile $key
         if (Test-Path -LiteralPath $claimFile) {
             $holder = '(unreadable)'
+            $holderPath = ''
             try {
                 $held = Get-Content -LiteralPath $claimFile -Raw | ConvertFrom-Json
                 $holder = "$($held.worktree) [$($held.branch)]"
+                $holderPath = [string]$held.worktree
             } catch { }
-            $row.decision = 'ALREADY-CLAIMED'
-            $row.detail = "Held by $holder. Two seats attributing one failure is worse than none."
+
+            # A HOLDER YOU CANNOT READ IS NOT A HOLDER YOU CAN NAME. An unparseable claim file
+            # left $holderPath empty, which made $mine false, which took the peer branch below --
+            # so the run reported ALREADY-CLAIMED, left `seat` empty, and exited 0 without ever
+            # asking whether a seat was running. That is this file's own failure arriving through a
+            # different door, and it contradicted the rest of the change on the same tick: an
+            # unreadable DISPATCH record becomes SEAT-UNKNOWN and exits 1, while an unreadable CLAIM
+            # record became an all-clear.
+            if (-not $holderPath) {
+                $row.decision = 'SEAT-UNKNOWN'
+                $row.seat = 'unknown'
+                $row.detail = ("The claim file '$claimFile' could not be read, so neither its holder " +
+                    "nor its seat can be named. A claim whose seat cannot be shown alive is not an " +
+                    "all-clear, so this run does not report this red as covered.")
+                $receipt.red += [pscustomobject]$row
+                $failedCount++
+                continue
+            }
+
+            # A PEER'S CLAIM IS NOT THIS WATCHER'S TO JUDGE. Another worktree took the key, which is
+            # the cross-session exclusion working exactly as designed, and this run has no dispatch
+            # record for a seat it never started. Skipping is the whole answer.
+            $mine = ((ConvertTo-CcxComparablePath $holderPath) -eq (ConvertTo-CcxComparablePath $RepoRoot))
+            if (-not $mine) {
+                $row.decision = 'ALREADY-CLAIMED'
+                $row.detail = "Held by $holder. Two seats attributing one failure is worse than none."
+                $receipt.red += [pscustomobject]$row
+                continue
+            }
+
+            # OUR OWN CLAIM. Now the question is not who holds the key but whether the seat it was
+            # taken for still exists, and those two used to render identically.
+            $seat = Get-SeatState -Number $number
+            switch ($seat.State) {
+                'alive' {
+                    $row.decision = 'ALREADY-CLAIMED'
+                    $row.detail = "$($seat.Detail) Two seats attributing one failure is worse than none."
+                }
+                'gone' {
+                    # NOT RELEASED AUTOMATICALLY, and not respawned. A seat that exits without
+                    # releasing may have finished its attribution, and a watcher that respawned on
+                    # that inference would restart a seat every tick for as long as the label stayed
+                    # on. What the run can prove is that nobody is working this red now, so it says
+                    # that in its own word, fails the run, and hands over the release command.
+                    $row.decision = 'SEAT-GONE'
+                    $row.detail = ("$($seat.Detail) The claim is still held, so no later tick will " +
+                        "start another seat until it is released: " +
+                        "pwsh -NoProfile -File scripts/coord/claim.ps1 -Release $key")
+                    $failedCount++
+                }
+                default {
+                    $row.decision = 'SEAT-UNKNOWN'
+                    $row.detail = ("$($seat.Detail) A claim whose seat cannot be shown alive is not " +
+                        "an all-clear, so this run does not report this red as covered.")
+                    $failedCount++
+                }
+            }
+            $row.seat = $seat.State
             $receipt.red += [pscustomobject]$row
             continue
         }
@@ -680,6 +913,8 @@ try {
         }
 
         $journal = Write-Journal -Number $number -Text (New-Briefing -Pr $pr -Key $key)
+        # BEFORE THE SPAWN, so the seat cannot have written yet whatever -WaitForSpawn is set to.
+        $journalBaseline = Get-JournalSize -Journal $journal
         $prompt = ("You are the attributing seat for a red required check. Read '$journal'. It is " +
             "your only memory of this pull request. Follow the instructions in its last entry, and " +
             "append what you find to the same file before you finish.")
@@ -698,8 +933,13 @@ try {
             # Not measured against a real `claude -p` seat, only against a pwsh stand-in.
             $started = Start-Child -FileName $spawnCmd -WorkingDirectory $RepoRoot -Quiet `
                 -ArgumentList (@($spawnFixed) + @($prompt)) -Wait:$WaitForSpawn
+            # Written before the row is reported, so a tick that is killed between the spawn and its
+            # own receipt still leaves the next tick able to see what it started.
+            $dispatch = Write-Dispatch -Number $number -Key $key -Process $started `
+                -Journal $journal -JournalBytes $journalBaseline
             $row.decision = 'SPAWNED'
-            $row.detail = "pid $($started.Id), journal $journal"
+            $row.seat = 'started'
+            $row.detail = "pid $($started.Id), journal $journal, dispatch $dispatch"
         } catch {
             # RELEASE ON FAILURE. A claim taken for a seat that never started marks the red as
             # handled by nobody, and claims do not expire -- so the red would sit unattributed
@@ -719,7 +959,11 @@ try {
 if ($receipt.status -eq 'CANNOT-LOOK') { Write-Receipt $EXIT_REFUSED }
 if ($failedCount -gt 0) {
     $receipt.status = 'INCOMPLETE'
-    $receipt.reason = "$failedCount red pull request(s) could not be handed to a seat."
+    # Covers four different ways a red ends a tick with nobody on it: a spawn that failed, a claim
+    # this script cannot verify, a claim whose seat is gone or unprovable, and a red the open list
+    # was too short to resolve. All four mean the same thing to a reader -- this red is not being
+    # attributed -- and none of them may exit 0.
+    $receipt.reason = "$failedCount red pull request(s) have no seat this run could show is working them."
     if ($claimDriftCount -gt 0) {
         # The top-level reason has to carry this, because it is the one failure here that means a
         # SOURCE defect rather than a busy peer: claim.ps1 and this script no longer agree on where
